@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "paths": {
+            "@namorix/styles": [
+                "./packages/styles/src/index.scss"
+            ]
+        },
+      "allowSyntheticDefaultImports": true
+    }
+}

@@ -1,0 +1,53 @@
+.nmx-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--nmx-spacing-sm);
+  padding: var(--nmx-spacing-md) var(--nmx-spacing-lg);
+  border-radius: var(--nmx-radius-md);
+  font-size: var(--nmx-font-size-sm);
+  font-weight: var(--nmx-font-weight-semibold);
+  font-family: inherit;
+  border: 1px solid transparent;
+  cursor: pointer;
+  outline: 0;
+  transition: background 0.2s, color 0.2s, opacity 0.2s, transform 0.1s;
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.nmx-button--fullwidth {
+  width: 100%;
+}
+
+.nmx-button--uppercase {
+  text-transform: uppercase;
+  letter-spacing: var(--nmx-letter-spacing-wide);
+}
+
+.nmx-button--primary {
+  background-color: var(--nmx-color-primary);
+  color: var(--nmx-color-on-primary);
+  border-color: transparent;
+
+  &:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--nmx-color-primary) 85%, var(--nmx-color-mix-darken));
+  }
+}
+
+.nmx-button--ghost {
+  background: transparent;
+  border-color: var(--nmx-color-on-primary);
+  color: var(--nmx-color-on-surface);
+
+  &:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--nmx-color-surface) 60%, transparent);
+  }
+}

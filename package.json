@@ -1,0 +1,18 @@
+{
+  "name": "namorix",
+  "version": "0.1.3",
+  "private": true,
+  "license": "GPL-3.0-only",
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm -r --parallel run dev",
+    "build": "pnpm -r run build",
+    "db": "pnpm -r run db:generate",
+    "lint": "pnpm -r run lint",
+    "test": "pnpm -r run test"
+  },
+  "devDependencies": {
+    "jiti": "^2.7.0",
+    "prettier": "^3.8.3"
+  }
+}

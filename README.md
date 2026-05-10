@@ -1,0 +1,186 @@
+# Namorix
+
+Browser-based desktop shell, self-hosted.
+
+## Features
+
+- **Desktop Shell** — Window manager, taskbar, app launcher in browser
+- **System Apps** — File manager, Terminal, Settings, Log viewer
+- **External Addons** — Docker-based apps open in new tab
+- **Centralized Auth** — Single auth server for shell and addons
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Frontend | Vite + React |
+| Backend | Express + Socket.IO |
+| Database | SQLite + Drizzle |
+| Auth | JWT (access + refresh) with HttpOnly cookies |
+| Terminal | xterm.js |
+
+## Documentation
+
+| Doc | Description |
+|-----|-------------|
+| [Architecture](docs/architecture.md) | Source of truth kỹ thuật |
+| [M2 Auth](docs/m2-auth.md) | Auth backend spec |
+| [M1 Shell UI](docs/m1-shell-ui.md) | Shell UI spec |
+
+## Quick Start
+
+```bash
+# Clone
+git clone <repo-url> namorix
+cd namorix
+
+# Install dependencies (uses pnpm)
+pnpm install
+
+# Run development (2 terminals)
+pnpm --filter backend dev     # Backend (port 3000)
+pnpm --filter frontend dev    # Frontend (Vite port 5173)
+```
+
+## Repository Structure
+
+```
+namorix/
+├── package.json              # pnpm workspaces root
+├── pnpm-workspace.yaml       # workspace config
+├── AGENTS.md                 # AI agent instructions
+├── tsconfig.base.json        # shared TypeScript config
+├── docs/
+│   ├── architecture.md       # source of truth kỹ thuật
+│   ├── m1-shell-ui.md        # M1 spec
+│   ├── m2-auth.md           # M2 spec
+│   ├── m3-system-apps.md    # M3 spec
+│   ├── m4-addon-system.md    # M4 spec
+│   └── m5-core-package.md    # M5 spec
+├── packages/
+│   ├── core/                 # @namorix/core — browser-only types, utils (publishable)
+│   │   └── src/
+│   │       ├── auth/         # auth.service.ts (AuthChecker for guards)
+│   │       ├── http/         # ApiError, http client with auto-refresh
+│   │       ├── router/       # GuardedRoute, createAuthGuard, createSignInGuard, createSignUpGuard
+│   │       ├── config.ts     # configureCore(), getApiBaseUrl()
+│   │       └── utils/        # cx (className utility)
+│   ├── styles/               # @namorix/styles — SCSS tokens, reset, fonts
+│   ├── ui/                   # @namorix/ui — React primitive components
+│   │   └── src/
+│   │       └── Primitives/
+│   │           ├── NmxButton/
+│   │           ├── NmxForm/   # FormField, FormInput, FormActions, FormHeader, FormPage, FormCard
+│   │           ├── NmxInlineAlert/
+│   │           └── NmxToggle/
+│   ├── backend-core/         # @namorix/backend-core — server utilities (shared with addons)
+│   │   └── src/
+│   │       ├── db/           # NmxDataBase class, getDB
+│   │       ├── jwt/          # signAccessToken, signRefreshToken, verifyToken
+│   │       ├── logger/       # createLogger with tag + custom timestamp
+│   │       ├── middleware/   # createMiddleware, handleJsonError
+│   │       ├── utils/        # cookie, response helpers
+│   │       ├── validate/    # validation middleware (Schema-based)
+│   │       └── index.ts      # barrel export
+│   └── shared/               # @namorix/shared — shared code for backend + frontend
+│       └── src/
+│           ├── types/        # ApiResponse, User, AuthStatus, ValidateErrorMeta, etc.
+│           ├── api-routes.ts # ApiAuthRoutes constants
+│           └── constants.ts  # HttpStatus, NMX_COOKIE_*, etc.
+├── frontend/                 # Vite + React shell (port 5173)
+│   └── src/
+│       ├── assets/
+│       │   └── controllers/
+│       │       └── auth.controller.ts  # signUp, signIn, signOut
+│       ├── components/
+│       ├── pages/
+│       │   ├── SignIn.tsx
+│       │   ├── SignUp.tsx
+│       │   └── Desktop.tsx
+│       └── i18n/
+└── backend/                   # Express API (port 3000)
+    └── src/
+        ├── config/           # env loading, config export
+        ├── routes/
+        │   └── auth.ts       # auth endpoints (signin/signup/signout/session/refresh/status)
+        ├── services/
+        │   ├── auth.service.ts   # signIn, signUp, verifyAccessToken, refreshToken, revokeToken
+        │   └── settings.service.ts  # getSetting, setSetting, isSignUpEnabled
+        └── middleware/       # uses createMiddleware from @namorix/backend-core
+```
+
+## Packages
+
+| Package | Purpose | Importable By |
+|---------|---------|---------------|
+| `@namorix/core` | Browser-only types, `ApiError`, `cx` utility, auth guards | frontend, @namorix/ui |
+| `@namorix/styles` | SCSS tokens, reset, fonts | frontend, @namorix/ui, external addons |
+| `@namorix/ui` | NmxButton, NmxForm, NmxInlineAlert, NmxToggle, etc. | frontend |
+| `@namorix/backend-core` | Logger, JWT, DB, middleware, validate, utils | backend |
+| `@namorix/shared` | Types, constants, ValidateErrorMeta | backend, frontend |
+| `backend` | Express API server | - |
+| `frontend` | Vite React shell | - |
+
+## Auth Architecture
+
+### Controller Pattern (Frontend)
+
+Frontend uses controller pattern for API calls:
+
+```typescript
+// frontend/src/assets/controllers/auth.controller.ts
+import { http, getApiBaseUrl } from "@namorix/core"
+import { ApiAuthRoutes } from "@namorix/shared"
+
+export const authController = {
+  signUp: async (username: string, password: string) => {
+    const data = await http
+      .url(getApiBaseUrl() + ApiAuthRoutes.signup)
+      .post({ username, password })
+      .json()
+    if (!data.success) throw ApiError.fromResponse(data)
+  },
+  // ...
+}
+```
+
+### Decorator-based Routes
+
+Backend uses TypeScript decorators for route declaration:
+
+```typescript
+@Controller("/api/auth")
+export class AuthController {
+  @Validate({
+    username: { required: true, type: "string", minLength: 1, maxLength: 32, trim: true },
+    password: { required: true, type: "string", minLength: 8 },
+  })
+  @Post("/signup")
+  async signUp(req: Request, res: Response) { /* body validated */ }
+}
+```
+
+Routes registered via `registerController(router, AuthController)` — reads Reflect metadata from `@Controller`, `@Get/@Post`, `@Validate` decorators and wires Express automatically.
+
+## Environment Variables
+
+### Backend
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | 3000 | HTTP port |
+| `DESKTOP_ORIGIN` | http://localhost:5173 | Frontend origin for CORS |
+| `COOKIE_SECURE` | false | HTTPS only cookies |
+| `JWT_SECRET` | (generated) | JWT signing secret |
+| `DATA_DIR` | ./data | Database and secrets directory |
+| `DOCKER_SOCKET_PATH` | /var/run/docker.sock | Docker socket |
+| `ADDON_NETWORK` | namorix_net | Docker network |
+| `ADDON_HOST_BIND` | 127.0.0.1 | Bind addon ports |
+
+## Milestones
+
+1. **M1** — Static shell UI + mock auth page ✅
+2. **M2** — Full auth backend (signin/signup/signout/refresh/session, decorators, i18n, validation) ✅
+3. **M3** — System apps (File manager, Terminal, Settings, Log viewer) 🔜
+4. **M4** — External addon system (Docker lifecycle, addon manager)
+5. **M5** — @namorix/core publish npm + addon integration guide

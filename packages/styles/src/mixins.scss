@@ -1,0 +1,56 @@
+@mixin no-user-select {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+@mixin truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@mixin scrollbar($width: 4px, $thumb-radius: 4px, $track-color: transparent, $thumb-color: color-mix(in oklab, var(--nmx-color-on-surface-variant) 50%, transparent)) {
+  scrollbar-gutter: stable;
+
+  &::-webkit-scrollbar {
+    width: $width;
+    height: $width;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: $track-color;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: $thumb-color;
+    border-radius: $thumb-radius;
+    border: 2px solid $track-color;
+  }
+
+  &::-webkit-scrollbar-button {
+    display: none;
+    height: 0;
+    width: 0;
+  }
+
+  scrollbar-width: thin;
+  scrollbar-color: $thumb-color $track-color;
+}
+
+@mixin scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@mixin backdrop-filter($value) {
+  -webkit-backdrop-filter: $value;
+  backdrop-filter: $value;
+}

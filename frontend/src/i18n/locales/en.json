@@ -1,0 +1,42 @@
+{
+  "auth": {
+    "signin": {
+      "heroTitle": "Namorix\nDesktop",
+      "heroDescription": "Secure access to your self-hosted desktop workspace",
+      "title": "Sign in",
+      "description": "Welcome back. Please enter your username and password",
+      "usernameLabel": "Username",
+      "passwordLabel": "Password",
+      "usernamePlaceholder": "Username",
+      "passwordPlaceholder": "********",
+      "rememberLabel": "Remember this device",
+      "buttonLabel": "Sign in",
+      "secondaryText": "Don't have an account?",
+      "secondaryActionLabel": "Sign up",
+      "errors": {
+        "generic": "An error occurred during sign in. Please try again"
+      },
+      "success": "Sign in successful. Redirecting to dashboard..."
+    },
+    "signup": {
+      "heroTitle": "Create\nAccount",
+      "heroDescription": "Set up your Namorix desktop credentials to get started",
+      "title": "Create account",
+      "description": "Register when your administrator has opened sign-up",
+      "usernameLabel": "Username",
+      "passwordLabel": "Password",
+      "confirmPasswordLabel": "Confirm Password",
+      "usernamePlaceholder": "Username",
+      "passwordPlaceholder": "********",
+      "confirmPasswordPlaceholder": "********",
+      "buttonLabel": "Sign up",
+      "secondaryText": "Already have an account?",
+      "secondaryActionLabel": "Sign in",
+      "errors": {
+        "generic": "An error occurred during sign up. Please try again"
+      },
+      "initialRegistration": "Initial registration: This account will be granted Administrative privileges",
+      "success": "Account created successfully. Taking you to signin..."
+    }
+  }
+}

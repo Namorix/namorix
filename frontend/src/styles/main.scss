@@ -1,0 +1,12 @@
+@use "@namorix/styles";
+@use "tokens";
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--nmx-font-sans);
+}

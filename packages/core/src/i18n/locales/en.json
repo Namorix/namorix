@@ -1,0 +1,27 @@
+{
+  "common": {
+    "validation": {
+      "required": "{{field}} is required",
+      "min": "{{field}} must be at least {{count}} characters",
+      "max": "{{field}} must be at most {{count}} characters",
+      "range": "{{field}} must be between {{min}} and {{max}} characters",
+      "mismatch": "{{field}} does not match",
+      "invalidFormat": "Invalid {{field}} format"
+    },
+    "fields": {
+      "unknown": "Unknown",
+      "username": "Username",
+      "password": "Password",
+      "email": "Email",
+      "confirmPassword": "Confirm password"
+    },
+    "auth": {
+      "errors": {
+        "invalidCredentials": "Invalid username or password",
+        "usernameExists": "This username is already taken",
+        "unauthorized": "Unauthorized. Please sign in again",
+        "signupClosed": "Registration is currently closed"
+      }
+    }
+  }
+}

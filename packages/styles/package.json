@@ -1,0 +1,18 @@
+{
+  "name": "@namorix/styles",
+  "version": "0.2.0",
+  "license": "GPL-3.0-only",
+  "type": "module",
+  "main": "src/index.scss",
+  "scripts": {
+    "dev": ""
+  },
+  "exports": {
+    ".": {
+      "style": "./src/index.scss"
+    },
+    "./variables": {
+      "sass": "./src/variables.scss"
+    }
+  }
+}

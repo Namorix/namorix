@@ -1,0 +1,105 @@
+import {
+  apiSystemError,
+  type ApiResponse,
+  NMX_COOKIE_CSRF_KEY,
+  HttpStatus,
+  ApiAuthRoutes,
+  SystemErrorCode,
+} from "@namorix/shared"
+import { getApiBaseUrl } from "../config"
+import { getFingerprint } from "../fingerprint"
+
+class RequestBuilder {
+  private readonly _url: string
+  private _options: RequestInit = { credentials: "include" }
+  private _headers: Record<string, string> = {}
+  private _retried = false
+
+  constructor(url: string) {
+    this._url = url
+  }
+
+  private _body(method: string, body?: unknown): this {
+    this._options.method = method
+    if (body) {
+      this._headers["content-type"] = "application/json"
+      this._options.body = JSON.stringify(body)
+    }
+
+    const csrfToken = this._readCsrfToken()
+    if (csrfToken) {
+      this._headers["x-csrf-token"] = csrfToken
+    }
+
+    return this
+  }
+
+  private _readCsrfToken(): string | null {
+    const regex = new RegExp(`(?:^|;\\s*)${NMX_COOKIE_CSRF_KEY}=([^;]*)`)
+    const match = regex.exec(document.cookie)
+    return match?.[1] ?? null
+  }
+
+  get() {
+    this._options.method = "GET"
+    return this
+  }
+
+  post(body?: unknown) {
+    return this._body("POST", body)
+  }
+
+  put(body?: unknown) {
+    return this._body("PUT", body)
+  }
+
+  patch(body?: unknown) {
+    return this._body("PATCH", body)
+  }
+
+  delete(body?: unknown) {
+    return this._body("DELETE", body)
+  }
+
+  header(key: string | (string & {}), value: string) {
+    this._headers[key] = value
+    return this
+  }
+
+  async json<T>(): Promise<ApiResponse<T>> {
+    try {
+      const fingerprint = getFingerprint()
+      if (fingerprint) {
+        this._headers["x-device-fingerprint"] = fingerprint
+      }
+
+      const result = await fetch(this._url, {
+        ...this._options,
+        headers: this._headers,
+      })
+      if (result.status === HttpStatus.UNAUTHORIZED && !this._retried) {
+        const isRefreshUrl = this._url.includes(ApiAuthRoutes.refresh)
+        if (!isRefreshUrl) {
+          const refreshResponse = await http
+            .url(getApiBaseUrl() + ApiAuthRoutes.refresh)
+            .post()
+            .json()
+          if (refreshResponse.success) {
+            this._retried = true
+            return await this.json<T>()
+          }
+        }
+      }
+      return (await result.json()) as ApiResponse<T>
+    } catch {
+      return apiSystemError(
+        "Network error",
+        SystemErrorCode.INTERNAL_ERROR,
+      ) as ApiResponse<T>
+    }
+  }
+}
+
+export const http = {
+  url: (url: string) => new RequestBuilder(url),
+}
