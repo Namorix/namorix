@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "backend-c", "backend-c.csproj", "{73030B3A-4114-448C-B803-5407942B2666}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "backend", "backend.csproj", "{73030B3A-4114-448C-B803-5407942B2666}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
