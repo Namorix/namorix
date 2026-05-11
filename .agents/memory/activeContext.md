@@ -2,7 +2,7 @@
 
 ## Current Work Focus
 
-M2 — Full Auth Backend → **Complete** ✅ + **Harden** ✅ + **ESLint** ✅ + **Phase A** ✅ + **Phase B** ✅
+M2 — Full Auth Backend → **Complete** ✅ + **Harden** ✅ + **ESLint** ✅ + **Phase A** ✅ + **Phase B** ✅ + **C# Migration** 🔄
 
 - All auth endpoints implemented and connected
 - SignIn page fully connected with client-side validation + error handling
@@ -16,7 +16,18 @@ M2 — Full Auth Backend → **Complete** ✅ + **Harden** ✅ + **ESLint** ✅ 
 - **Token whitelist** with fingerprint + IP tracking
 - **Phase A**: rememberMe wired, secureCookie fix, getClientIP, signout-all in API routes
 - **Phase B**: frontend fingerprint generation (FingerprintComponents + SHA-256), backend verify on refresh (Option C balanced)
+- **C# Migration (Phase 1-3)**: AuthService, Config (IOptions<T>), Constants, Exceptions, Settings model
 - Moving to M3 (System Apps)
+
+## Recent Changes (2026-05-12)
+
+### C# Backend Migration — Phase 1-3
+- **Config pattern**: `IOptions<T>` binding, no hardcoded strings
+- **AuthService**: SignIn, SignUp, GenerateTokens, CreateRefreshToken, VerifyAccessToken, RefreshToken (fingerprint + rotation), RevokeToken, RevokeAllUserTokens
+- **Constants**: JwtClaims (UserId, Username, Role, Jti, Iat), AuthErrors (InvalidCredentials, UsernameExists, TokenReuseDetected, FingerprintMismatch, InvalidToken)
+- **Exceptions**: AuthException with error code
+- **Settings model**: Entity for key-value storage
+- **Config binding**: `builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("Jwt"))`
 
 ## Recent Changes (2026-05-09)
 

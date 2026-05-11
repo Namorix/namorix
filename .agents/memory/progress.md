@@ -124,14 +124,14 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| root (namorix) | 0.1.3 | M2 (Phase A + B: fingerprint, Option C verify, getClientIP, secureCookie) |
+| root (namorix) | 0.1.4 | M2 (C# migration Phase 1-3: AuthService, Config pattern, IOptions<T>) |
 | frontend | 0.5.1 | M2 (rememberMe wired, useAuthForm dedup) |
 | @namorix/core | 0.6.0 | M2 (fingerprint module: FingerprintComponents + generateFingerprint + SHA-256, attach header in RequestBuilder.json) |
 | @namorix/styles | 0.2.0 | M2 (variables.scss + exports subpath) |
 | @namorix/ui | 0.3.0 | M2 |
 | @namorix/backend-core | 0.6.0 | M2 (getClientIP utility, trustProxy + secureCookie middleware, secure flag on cookies) |
 | @namorix/shared | 0.6.0 | M2 (UserAgent + Fingerprint headers, type→interface, eslint config + tsconfig) |
-| backend | 0.6.2 | M2 (fingerprint verify Option C in refreshToken, Phase B complete) |
+| backend | 0.7.0 | M2 (C# migration: AuthService, Config pattern, IOptions<T>, Settings model) |
 
 ## Version Rules
 
@@ -152,6 +152,12 @@
 | backend | Bug fixes | New API endpoint, auth feature, refactor to decorators |
 
 ## Version History
+
+### 2026-05-12 (latest)
+| Package | Version | Changes |
+|---------|---------|---------|
+| root (namorix) | 0.1.4 | Backend C# migration Phase 1-3: AuthService, Config/Constants/Exceptions folders, IOptions<T> pattern |
+| backend | 0.7.0 | New AuthService module (SignIn, SignUp, RefreshToken, RevokeToken, fingerprint check), Config pattern (IOptions<JwtConfig>), Settings model, Constants/Exceptions folders |
 
 ### 2026-05-10 (latest)
 | Package | Version | Changes |
