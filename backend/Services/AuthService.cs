@@ -1,0 +1,209 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using backend.Config;
+using backend.Constants;
+using backend.Exceptions;
+using backend.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+
+namespace backend.Services;
+
+public class AuthService
+{
+    private readonly AppDbContext _dbContext;
+    private readonly JwtConfig _jwtConfig;
+
+    public AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig)
+    {
+        _dbContext = dbContext;
+        _jwtConfig = jwtConfig.Value;
+    }
+
+    public async Task<User> SignIn(string username, string password)
+    {
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == username);
+        if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.Password))
+        {
+            throw new AuthException(AuthErrors.InvalidCredentials);
+        }
+
+        return user;
+    }
+
+    public async Task<User> SignUp(string username, string password)
+    {
+        var exists = await _dbContext.Users.AnyAsync(u => u.Username == username);
+        if (exists)
+        {
+            throw new AuthException(AuthErrors.UsernameExists);
+        }
+
+        var isFirstUser = !await _dbContext.Users.AnyAsync();
+        var role = isFirstUser ? 1 : 0;
+        var user = new User
+        {
+            Username = username,
+            Password = BCrypt.Net.BCrypt.HashPassword(password),
+            Role = role,
+            CreateAt = DateTime.UtcNow
+        };
+        _dbContext.Users.Add(user);
+        await _dbContext.SaveChangesAsync();
+        return user;
+    }
+
+    private (string accessToken, string refreshToken, string jti) GenerateTokens(User user)
+    {
+        var jti = Guid.NewGuid().ToString();
+        var expires = DateTime.UtcNow.AddMinutes(_jwtConfig.AccessTokenExpirationMinutes);
+        var claims = new[]
+        {
+            new Claim(JwtClaims.UserId, user.Id.ToString()),
+            new Claim(JwtClaims.Username, user.Username),
+            new Claim(JwtClaims.Role, user.Role.ToString()),
+            new Claim(JwtClaims.Jti, jti),
+            new Claim(JwtClaims.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
+        };
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.Secret));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var token = new JwtSecurityToken(issuer: _jwtConfig.Issuer, audience: _jwtConfig.Audience, claims: claims,
+            expires: expires, signingCredentials: credentials);
+
+        var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
+        var refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+
+        return (accessToken, refreshToken, jti);
+    }
+
+    public RefreshToken CreateRefreshToken(User user, string jti, string? fingerprint, string? ipAddress)
+    {
+        return new RefreshToken
+        {
+            UserId = user.Id,
+            Jti = jti,
+            TokenHash = BCrypt.Net.BCrypt.HashPassword(jti),
+            ExpiresAt = DateTime.UtcNow.AddDays(_jwtConfig.RefreshTokenExpirationDays),
+            CreatedAt = DateTime.UtcNow,
+            Fingerprint = fingerprint,
+            IpAddress = ipAddress
+        };
+    }
+
+    public (int userId, string username, int role)? VerifyAccessToken(string token)
+    {
+        var handler = new JwtSecurityTokenHandler();
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.Secret));
+
+        try
+        {
+            handler.ValidateToken(token, new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = key,
+                ValidateIssuer = true,
+                ValidIssuer = _jwtConfig.Issuer,
+                ValidateAudience = true,
+                ValidAudience = _jwtConfig.Audience,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            }, out var validatedToken);
+
+            var jwtToken = (JwtSecurityToken)validatedToken;
+            var userId = int.Parse(jwtToken.Claims.First(c => c.Type == JwtClaims.UserId).Value);
+            var username = jwtToken.Claims.First(c => c.Type == JwtClaims.Username).Value;
+            var role = int.Parse(jwtToken.Claims.First(c => c.Type == JwtClaims.Role).Value);
+
+            return (userId, username, role);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<(string accessToken, string refreshToken)> RefreshToken(string token, string? fingerprint,
+        string? ipAddress)
+    {
+        var handler = new JwtSecurityTokenHandler();
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.Secret));
+
+        try
+        {
+            handler.ValidateToken(token, new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = key,
+                ValidateIssuer = true,
+                ValidIssuer = _jwtConfig.Issuer,
+                ValidateAudience = true,
+                ValidAudience = _jwtConfig.Audience,
+                ValidateLifetime = true
+            }, out var validatedToken);
+
+            var jwtToken = (JwtSecurityToken)validatedToken;
+            var jti = jwtToken.Claims.First(c => c.Type == JwtClaims.Jti).Value;
+            var userId = int.Parse(jwtToken.Claims.First(c => c.Type == JwtClaims.UserId).Value);
+            var storedToken = await _dbContext.RefreshTokens.Include(rt => rt.User)
+                .FirstOrDefaultAsync(rt => rt.Jti == jti && rt.UserId == userId);
+
+            if (storedToken == null)
+            {
+                await RevokeAllUserTokens(userId);
+                throw new AuthException(AuthErrors.TokenReuseDetected);
+            }
+
+            if (!string.IsNullOrEmpty(storedToken.Fingerprint) && !string.IsNullOrEmpty(fingerprint) &&
+                storedToken.Fingerprint != fingerprint)
+            {
+                await RevokeAllUserTokens(userId);
+                throw new AuthException(AuthErrors.FingerprintMismatch);
+            }
+
+            if (storedToken.User == null)
+            {
+                throw new AuthException(AuthErrors.InvalidToken);
+            }
+            
+            var user = storedToken.User;
+            _dbContext.RefreshTokens.Remove(storedToken);
+
+            var (newAccessToken, newRefreshToken, newJti) = GenerateTokens(user);
+            var newRefreshTokenEntity = CreateRefreshToken(user, newJti, fingerprint, ipAddress);
+            _dbContext.RefreshTokens.Add(newRefreshTokenEntity);
+            await _dbContext.SaveChangesAsync();
+
+            return (newAccessToken, newRefreshToken);
+        }
+        catch (AuthException)
+        {
+            throw;
+        }
+        catch
+        {
+            throw new AuthException(AuthErrors.InvalidToken);
+        }
+    }
+
+    public async Task RevokeToken(string jti)
+    {
+        var token = await _dbContext.RefreshTokens.FirstOrDefaultAsync(rt => rt.Jti == jti);
+        if (token != null)
+        {
+            _dbContext.RefreshTokens.Remove(token);
+            await _dbContext.SaveChangesAsync();
+        }
+    }
+
+    public async Task RevokeAllUserTokens(int userId)
+    {
+        var tokens = await _dbContext.RefreshTokens.Where(rt => rt.UserId == userId).ToListAsync();
+        _dbContext.RefreshTokens.RemoveRange(tokens);
+        await _dbContext.SaveChangesAsync();
+    }
+}
+
