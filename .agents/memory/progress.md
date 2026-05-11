@@ -48,6 +48,8 @@
 - eslint config + lint scripts across all packages (strictTypeChecked)
 - **Fingerprint generation**: `packages/core/src/fingerprint/` with `FingerprintComponents` interface + SHA-256 hash (fallback base64 if non-HTTPS)
 - **Fingerprint verification on refresh**: Option C balanced — revoke if both fingerprint AND IP changed; allow if only fingerprint changed (browser/OS update)
+- **Trust proxy + getClientIP()**: Priority chain (CF → X-Forwarded-For → X-Real-IP → X-Client-IP → True-Client-IP)
+- **Secure cookie flag**: Configurable via SECURE_COOKIE env var
 
 ## Milestones
 
@@ -87,6 +89,9 @@
 - [x] backend-core tsconfig.json
 - [x] Frontend fingerprint generation (B1): `packages/core/src/fingerprint/` with `FingerprintComponents` interface + `generateFingerprint()` + SHA-256 hash (base64 fallback)
 - [x] Backend fingerprint verification on refresh (B2): Option C balanced — revoke if both fingerprint AND IP changed; allow if only fingerprint changed
+- [x] Trust proxy + getClientIP() (CF → X-Forwarded-For → X-Real-IP → X-Client-IP → True-Client-IP)
+- [x] Secure cookie flag (SECURE_COOKIE env var, replaces COOKIE_SECURE)
+- [x] eslint config + lint scripts across all packages (strictTypeChecked)
 - [ ] Vitest tests for auth.service (no test files exist yet)
 
 ### M3 — System Apps

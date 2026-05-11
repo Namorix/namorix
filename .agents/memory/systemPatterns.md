@@ -119,6 +119,28 @@ interface NmxAddonStatus { addonId: string; status: 'installed' | 'running' | 's
 - **Cookie policy:** Auth cookies `httpOnly: true, sameSite: "lax"`; CSRF cookie `httpOnly: false, sameSite: "lax"`
 - Attacker can't read CSRF cookie from cross-origin → cannot forge matching header
 
+### Fingerprint Verification on Token Refresh (Option C Balanced)
+- **Client:** `generateFingerprint()` creates SHA-256 hash from `FingerprintComponents` (userAgent, acceptLanguage, acceptEncoding, screenResolution, timezone, platform). Falls back to base64 if non-HTTPS.
+- **Header:** Fingerprint sent via `x-device-fingerprint` header on every request (auto-attached in `RequestBuilder.json()`)
+- **Server verification on refresh:**
+  - Fingerprint differs BUT IP same → update fingerprint, continue (browser/OS update)
+  - Fingerprint AND IP both differ → revoke ALL user tokens (high risk: possible token theft)
+- **Why Option C:** Avoids false positives when users update browser (fingerprint changes but IP stays same)
+
+### Token Whitelist (refresh_tokens)
+- Replaced `revokedTokens` blacklist with `refresh_tokens` whitelist
+- New columns: `userAgent`, `fingerprint`, `ipAddress`, `lastUsedAt`
+- On sign-in: INSERT into whitelist with session metadata
+- On refresh: DELETE old + INSERT new (rotation), preserves TTL via `remainingSeconds`
+- On sign-out: DELETE by jti
+- On sign-out-all: DELETE WHERE userId = ?
+- Token reuse detection: unknown jti → `revokeAllUserTokens()` (anti-theft)
+- Cleanup job: DELETE expired tokens by `expiresAt < now`
+
+### Remember-Me (90d TTL)
+- `signIn` passes `refreshTtl` based on `meta.rememberMe`: `config.jwtRefreshRememberTtl` (90d) vs `config.jwtRefreshTtl` (7d)
+- On refresh: remaining TTL calculated from `existing.expiresAt`, preserved in new token
+
 ### Frontend Controller Pattern
 - API calls encapsulated in controller objects (e.g., `authController`)
 - Uses `http.url().post().json()` fluent API from `@namorix/core`

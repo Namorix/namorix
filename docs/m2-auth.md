@@ -142,12 +142,12 @@ frontend/src/
 - Backend scaffold (Express + TypeScript + tsx)
 - `@namorix/backend-core` setup (logger, jwt, db, middleware, validate, utils, decorators)
 - `@namorix/shared` setup (types, constants, error helpers, ValidationErrorMeta)
-- Database schema (users, revokedTokens, settings)
-- Auth API endpoints (signin/signup/signout/session/refresh/status)
-- JWT utilities (signAccessToken, signRefreshToken, verifyToken)
+- Database schema (users, refreshTokens, settings)
+- Auth API endpoints (signin/signup/signout/signout-all/session/refresh/status)
+- JWT utilities (signAccessToken with optional TTL, signRefreshToken, verifyToken)
 - Config + secret management
-- Auth service (signIn, signUp, verifyAccessToken, refreshToken, revokeToken, getAuthStatus)
-- Cookie-based auth (HttpOnly cookies)
+- Auth service (signIn, signUp, verifyAccessToken, refreshToken, revokeToken, revokeAllUserTokens, getAuthStatus)
+- Cookie-based auth (HttpOnly cookies with sameSite: lax)
 - Token refresh with rotation
 - First user = admin logic
 - `validate()` middleware in backend-core (Schema-based)
@@ -158,6 +158,18 @@ frontend/src/
 - SignUp page with API connection and validation error handling
 - SignIn page with client-side validation + API connection + error handling
 - i18n layering (core namespace + frontend translation namespace)
+
+### Phase A + B (Security Hardening) ✅
+- [x] **Trust proxy + getClientIP()**: Proxy header priority chain (CF → X-Forwarded-For → X-Real-IP → X-Client-IP → True-Client-IP)
+- [x] **Secure cookie flag**: Configurable via SECURE_COOKIE env var
+- [x] **CSRF double-submit**: Enabled by default (CSRF_DISABLE=false), non-HttpOnly cookie + X-CSRF-Token header
+- [x] **Async isAuthenticated**: Calls `/api/auth/session` instead of checking document.cookie (HttpOnly)
+- [x] **signout-all endpoint**: Revokes all refresh tokens for user
+- [x] **RememberMe wired**: Frontend toggle → backend receives boolean
+- [x] **Token whitelist (refresh_tokens)**: Replaces revokedTokens blacklist; tracks userAgent, fingerprint, ipAddress, lastUsedAt
+- [x] **Token reuse detection**: Unknown jti → revokeAllUserTokens()
+- [x] **Fingerprint generation (B1)**: `packages/core/src/fingerprint/` with `FingerprintComponents` + SHA-256 hash
+- [x] **Fingerprint verification (B2)**: Option C balanced on refresh — revoke only if both fingerprint AND IP changed
 
 ### To Do
 - Vitest tests for auth.service (no test files yet)
