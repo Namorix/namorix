@@ -93,4 +93,5 @@ EOF
 5. **If files are already staged**, include them and explain they're staged from previous work
 6. **Separate untracked new files** from modified files — make it clear what's new vs changed
 7. **Do NOT actually commit** — only output the commands. The user will run them.
+8. **Never add `Co-Authored-By`** trailer — project convention không dùng.
 
