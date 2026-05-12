@@ -94,8 +94,8 @@ namorix/
 │       │       └── auth.controller.ts  # signUp, signIn, signOut
 │       ├── components/
 │       ├── pages/
-│       │   ├── SignIn.tsx
-│       │   ├── SignUp.tsx
+│       │   ├── Login.tsx
+│       │   ├── Register.tsx
 │       │   └── Desktop.tsx
 │       └── i18n/
 └── backend/                   # Express API (port 3000)

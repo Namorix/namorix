@@ -18,8 +18,8 @@ frontend/
 │   │   │   └── AuthPage.scss
 │   │   └── index.ts
 │   ├── pages/
-│   │   ├── SignIn.tsx            # Username + password + remember-me toggle
-│   │   ├── SignUp.tsx            # Username + password + confirmPassword
+│   │   ├── Login.tsx            # Username + password + remember-me toggle
+│   │   ├── Register.tsx            # Username + password + confirmPassword
 │   │   └── Desktop.tsx           # Shell UI (M3)
 │   ├── styles/
 │   │   ├── main.scss             # Imports @namorix/styles + local tokens
@@ -57,7 +57,7 @@ pnpm preview      # Preview production build
 ```typescript
 // Routes are protected by async guards that check auth state
 <GuardedRoute guard={authGuard}><Desktop /></GuardedRoute>
-<GuardedRoute guard={signinGuard}><SignIn /></GuardedRoute>
+<GuardedRoute guard={signinGuard}><Login /></GuardedRoute>
 ```
 
 ### Client-side Validation

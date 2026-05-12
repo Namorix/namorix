@@ -2,11 +2,11 @@
 
 ## Current Work Focus
 
-M2 — Full Auth Backend → **Complete** ✅ + **Harden** ✅ + **ESLint** ✅ + **Phase A** ✅ + **Phase B** ✅ + **C# Migration** 🔄
+M2 — Full Auth Backend → **Complete** ✅ + **Harden** ✅ + **ESLint** ✅ + **Phase A** ✅ + **Phase B** ✅ + **C# Migration** ✅ (Phase 1-4 complete)
 
 - All auth endpoints implemented and connected
-- SignIn page fully connected with client-side validation + error handling
-- SignUp page fully connected
+- Login page fully connected with client-side validation + error handling
+- Register page fully connected
 - Decorator-based routing system in backend-core
 - i18n layering (core namespace + frontend translation namespace)
 - Client-side validation with ValidationRunner
@@ -16,14 +16,23 @@ M2 — Full Auth Backend → **Complete** ✅ + **Harden** ✅ + **ESLint** ✅ 
 - **Token whitelist** with fingerprint + IP tracking
 - **Phase A**: rememberMe wired, secureCookie fix, getClientIP, signout-all in API routes
 - **Phase B**: frontend fingerprint generation (FingerprintComponents + SHA-256), backend verify on refresh (Option C balanced)
-- **C# Migration (Phase 1-3)**: AuthService, Config (IOptions<T>), Constants, Exceptions, Settings model
+- **C# Migration Phase 1-3**: AuthService, Config (IOptions<T>), Constants, Exceptions, Settings model
+- **C# Migration Phase 4**: AuthController (7 endpoints), typed ApiResponse<T>, SettingsService, CleanIp helper
 - Moving to M3 (System Apps)
 
 ## Recent Changes (2026-05-12)
 
+### C# Backend Migration — Phase 4 (latest)
+- **AuthController**: 7 endpoints (signin, signup, signout, signout-all, session, refresh, status)
+- **Typed responses**: `ApiResponse<T>`, `UserResponse`, `StatusResponse` (no more anonymous objects)
+- **SettingsService**: `IsSignUpEnabled()`, `SetSignUpEnabled()`, `GetAuthStatus()`
+- **CleanIp helper**: strips `::ffff:` prefix from IPv6-mapped IPv4 addresses
+- **GetClientIp**: proxy header priority chain (CF → X-Forwarded-For → X-Real-IP → X-Client-IP → True-Client-IP → RemoteIpAddress)
+- **Cookie constants**: `CookieName.AccessToken = "nmx_access_token"`, `CookieName.RefreshToken = "nmx_refresh_token"` (match `@namorix/shared`)
+
 ### C# Backend Migration — Phase 1-3
 - **Config pattern**: `IOptions<T>` binding, no hardcoded strings
-- **AuthService**: SignIn, SignUp, GenerateTokens, CreateRefreshToken, VerifyAccessToken, RefreshToken (fingerprint + rotation), RevokeToken, RevokeAllUserTokens
+- **AuthService**: Login, Register, GenerateTokens, CreateRefreshToken, VerifyAccessToken, RefreshToken (fingerprint + rotation), RevokeToken, RevokeAllUserTokens
 - **Constants**: JwtClaims (UserId, Username, Role, Jti, Iat), AuthErrors (InvalidCredentials, UsernameExists, TokenReuseDetected, FingerprintMismatch, InvalidToken)
 - **Exceptions**: AuthException with error code
 - **Settings model**: Entity for key-value storage
@@ -150,8 +159,8 @@ packages/backend-core/src/middleware/csrf.ts
 - New env var: `JWT_REFRESH_REMEMBER_TTL` (default `"90d"`)
 
 ### useAuthForm Hook + rememberMe Fix
-- `frontend/src/hooks/useAuthForm.ts` — extracts shared alert state (`busy`, `alertVariant`, `alertMessage`) and error handling (`handlerError`) from SignIn/SignUp
-- Fix: `rememberMe` toggle in SignIn now wired via `authController.signIn(username, password, rememberMe)` → backend receives `rememberMe` boolean
+- `frontend/src/hooks/useAuthForm.ts` — extracts shared alert state (`busy`, `alertVariant`, `alertMessage`) and error handling (`handlerError`) from Login/Register
+- Fix: `rememberMe` toggle in Login now wired via `authController.signIn(username, password, rememberMe)` → backend receives `rememberMe` boolean
 
 ### ESLint strictTypeChecked Across All Packages
 - Added `eslint.config.ts` + `tsconfig.json` to backend-core, core, shared

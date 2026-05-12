@@ -163,7 +163,7 @@ interface NmxAddonStatus { addonId: string; status: 'installed' | 'running' | 's
 
 ### Auth Flow (Current)
 ```
-1. SignIn → POST /api/auth/signin → Set HttpOnly cookies (access + refresh, sameSite: lax)
+1. Login → POST /api/auth/signin → Set HttpOnly cookies (access + refresh, sameSite: lax)
 2. Session check → GET /api/auth/session → validate access token via cookie (credentials: "include")
 3. Token refresh → POST /api/auth/refresh → rotate both tokens
 4. SignOut → POST /api/auth/signout → clear cookies, revoke token jti

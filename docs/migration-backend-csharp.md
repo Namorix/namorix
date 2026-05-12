@@ -225,7 +225,7 @@ throw new AuthException(AuthErrors.InvalidCredentials);
 - [x] Migrations
 
 ### Phase 3: AuthService
-- [x] SignIn, SignUp
+- [x] Login, Register
 - [x] GenerateTokens, CreateRefreshToken
 - [x] VerifyAccessToken
 - [x] RefreshToken với fingerprint check + token rotation

@@ -26,7 +26,7 @@
 - `@namorix/shared` (types, constants, error helpers, ValidationErrorMeta, HttpHeader, CSRF constants)
 - tsconfig.base.json shared across project
 - React Router setup with /signin, /signup, / routes
-- Auth pages (SignIn, SignUp with AuthPage wrapper) + responsive layout
+- Auth pages (Login, Register with AuthPage wrapper) + responsive layout
 - i18next with react-i18next (en/vi locales, layered namespaces)
 - Auth endpoints (signin/signup/signout/session/refresh/status) — decorator-based
 - JWT secret management (env var or .secret file)
@@ -34,8 +34,8 @@
 - Token refresh with rotation
 - Auth guards with GuardedRoute (async isAuthenticated)
 - Controller pattern for frontend API calls
-- SignIn page with client-side validation + API connection + rememberMe toggle connected + rememberMe toggle connected
-- `useAuthForm` hook (shared alert state + error handling for SignIn/SignUp)
+- Login page with client-side validation + API connection + rememberMe toggle connected + rememberMe toggle connected
+- `useAuthForm` hook (shared alert state + error handling for Login/Register)
 - `validate()` middleware in backend-core (Schema-based)
 - `createMiddleware()` in backend-core (configurable stack)
 - CSRF double-submit protection (set + validate cookie/header mismatch), enabled by default
@@ -79,8 +79,8 @@
 - [x] `ValidationErrorCode` + `AuthErrorCode` enums in shared
 - [x] `ApiError` class in @namorix/core
 - [x] Frontend auth.controller.ts (controller pattern)
-- [x] SignUp page with client-side validation + API connection
-- [x] SignIn page with client-side validation + API connection
+- [x] Register page with client-side validation + API connection
+- [x] Login page with client-side validation + API connection
 - [x] i18n layering (core namespace + frontend translation namespace)
 - [x] ValidationRunner (fluent client-side validation)
 - [x] formatApiError / formatValidationError / formatAuthError
@@ -124,14 +124,14 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| root (namorix) | 0.1.4 | M2 (C# migration Phase 1-3: AuthService, Config pattern, IOptions<T>) |
-| frontend | 0.5.1 | M2 (rememberMe wired, useAuthForm dedup) |
-| @namorix/core | 0.6.0 | M2 (fingerprint module: FingerprintComponents + generateFingerprint + SHA-256, attach header in RequestBuilder.json) |
+| root (namorix) | 0.1.6 | M2 (C# migration Phase 4 complete: AuthController 7 endpoints, typed responses, route rename login/register/logout) |
+| frontend | 0.5.1 | M2 (Login/Register pages renamed, route wiring updated to new API routes) |
+| @namorix/core | 0.6.1 | M2 (guard route names updated to match new API route naming) |
 | @namorix/styles | 0.2.0 | M2 (variables.scss + exports subpath) |
 | @namorix/ui | 0.3.0 | M2 |
 | @namorix/backend-core | 0.6.0 | M2 (getClientIP utility, trustProxy + secureCookie middleware, secure flag on cookies) |
-| @namorix/shared | 0.6.0 | M2 (UserAgent + Fingerprint headers, type→interface, eslint config + tsconfig) |
-| backend | 0.7.0 | M2 (C# migration: AuthService, Config pattern, IOptions<T>, Settings model) |
+| @namorix/shared | 0.6.1 | M2 (route naming: signin→login, signup→register, signout→logout) |
+| backend | 0.9.0 | M2 (C# migration Phase 4: AuthController 7 endpoints, ApiResponse<T> typed responses, SettingsService) |
 
 ## Version Rules
 
@@ -153,11 +153,26 @@
 
 ## Version History
 
+### 2026-05-12 (latest — Phase 4 complete)
+| Package | Version | Changes |
+|---------|---------|---------|
+| root (namorix) | 0.1.6 | C# migration Phase 4 complete: AuthController (7 endpoints), typed ApiResponse<T>, route rename (login/register/logout) |
+| backend | 0.9.0 | AuthController with 7 endpoints (login, register, logout, logout-all, session, refresh, status), typed ApiResponse<T>, SettingsService, CleanIp helper, GetClientIp proxy chain |
+| @namorix/shared | 0.6.1 | Route naming: signin→login, signup→register, signout→logout |
+| @namorix/core | 0.6.1 | Guard route references updated to match new API route naming |
+| frontend | 0.5.1 | Login/Register pages renamed, route wiring updated to new API routes |
+
 ### 2026-05-12 (latest)
 | Package | Version | Changes |
 |---------|---------|---------|
+| root (namorix) | 0.1.5 | Backend C# migration Phase 4: AuthController with 7 endpoints, typed ApiResponse<T> |
+| backend | 0.8.0 | Add AuthController (signin/signup/signout/signout-all/session/refresh/status), ApiResponse<T> typed responses, UserResponse, StatusResponse, SettingsService, CleanIp helper |
+
+### 2026-05-12 (Phase 1-3)
+| Package | Version | Changes |
+|---------|---------|---------|
 | root (namorix) | 0.1.4 | Backend C# migration Phase 1-3: AuthService, Config/Constants/Exceptions folders, IOptions<T> pattern |
-| backend | 0.7.0 | New AuthService module (SignIn, SignUp, RefreshToken, RevokeToken, fingerprint check), Config pattern (IOptions<JwtConfig>), Settings model, Constants/Exceptions folders |
+| backend | 0.7.0 | New AuthService module (Login, Register, RefreshToken, RevokeToken, fingerprint check), Config pattern (IOptions<JwtConfig>), Settings model, Constants/Exceptions folders |
 
 ### 2026-05-10 (latest)
 | Package | Version | Changes |
@@ -176,7 +191,7 @@
 | Package | Version | Changes |
 |---------|---------|---------|
 | root (namorix) | 0.1.3 | JWT TTL config/env fix, rememberMe frontend wiring, useAuthForm dedup |
-| frontend | 0.5.1 | Fix rememberMe toggle (wired to backend); add useAuthForm hook (dedup alert state + error handling in SignIn/SignUp) |
+| frontend | 0.5.1 | Fix rememberMe toggle (wired to backend); add useAuthForm hook (dedup alert state + error handling in Login/Register) |
 | @namorix/backend-core | 0.5.1 | signAccessToken accepts optional TTL param; remove generateTokenPair + TokenPair (dead code) |
 | backend | 0.6.1 | signIn/refreshToken use config TTLs instead of hardcoded; add JWT_REFRESH_REMEMBER_TTL env var |
 
@@ -212,7 +227,7 @@
 | @namorix/backend-core | 0.3.0 | Add decorator system (@Controller, @Get, @Post, @Validate, registerController) |
 | @namorix/core | 0.4.0 | Add NmxI18n class, ValidationRunner, validation-messages, formatApiError |
 | @namorix/shared | 0.4.0 | Add ValidationErrorCode enum, AuthErrorCode enum, rename ValidateErrorCode→ValidationErrorCode |
-| frontend | 0.4.0 | SignIn connected, client-side validation, i18n layering |
+| frontend | 0.4.0 | Login connected, client-side validation, i18n layering |
 | backend | 0.4.0 | Refactor routes to decorator-based, @Validate on signIn/signUp |
 
 ### 2026-05-08
@@ -221,7 +236,7 @@
 | backend | 0.3.0 | Use createMiddleware from backend-core, validate middleware, fix tsconfig |
 | @namorix/shared | 0.3.0 | Add ValidateErrorMeta type, ValidateErrorCode constants |
 | @namorix/core | 0.3.0 | Add ApiError class with fromResponse(), http module |
-| frontend | 0.3.0 | Add auth.controller.ts, connect SignUp to real API |
+| frontend | 0.3.0 | Add auth.controller.ts, connect Register to real API |
 | @namorix/ui | 0.3.0 | Add @types/react, scss.d.ts, use FormHTMLAttributes |
 | @namorix/backend-core | 0.2.0 | Add createMiddleware, validate middleware, cookie/response utils |
 

@@ -51,8 +51,8 @@ Login/logout/refresh/session/register, cookie, revoke, bootstrap admin. Nối fr
 ### 5. Frontend Integration ✅
 
 - [x] `auth.controller.ts` - controller pattern for API calls
-- [x] SignUp page connected to real API with validation error handling
-- [x] SignIn page with form (needs API connection)
+- [x] Register page connected to real API with validation error handling
+- [x] Login page with form (needs API connection)
 - [x] GuardedRoute with auth guards from `@namorix/core`
 - [x] `ApiError` class with `fromResponse()` static method
 
@@ -132,8 +132,8 @@ frontend/src/
 │   └── controllers/
 │       └── auth.controller.ts  # signUp, signIn, signOut
 └── pages/
-    ├── SignUp.tsx          # connected to real API
-    └── SignIn.tsx          # connected to real API (client-side validation + error handling)
+    ├── Register.tsx          # connected to real API
+    └── Login.tsx          # connected to real API (client-side validation + error handling)
 ```
 
 ## Current Status
@@ -155,8 +155,8 @@ frontend/src/
 - Decorator system (`@Controller`, `@Get`, `@Post`, `@Validate`, `registerController`)
 - Client-side validation (`ValidationRunner` + `formatApiError`)
 - Frontend controller pattern (auth.controller.ts)
-- SignUp page with API connection and validation error handling
-- SignIn page with client-side validation + API connection + error handling
+- Register page with API connection and validation error handling
+- Login page with client-side validation + API connection + error handling
 - i18n layering (core namespace + frontend translation namespace)
 
 ### Phase A + B (Security Hardening) ✅

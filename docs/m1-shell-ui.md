@@ -60,7 +60,7 @@ apps/desktop/frontend/
     ├── App.tsx
     ├── components/        # Taskbar, AppLauncher, etc.
     ├── windows/          # Window, WindowTitleBar, etc.
-    ├── pages/            # SignIn, Desktop
+    ├── pages/            # Login, Desktop
     ├── stores/           # auth.store.ts, windows.store.ts
     └── styles/
 ```
