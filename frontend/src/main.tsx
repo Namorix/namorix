@@ -8,7 +8,9 @@ import { App } from "./App"
 import "./i18n"
 
 configureCore({
-  apiBaseUrl: import.meta.env.VITE_API_URL ?? window.location.origin,
+  apiBaseUrl:
+    import.meta.env.VITE_API_URL ??
+    "http://" + window.location.hostname + ":3000",
 })
 generateFingerprint().catch(console.error)
 
