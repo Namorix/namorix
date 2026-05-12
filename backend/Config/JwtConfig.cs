@@ -7,5 +7,6 @@ public class JwtConfig
     public string Audience { get; set; } = "Namorix";
     public int AccessTokenExpirationMinutes { get; set; } = 15;
     public int RefreshTokenExpirationDays { get; set; } = 7;
+    public int RefreshTokenExpirationDaysRemember { get; set; } = 90;
 
 }

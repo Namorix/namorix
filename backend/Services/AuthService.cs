@@ -23,7 +23,7 @@ public class AuthService
         _jwtConfig = jwtConfig.Value;
     }
 
-    public async Task<User> SignIn(string username, string password)
+    public async Task<User> Login(string username, string password)
     {
         var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == username);
         if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.Password))
@@ -34,7 +34,7 @@ public class AuthService
         return user;
     }
 
-    public async Task<User> SignUp(string username, string password)
+    public async Task<User> Register(string username, string password)
     {
         var exists = await _dbContext.Users.AnyAsync(u => u.Username == username);
         if (exists)
@@ -56,7 +56,7 @@ public class AuthService
         return user;
     }
 
-    private (string accessToken, string refreshToken, string jti) GenerateTokens(User user)
+    private (string accessToken, string refreshToken, string jti) GenerateTokens(User user, bool rememberMe = false)
     {
         var jti = Guid.NewGuid().ToString();
         var expires = DateTime.UtcNow.AddMinutes(_jwtConfig.AccessTokenExpirationMinutes);
@@ -80,15 +80,16 @@ public class AuthService
         return (accessToken, refreshToken, jti);
     }
 
-    public RefreshToken CreateRefreshToken(User user, string jti, string? fingerprint, string? ipAddress)
+    private static RefreshToken CreateRefreshToken(User user, string jti, string? userAgent, string? fingerprint, string? ipAddress, int ttlDays)
     {
         return new RefreshToken
         {
             UserId = user.Id,
             Jti = jti,
             TokenHash = BCrypt.Net.BCrypt.HashPassword(jti),
-            ExpiresAt = DateTime.UtcNow.AddDays(_jwtConfig.RefreshTokenExpirationDays),
+            ExpiresAt = DateTime.UtcNow.AddDays(ttlDays),
             CreatedAt = DateTime.UtcNow,
+            UserAgent = userAgent,
             Fingerprint = fingerprint,
             IpAddress = ipAddress
         };
@@ -126,7 +127,7 @@ public class AuthService
         }
     }
 
-    public async Task<(string accessToken, string refreshToken)> RefreshToken(string token, string? fingerprint,
+    public async Task<(User user, string accessToken, string refreshToken)> RefreshToken(string token, string? fingerprint,
         string? ipAddress)
     {
         var handler = new JwtSecurityTokenHandler();
@@ -173,11 +174,12 @@ public class AuthService
             _dbContext.RefreshTokens.Remove(storedToken);
 
             var (newAccessToken, newRefreshToken, newJti) = GenerateTokens(user);
-            var newRefreshTokenEntity = CreateRefreshToken(user, newJti, fingerprint, ipAddress);
+            var ttlDays = _jwtConfig.RefreshTokenExpirationDays;
+            var newRefreshTokenEntity = CreateRefreshToken(user, newJti, null, fingerprint, ipAddress, ttlDays);
             _dbContext.RefreshTokens.Add(newRefreshTokenEntity);
             await _dbContext.SaveChangesAsync();
 
-            return (newAccessToken, newRefreshToken);
+            return (user, newAccessToken, newRefreshToken);
         }
         catch (AuthException)
         {
@@ -204,6 +206,22 @@ public class AuthService
         var tokens = await _dbContext.RefreshTokens.Where(rt => rt.UserId == userId).ToListAsync();
         _dbContext.RefreshTokens.RemoveRange(tokens);
         await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task<(User user, string accessToken, string refreshToken)> SignInWithTokens(
+        string username, string password, bool rememberMe, string? userAgent, string? fingerprint, string? ipAddress)
+    {
+        var user = await Login(username, password);
+        var ttlDays = rememberMe
+            ? _jwtConfig.RefreshTokenExpirationDaysRemember
+            : _jwtConfig.RefreshTokenExpirationDays;
+
+        var (accessToken, refreshToken, jti) = GenerateTokens(user, rememberMe);
+        var refreshTokenEntity = CreateRefreshToken(user, jti, userAgent, fingerprint, ipAddress, ttlDays);
+        _dbContext.RefreshTokens.Add(refreshTokenEntity);
+        await _dbContext.SaveChangesAsync();
+
+        return (user, accessToken, refreshToken);
     }
 }
 
