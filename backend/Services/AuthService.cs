@@ -12,20 +12,13 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace backend.Services;
 
-public class AuthService
+public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig)
 {
-    private readonly AppDbContext _dbContext;
-    private readonly JwtConfig _jwtConfig;
-
-    public AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig)
+    private readonly JwtConfig _jwtConfig = jwtConfig.Value;
+    
+    private async Task<User> Login(string username, string password)
     {
-        _dbContext = dbContext;
-        _jwtConfig = jwtConfig.Value;
-    }
-
-    public async Task<User> Login(string username, string password)
-    {
-        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == username);
+        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Username == username);
         if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.Password))
         {
             throw new AuthException(AuthErrors.InvalidCredentials);
@@ -36,13 +29,13 @@ public class AuthService
 
     public async Task<User> Register(string username, string password)
     {
-        var exists = await _dbContext.Users.AnyAsync(u => u.Username == username);
+        var exists = await dbContext.Users.AnyAsync(u => u.Username == username);
         if (exists)
         {
             throw new AuthException(AuthErrors.UsernameExists);
         }
 
-        var isFirstUser = !await _dbContext.Users.AnyAsync();
+        var isFirstUser = !await dbContext.Users.AnyAsync();
         var role = isFirstUser ? 1 : 0;
         var user = new User
         {
@@ -51,12 +44,12 @@ public class AuthService
             Role = role,
             CreateAt = DateTime.UtcNow
         };
-        _dbContext.Users.Add(user);
-        await _dbContext.SaveChangesAsync();
+        dbContext.Users.Add(user);
+        await dbContext.SaveChangesAsync();
         return user;
     }
 
-    private (string accessToken, string refreshToken, string jti) GenerateTokens(User user, bool rememberMe = false)
+    private (string accessToken, string refreshToken, string jti) GenerateTokens(User user)
     {
         var jti = Guid.NewGuid().ToString();
         var expires = DateTime.UtcNow.AddMinutes(_jwtConfig.AccessTokenExpirationMinutes);
@@ -143,13 +136,14 @@ public class AuthService
                 ValidIssuer = _jwtConfig.Issuer,
                 ValidateAudience = true,
                 ValidAudience = _jwtConfig.Audience,
-                ValidateLifetime = true
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
             }, out var validatedToken);
 
             var jwtToken = (JwtSecurityToken)validatedToken;
             var jti = jwtToken.Claims.First(c => c.Type == JwtClaims.Jti).Value;
             var userId = int.Parse(jwtToken.Claims.First(c => c.Type == JwtClaims.UserId).Value);
-            var storedToken = await _dbContext.RefreshTokens.Include(rt => rt.User)
+            var storedToken = await dbContext.RefreshTokens.Include(rt => rt.User)
                 .FirstOrDefaultAsync(rt => rt.Jti == jti && rt.UserId == userId);
 
             if (storedToken == null)
@@ -171,13 +165,13 @@ public class AuthService
             }
             
             var user = storedToken.User;
-            _dbContext.RefreshTokens.Remove(storedToken);
+            dbContext.RefreshTokens.Remove(storedToken);
 
             var (newAccessToken, newRefreshToken, newJti) = GenerateTokens(user);
             var ttlDays = _jwtConfig.RefreshTokenExpirationDays;
-            var newRefreshTokenEntity = CreateRefreshToken(user, newJti, null, fingerprint, ipAddress, ttlDays);
-            _dbContext.RefreshTokens.Add(newRefreshTokenEntity);
-            await _dbContext.SaveChangesAsync();
+            var newRefreshTokenEntity = CreateRefreshToken(user, newJti, storedToken.UserAgent, fingerprint, ipAddress, ttlDays);
+            dbContext.RefreshTokens.Add(newRefreshTokenEntity);
+            await dbContext.SaveChangesAsync();
 
             return (user, newAccessToken, newRefreshToken);
         }
@@ -193,22 +187,22 @@ public class AuthService
 
     public async Task RevokeToken(string jti)
     {
-        var token = await _dbContext.RefreshTokens.FirstOrDefaultAsync(rt => rt.Jti == jti);
+        var token = await dbContext.RefreshTokens.FirstOrDefaultAsync(rt => rt.Jti == jti);
         if (token != null)
         {
-            _dbContext.RefreshTokens.Remove(token);
-            await _dbContext.SaveChangesAsync();
+            dbContext.RefreshTokens.Remove(token);
+            await dbContext.SaveChangesAsync();
         }
     }
 
     public async Task RevokeAllUserTokens(int userId)
     {
-        var tokens = await _dbContext.RefreshTokens.Where(rt => rt.UserId == userId).ToListAsync();
-        _dbContext.RefreshTokens.RemoveRange(tokens);
-        await _dbContext.SaveChangesAsync();
+        var tokens = await dbContext.RefreshTokens.Where(rt => rt.UserId == userId).ToListAsync();
+        dbContext.RefreshTokens.RemoveRange(tokens);
+        await dbContext.SaveChangesAsync();
     }
 
-    public async Task<(User user, string accessToken, string refreshToken)> SignInWithTokens(
+    public async Task<(User user, string accessToken, string refreshToken)> LoginWithTokens(
         string username, string password, bool rememberMe, string? userAgent, string? fingerprint, string? ipAddress)
     {
         var user = await Login(username, password);
@@ -216,10 +210,10 @@ public class AuthService
             ? _jwtConfig.RefreshTokenExpirationDaysRemember
             : _jwtConfig.RefreshTokenExpirationDays;
 
-        var (accessToken, refreshToken, jti) = GenerateTokens(user, rememberMe);
+        var (accessToken, refreshToken, jti) = GenerateTokens(user);
         var refreshTokenEntity = CreateRefreshToken(user, jti, userAgent, fingerprint, ipAddress, ttlDays);
-        _dbContext.RefreshTokens.Add(refreshTokenEntity);
-        await _dbContext.SaveChangesAsync();
+        dbContext.RefreshTokens.Add(refreshTokenEntity);
+        await dbContext.SaveChangesAsync();
 
         return (user, accessToken, refreshToken);
     }

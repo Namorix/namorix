@@ -35,8 +35,8 @@ public class UserResponse
 
 public class StatusResponse
 {
-    public bool NeedsSignUp { get; set; }
-    public bool SignUpEnabled { get; set; }
+    public bool NeedsRegister { get; set; }
+    public bool RegisterEnabled { get; set; }
 }
 
 public class ErrorResponse

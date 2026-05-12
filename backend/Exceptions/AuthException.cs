@@ -1,11 +1,6 @@
 namespace backend.Exceptions;
 
-public class AuthException : Exception
+public class AuthException(string code) : Exception(code)
 {
-    public string Code { get; }
-
-    public AuthException(string code) : base(code)
-    {
-        Code = code;
-    }
+    public string Code { get; } = code;
 }

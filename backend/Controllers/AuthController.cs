@@ -1,9 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using backend.Config;
 using backend.Constants;
 using backend.Exceptions;
-using backend.Models;
 using backend.Responses;
 using backend.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -13,22 +11,12 @@ namespace backend.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController : ControllerBase
+public class AuthController(AuthService authService, SettingsService settingsService, IOptions<JwtConfig> jwtConfig,
+    IOptions<AppConfig> appConfig) : ControllerBase
 {
-    private readonly AuthService _authService;
-    private readonly SettingsService _settingsService;
-    private readonly JwtConfig _jwtConfig;
-    private readonly AppConfig _appConfig;
-
-    public AuthController(AuthService authService, SettingsService settingsService, IOptions<JwtConfig> jwtConfig,
-        IOptions<AppConfig> appConfig)
-    {
-        _authService = authService;
-        _settingsService = settingsService;
-        _jwtConfig = jwtConfig.Value;
-        _appConfig = appConfig.Value;
-    }
-
+    private readonly JwtConfig _jwtConfig = jwtConfig.Value;
+    private readonly AppConfig _appConfig = appConfig.Value;
+    
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
@@ -40,9 +28,9 @@ public class AuthController : ControllerBase
             var fingerprint = GetFingerprint();
             var ipAddress = GetClientIp();
             var userAgent = GetUserAgent();
-            var (user, accessToken, refreshToken) = await _authService.SignInWithTokens(request.Username,
+            var (user, accessToken, refreshToken) = await authService.LoginWithTokens(request.Username,
                 request.Password, request.RememberMe, userAgent, fingerprint, ipAddress);
-            
+
             SetAccessCookie(accessToken);
             SetRefreshCookie(refreshToken, request.RememberMe);
 
@@ -65,13 +53,13 @@ public class AuthController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ApiResponse.Fail(ValidationErrorCodes.ValidationError));
 
-        var signUpEnabled = await _settingsService.IsSignUpEnabled();
+        var signUpEnabled = await settingsService.IsRegisterEnabled();
         if (!signUpEnabled)
-            return StatusCode(403, ApiResponse.Fail(AuthErrors.SingUpClosed));
+            return StatusCode(403, ApiResponse.Fail(AuthErrors.RegisterClosed));
 
         try
         {
-            var user = await _authService.Register(request.Username, request.Password);
+            var user = await authService.Register(request.Username, request.Password);
             return Ok(ApiResponse<UserResponse>.Ok(new UserResponse
             {
                 Id = user.Id,
@@ -94,7 +82,7 @@ public class AuthController : ControllerBase
         {
             var jti = ExtractJtiFromToken(refreshToken);
             if (!string.IsNullOrEmpty(jti))
-                await _authService.RevokeToken(jti);
+                await authService.RevokeToken(jti);
         }
         
         ClearAccessCookie();
@@ -109,9 +97,9 @@ public class AuthController : ControllerBase
         var accessToken = GetAccessCookie();
         if (!string.IsNullOrEmpty(accessToken))
         {
-            var payload = _authService.VerifyAccessToken(accessToken);
+            var payload = authService.VerifyAccessToken(accessToken);
             if (payload.HasValue)
-                await _authService.RevokeAllUserTokens(payload.Value.userId);
+                await authService.RevokeAllUserTokens(payload.Value.userId);
         }
         
         ClearAccessCookie();
@@ -126,7 +114,7 @@ public class AuthController : ControllerBase
         if (string.IsNullOrEmpty(accessToken))
             return Unauthorized(ApiResponse.Fail(AuthErrors.Unauthorized));
 
-        var payload = _authService.VerifyAccessToken(accessToken);
+        var payload = authService.VerifyAccessToken(accessToken);
         if (!payload.HasValue)
             return Unauthorized(ApiResponse.Fail(AuthErrors.Unauthorized));
         
@@ -151,7 +139,7 @@ public class AuthController : ControllerBase
             var fingerprint = GetFingerprint();
             var ipAddress = GetClientIp();
             var (user, newAccessToken, newRefreshToken) =
-                await _authService.RefreshToken(refreshToken, fingerprint, ipAddress);
+                await authService.RefreshToken(refreshToken, fingerprint, ipAddress);
 
             SetAccessCookie(newAccessToken);
             SetRefreshCookie(newRefreshToken, false);
@@ -180,11 +168,11 @@ public class AuthController : ControllerBase
     [HttpGet("status")]
     public async Task<IActionResult> Status()
     {
-        var (needsSignUp, signUpEnabled) = await _settingsService.GetAuthStatus();
+        var (needsRegister, registerEnabled) = await settingsService.GetAuthStatus();
         return Ok(ApiResponse<StatusResponse>.Ok(new StatusResponse
         {
-            NeedsSignUp = needsSignUp,
-            SignUpEnabled = signUpEnabled
+            NeedsRegister = needsRegister,
+            RegisterEnabled = registerEnabled
         }));
     }
     
@@ -262,14 +250,14 @@ public class AuthController : ControllerBase
 
 public class LoginRequest
 {
-    public string Username { get; set; } = string.Empty;
-    public string Password { get; set; } = string.Empty;
-    public bool RememberMe { get; set; }
+    public string Username { get; init; } = string.Empty;
+    public string Password { get; init; } = string.Empty;
+    public bool RememberMe { get; init; } = false;
 }
 
 public class RegisterRequest
 {
-    public string Username { get; set; } = string.Empty;
-    public string Password { get; set; } = string.Empty;
+    public string Username { get; init; } = string.Empty;
+    public string Password { get; init; } = string.Empty;
     
 }

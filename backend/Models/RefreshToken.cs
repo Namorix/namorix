@@ -1,17 +1,30 @@
-﻿namespace backend.Models;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace backend.Models;
 
 public class RefreshToken
 {
-    public int Id { get; set; }
-    public int UserId { get; set; }
-    public string Jti { get; set; } = string.Empty;
-    public string TokenHash { get; set; } = string.Empty;
-    public DateTime ExpiresAt { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public string? UserAgent { get; set; }
-    public string? Fingerprint { get; set; }
-    public string? IpAddress { get; set; }
-    public DateTime? LastUsedAt { get; set; }
+    public int Id { get; init; }
+    public int UserId { get; init; }
+    
+    [MaxLength(100)]
+    public string Jti { get; init; } = string.Empty;
+    
+    [MaxLength(500)]
+    public string TokenHash { get; init; } = string.Empty;
+    
+    public DateTime ExpiresAt { get; init; }
+    public DateTime CreatedAt { get; init; }
+    
+    [MaxLength(1000)]
+    public string? UserAgent { get; init; }
+    
+    [MaxLength(256)]
+    public string? Fingerprint { get; init; }
 
-    public User? User { get; set; } = null;
+    [MaxLength(50)]
+    public string? IpAddress { get; init; }
+    
+    public DateTime? LastUsedAt { get; init; }
+    public User? User { get; init; }
 }

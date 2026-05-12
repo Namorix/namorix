@@ -7,7 +7,7 @@ public static class AuthErrors
     public const string TokenReuseDetected = "TOKEN_REUSE_DETECTED";
     public const string FingerprintMismatch = "FINGERPRINT_MISMATCH";
     public const string InvalidToken = "INVALID_TOKEN";
-    public const string SingUpClosed = "SIGNUP_CLOSED";
+    public const string RegisterClosed = "REGISTER_CLOSED";
     public const string Unauthorized = "UNAUTHORIZED";
 }
 
@@ -29,4 +29,9 @@ public static class SystemErrorCodes
     public const string InternalError = "INTERNAL_ERROR";
     public const string NotFound = "NOT_FOUND";
     public const string CsrfTokenMismatch = "CSRF_TOKEN_MISMATCH";
+}
+
+public static class HttpErrorCodes
+{
+    public const string UnsupportedMediaType = "UNSUPPORTED_MEDIA_TYPE";
 }
