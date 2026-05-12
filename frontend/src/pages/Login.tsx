@@ -21,7 +21,7 @@ import { validate, ValidationFields } from "@namorix/core"
 import { authController } from "../assets/controllers/auth.controller"
 import { useAuthForm } from "../hooks/useAuthForm"
 
-export const SignIn: React.FC = () => {
+export const Login: React.FC = () => {
   const { t } = useTranslation()
   const [username, setUsername] = useState("IzeroCs")
   const [password, setPassword] = useState("12345678")
@@ -59,26 +59,26 @@ export const SignIn: React.FC = () => {
     }
 
     try {
-      await authController.signIn(username, password, rememberMe)
-      setAlert("success", t("auth.signin.success"))
+      await authController.login(username, password, rememberMe)
+      setAlert("success", t("auth.login.success"))
       setTimeout(() => {
         navigate("/")
       }, 2000)
     } catch (err: unknown) {
-      handlerError(err, t, "auth.signin.errors.generic")
+      handlerError(err, t, "auth.login.errors.generic")
     }
   }
 
   return (
     <AuthPage
-      heroTitle={t("auth.signin.heroTitle")}
-      heroDescription={t("auth.signin.heroDescription")}
+      heroTitle={t("auth.login.heroTitle")}
+      heroDescription={t("auth.login.heroDescription")}
     >
       <NmxFormCard className="nmx-auth-page__card">
         <NmxFormPage className="nmx-auth-page__page">
           <NmxFormHeader
-            title={t("auth.signin.title")}
-            description={t("auth.signin.description")}
+            title={t("auth.login.title")}
+            description={t("auth.login.description")}
           />
           <NmxForm onSubmit={handleSubmit}>
             <NmxInlineAlert
@@ -87,7 +87,7 @@ export const SignIn: React.FC = () => {
               shouldRender={!!alertMessage}
             />
             <NmxFormField
-              label={t("auth.signin.usernameLabel")}
+              label={t("auth.login.usernameLabel")}
               controlId="nmx-auth-username"
               required
             >
@@ -95,7 +95,7 @@ export const SignIn: React.FC = () => {
                 id="nmx-auth-username"
                 name="username"
                 type="text"
-                placeholder={t("auth.signin.usernamePlaceholder")}
+                placeholder={t("auth.login.usernamePlaceholder")}
                 value={username}
                 disabled={busy}
                 onValueChange={(value: string) => setUsername(value)}
@@ -103,7 +103,7 @@ export const SignIn: React.FC = () => {
               />
             </NmxFormField>
             <NmxFormField
-              label={t("auth.signin.passwordLabel")}
+              label={t("auth.login.passwordLabel")}
               controlId="nmx-auth-password"
               required
             >
@@ -111,7 +111,7 @@ export const SignIn: React.FC = () => {
                 id="nmx-auth-password"
                 name="password"
                 type="password"
-                placeholder={t("auth.signin.passwordPlaceholder")}
+                placeholder={t("auth.login.passwordPlaceholder")}
                 value={password}
                 disabled={busy}
                 onValueChange={(value: string) => setPassword(value)}
@@ -120,23 +120,23 @@ export const SignIn: React.FC = () => {
             </NmxFormField>
             <NmxToggle
               name="remember"
-              label={t("auth.signin.rememberLabel")}
+              label={t("auth.login.rememberLabel")}
               onCheckedChanged={(checked) => setRememberMe(checked)}
             />
             <NmxFormActions>
               <NmxButton
                 variant="primary"
                 type="submit"
-                label={t("auth.signin.buttonLabel")}
+                label={t("auth.login.buttonLabel")}
                 disabled={busy}
                 fullWidth
                 uppercase
               />
             </NmxFormActions>
             <div className="nmx-auth-page__secondary-actions">
-              <span>{t("auth.signin.secondaryText")}</span>
+              <span>{t("auth.login.secondaryText")}</span>
               <Link to="/signup" className="nmx-auth-page__secondary-link">
-                {t("auth.signin.secondaryActionLabel")}
+                {t("auth.login.secondaryActionLabel")}
               </Link>
             </div>
           </NmxForm>

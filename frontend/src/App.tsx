@@ -1,17 +1,17 @@
 import {
   authService,
   createAuthGuard,
-  createSignInGuard,
-  createSignUpGuard,
+  createLoginGuard,
+  createRegisterGuard,
   GuardedRoute,
 } from "@namorix/core"
 import type React from "react"
 import { Navigate, Route, Routes } from "react-router-dom"
-import { Desktop, SignUp, SignIn } from "./pages"
+import { Desktop, Register, Login } from "./pages"
 
 const authGuard = createAuthGuard(authService)
-const signInGuard = createSignInGuard(authService)
-const signUpGuard = createSignUpGuard(authService)
+const signInGuard = createLoginGuard(authService)
+const signUpGuard = createRegisterGuard(authService)
 
 export const App: React.FC = () => {
   return (
@@ -20,7 +20,7 @@ export const App: React.FC = () => {
         path="/signin"
         element={
           <GuardedRoute guard={signInGuard}>
-            <SignIn />
+            <Login />
           </GuardedRoute>
         }
       />
@@ -28,7 +28,7 @@ export const App: React.FC = () => {
         path="/signup"
         element={
           <GuardedRoute guard={signUpGuard}>
-            <SignUp />
+            <Register />
           </GuardedRoute>
         }
       />

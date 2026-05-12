@@ -2,10 +2,10 @@ export const API_AUTH_BASE = "/api/auth"
 
 export const ApiAuthRoutes = {
   status: API_AUTH_BASE + "/status",
-  signin: API_AUTH_BASE + "/signin",
-  signup: API_AUTH_BASE + "/signup",
+  login: API_AUTH_BASE + "/login",
+  register: API_AUTH_BASE + "/register",
   refresh: API_AUTH_BASE + "/refresh",
-  signout: API_AUTH_BASE + "/signout",
-  signoutAll: API_AUTH_BASE + "/signout-all",
+  logout: API_AUTH_BASE + "/logout",
+  logoutAll: API_AUTH_BASE + "/logout-all",
   session: API_AUTH_BASE + "/session",
 }

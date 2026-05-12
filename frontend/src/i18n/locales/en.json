@@ -1,6 +1,6 @@
 {
   "auth": {
-    "signin": {
+    "login": {
       "heroTitle": "Namorix\nDesktop",
       "heroDescription": "Secure access to your self-hosted desktop workspace",
       "title": "Sign in",
@@ -18,7 +18,7 @@
       },
       "success": "Sign in successful. Redirecting to dashboard..."
     },
-    "signup": {
+    "register": {
       "heroTitle": "Create\nAccount",
       "heroDescription": "Set up your Namorix desktop credentials to get started",
       "title": "Create account",
@@ -36,7 +36,7 @@
         "generic": "An error occurred during sign up. Please try again"
       },
       "initialRegistration": "Initial registration: This account will be granted Administrative privileges",
-      "success": "Account created successfully. Taking you to signin..."
+      "success": "Account created successfully. Taking you to login..."
     }
   }
 }

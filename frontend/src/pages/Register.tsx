@@ -19,7 +19,7 @@ import { AuthConstraints } from "@namorix/shared"
 import { authService, validate, ValidationFields } from "@namorix/core"
 import { useAuthForm } from "../hooks/useAuthForm"
 
-export const SignUp: React.FC = () => {
+export const Register: React.FC = () => {
   const { t } = useTranslation()
   const [username, setUsername] = useState("IzeroCs")
   const [password, setPassword] = useState("12345678")
@@ -31,7 +31,7 @@ export const SignUp: React.FC = () => {
   useEffect(() => {
     authService.checkHasUsers().then((hasUsers) => {
       if (!hasUsers) {
-        setAlert("warning", t("auth.signup.initialRegistration"))
+        setAlert("warning", t("auth.register.initialRegistration"))
       }
     })
   }, [setAlert, t])
@@ -67,26 +67,26 @@ export const SignUp: React.FC = () => {
     }
 
     try {
-      await authController.signUp(username, password)
-      setAlert("success", t("auth.signup.success"))
+      await authController.register(username, password)
+      setAlert("success", t("auth.register.success"))
       setTimeout(() => {
-        navigate("/signin")
+        navigate("/login")
       }, 2000)
     } catch (err: unknown) {
-      handlerError(err, t, "auth.signup.errors.generic")
+      handlerError(err, t, "auth.register.errors.generic")
     }
   }
 
   return (
     <AuthPage
-      heroTitle={t("auth.signup.heroTitle")}
-      heroDescription={t("auth.signup.heroDescription")}
+      heroTitle={t("auth.register.heroTitle")}
+      heroDescription={t("auth.register.heroDescription")}
     >
       <NmxFormCard className="nmx-auth-page__card">
         <NmxFormPage className="nmx-auth-page__page">
           <NmxFormHeader
-            title={t("auth.signup.title")}
-            description={t("auth.signup.description")}
+            title={t("auth.register.title")}
+            description={t("auth.register.description")}
           />
           <NmxForm onSubmit={handleSubmit}>
             <NmxInlineAlert
@@ -95,7 +95,7 @@ export const SignUp: React.FC = () => {
               shouldRender={!!alertMessage}
             />
             <NmxFormField
-              label={t("auth.signup.usernameLabel")}
+              label={t("auth.register.usernameLabel")}
               controlId="nmx-auth-username"
               required
             >
@@ -103,7 +103,7 @@ export const SignUp: React.FC = () => {
                 id="nmx-auth-username"
                 name="username"
                 type="text"
-                placeholder={t("auth.signup.usernamePlaceholder")}
+                placeholder={t("auth.register.usernamePlaceholder")}
                 value={username}
                 disabled={busy}
                 onValueChange={(value: string) => setUsername(value)}
@@ -111,7 +111,7 @@ export const SignUp: React.FC = () => {
               />
             </NmxFormField>
             <NmxFormField
-              label={t("auth.signup.passwordLabel")}
+              label={t("auth.register.passwordLabel")}
               controlId="nmx-auth-password"
               required
             >
@@ -119,7 +119,7 @@ export const SignUp: React.FC = () => {
                 id="nmx-auth-password"
                 name="password"
                 type="password"
-                placeholder={t("auth.signup.passwordPlaceholder")}
+                placeholder={t("auth.register.passwordPlaceholder")}
                 value={password}
                 disabled={busy}
                 onValueChange={(value: string) => setPassword(value)}
@@ -127,7 +127,7 @@ export const SignUp: React.FC = () => {
               />
             </NmxFormField>
             <NmxFormField
-              label={t("auth.signup.confirmPasswordLabel")}
+              label={t("auth.register.confirmPasswordLabel")}
               controlId="nmx-auth-confirm-password"
               required
             >
@@ -135,7 +135,7 @@ export const SignUp: React.FC = () => {
                 id="nmx-auth-confirm-password"
                 name="confirm_password"
                 type="password"
-                placeholder={t("auth.signup.confirmPasswordPlaceholder")}
+                placeholder={t("auth.register.confirmPasswordPlaceholder")}
                 value={confirmPassword}
                 disabled={busy}
                 onValueChange={(value: string) => setConfirmPassword(value)}
@@ -146,16 +146,16 @@ export const SignUp: React.FC = () => {
               <NmxButton
                 variant="primary"
                 type="submit"
-                label={t("auth.signup.buttonLabel")}
+                label={t("auth.register.buttonLabel")}
                 disabled={busy}
                 fullWidth
                 uppercase
               />
             </NmxFormActions>
             <div className="nmx-auth-page__secondary-actions">
-              <span>{t("auth.signup.secondaryText")}</span>
+              <span>{t("auth.register.secondaryText")}</span>
               <Link to="/signin" className="nmx-auth-page__secondary-link">
-                {t("auth.signup.secondaryActionLabel")}
+                {t("auth.register.secondaryActionLabel")}
               </Link>
             </div>
           </NmxForm>

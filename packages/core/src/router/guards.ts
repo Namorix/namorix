@@ -1,7 +1,7 @@
 export interface GuardPaths {
   home?: string
-  signin?: string
-  signup?: string
+  login?: string
+  register?: string
 }
 
 export type GuardFn = () => Promise<string | null>
@@ -14,8 +14,8 @@ export interface AuthChecker {
 
 const defaultPaths: Required<GuardPaths> = {
   home: "/",
-  signin: "/signin",
-  signup: "/signup",
+  login: "/login",
+  register: "/register",
 }
 
 export function createAuthGuard(
@@ -26,18 +26,18 @@ export function createAuthGuard(
   return async () => {
     const hasUsers = await auth.checkHasUsers()
     if (!hasUsers) {
-      return p.signup
+      return p.register
     }
 
     if (!(await auth.isAuthenticated())) {
-      return p.signin
+      return p.login
     }
 
     return null
   }
 }
 
-export function createSignInGuard(
+export function createLoginGuard(
   auth: AuthChecker,
   paths?: GuardPaths,
 ): GuardFn {
@@ -49,14 +49,14 @@ export function createSignInGuard(
 
     const hasUsers = await auth.checkHasUsers()
     if (!hasUsers) {
-      return p.signup
+      return p.register
     }
 
     return null
   }
 }
 
-export function createSignUpGuard(
+export function createRegisterGuard(
   auth: AuthChecker,
   paths?: GuardPaths,
 ): GuardFn {
@@ -72,7 +72,7 @@ export function createSignUpGuard(
     }
 
     if (!(await auth.isRegistrationOpen())) {
-      return p.signin
+      return p.login
     }
 
     return null

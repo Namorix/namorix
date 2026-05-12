@@ -1,23 +1,13 @@
 import { ApiError, getApiBaseUrl, http } from "@namorix/core"
 import { ApiAuthRoutes } from "@namorix/shared"
 
-async function signUp(username: string, password: string): Promise<void> {
-  const data = await http
-    .url(getApiBaseUrl() + ApiAuthRoutes.signup)
-    .post({ username, password })
-    .json<void>()
-  if (!data.success) {
-    throw ApiError.fromResponse(data)
-  }
-}
-
-async function signIn(
+async function login(
   username: string,
   password: string,
   rememberMe?: boolean,
 ): Promise<void> {
   const data = await http
-    .url(getApiBaseUrl() + ApiAuthRoutes.signin)
+    .url(getApiBaseUrl() + ApiAuthRoutes.login)
     .post({ username, password, rememberMe })
     .json<void>()
   if (!data.success) {
@@ -25,9 +15,19 @@ async function signIn(
   }
 }
 
-async function signOut(): Promise<void> {
+async function register(username: string, password: string): Promise<void> {
   const data = await http
-    .url(getApiBaseUrl() + ApiAuthRoutes.signout)
+    .url(getApiBaseUrl() + ApiAuthRoutes.register)
+    .post({ username, password })
+    .json<void>()
+  if (!data.success) {
+    throw ApiError.fromResponse(data)
+  }
+}
+
+async function logout(): Promise<void> {
+  const data = await http
+    .url(getApiBaseUrl() + ApiAuthRoutes.logout)
     .post()
     .json<void>()
   if (!data.success) {
@@ -35,4 +35,4 @@ async function signOut(): Promise<void> {
   }
 }
 
-export const authController = { signUp, signIn, signOut }
+export const authController = { login, register, logout }
