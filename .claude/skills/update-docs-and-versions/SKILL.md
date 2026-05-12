@@ -39,7 +39,7 @@ Map each changed file to a package and determine impact:
 
 ### Step 3: Determine Version Bumps
 
-Use the bump triggers from `.agents/rules/98-meta.md` and `progress.md`:
+Use the bump triggers from CLAUDE.md Meta Rules and `progress.md`:
 
 | Package | PATCH bump | MINOR bump |
 |---------|-----------|------------|
@@ -57,17 +57,17 @@ Use the bump triggers from `.agents/rules/98-meta.md` and `progress.md`:
 ### Step 4: Read Only What's Needed
 
 Read ONLY these files (skip if unchanged):
-- `.agents/memory/progress.md` — always read (current versions + history)
-- `.agents/memory/activeContext.md` — always read (current focus)
-- `.agents/memory/systemPatterns.md` — only if architecture changed
-- `.agents/memory/techContext.md` — only if tech/deps changed
-- `.agents/memory/productContext.md` — only if UX changed
-- `.agents/memory/projectbrief.md` — rarely changes
+- `.claude/memory/progress.md` — always read (current versions + history)
+- `.claude/memory/activeContext.md` — always read (current focus)
+- `.claude/memory/systemPatterns.md` — only if architecture changed
+- `.claude/memory/techContext.md` — only if tech/deps changed
+- `.claude/memory/productContext.md` — only if UX changed
+- `.claude/memory/projectbrief.md` — rarely changes
 - Package `.json` files — only for packages being bumped
 - `docs/` markdown files — only if related to changed code
 
 **Never read:**
-- `LICENSE` (rule from `.agents/rules/98-meta.md`)
+- `LICENSE` (rule from CLAUDE.md Meta Rules)
 - Unchanged packages
 - `node_modules/`
 
@@ -97,8 +97,8 @@ Show a table of all changes:
 ```
 | File | Change |
 |------|--------|
-| .agents/memory/progress.md | Update versions table + history |
-| .agents/memory/activeContext.md | Add recent changes entry |
+| .claude/memory/progress.md | Update versions table + history |
+| .claude/memory/activeContext.md | Add recent changes entry |
 | packages/core/package.json | 0.5.0 → 0.5.1 |
 | ... | ... |
 ```

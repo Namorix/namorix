@@ -37,7 +37,7 @@ For each modified/new/deleted/renamed file, categorize by scope:
 | `docs` | `docs/`, `*.md` |
 | `chore` | `package.json`, config files, `.gitignore`, license files |
 
-Memory bank files (`.agents/memory/`) and `AGENTS.md` — scope: `docs`.
+Memory bank files (`.claude/memory/`) — scope: `docs`.
 
 ### 3. Group into logical commits
 
@@ -87,7 +87,7 @@ EOF
 ## Important Rules
 
 1. **Never stage `.idea/`** — IDE config stays in `.gitignore`
-2. **Never stage symlinks** inside `.agents/skills/` — they point to global config
+2. **Never stage symlinks** inside `.claude/skills/` — they point to global config
 3. **Use HEREDOC syntax** for multi-line commit messages
 4. **Check recent commits** (`git log --oneline -5`) to avoid duplicate messages
 5. **If files are already staged**, include them and explain they're staged from previous work

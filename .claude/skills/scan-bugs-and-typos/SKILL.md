@@ -43,7 +43,7 @@ Look for these patterns:
 | Null safety | Accessing `.property` on possibly null value without guard |
 | Logic errors | `if (x = y)` assignment in condition, inverted boolean |
 | Missing return | Function expects return but path misses it |
-| Import issues | Import from wrong package (crossing `.agents/rules/04-package-boundary.md`) |
+| Import issues | Import from wrong package (crossing CLAUDE.md Rule 3 — Package Boundary) |
 | Auth bypass risk | Route missing auth middleware, token not verified |
 | CSRF gap | Mutating endpoint without CSRF check |
 | Cookie security | `httpOnly: false` on auth cookies, missing `sameSite` |
@@ -58,7 +58,7 @@ Look for these patterns:
 | Typos in string literals | UI strings, error messages visible to user |
 | Inconsistent casing | `userId` vs `UserID`, `API` vs `Api` |
 | Wrong variable naming | camelCase violations, UPPER_SNAKE violations |
-| Double quotes | Strings should use double quotes (per `.agents/rules/11-naming.md`) |
+| Double quotes | Strings should use double quotes (per CLAUDE.md Rule 10 — Naming) |
 | Missing Nmx prefix | New UI component without `Nmx` prefix |
 | BEM class errors | CSS class not following `nmx-kebab-case` |
 
@@ -108,7 +108,7 @@ Separate into two groups:
 ## Important
 
 1. **Only scan changed files** — skip everything else
-2. **Read the rules first** — check `.agents/rules/` for project-specific conventions to validate against
+2. **Read the rules first** — check CLAUDE.md for project-specific conventions to validate against
 3. **Don't auto-fix** — only report findings
 4. **Use file:line references** — so user can jump to each issue
 5. **Skip false positives** — if unsure, mention as "possible" issue

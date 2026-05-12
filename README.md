@@ -48,7 +48,6 @@ pnpm --filter frontend dev    # Frontend (Vite port 5173)
 namorix/
 ├── package.json              # pnpm workspaces root
 ├── pnpm-workspace.yaml       # workspace config
-├── AGENTS.md                 # AI agent instructions
 ├── tsconfig.base.json        # shared TypeScript config
 ├── docs/
 │   ├── architecture.md       # source of truth kỹ thuật
