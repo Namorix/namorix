@@ -26,9 +26,33 @@ M2 — Full Auth Backend → **Complete** ✅ + **Harden** ✅ + **ESLint** ✅ 
 - **@namorix/shared (0.7.0)**: AuthStatus fields renamed (`needsSignup`→`needsRegister`, `signUpEnabled`→`registerEnabled`), error code `SIGNUP_CLOSED`→`REGISTER_CLOSED`
 - **@namorix/core (0.6.3)**: auth.service.ts field access updated, validation-messages key renamed, guards updated
 - **frontend (0.5.2)**: i18n en.json text ("Sign in"→"Log in", "Sign up"→"Register"), page links updated
-- **backend (0.11.0)**: SettingsService method renames (`IsSignUpEnabled`→`IsRegisterEnabled`), CORS middleware added, JsonErrorMiddleware fix
+- **backend (0.12.0)**: SettingsService method renames (`IsSignUpEnabled`→`IsRegisterEnabled`), CORS middleware added, custom [Validate] attribute (IValidationSchema, ValidateAttribute, ValidationRule, LoginSchema, RegisterSchema), JsonErrorMiddleware fix
 - **Docs**: architecture.md, m1-shell-ui.md, m2-auth.md, m5-core-package.md, migration-backend-csharp.md, frontend/README.md, .claude/CLAUDE.md all updated
 - **Memory bank**: progress.md, activeContext.md, systemPatterns.md all updated
+
+### Validation System Expansion (C#)
+- **FormatValidationRule**: Regex pattern matching for format validation
+- **EnumValidateRule**: `Enum.IsDefined` check for enum validation
+- **ApiResponse refactor**: Added `Error`, `Field`, `Meta` properties to match TypeScript schema; `Fail()` overloads for auth vs validation errors
+- **JsonIgnoreCondition.WhenWritingNull**: Null fields omitted from JSON responses
+- **JsonErrorMiddleware fix**: Uses `HttpContext.Items["Validated"]` flag to distinguish custom 400 (keep) from ASP.NET model-binding 400 (override)
+- **HttpContextKeys constant class**: Typed key for `"Validated"` to prevent typos
+- **AuthService cleanup**: Extracted `ValidateAndParseToken` private method, removed debug Console.WriteLine
+- **User model fix**: `CreateAt`→`CreatedAt`, `UpdateAt`→`UpdatedAt`
+- **ValidationRule fixes**: Empty string now correctly reports `Required` instead of min/max; nullable Min/Max handled correctly
+- **ValidationErrorCodes/HttpErrorCodes**: Proper error code constants instead of hardcoded strings
+- **ValidationMeta class**: Structured constraint metadata (minLength, maxLength, min, max, pattern, enum) for frontend i18n
+    
+### Custom [Validate] Attribute (C#)
+- **backend/Validation/**: New directory with schema-based validation system
+- **IValidationSchema**: Marker interface for validation schemas
+- **ValidateAttribute**: ActionFilterAttribute that validates action arguments against schema properties
+- **ValidationRule**: Abstract base + StringValidationRule with MinLength, MaxLength, Trim support
+- **LoginSchema/RegisterSchema**: Use AuthConstraints constants (UsernameMinLength=1, UsernameMaxLength=32, PasswordMinLength=8)
+- AuthController endpoints now use `[Validate(typeof(LoginSchema))]` and `[Validate(typeof(RegisterSchema))]` instead of `ModelState.IsValid` check
+- Fix: ValidateAttribute condition was inverted (needed `!IsAssignableFrom` not `IsAssignableFrom`)
+- Fix: ValidationRule MaxLength check had wrong operator (`<` instead of `>`)
+- Fix: JsonErrorMiddleware removed unnecessary `FlushAsync` call
 
 ### Go Migration Artifacts Removed
 - `backend-go/` directory deleted (go.mod, go.sum, internal/db/*.go)

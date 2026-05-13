@@ -124,14 +124,14 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| root (namorix) | 0.1.8 | M2 (docs cleanup, xóa backend-go, signin→login naming migration complete) |
+| root (namorix) | 0.1.9 | M2 (validation system expansion: FormatValidationRule, EnumValidateRule, ApiResponse Field/Meta/Error, middleware fixes) |
 | frontend | 0.5.2 | M2 (i18n text: sign in/up → log in/register) |
 | @namorix/core | 0.6.3 | M2 (field name refactoring: needsSignup→needsRegister, signUpEnabled→registerEnabled) |
 | @namorix/styles | 0.2.0 | M2 (variables.scss + exports subpath) |
 | @namorix/ui | 0.3.0 | M2 |
 | @namorix/backend-core | 0.6.0 | M2 (getClientIP utility, trustProxy + secureCookie middleware, secure flag on cookies) |
 | @namorix/shared | 0.7.0 | M2 (breaking: AuthStatus fields rename + REGISTER_CLOSED error code) |
-| backend | 0.11.0 | M2 (new: CORS middleware in Program.cs, SettingsService method renames)
+| backend | 0.13.0 | M2 (validation expansion: FormatValidationRule, EnumValidateRule, ApiResponse Field/Meta/Error, middleware fixes) |
 
 ## Version Rules
 
@@ -153,7 +153,16 @@
 
 ## Version History
 
-### 2026-05-13 (latest — Naming migration + docs cleanup)
+### 2026-05-13 (latest — Validation system expansion)
+| Package | Version | Changes |
+|---------|---------|---------|
+| backend | 0.13.0 | Validation expansion: FormatValidationRule, EnumValidateRule, ApiResponse refactor (Error/Field/Meta), JsonErrorMiddleware Validated flag, AuthService ValidateAndParseToken extracted, empty string→Required fix, HttpContextKeys constant, global usings cleanup |
+| root (namorix) | 0.1.9 | Backend 0.13.0 validation expansion |
+
+### 2026-05-13 (Naming migration + docs cleanup)
+| Package | Version | Changes |
+|---------|---------|---------|
+| backend | 0.12.0 | Add custom [Validate] attribute for auth endpoints: IValidationSchema, ValidateAttribute, ValidationRule; LoginSchema, RegisterSchema using AuthConstraints; JsonErrorMiddleware bug fix (remove FlushAsync) |
 | Package | Version | Changes |
 |---------|---------|---------|
 | root (namorix) | 0.1.8 | Docs cleanup: xóa backend-go/ + docs/migration-backend-go.md, xóa AGENTS.md references, update README code examples |

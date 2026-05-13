@@ -266,7 +266,210 @@ throw new AuthException(AuthErrors.InvalidCredentials);
 ## Notes
 
 - `@namorix/backend-core` → deprecated
-- Decorator pattern from TypeScript → Minimal API routing in C#
-- Validation → inline hoặc record-based request models
+- Decorator pattern from TypeScript → Controller-based routing trong C# (thay vì Minimal API như dự tính ban đầu, vì Controller hỗ trợ ActionFilter tốt hơn cho validation)
+- Validation → `[Validate]` attribute với schema classes
 - Addon viết bằng C# có thể reference project hoặc tách package riêng
 - **Config pattern quan trọng:** Luôn dùng `IOptions<T>` thay vì `IConfiguration.GetValue<string>("key")` để tránh hardcoded strings
+
+---
+
+## Modern C# Patterns & Gợi Ý
+
+Các pattern C# hiện đại (.NET 8+) đang dùng và nên dùng trong project:
+
+### 1. Primary Constructors (C# 12)
+
+```csharp
+// ✅ Controller — primary constructor + DI
+public class AuthController(AuthService authService, IOptions<JwtConfig> jwtConfig)
+    : ControllerBase
+{
+    private readonly JwtConfig _jwtConfig = jwtConfig.Value;
+}
+
+// ✅ Service — primary constructor thay vì field backing field boilerplate
+public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtOptions)
+{
+    private readonly JwtConfig _jwtConfig = jwtOptions.Value;
+
+    public async Task<User> Register(string username, string password)
+    {
+        // dùng _dbContext, _jwtConfig trực tiếp
+    }
+}
+```
+
+**Rules:**
+- Dùng cho tất cả services, controllers (trừ khi cần logic phức tạp trong constructor)
+- Không dùng primary constructor nếu cần `ILogger<T>` — logger nên là field riêng với `LoggerMessage` source-gen
+
+### 2. Records cho DTOs (thay vì class)
+
+```csharp
+// ✅ Record — immutable, value equality, concise
+public record LoginRequest(string Username, string Password, bool RememberMe);
+public record RegisterRequest(string Username, string Password);
+public record UserResponse(int Id, string Username, string Role);
+public record StatusResponse(bool NeedsRegister, bool RegisterEnabled);
+
+// ❌ Class — boilerplate, mutable
+public class LoginRequest
+{
+    public string Username { get; init; } = string.Empty;
+    public string Password { get; init; } = string.Empty;
+    public bool RememberMe { get; init; }
+}
+```
+
+**Khi nào dùng:**
+- Request/Response DTOs → **record**
+- Entities (EF Core) → **class** (cần mutation cho change tracking)
+- Config models → **class** (IOptions<T> binding cần setter)
+
+### 3. Pattern Matching cho Error Handling
+
+```csharp
+// ✅ Switch expression — gọn hơn if/else chain
+return authResult switch
+{
+    { IsSuccess: true } => Ok(ApiResponse<UserResponse>.Ok(MapUser(authResult.User))),
+    { Code: AuthErrors.InvalidCredentials } => Unauthorized(ApiResponse.Fail(authResult.Code)),
+    { Code: AuthErrors.UsernameExists } => Conflict(ApiResponse.Fail(authResult.Code)),
+    _ => StatusCode(500, ApiResponse.Fail(AuthErrors.InternalError))
+};
+
+// ✅ Exception filter trong catch
+catch (AuthException ex) when (ex.Code == AuthErrors.InvalidCredentials)
+{
+    return Unauthorized(ApiResponse.Fail(ex.Code, "Invalid username or password"));
+}
+catch (AuthException ex) when (ex.Code == AuthErrors.UsernameExists)
+{
+    return Conflict(ApiResponse.Fail(ex.Code));
+}
+```
+
+### 4. Collection Expressions (C# 12)
+
+```csharp
+// ✅ [] syntax — clear hơn new List<T>()
+public List<string> GetScopes() => ["read", "write", "admin"];
+public string[] GetRoles() => ["user", "admin"];
+
+// Spread operator ..
+var allItems = [.. existingItems, .. newItems];
+```
+
+### 5. Raw String Literals (C# 11)
+
+```csharp
+// ✅ Raw string — không cần escape, giữ nguyên indent
+var sql = """
+    SELECT u.id, u.username, u.role
+    FROM users u
+    WHERE u.username = {0}
+    """;
+
+// JSON string trong test
+var json = """
+    {
+        "success": true,
+        "data": { "id": 1, "username": "admin" }
+    }
+    """;
+```
+
+### 6. Optional: Source Generators cho Logger
+
+```csharp
+// LoggerMessage attribute — zero allocation at runtime
+public static partial class LogMessages
+{
+    [LoggerMessage(LogLevel.Information, "User {Username} logged in from {Ip}")]
+    public static partial void LogUserLogin(ILogger logger, string username, string ip);
+
+    [LoggerMessage(LogLevel.Warning, "Token reuse detected for user {UserId}")]
+    public static partial void LogTokenReuse(ILogger logger, int userId);
+}
+```
+
+Dùng khi cần hiệu suất cao. Với request đơn giản thì `ILogger<T>.LogInformation()` là đủ.
+
+### 7. Nullable Reference Types Best Practices
+
+```csharp
+// ✅ Không ép kiểu — dùng pattern matching
+if (payload is { userId: > 0 }) { /* hợp lệ */ }
+
+// ✅ ?? throw pattern cho config bắt buộc
+private readonly string _jwtSecret = jwtConfig.Secret
+    ?? throw new InvalidOperationException("JWT Secret is required");
+
+// ✅ Không dùng ! (null-forgiving operator) trừ interop
+// ❌ var user = FindUser()!;
+// ✅ if (user is { } userObj) { /* dùng userObj */ }
+```
+
+### 8. target-typed new + Toán tử điều kiện (C# 9+)
+
+```csharp
+// ✅ target-typed new — bỏ redundant type name
+ApiResponse<UserResponse> response = new()
+{
+    Success = true,
+    Data = userData
+};
+
+// ✅ Conditional access — gọn hơn if null check
+var jti = jwtToken.Claims.FirstOrDefault(c => c.Type == JwtClaims.Jti)?.Value;
+var ip = headers["x-forwarded-for"].FirstOrDefault()?.Split(",")[0].Trim();
+```
+
+### 9. Cấu trúc file gợi ý
+
+```
+backend/
+├── Controllers/
+│   └── AuthController.cs          # Controller + DTO records cùng file (nếu DTO nhỏ)
+├── Services/
+│   └── AuthService.cs             # Business logic, inject DbContext
+├── Models/
+│   ├── User.cs                    # Entity class (EF Core)
+│   ├── RefreshToken.cs
+│   └── Setting.cs
+├── Data/
+│   └── NmxDbContext.cs
+├── Config/
+│   ├── AppConfig.cs               # Config class (có setter)
+│   └── JwtConfig.cs
+├── Constants/
+│   └── AuthConstants.cs           # Hằng số static class
+├── Exceptions/
+│   └── AuthException.cs
+├── Responses/                     # (có thể gộp vào Controllers nếu ít)
+│   ├── ApiResponse.cs
+│   └── ApiResponse{T}.cs
+├── Middleware/
+│   ├── ExceptionMiddleware.cs
+│   └── JsonErrorMiddleware.cs
+├── Validation/
+│   ├── IValidationSchema.cs
+│   ├── ValidateAttribute.cs
+│   ├── ValidationRule.cs
+│   └── Schemas/
+│       ├── LoginSchema.cs
+│       └── RegisterSchema.cs
+└── Program.cs
+```
+
+### Tổng kết — Áp dụng vào Project
+
+| Pattern | Đang dùng? | Nên dùng? | Ghi chú |
+|---------|-----------|-----------|---------|
+| Primary constructor | ✅ Controller | ✅ Services | Tiết kiệm boilerplate |
+| Record DTOs | ❌ class | ✅ record | Immutable, ngắn gọn |
+| Pattern matching | ⚠️ Partial | ✅ Full | Switch expression cho error mapping |
+| Collection expressions | ❌ | ✅ | `[]` syntax |
+| Raw string literals | ❌ | ✅ | SQL, JSON trong code |
+| Source-gen Logger | ❌ | ⚠️ Optional | Chỉ khi cần performance |
+| Nullable reference types | ✅ | ✅ | Đã dùng, keep it up |
