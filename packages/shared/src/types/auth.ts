@@ -1,8 +1,8 @@
 import type { User } from "./user"
 
 export interface AuthStatus {
-  needsSignup: boolean
-  signUpEnabled: boolean
+  needsRegister: boolean
+  registerEnabled: boolean
 }
 
 export interface AuthResult {
