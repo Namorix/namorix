@@ -1,15 +1,22 @@
 using backend.Constants;
 using backend.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace backend.Services;
 
-public class SettingsService(AppDbContext dbContext)
+public class SettingsService(AppDbContext dbContext, IMemoryCache memoryCache)
 {
+    private static readonly string RegisterEnabledCacheKey = "register_enabled";
+    
     public async Task<bool> IsRegisterEnabled()
     {
-        var setting = await dbContext.Settings.FirstOrDefaultAsync(s => s.Key == SettingKeys.RegisterEnabled);
-        return setting?.Value.Equals(SettingValues.True, StringComparison.OrdinalIgnoreCase) ?? true;
+        return await memoryCache.GetOrCreateAsync(RegisterEnabledCacheKey, async entry =>
+        {
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
+            var setting = await dbContext.Settings.FirstOrDefaultAsync(s => s.Key == SettingKeys.RegisterEnabled);
+            return setting?.Value.Equals(SettingValues.True, StringComparison.OrdinalIgnoreCase) ?? true;
+        });
     }
 
     public async Task SetRegisterEnabled(bool enabled)
@@ -26,6 +33,7 @@ public class SettingsService(AppDbContext dbContext)
         }
 
         await dbContext.SaveChangesAsync();
+        memoryCache.Set(RegisterEnabledCacheKey, enabled, TimeSpan.FromMinutes(5));
     }
 
     public async Task<(bool needsRegister, bool registerEnabled)> GetAuthStatus()

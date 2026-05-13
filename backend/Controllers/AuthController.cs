@@ -53,7 +53,8 @@ public class AuthController(AuthService authService, SettingsService settingsSer
     {
         var registerEnabled = await settingsService.IsRegisterEnabled();
         if (!registerEnabled)
-            return StatusCode(403, ApiResponse.Fail(AuthErrors.RegisterClosed));
+            return StatusCode(StatusCodes.Status403Forbidden,
+                ApiResponse.Fail(AuthErrors.RegisterClosed));
 
         try
         {
@@ -179,25 +180,23 @@ public class AuthController(AuthService authService, SettingsService settingsSer
 
     private void SetAccessCookie(string token)
     {
-        var secure = _appConfig.AllowedOrigins.Contains("https", StringComparison.OrdinalIgnoreCase);
         Response.Cookies.Append(CookieName.AccessToken, token, new CookieOptions
         {
             HttpOnly = true,
             SameSite = SameSiteMode.Lax,
-            Secure = secure,
+            Secure = _appConfig.SecureCookie,
             Expires = DateTimeOffset.UtcNow.AddMinutes(_jwtConfig.AccessTokenExpirationMinutes)
         });
     }
     
     private void SetRefreshCookie(string token, bool rememberMe)
     {
-        var secure = _appConfig.AllowedOrigins.Contains("https", StringComparison.OrdinalIgnoreCase);
         var days = rememberMe ? _jwtConfig.RefreshTokenExpirationDaysRemember : _jwtConfig.RefreshTokenExpirationDays;
         Response.Cookies.Append(CookieName.RefreshToken, token, new CookieOptions
         {
             HttpOnly = true,
             SameSite = SameSiteMode.Lax,
-            Secure = secure,
+            Secure = _appConfig.SecureCookie,
             Expires = DateTimeOffset.UtcNow.AddDays(days)
         });
     }
@@ -220,10 +219,7 @@ public class AuthController(AuthService authService, SettingsService settingsSer
                ?? headers["true-client-ip"].FirstOrDefault()
                ?? HttpContext.Connection.RemoteIpAddress?.ToString();
 
-        if (string.IsNullOrEmpty(ip))
-            return null;
-
-        return CleanIp(ip);
+        return string.IsNullOrEmpty(ip) ? null : CleanIp(ip);
     }
 
     private string? GetFingerprint() =>

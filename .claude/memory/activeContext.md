@@ -22,6 +22,11 @@ M2 — Full Auth Backend → **Complete** ✅ + **Harden** ✅ + **ESLint** ✅ 
 
 ## Recent Changes (2026-05-13)
 
+### Security Headers, Settings Cache, SecureCookie Fix, Vite Proxy
+- **backend (0.14.1)**: New SecurityHeadersMiddleware (nosniff, DENY frame, XSS protection, Referrer-Policy), SettingsService IMemoryCache (5min cache), SecureCookie fix (dùng AppConfig.SecureCookie thay vì AllowedOrigins.Contains("https")), new UseXForwardedHeaders extension (KnownNetworks/KnownProxies clear), Kestrel 10KB body limit, JsonErrorMiddleware StatusCodes constants, AccessToken TTL 15→5
+- **frontend (0.5.3)**: Enable Vite proxy /api, API URL default fix
+- **root (0.2.1)**: backend + frontend patches
+
 ### CSRF Middleware (C#) + Rate Limiting + Token Cleanup
 - **backend (0.14.0)**: New CsrfMiddleware (double-submit pattern, request header validation), rate limiting (100 req/min, built-in .NET 8 middleware), TokenCleanupService (BackgroundService, 24h interval, EF Core ExecuteDeleteAsync), AppConfig.CsrfEnabled/SecureCookie, HttpErrorCodes.RateLimitExceeded, ApplicationBuilderExtensions.UseCsrfProtection, pipeline reorder (CORS → RateLimiter → CSRF → Controllers)
 - **root (0.2.0)**: New backend features — CSRF, rate limiting, token cleanup

@@ -6,20 +6,20 @@ export default defineConfig({
   server: {
     host: "0.0.0.0",
     allowedHosts: true,
-    // proxy: {
-    //   "/api": {
-    //     target: "http://192.168.31.150:3000",
-    //     changeOrigin: true,
-    //     configure: (proxy) => {
-    //       proxy.on("proxyReq", (proxyReq, req) => {
-    //         const ip = req.socket.remoteAddress
-    //         if (ip) {
-    //           proxyReq.setHeader("x-forwarded-for", ip)
-    //         }
-    //       })
-    //     },
-    //   },
-    // },
+    proxy: {
+      "/api": {
+        target: "http://192.168.31.150:3000",
+        changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on("proxyReq", (proxyReq, req) => {
+            const ip = req.socket.remoteAddress
+            if (ip) {
+              proxyReq.setHeader("x-forwarded-for", ip)
+            }
+          })
+        },
+      },
+    },
   },
   resolve: {
     tsconfigPaths: true,

@@ -10,6 +10,12 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.WebHost.UseKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 10240; // 10KB
+});
+
 builder.Services.Configure<AppConfig>(builder.Configuration);
 builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("Jwt"));
 
@@ -22,9 +28,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<SettingsService>();
+builder.Services.AddMemoryCache();
 builder.Services.AddHostedService<TokenCleanupService>();
 
-    
 builder.Services.AddRateLimiter(options =>
 {
     options.AddFixedWindowLimiter("Global", opt =>
@@ -65,6 +71,8 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 app.UseApiErrorHandling();
+app.UseSecurityHeaders();
+app.UseXForwardedHeaders();
 app.UseRouting();
 app.UseCors();
 app.UseRateLimiter();

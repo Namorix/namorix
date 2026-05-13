@@ -124,14 +124,14 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| root (namorix) | 0.2.0 | M2 (CSRF middleware, rate limiting, TokenCleanupService) |
-| frontend | 0.5.2 | M2 (i18n text: sign in/up → log in/register) |
+| root (namorix) | 0.2.1 | M2 (security headers, settings cache, SecureCookie fix) |
+| frontend | 0.5.3 | M2 (Vite proxy config, API URL default fix) |
 | @namorix/core | 0.6.3 | M2 (field name refactoring: needsSignup→needsRegister, signUpEnabled→registerEnabled) |
 | @namorix/styles | 0.2.0 | M2 (variables.scss + exports subpath) |
 | @namorix/ui | 0.3.0 | M2 |
 | @namorix/backend-core | 0.6.0 | M2 (getClientIP utility, trustProxy + secureCookie middleware, secure flag on cookies) |
 | @namorix/shared | 0.7.0 | M2 (breaking: AuthStatus fields rename + REGISTER_CLOSED error code) |
-| backend | 0.14.0 | M2 (CSRF middleware, rate limiting, TokenCleanupService, AppConfig CsrfEnabled/SecureCookie) |
+| backend | 0.14.1 | M2 (SecurityHeadersMiddleware, IMemoryCache, SecureCookie fix, UseXForwardedHeaders, Kestrel body limit) |
 
 ## Version Rules
 
@@ -153,7 +153,14 @@
 
 ## Version History
 
-### 2026-05-13 (latest — CSRF, rate limiting, token cleanup)
+### 2026-05-13 (latest — SecurityHeaders, Settings cache, SecureCookie fix)
+| Package | Version | Changes |
+|---------|---------|---------|
+| backend | 0.14.1 | SecurityHeadersMiddleware (X-ContentType-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy), SettingsService IMemoryCache (5min), SecureCookie dùng AppConfig trực tiếp thay vì AllowedOrigins heuristic, UseXForwardedHeaders extension (KnownNetworks/KnownProxies clear), Kestrel 10KB body limit, JsonErrorMiddleware StatusCodes constants, AccessToken TTL 15→5 |
+| frontend | 0.5.3 | Enable Vite proxy /api, API URL default fix (bỏ hardcoded port) |
+| root (namorix) | 0.2.1 | Backend 0.14.1 + frontend 0.5.3 patches |
+
+### 2026-05-13 (CSRF, rate limiting, token cleanup)
 | Package | Version | Changes |
 |---------|---------|---------|
 | backend | 0.14.0 | Add CsrfMiddleware, rate limiting (100 req/min), TokenCleanupService (BackgroundService), AppConfig CsrfEnabled/SecureCookie, HttpErrorCodes.RateLimitExceeded, ApplicationBuilderExtensions.UseCsrfProtection, Program.cs pipeline update |
