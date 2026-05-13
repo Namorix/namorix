@@ -124,14 +124,14 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| root (namorix) | 0.1.9 | M2 (validation system expansion: FormatValidationRule, EnumValidateRule, ApiResponse Field/Meta/Error, middleware fixes) |
+| root (namorix) | 0.2.0 | M2 (CSRF middleware, rate limiting, TokenCleanupService) |
 | frontend | 0.5.2 | M2 (i18n text: sign in/up → log in/register) |
 | @namorix/core | 0.6.3 | M2 (field name refactoring: needsSignup→needsRegister, signUpEnabled→registerEnabled) |
 | @namorix/styles | 0.2.0 | M2 (variables.scss + exports subpath) |
 | @namorix/ui | 0.3.0 | M2 |
 | @namorix/backend-core | 0.6.0 | M2 (getClientIP utility, trustProxy + secureCookie middleware, secure flag on cookies) |
 | @namorix/shared | 0.7.0 | M2 (breaking: AuthStatus fields rename + REGISTER_CLOSED error code) |
-| backend | 0.13.0 | M2 (validation expansion: FormatValidationRule, EnumValidateRule, ApiResponse Field/Meta/Error, middleware fixes) |
+| backend | 0.14.0 | M2 (CSRF middleware, rate limiting, TokenCleanupService, AppConfig CsrfEnabled/SecureCookie) |
 
 ## Version Rules
 
@@ -153,7 +153,13 @@
 
 ## Version History
 
-### 2026-05-13 (latest — Validation system expansion)
+### 2026-05-13 (latest — CSRF, rate limiting, token cleanup)
+| Package | Version | Changes |
+|---------|---------|---------|
+| backend | 0.14.0 | Add CsrfMiddleware, rate limiting (100 req/min), TokenCleanupService (BackgroundService), AppConfig CsrfEnabled/SecureCookie, HttpErrorCodes.RateLimitExceeded, ApplicationBuilderExtensions.UseCsrfProtection, Program.cs pipeline update |
+| root (namorix) | 0.2.0 | Backend 0.14.0 new features |
+
+### 2026-05-13 (Validation system expansion)
 | Package | Version | Changes |
 |---------|---------|---------|
 | backend | 0.13.0 | Validation expansion: FormatValidationRule, EnumValidateRule, ApiResponse refactor (Error/Field/Meta), JsonErrorMiddleware Validated flag, AuthService ValidateAndParseToken extracted, empty string→Required fix, HttpContextKeys constant, global usings cleanup |

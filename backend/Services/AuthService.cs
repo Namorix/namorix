@@ -57,7 +57,8 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig)
             new Claim(JwtClaims.Username, user.Username),
             new Claim(JwtClaims.Role, user.Role.ToString()),
             new Claim(JwtClaims.Jti, jti),
-            new Claim(JwtClaims.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
+            new Claim(JwtClaims.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(),
+                ClaimValueTypes.Integer64)
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.Secret));
@@ -71,7 +72,8 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig)
         return (accessToken, refreshToken, jti);
     }
 
-    private static RefreshToken CreateRefreshToken(User user, string jti, string? userAgent, string? fingerprint, string? ipAddress, int ttlDays)
+    private static RefreshToken CreateRefreshToken(User user, string jti, string? userAgent, string? fingerprint,
+        string? ipAddress, int ttlDays)
     {
         return new RefreshToken
         {
@@ -123,8 +125,8 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig)
         }
     }
 
-    public async Task<(User user, string accessToken, string refreshToken)> RefreshToken(string token, string? fingerprint,
-        string? ipAddress)
+    public async Task<(User user, string accessToken, string refreshToken)> RefreshToken(string token,
+        string? fingerprint, string? ipAddress)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.Secret));
 
@@ -159,7 +161,8 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig)
 
             var (newAccessToken, newRefreshToken, newJti) = GenerateTokens(user);
             var ttlDays = _jwtConfig.RefreshTokenExpirationDays;
-            var newRefreshTokenEntity = CreateRefreshToken(user, newJti, storedToken.UserAgent, fingerprint, ipAddress, ttlDays);
+            var newRefreshTokenEntity =
+                CreateRefreshToken(user, newJti, storedToken.UserAgent, fingerprint, ipAddress, ttlDays);
             dbContext.RefreshTokens.Add(newRefreshTokenEntity);
             await dbContext.SaveChangesAsync();
 

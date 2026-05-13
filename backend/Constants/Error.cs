@@ -31,4 +31,5 @@ public static class HttpErrorCodes
     public const string InternalError = "INTERNAL_ERROR";
     public const string UnsupportedMediaType = "UNSUPPORTED_MEDIA_TYPE";
     public const string InvalidRequestBody = "INVALID_REQUEST_BODY";
+    public const string RateLimitExceeded = "RATE_LIMIT_EXCEEDED";
 }

@@ -22,6 +22,11 @@ M2 — Full Auth Backend → **Complete** ✅ + **Harden** ✅ + **ESLint** ✅ 
 
 ## Recent Changes (2026-05-13)
 
+### CSRF Middleware (C#) + Rate Limiting + Token Cleanup
+- **backend (0.14.0)**: New CsrfMiddleware (double-submit pattern, request header validation), rate limiting (100 req/min, built-in .NET 8 middleware), TokenCleanupService (BackgroundService, 24h interval, EF Core ExecuteDeleteAsync), AppConfig.CsrfEnabled/SecureCookie, HttpErrorCodes.RateLimitExceeded, ApplicationBuilderExtensions.UseCsrfProtection, pipeline reorder (CORS → RateLimiter → CSRF → Controllers)
+- **root (0.2.0)**: New backend features — CSRF, rate limiting, token cleanup
+- Migrated remaining missing features từ Node.js backend (backend-n/)
+
 ### Naming Migration — signin/signup/signout → login/register/logout
 - **@namorix/shared (0.7.0)**: AuthStatus fields renamed (`needsSignup`→`needsRegister`, `signUpEnabled`→`registerEnabled`), error code `SIGNUP_CLOSED`→`REGISTER_CLOSED`
 - **@namorix/core (0.6.3)**: auth.service.ts field access updated, validation-messages key renamed, guards updated
@@ -237,6 +242,22 @@ packages/backend-core/src/middleware/csrf.ts
 - On unknown jti: revoke ALL user tokens (anti-theft — prevents reuse of stolen tokens)
 - Logout: DELETE one jti. Logout-all: DELETE all by userId
 - No token_version column needed — whitelist approach is simpler and gives per-device control
+
+### Fingerprint Validation Strategy (Pending — Loose → Strict)
+Hiện tại dùng **Loose**: chỉ revoke khi cả fingerprint AND IP đều khác. Nếu chỉ fingerprint khác (cùng IP) → allow (browser/OS update).
+
+Cần chuyển sang **Strict** cho prod:
+```csharp
+if (!string.IsNullOrEmpty(storedToken.Fingerprint))
+{
+    if (string.IsNullOrEmpty(fingerprint) || storedToken.Fingerprint != fingerprint)
+    {
+        await RevokeAllUserTokens(userId);
+        throw new AuthException(AuthErrors.FingerprintMismatch);
+    }
+}
+```
+Lý do: frontend luôn gửi fingerprint, nếu thiếu lúc refresh là dấu hiệu bất thường (token bị steal).
 
 ### Token Refresh Strategy
 - Auto-refresh on 401 handled in `RequestBuilder.json()` (HTTP client level, transparent to callers)

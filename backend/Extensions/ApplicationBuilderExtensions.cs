@@ -9,4 +9,9 @@ public static class ApplicationBuilderExtensions
          applicationBuilder.UseMiddleware<ExceptionMiddleware>();
          applicationBuilder.UseMiddleware<JsonErrorMiddleware>();
      }
+
+     public static void UseCsrfProtection(this IApplicationBuilder applicationBuilder)
+     {
+         applicationBuilder.UseMiddleware<CsrfMiddleware>();
+     }
 }
