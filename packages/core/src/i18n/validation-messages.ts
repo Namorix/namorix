@@ -139,8 +139,8 @@ export function resolveAuthError(err: ApiError): ValidationMessage | null {
     case AuthErrorCode.UNAUTHORIZED:
       key = "common.auth.errors.unauthorized"
       break
-    case AuthErrorCode.SIGNUP_CLOSED:
-      key = "common.auth.errors.signupClosed"
+    case AuthErrorCode.REGISTER_CLOSED:
+      key = "common.auth.errors.registerClosed"
       break
     default:
       return null

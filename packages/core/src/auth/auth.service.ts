@@ -24,10 +24,10 @@ export const authService: AuthChecker = {
   },
   checkHasUsers: async () => {
     const status = await getAuthStatus()
-    return !status.needsSignup
+    return !status.needsRegister
   },
   isRegistrationOpen: async () => {
     const status = await getAuthStatus()
-    return status.signUpEnabled
+    return status.registerEnabled
   },
 }

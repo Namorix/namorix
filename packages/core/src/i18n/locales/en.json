@@ -19,8 +19,8 @@
       "errors": {
         "invalidCredentials": "Invalid username or password",
         "usernameExists": "This username is already taken",
-        "unauthorized": "Unauthorized. Please sign in again",
-        "signupClosed": "Registration is currently closed"
+        "unauthorized": "Unauthorized. Please login again",
+        "registerClosed": "Registration is currently closed"
       }
     }
   }

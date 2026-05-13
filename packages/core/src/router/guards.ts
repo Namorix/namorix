@@ -25,6 +25,7 @@ export function createAuthGuard(
   const p = { ...defaultPaths, ...paths }
   return async () => {
     const hasUsers = await auth.checkHasUsers()
+
     if (!hasUsers) {
       return p.register
     }
