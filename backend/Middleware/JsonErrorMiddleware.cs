@@ -40,7 +40,7 @@ public class JsonErrorMiddleware(RequestDelegate requestDelegate)
             await httpContext.Response.WriteAsJsonAsync(StatusCodeResponseFail(httpContext.Response.StatusCode));
             return;
         }
-
+        
         buffer.Seek(0, SeekOrigin.Begin);
         httpContext.Response.Body = originalBody;
         await buffer.CopyToAsync(originalBody);

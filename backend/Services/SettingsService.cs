@@ -28,7 +28,7 @@ public class SettingsService(AppDbContext dbContext)
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task<(bool needsSignUp, bool registerEnabled)> GetAuthStatus()
+    public async Task<(bool needsRegister, bool registerEnabled)> GetAuthStatus()
     {
         var userCount = await dbContext.Users.CountAsync();
         var registerEnabled = await IsRegisterEnabled();

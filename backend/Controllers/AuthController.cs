@@ -53,8 +53,8 @@ public class AuthController(AuthService authService, SettingsService settingsSer
         if (!ModelState.IsValid)
             return BadRequest(ApiResponse.Fail(ValidationErrorCodes.ValidationError));
 
-        var signUpEnabled = await settingsService.IsRegisterEnabled();
-        if (!signUpEnabled)
+        var registerEnabled = await settingsService.IsRegisterEnabled();
+        if (!registerEnabled)
             return StatusCode(403, ApiResponse.Fail(AuthErrors.RegisterClosed));
 
         try
