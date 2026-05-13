@@ -24,14 +24,11 @@ public static class ValidationErrorCodes
     public const string ValidationError = "VALIDATION_ERROR";
 }
 
-public static class SystemErrorCodes
-{
-    public const string InternalError = "INTERNAL_ERROR";
-    public const string NotFound = "NOT_FOUND";
-    public const string CsrfTokenMismatch = "CSRF_TOKEN_MISMATCH";
-}
-
 public static class HttpErrorCodes
 {
+    public const string NotFound = "NOT_FOUND";
+    public const string CsrfTokenMismatch = "CSRF_TOKEN_MISMATCH";
+    public const string InternalError = "INTERNAL_ERROR";
     public const string UnsupportedMediaType = "UNSUPPORTED_MEDIA_TYPE";
+    public const string InvalidRequestBody = "INVALID_REQUEST_BODY";
 }

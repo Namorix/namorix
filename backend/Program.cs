@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using backend.Config;
 using backend.Extensions;
 using backend.Models;
@@ -11,7 +12,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<SettingsService>();
-builder.Services.AddControllers();
+
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+});
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>

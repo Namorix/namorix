@@ -29,20 +29,18 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig)
 
     public async Task<User> Register(string username, string password)
     {
-        var exists = await dbContext.Users.AnyAsync(u => u.Username == username);
-        if (exists)
-        {
+        var usernameExists = await dbContext.Users.AnyAsync(u => u.Username == username);
+        if (usernameExists)
             throw new AuthException(AuthErrors.UsernameExists);
-        }
 
-        var isFirstUser = !await dbContext.Users.AnyAsync();
-        var role = isFirstUser ? 1 : 0;
+        var userCount = await dbContext.Users.CountAsync();
+        var role = userCount == 0 ? 1 : 0;
         var user = new User
         {
             Username = username,
             Password = BCrypt.Net.BCrypt.HashPassword(password),
             Role = role,
-            CreateAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow
         };
         dbContext.Users.Add(user);
         await dbContext.SaveChangesAsync();
@@ -79,7 +77,7 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig)
         {
             UserId = user.Id,
             Jti = jti,
-            TokenHash = BCrypt.Net.BCrypt.HashPassword(jti),
+            TokenHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(jti))),
             ExpiresAt = DateTime.UtcNow.AddDays(ttlDays),
             CreatedAt = DateTime.UtcNow,
             UserAgent = userAgent,
@@ -88,26 +86,31 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig)
         };
     }
 
-    public (int userId, string username, int role)? VerifyAccessToken(string token)
+    private static JwtSecurityToken ValidateAndParseToken(string token, SymmetricSecurityKey key, string issuer,
+        string audience)
     {
         var handler = new JwtSecurityTokenHandler();
+        handler.ValidateToken(token, new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = key,
+            ValidateIssuer = true,
+            ValidIssuer = issuer,
+            ValidateAudience = true,
+            ValidAudience = audience,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
+        }, out var validateToken);
+        return (JwtSecurityToken)validateToken;
+    }
+    
+    public (int userId, string username, int role)? VerifyAccessToken(string token)
+    {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.Secret));
 
         try
         {
-            handler.ValidateToken(token, new TokenValidationParameters
-            {
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = key,
-                ValidateIssuer = true,
-                ValidIssuer = _jwtConfig.Issuer,
-                ValidateAudience = true,
-                ValidAudience = _jwtConfig.Audience,
-                ValidateLifetime = true,
-                ClockSkew = TimeSpan.Zero
-            }, out var validatedToken);
-
-            var jwtToken = (JwtSecurityToken)validatedToken;
+            var jwtToken = ValidateAndParseToken(token, key, _jwtConfig.Issuer, _jwtConfig.Audience);
             var userId = int.Parse(jwtToken.Claims.First(c => c.Type == JwtClaims.UserId).Value);
             var username = jwtToken.Claims.First(c => c.Type == JwtClaims.Username).Value;
             var role = int.Parse(jwtToken.Claims.First(c => c.Type == JwtClaims.Role).Value);
@@ -123,24 +126,11 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig)
     public async Task<(User user, string accessToken, string refreshToken)> RefreshToken(string token, string? fingerprint,
         string? ipAddress)
     {
-        var handler = new JwtSecurityTokenHandler();
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.Secret));
 
         try
         {
-            handler.ValidateToken(token, new TokenValidationParameters
-            {
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = key,
-                ValidateIssuer = true,
-                ValidIssuer = _jwtConfig.Issuer,
-                ValidateAudience = true,
-                ValidAudience = _jwtConfig.Audience,
-                ValidateLifetime = true,
-                ClockSkew = TimeSpan.Zero
-            }, out var validatedToken);
-
-            var jwtToken = (JwtSecurityToken)validatedToken;
+            var jwtToken = ValidateAndParseToken(token, key, _jwtConfig.Issuer, _jwtConfig.Audience);
             var jti = jwtToken.Claims.First(c => c.Type == JwtClaims.Jti).Value;
             var userId = int.Parse(jwtToken.Claims.First(c => c.Type == JwtClaims.UserId).Value);
             var storedToken = await dbContext.RefreshTokens.Include(rt => rt.User)

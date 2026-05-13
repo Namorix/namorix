@@ -4,6 +4,8 @@ using backend.Constants;
 using backend.Exceptions;
 using backend.Responses;
 using backend.Services;
+using backend.Validation;
+using backend.Validation.Schemas;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -18,11 +20,9 @@ public class AuthController(AuthService authService, SettingsService settingsSer
     private readonly AppConfig _appConfig = appConfig.Value;
     
     [HttpPost("login")]
+    [Validate(typeof(LoginSchema))]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ApiResponse.Fail(ValidationErrorCodes.ValidationError));
-
         try
         {
             var fingerprint = GetFingerprint();
@@ -48,11 +48,9 @@ public class AuthController(AuthService authService, SettingsService settingsSer
     }
 
     [HttpPost("register")]
+    [Validate(typeof(RegisterSchema))]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ApiResponse.Fail(ValidationErrorCodes.ValidationError));
-
         var registerEnabled = await settingsService.IsRegisterEnabled();
         if (!registerEnabled)
             return StatusCode(403, ApiResponse.Fail(AuthErrors.RegisterClosed));

@@ -13,8 +13,8 @@ public class User
     public string Password { get; init; } = string.Empty;
     
     public int Role { get; init; }
-    public DateTime CreateAt { get; init; }
-    public DateTime? UpdateAt { get; init; }
+    public DateTime CreatedAt { get; init; }
+    public DateTime? UpdatedAt { get; init; }
 
     public ICollection<RefreshToken> RefreshTokens { get; init; } = new List<RefreshToken>();
 }

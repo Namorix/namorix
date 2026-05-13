@@ -20,7 +20,7 @@ public class ExceptionMiddleware(RequestDelegate requestDelegate, ILogger<Except
             httpContext.Response.Body = originalBody;
             httpContext.Response.ContentType = "application/json";
             httpContext.Response.StatusCode = 500;
-            await httpContext.Response.WriteAsJsonAsync(ApiResponse.Fail(SystemErrorCodes.InternalError,
+            await httpContext.Response.WriteAsJsonAsync(ApiResponse.Fail(HttpErrorCodes.InternalError,
                 "An unexpected error occurred"));
         }
     }

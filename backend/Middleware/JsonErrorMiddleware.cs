@@ -7,20 +7,18 @@ public class JsonErrorMiddleware(RequestDelegate requestDelegate)
 {
     private static ApiResponse StatusCodeResponseFail(int statusCode)
     {
-        string errorCode;
-        string errorMessage;
-
-        if (statusCode == 415)
+        var errorMessage = statusCode switch
         {
-            errorCode = HttpErrorCodes.UnsupportedMediaType;
-            errorMessage = "Content-Type must be application/json";
-        }
-        else
+            415 => "Content-Type must be application/json",
+            _ => "Invalid request body"
+        };
+        
+        var errorCode = statusCode switch
         {
-            errorCode = ValidationErrorCodes.ValidationError;
-            errorMessage = "Invalid request body";
-        }
-
+            415 => HttpErrorCodes.UnsupportedMediaType,
+            _ => HttpErrorCodes.InvalidRequestBody
+        };
+        
         return ApiResponse.Fail(errorCode, errorMessage);
     }
     
@@ -32,11 +30,11 @@ public class JsonErrorMiddleware(RequestDelegate requestDelegate)
 
         await requestDelegate(httpContext);
 
-        if (httpContext.Response.StatusCode is 415 or 400)
+        if (httpContext.Response.StatusCode is 415 || 
+            (httpContext.Response.StatusCode is 400 && !httpContext.Items.ContainsKey(HttpContextKeys.Validated)))
         {
             httpContext.Response.Body = originalBody;
             httpContext.Response.ContentType = "application/json";
-            await originalBody.FlushAsync();
             await httpContext.Response.WriteAsJsonAsync(StatusCodeResponseFail(httpContext.Response.StatusCode));
             return;
         }

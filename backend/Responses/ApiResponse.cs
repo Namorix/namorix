@@ -1,46 +1,47 @@
+using backend.Constants;
+
 namespace backend.Responses;
 
 public class ApiResponse<T>
 {
-    public bool Success { get; set; }
-    public T? Data { get; set; }
-    public string? Code { get; set; }
-    public string? Message  { get; set; }
+    public bool Success { get; init; }
+    public T? Data { get; init; }
+    public string? Code { get; init; }
+    public string? Error { get; init; }
+    public string? Field { get; init; }
+    public ValidationMeta? Meta { get; init; }
 
     public static ApiResponse<T> Ok(T data) => new() { Success = true, Data = data };
-
-    public static ApiResponse<T> Fail(string code, string? message = null) =>
-        new() { Success = false, Code = code, Message = message };
-
-    public static ApiResponse<T> Fail(string code, T? data, string? message = null) =>
-        new() { Success = false, Code = code, Data = data, Message = message };
+    
+    public static ApiResponse<T> Fail(string code, string? error = null, string? field = null, ValidationMeta? meta = null) =>
+        new() { Success = false, Code = code, Error = error, Field = field, Meta = meta};
 }
 
 public class ApiResponse : ApiResponse<object>
 {
     public new static ApiResponse Ok(object? data = null) => new() { Success = true, Data = data };
-
-    public new static ApiResponse Fail(string code, string? message = null) => new()
+    
+    public new static ApiResponse Fail(string code, string? error = null, string? field = null, ValidationMeta? meta = null) => new()
     {
-        Success = false, Code = code, Message = message
+        Success = false, Code = code, Error = error, Field = field, Meta = meta
     };
 }
 
 public class UserResponse
 {
-    public int Id { get; set; }
-    public string Username { get; set; } = string.Empty;
-    public int Role { get; set; }
+    public int Id { get; init; }
+    public string Username { get; init; } = string.Empty;
+    public int Role { get; init; }
 }
 
 public class StatusResponse
 {
-    public bool NeedsRegister { get; set; }
-    public bool RegisterEnabled { get; set; }
+    public bool NeedsRegister { get; init; }
+    public bool RegisterEnabled { get; init; }
 }
 
 public class ErrorResponse
 {
-    public string Code { get; set; } = string.Empty;
-    public string? Message { get; set; }
+    public string Code { get; init; } = string.Empty;
+    public string? Message { get; init; }
 }
