@@ -35,12 +35,12 @@ Login/logout/refresh/session/register, cookie, revoke, bootstrap admin. Nối fr
 
 ### 3. Auth API Endpoints ✅
 
-- [x] `POST /api/auth/signin` — validate creds, set cookies (accessToken, refreshToken)
-- [x] `POST /api/auth/signup` — create user
-- [x] `POST /api/auth/signout` — clear cookies, revoke token
+- [x] `POST /api/auth/login` — validate creds, set cookies (accessToken, refreshToken)
+- [x] `POST /api/auth/register` — create user
+- [x] `POST /api/auth/logout` — clear cookies, revoke token
 - [x] `GET /api/auth/session` — validate session, return user
 - [x] `POST /api/auth/refresh` — refresh access token with rotation
-- [x] `GET /api/auth/status` — return { needsSignup, signUpEnabled }
+- [x] `GET /api/auth/status` — return { needsRegister, registerEnabled }
 
 ### 4. Middleware ✅
 
@@ -77,7 +77,7 @@ backend/
 │   ├── routes/
 │   │   └── auth.ts            # AuthController class với decorator (@Controller, @Validate, @Post, @Get)
 │   ├── services/
-│   │   └── auth.service.ts    # signIn, signUp, verifyAccessToken, refreshToken, revokeToken
+│   │   └── auth.service.ts    # login, register, verifyAccessToken, refreshToken, revokeToken
 │   └── middleware/
 │       └── index.ts           # uses createMiddleware from @namorix/backend-core
 
@@ -130,7 +130,7 @@ packages/core/src/http/
 frontend/src/
 ├── assets/
 │   └── controllers/
-│       └── auth.controller.ts  # signUp, signIn, signOut
+│       └── auth.controller.ts  # login, register, logout
 └── pages/
     ├── Register.tsx          # connected to real API
     └── Login.tsx          # connected to real API (client-side validation + error handling)
@@ -143,10 +143,10 @@ frontend/src/
 - `@namorix/backend-core` setup (logger, jwt, db, middleware, validate, utils, decorators)
 - `@namorix/shared` setup (types, constants, error helpers, ValidationErrorMeta)
 - Database schema (users, refreshTokens, settings)
-- Auth API endpoints (signin/signup/signout/signout-all/session/refresh/status)
+- Auth API endpoints (login/register/logout/logout-all/session/refresh/status)
 - JWT utilities (signAccessToken with optional TTL, signRefreshToken, verifyToken)
 - Config + secret management
-- Auth service (signIn, signUp, verifyAccessToken, refreshToken, revokeToken, revokeAllUserTokens, getAuthStatus)
+- Auth service (login, register, verifyAccessToken, refreshToken, revokeToken, revokeAllUserTokens, getAuthStatus)
 - Cookie-based auth (HttpOnly cookies with sameSite: lax)
 - Token refresh with rotation
 - First user = admin logic
@@ -164,7 +164,7 @@ frontend/src/
 - [x] **Secure cookie flag**: Configurable via SECURE_COOKIE env var
 - [x] **CSRF double-submit**: Enabled by default (CSRF_DISABLE=false), non-HttpOnly cookie + X-CSRF-Token header
 - [x] **Async isAuthenticated**: Calls `/api/auth/session` instead of checking document.cookie (HttpOnly)
-- [x] **signout-all endpoint**: Revokes all refresh tokens for user
+- [x] **logout-all endpoint**: Revokes all refresh tokens for user
 - [x] **RememberMe wired**: Frontend toggle → backend receives boolean
 - [x] **Token whitelist (refresh_tokens)**: Replaces revokedTokens blacklist; tracks userAgent, fingerprint, ipAddress, lastUsedAt
 - [x] **Token reuse detection**: Unknown jti → revokeAllUserTokens()
@@ -204,8 +204,8 @@ export class AuthController {
       minLength: AuthConstraints.password.minLength,
     },
   })
-  @Post("/signup")
-  async signUp(req: Request, res: Response) { /* body đã validated */ }
+  @Post("/register")
+  async register(req: Request, res: Response) { /* body đã validated */ }
 }
 ```
 

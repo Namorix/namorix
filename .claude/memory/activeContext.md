@@ -14,11 +14,30 @@ M2 — Full Auth Backend → **Complete** ✅ + **Harden** ✅ + **ESLint** ✅ 
 - **CSRF double-submit protection** implemented
 - **isAuthenticated fixed** — now calls `/api/auth/session` instead of checking `document.cookie`
 - **Token whitelist** with fingerprint + IP tracking
-- **Phase A**: rememberMe wired, secureCookie fix, getClientIP, signout-all in API routes
+- **Phase A**: rememberMe wired, secureCookie fix, getClientIP, logout-all in API routes
 - **Phase B**: frontend fingerprint generation (FingerprintComponents + SHA-256), backend verify on refresh (Option C balanced)
 - **C# Migration Phase 1-3**: AuthService, Config (IOptions<T>), Constants, Exceptions, Settings model
 - **C# Migration Phase 4**: AuthController (7 endpoints), typed ApiResponse<T>, SettingsService, CleanIp helper
 - Moving to M3 (System Apps)
+
+## Recent Changes (2026-05-13)
+
+### Naming Migration — signin/signup/signout → login/register/logout
+- **@namorix/shared (0.7.0)**: AuthStatus fields renamed (`needsSignup`→`needsRegister`, `signUpEnabled`→`registerEnabled`), error code `SIGNUP_CLOSED`→`REGISTER_CLOSED`
+- **@namorix/core (0.6.3)**: auth.service.ts field access updated, validation-messages key renamed, guards updated
+- **frontend (0.5.2)**: i18n en.json text ("Sign in"→"Log in", "Sign up"→"Register"), page links updated
+- **backend (0.11.0)**: SettingsService method renames (`IsSignUpEnabled`→`IsRegisterEnabled`), CORS middleware added, JsonErrorMiddleware fix
+- **Docs**: architecture.md, m1-shell-ui.md, m2-auth.md, m5-core-package.md, migration-backend-csharp.md, frontend/README.md, .claude/CLAUDE.md all updated
+- **Memory bank**: progress.md, activeContext.md, systemPatterns.md all updated
+
+### Go Migration Artifacts Removed
+- `backend-go/` directory deleted (go.mod, go.sum, internal/db/*.go)
+- `docs/migration-backend-go.md` deleted
+- All `backend-go` references cleaned from project
+
+### AGENTS.md References Cleaned
+- `.claude/skills/` — all references updated to CLAUDE.md, `.claude/memory/`, `.claude/rules/`
+- `README.md` — AGENTS.md removed from directory tree
 
 ## Recent Changes (2026-05-12)
 
@@ -28,9 +47,9 @@ M2 — Full Auth Backend → **Complete** ✅ + **Harden** ✅ + **ESLint** ✅ 
 - **ApplicationBuilderExtensions**: Clean middleware wiring in `Program.cs`
 
 ### C# Backend Migration — Phase 4 (latest)
-- **AuthController**: 7 endpoints (signin, signup, signout, signout-all, session, refresh, status)
+- **AuthController**: 7 endpoints (login, register, logout, logout-all, session, refresh, status)
 - **Typed responses**: `ApiResponse<T>`, `UserResponse`, `StatusResponse` (no more anonymous objects)
-- **SettingsService**: `IsSignUpEnabled()`, `SetSignUpEnabled()`, `GetAuthStatus()`
+- **SettingsService**: `IsRegisterEnabled()`, `SetRegisterEnabled()`, `GetAuthStatus()`
 - **CleanIp helper**: strips `::ffff:` prefix from IPv6-mapped IPv4 addresses
 - **GetClientIp**: proxy header priority chain (CF → X-Forwarded-For → X-Real-IP → X-Client-IP → True-Client-IP → RemoteIpAddress)
 - **Cookie constants**: `CookieName.AccessToken = "nmx_access_token"`, `CookieName.RefreshToken = "nmx_refresh_token"` (match `@namorix/shared`)
@@ -56,7 +75,7 @@ M2 — Full Auth Backend → **Complete** ✅ + **Harden** ✅ + **ESLint** ✅ 
 - `isAuthenticated()` was checking `document.cookie.includes(NMX_COOKIE_ACCESS_KEY)` — always returned false because cookies are **HttpOnly**
 - Fixed: now calls `GET /api/auth/session` with `credentials: "include"` via `http` client
 - `AuthChecker.isAuthenticated` type changed from `() => boolean` to `() => Promise<boolean>`
-- All guards (`createAuthGuard`, `createSignInGuard`, `createSignUpGuard`) now `await` the async `isAuthenticated()`
+- All guards (`createAuthGuard`, `createLoginGuard`, `createRegisterGuard`) now `await` the async `isAuthenticated()`
 - `cookieSameSite` changed from `"strict"` to `"lax"` — strict was blocking cross-port cookie sending in dev
 
 ### CSRF Double-Submit Implementation
@@ -104,8 +123,8 @@ packages/backend-core/src/middleware/csrf.ts
 - `TRUST_PROXY` env var (default `true`), `SECURE_COOKIE` env var (replaces `COOKIE_SECURE`)
 - CSRF cookie: `{ httpOnly: false, secure: secureCookie }` (non-HttpOnly for JS double-submit)
 
-### signout-all Wired
-- `/signout-all` endpoint wired in `backend/src/routes/auth.ts`
+### logout-all Wired
+- `/logout-all` endpoint wired in `backend/src/routes/auth.ts`
 - Uses `revokeAllUserTokens()` — DELETE all refresh tokens for current user
 
 ### HttpHeader Enum Removed
@@ -130,10 +149,10 @@ packages/backend-core/src/middleware/csrf.ts
 ### Token Whitelist (refresh_tokens)
 - Replaced `revoked_tokens` blacklist with `refresh_tokens` whitelist
 - New columns: `userAgent`, `fingerprint`, `ipAddress`, `lastUsedAt`
-- Sign-in: INSERT into whitelist with session metadata
+- Login: INSERT into whitelist with session metadata
 - Refresh: DELETE old token + INSERT new token (rotation), preserves TTL via `remainingSeconds`
-- Sign-out: DELETE by jti
-- Sign-out-all: DELETE WHERE userId = ?
+- Logout: DELETE by jti
+- Logout-all: DELETE WHERE userId = ?
 - Token reuse detection: unknown jti → `revokeAllUserTokens()` (anti-theft)
 - Cleanup job: DELETE expired tokens by `expiresAt < now`
 
@@ -152,20 +171,20 @@ packages/backend-core/src/middleware/csrf.ts
 - All call sites now use `verifyToken` directly
 
 ### Remember-Me (90d TTL)
-- `signIn` passes `refreshTtl` based on `meta.rememberMe`: `config.jwtRefreshRememberTtl` (default `"90d"`) vs `config.jwtRefreshTtl` (default `"7d"`)
+- `Login` passes `refreshTtl` based on `meta.rememberMe`: `config.jwtRefreshRememberTtl` (default `"90d"`) vs `config.jwtRefreshTtl` (default `"7d"`)
 - On refresh: remaining TTL calculated from `existing.expiresAt`, preserved in new token
 - Uses `StringValue` type from `ms` for proper `expiresIn` typing in `jwt.sign`
 - Frontend `rememberMe` toggle now wired through controller → backend
 
 ### JWT TTL Config Refactor
 - `signAccessToken` now accepts optional `ttl?: string` param (uses `ACCESS_TOKEN_TTL` constant as fallback)
-- `signIn` and `refreshToken` pass `config.jwtAccessTtl` / `config.jwtRefreshTtl` / `config.jwtRefreshRememberTtl` from env
+- `Login` and `refreshToken` pass `config.jwtAccessTtl` / `config.jwtRefreshTtl` / `config.jwtRefreshRememberTtl` from env
 - Removed `generateTokenPair` + `TokenPair` interface (dead code — auth service calls signAccessToken/signRefreshToken directly)
 - New env var: `JWT_REFRESH_REMEMBER_TTL` (default `"90d"`)
 
 ### useAuthForm Hook + rememberMe Fix
 - `frontend/src/hooks/useAuthForm.ts` — extracts shared alert state (`busy`, `alertVariant`, `alertMessage`) and error handling (`handlerError`) from Login/Register
-- Fix: `rememberMe` toggle in Login now wired via `authController.signIn(username, password, rememberMe)` → backend receives `rememberMe` boolean
+- Fix: `rememberMe` toggle in Login now wired via `authController.login(username, password, rememberMe)` → backend receives `rememberMe` boolean
 
 ### ESLint strictTypeChecked Across All Packages
 - Added `eslint.config.ts` + `tsconfig.json` to backend-core, core, shared
@@ -192,7 +211,7 @@ packages/backend-core/src/middleware/csrf.ts
 - **Whitelist** (`refresh_tokens` table): track active refresh tokens by jti
 - On refresh: DELETE old + INSERT new (atomic rotation), preserve remaining TTL
 - On unknown jti: revoke ALL user tokens (anti-theft — prevents reuse of stolen tokens)
-- Sign-out: DELETE one jti. Sign-out-all: DELETE all by userId
+- Logout: DELETE one jti. Logout-all: DELETE all by userId
 - No token_version column needed — whitelist approach is simpler and gives per-device control
 
 ### Token Refresh Strategy
@@ -212,6 +231,6 @@ packages/backend-core/src/middleware/csrf.ts
 1. M3 — Desktop shell UI (taskbar, launcher, window manager)
 2. M3 — Zustand stores (auth, windows, addons, desktop)
 3. M3 — WindowState type + WindowManager component
-4. M3 — System apps: File manager, Terminal (xterm.js + PTY), Settings (signup toggle), Log viewer
+4. M3 — System apps: File manager, Terminal (xterm.js + PTY), Settings (register toggle), Log viewer
 5. Write Vitest tests for auth.service
 6. Add Vietnamese translations (vi.json is empty)

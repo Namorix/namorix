@@ -10,7 +10,7 @@
   - NmxButton, NmxForm (7 sub-components), NmxInlineAlert, NmxToggle
 - `@namorix/core` with:
   - `cx` utility, `ApiError`, `http` client (RequestBuilder with CSRF auto-injection, 401 auto-refresh + retry)
-  - `GuardedRoute`, auth guards (createAuthGuard, createSignInGuard, createSignUpGuard)
+  - `GuardedRoute`, auth guards (createAuthGuard, createLoginGuard, createRegisterGuard)
   - `NmxI18n` class (i18n layering: core + translation namespaces)
   - `ValidationRunner` (fluent client-side validation)
   - `formatApiError`, `formatValidationError`, `formatAuthError`
@@ -25,10 +25,10 @@
   - tsconfig.json
 - `@namorix/shared` (types, constants, error helpers, ValidationErrorMeta, HttpHeader, CSRF constants)
 - tsconfig.base.json shared across project
-- React Router setup with /signin, /signup, / routes
+- React Router setup with /login, /register, / routes
 - Auth pages (Login, Register with AuthPage wrapper) + responsive layout
 - i18next with react-i18next (en/vi locales, layered namespaces)
-- Auth endpoints (signin/signup/signout/session/refresh/status) — decorator-based
+- Auth endpoints (login/register/logout/session/refresh/status) — decorator-based
 - JWT secret management (env var or .secret file)
 - First user = admin, subsequent = user
 - Token refresh with rotation
@@ -43,7 +43,7 @@
 - Cookie wrappers in @namorix/backend-core (set/get/clear for access, refresh, csrf)
 - Token whitelist: refresh_tokens table (jti, userId, userAgent, fingerprint, ipAddress, timestamps)
 - Token reuse detection: unknown jti → revoke all user tokens
-- signout-all endpoint (revoke all user tokens by userId)
+- logout-all endpoint (revoke all user tokens by userId)
 - Remember-me (90d TTL, preserved on rotation via remaining seconds)
 - eslint config + lint scripts across all packages (strictTypeChecked)
 - **Fingerprint generation**: `packages/core/src/fingerprint/` with `FingerprintComponents` interface + SHA-256 hash (fallback base64 if non-HTTPS)
@@ -64,9 +64,9 @@
 - [x] `@namorix/backend-core` setup (logger, jwt, db, middleware, validate, utils, decorators, csrf)
 - [x] `@namorix/shared` setup (types, constants, error codes, helpers, http-headers)
 - [x] Database schema (users, refreshTokens, settings)
-- [x] Auth API endpoints (signin/signup/signout/signout-all/session/refresh/status)
+- [x] Auth API endpoints (login/register/logout/logout-all/session/refresh/status)
 - [x] JWT utilities (signAccessToken with optional TTL, signRefreshToken, verifyToken)
-- [x] Auth service (signIn, signUp, refreshToken, revokeToken, revokeAllUserTokens, cleanupExpiredTokens, getAuthStatus)
+- [x] Auth service (Login, Register, refreshToken, revokeToken, revokeAllUserTokens, cleanupExpiredTokens, getAuthStatus)
 - [x] Config + Secret management (CSRF_DISABLE=false by default, JWT_ACCESS_TTL, JWT_REFRESH_TTL, JWT_REFRESH_REMEMBER_TTL)
 - [x] First user = admin logic
 - [x] Token refresh with rotation + TTL preservation (remember-me 90d)
@@ -103,7 +103,7 @@
 - [ ] WindowManager component
 - [ ] File manager app
 - [ ] Terminal app (xterm.js + PTY bridge)
-- [ ] Settings app (signup toggle)
+- [ ] Settings app (register toggle)
 - [ ] Log viewer app
 
 ### M4 — External Addon System
@@ -124,14 +124,14 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| root (namorix) | 0.1.7 | M2 (bug fix: auth guard loop) |
-| frontend | 0.5.1 | M2 (Login/Register pages renamed, route wiring updated to new API routes) |
-| @namorix/core | 0.6.2 | M2 (bug fix: checkHasUsers/isAuthenticated catch 401 instead of throw) |
+| root (namorix) | 0.1.8 | M2 (docs cleanup, xóa backend-go, signin→login naming migration complete) |
+| frontend | 0.5.2 | M2 (i18n text: sign in/up → log in/register) |
+| @namorix/core | 0.6.3 | M2 (field name refactoring: needsSignup→needsRegister, signUpEnabled→registerEnabled) |
 | @namorix/styles | 0.2.0 | M2 (variables.scss + exports subpath) |
 | @namorix/ui | 0.3.0 | M2 |
 | @namorix/backend-core | 0.6.0 | M2 (getClientIP utility, trustProxy + secureCookie middleware, secure flag on cookies) |
-| @namorix/shared | 0.6.1 | M2 (route naming: signin→login, signup→register, signout→logout) |
-| backend | 0.10.0 | M2 (new: ExceptionMiddleware, JsonErrorMiddleware, ApplicationBuilderExtensions for consistent JSON errors) |
+| @namorix/shared | 0.7.0 | M2 (breaking: AuthStatus fields rename + REGISTER_CLOSED error code) |
+| backend | 0.11.0 | M2 (new: CORS middleware in Program.cs, SettingsService method renames)
 
 ## Version Rules
 
@@ -153,7 +153,16 @@
 
 ## Version History
 
-### 2026-05-12 (latest — Bug fix session)
+### 2026-05-13 (latest — Naming migration + docs cleanup)
+| Package | Version | Changes |
+|---------|---------|---------|
+| root (namorix) | 0.1.8 | Docs cleanup: xóa backend-go/ + docs/migration-backend-go.md, xóa AGENTS.md references, update README code examples |
+| frontend | 0.5.2 | i18n text: "Sign in" → "Log in", "Sign up" → "Register" across en.json + page links |
+| @namorix/core | 0.6.3 | Field refactoring: needsSignup→needsRegister, signUpEnabled→registerEnabled; guards updated; validation-messages key renamed |
+| @namorix/shared | 0.7.0 | **Breaking:** AuthStatus.needsSignup→needsRegister, signUpEnabled→registerEnabled; AuthErrorCode.SIGNUP_CLOSED→REGISTER_CLOSED |
+| backend | 0.11.0 | CORS middleware (AddCors/UseCors with AllowCredentials); SettingsService method renames; JsonErrorMiddleware StatusCodes fix |
+
+### 2026-05-12 (Bug fix session)
 | Package | Version | Changes |
 |---------|---------|---------|
 | root (namorix) | 0.1.7 | Bug fix: auth guard loop (checkHasUsers/isAuthenticated catch 401 instead of throw) |

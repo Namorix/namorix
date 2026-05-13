@@ -130,15 +130,15 @@ interface NmxAddonStatus { addonId: string; status: 'installed' | 'running' | 's
 ### Token Whitelist (refresh_tokens)
 - Replaced `revokedTokens` blacklist with `refresh_tokens` whitelist
 - New columns: `userAgent`, `fingerprint`, `ipAddress`, `lastUsedAt`
-- On sign-in: INSERT into whitelist with session metadata
+- On login: INSERT into whitelist with session metadata
 - On refresh: DELETE old + INSERT new (rotation), preserves TTL via `remainingSeconds`
-- On sign-out: DELETE by jti
-- On sign-out-all: DELETE WHERE userId = ?
+- On logout: DELETE by jti
+- On logout-all: DELETE WHERE userId = ?
 - Token reuse detection: unknown jti → `revokeAllUserTokens()` (anti-theft)
 - Cleanup job: DELETE expired tokens by `expiresAt < now`
 
 ### Remember-Me (90d TTL)
-- `signIn` passes `refreshTtl` based on `meta.rememberMe`: `config.jwtRefreshRememberTtl` (90d) vs `config.jwtRefreshTtl` (7d)
+- `login` passes `refreshTtl` based on `meta.rememberMe`: `config.jwtRefreshRememberTtl` (90d) vs `config.jwtRefreshTtl` (7d)
 - On refresh: remaining TTL calculated from `existing.expiresAt`, preserved in new token
 
 ### Frontend Controller Pattern
@@ -163,9 +163,9 @@ interface NmxAddonStatus { addonId: string; status: 'installed' | 'running' | 's
 
 ### Auth Flow (Current)
 ```
-1. Login → POST /api/auth/signin → Set HttpOnly cookies (access + refresh, sameSite: lax)
+1. Login → POST /api/auth/login → Set HttpOnly cookies (access + refresh, sameSite: lax)
 2. Session check → GET /api/auth/session → validate access token via cookie (credentials: "include")
 3. Token refresh → POST /api/auth/refresh → rotate both tokens
-4. SignOut → POST /api/auth/signout → clear cookies, revoke token jti
+4. Logout → POST /api/auth/logout → clear cookies, revoke token jti
 5. CSRF on mutating requests: read nmx_csrf_token cookie → send X-CSRF-Token header
 ```

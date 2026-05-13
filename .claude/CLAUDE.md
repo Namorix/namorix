@@ -316,7 +316,7 @@ import { formatApiError } from "@namorix/core"
 
 catch (err: unknown) {
   // formatApiError resolves: validation error → auth error → null
-  const message = formatApiError(t, err) ?? t("auth.signin.errors.generic")
+  const message = formatApiError(t, err) ?? t("auth.login.errors.generic")
   setAlert({ message, variant: "error" })
 }
 ```

@@ -91,7 +91,7 @@ namorix/
 │   ├── src/
 │   │   ├── assets/
 │   │   │   └── controllers/
-│   │   │       └── auth.controller.ts  # signUp, signIn, signOut
+│   │   │       └── auth.controller.ts  # login, register, logout
 │   │   ├── pages/
 │   │   └── components/
 │   └── vite.config.ts
@@ -141,7 +141,7 @@ Package exports (theo `package.json`):
 | `@namorix/core` | Barrel: auth, router, utils, http, i18n, config |
 | `@namorix/core/auth` | `authService` (AuthChecker implementation) |
 | `@namorix/core/http` | `http` (RequestBuilder), `ApiError`, `HttpHeader` |
-| `@namorix/core/router` | `GuardedRoute`, `createAuthGuard`, `createSignInGuard`, `createSignUpGuard` |
+| `@namorix/core/router` | `GuardedRoute`, `createAuthGuard`, `createLoginGuard`, `createRegisterGuard` |
 | `@namorix/core/utils` | `cx()` className utility |
 | `@namorix/core/i18n` | `NmxI18n` class, `ValidationRunner`, `validate()`, `ValidationFields`, `formatApiError()`, `formatValidationError()`, `formatAuthError()` |
 
@@ -192,8 +192,8 @@ export class ApiError extends Error {
 export const GuardedRoute: React.FC<{ guard: GuardFn; children: React.ReactNode }>
 
 export function createAuthGuard(checker: AuthChecker): GuardFn
-export function createSignInGuard(checker: AuthChecker): GuardFn
-export function createSignUpGuard(checker: AuthChecker): GuardFn
+export function createLoginGuard(checker: AuthChecker): GuardFn
+export function createRegisterGuard(checker: AuthChecker): GuardFn
 ```
 
 #### `@namorix/core/i18n`
@@ -278,9 +278,9 @@ import { http, getApiBaseUrl, ApiError } from '@namorix/core'
 import { ApiAuthRoutes } from '@namorix/shared'
 
 export const authController = {
-  signIn: async (username: string, password: string) => {
+  login: async (username: string, password: string) => {
     const data = await http
-      .url(getApiBaseUrl() + ApiAuthRoutes.signin)
+      .url(getApiBaseUrl() + ApiAuthRoutes.login)
       .post({ username, password })
       .json()
     if (!data.success) throw ApiError.fromResponse(data)
@@ -307,9 +307,9 @@ const handleSubmit = async () => {
   if (error) { setAlert(error); return }
 
   try {
-    await authController.signIn(username, password)
+    await authController.login(username, password)
   } catch (err: unknown) {
-    setAlert(formatApiError(t, err) ?? t("auth.signin.errors.generic"))
+    setAlert(formatApiError(t, err) ?? t("auth.login.errors.generic"))
   }
 }
 ```
@@ -323,7 +323,7 @@ const handleSubmit = async () => {
         │  NmxI18n.load("en", "translation", frontendLocales)
         ▼
 frontend locales (namespace "translation")
-  └── auth.signin.*, auth.signup.*
+  └── auth.login.*, auth.register.*
 ```
 
 - `NmxI18n` constructor pre-load core locales trong namespace `"core"`
@@ -372,10 +372,10 @@ frontend locales (namespace "translation")
 
 ### 4.3 Luồng trong shell (same-origin)
 
-1. **Sign in:** `POST /api/auth/signin` → response JSON `{ user }` + `Set-Cookie` cho access + refresh.
+1. **Log in:** `POST /api/auth/login` → response JSON `{ user }` + `Set-Cookie` cho access + refresh.
 2. **Bootstrap (F5):** App load → `GET /api/auth/session` (credentials: include). Nếu 401 → thử `POST /api/auth/refresh` một lần rồi gọi lại session.
 3. **Refresh định kỳ / sau 401:** Frontend hoặc `createApiClient` gọi `POST /api/auth/refresh`, server set cookie mới, rotate refresh token.
-4. **Sign out:** `POST /api/auth/signout` → xóa cookie, revoke token (ghi `revokedTokens` theo `jti`).
+4. **Log out:** `POST /api/auth/logout` → xóa cookie, revoke token (ghi `revokedTokens` theo `jti`).
 
 **Lý do:** Cookie HttpOnly giảm rủi ro XSS đọc token; refresh tách biệt giúp rút ngắn TTL của access token.
 
@@ -384,7 +384,7 @@ frontend locales (namespace "translation")
 Addon chạy port riêng, không có cookie `nmx_access` (cross-origin).
 
 1. Addon gọi `getSession(DESKTOP_BASE_URL)` → `null`.
-2. Redirect `DESKTOP/signin?redirect=<addon URL>`.
+2. Redirect `DESKTOP/login?redirect=<addon URL>`.
 3. Sau khi đăng nhập, Desktop redirect về `<addon URL>?nmx_token=<one-time token>`.
 4. Addon exchange `nmx_token` qua `POST /api/addon/session-exchange` → nhận session.
 
@@ -469,7 +469,7 @@ Khi addon server khởi động:
 Addon chạy port riêng, không có cookie `nmx_access` (cross-origin). Flow:
 
 1. Addon gọi `getSession(DESKTOP_URL)` → `null`.
-2. Redirect sang `DESKTOP/signin?redirect=<addon URL>`.
+2. Redirect sang `DESKTOP/login?redirect=<addon URL>`.
 3. Sau khi đăng nhập, Desktop redirect về `<addon URL>?nmx_token=<one-time token>`.
 4. `nmx_token` là one-time, TTL ngắn (vài giây), dùng xong là hết hạn (chống replay attack).
 5. Addon exchange `nmx_token` lấy session qua `POST /api/addon/session-exchange`: `{ token: nmx_token }`.
@@ -504,8 +504,8 @@ export class AuthController {
     username: { required: true, type: "string", minLength: 1, maxLength: 32, trim: true },
     password: { required: true, type: "string", minLength: 8 },
   })
-  @Post("/signin")
-  async signIn(req: Request, res: Response) { /* ... */ }
+  @Post("/login")
+  async login(req: Request, res: Response) { /* ... */ }
 }
 ```
 
@@ -543,7 +543,7 @@ const error = validate(t)
 `REQUIRED`, `TOO_SHORT`, `TOO_LONG`, `MISMATCH`, `INVALID_FORMAT`, `INVALID_TYPE`, `OUT_OF_RANGE`, `INVALID_ENUM`
 
 **Auth error codes** (`AuthErrorCode` enum):
-`INVALID_CREDENTIALS`, `USERNAME_EXISTS`, `UNAUTHORIZED`, `SIGNUP_CLOSED`
+`INVALID_CREDENTIALS`, `USERNAME_EXISTS`, `UNAUTHORIZED`, `REGISTER_CLOSED`
 
 ---
 
@@ -678,7 +678,7 @@ Client **admin** gửi message qua `/namorix-shell-ws` (chi tiết mục 7): `in
 
 1. Dùng client Socket.IO với `reconnection: true`, backoff mặc định.
 2. Sau mỗi lần `connect`: server gửi lại `shell:addons` (full snapshot) — client **replace** state local.
-3. Nếu handshake fail do 401: gọi flow refresh session (HTTP) rồi reconnect; sau N lần thất bại → đăng xuất UI / redirect signin.
+3. Nếu handshake fail do 401: gọi flow refresh session (HTTP) rồi reconnect; sau N lần thất bại → đăng xuất UI / redirect login.
 
 **Lý do:** Tránh trạng thái addon lệch sau reconnect; refresh session xử lý cookie hết hạn giữa chừng.
 
@@ -809,7 +809,7 @@ npm install
 
 | Milestone | Phạm vi | Mục tiêu hoàn thành |
 |-----------|---------|---------------------|
-| **M1** | Shell UI tĩnh + trang auth (mock) | Layout desktop, window manager cơ bản, router, signin UI **không bắt buộc backend**. |
+| **M1** | Shell UI tĩnh + trang auth (mock) | Layout desktop, window manager cơ bản, router, login UI **không bắt buộc backend**. |
 | **M2** | Auth backend đầy đủ | Login/logout/refresh/session/register, cookie, revoke, bootstrap admin, nối frontend thật. |
 | **M3** | System apps | File manager, Terminal (xterm + `/namorix-terminal-ws`), Settings, Log viewer + API logs. |
 | **M4** | External addon | Docker lifecycle qua shell WS, DockerMonitor, Addon Manager UI, mở addon tab mới. |
@@ -820,12 +820,12 @@ npm install
 ## Phụ lục — REST API (Desktop backend)
 
 ```
-POST /api/auth/signin        body: { username, password } → { user } + Set-Cookie
-POST /api/auth/signup        body: { username, password } → { user }
-POST /api/auth/signout       → clear cookies, revoke token
+POST /api/auth/login        body: { username, password } → { user } + Set-Cookie
+POST /api/auth/register      body: { username, password } → { user }
+POST /api/auth/logout        → clear cookies, revoke token
 POST /api/auth/refresh       → Set-Cookie mới (rotate refresh)
 GET  /api/auth/session       → { user } | 401
-GET  /api/auth/status        → { needsSignup: boolean, signUpEnabled: boolean }
+GET  /api/auth/status        → { needsRegister: boolean, registerEnabled: boolean }
 
 POST /api/addon/handshake       body: { addonId, secret, coreVersion } → { addonToken }
 POST /api/addon/session-exchange body: { token } → { user, expiresAt }

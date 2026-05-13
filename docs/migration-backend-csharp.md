@@ -42,7 +42,7 @@ backend/
 ## Scope
 
 ### Trong scope
-- Auth API: signin, signup, signout, signout-all, session, refresh, status
+- Auth API: login, register, logout, logout-all, session, refresh, status
 - JWT utilities
 - Middleware (CORS, CSRF, cookie, trust proxy)
 - SQLite database
@@ -155,7 +155,7 @@ public static class AuthErrors
     public const string TokenReuseDetected = "TOKEN_REUSE_DETECTED";
     public const string FingerprintMismatch = "FINGERPRINT_MISMATCH";
     public const string InvalidToken = "INVALID_TOKEN";
-    public const string SignupClosed = "SIGNUP_CLOSED";
+    public const string RegisterClosed = "REGISTER_CLOSED";
 }
 ```
 
@@ -202,13 +202,13 @@ throw new AuthException(AuthErrors.InvalidCredentials);
 
 | Method | Path | Handler | Note |
 |--------|------|---------|------|
-| POST | /api/auth/signin | HandleSignIn | rememberMe body |
-| POST | /api/auth/signup | HandleSignUp | |
-| POST | /api/auth/signout | HandleSignOut | revoke token jti |
-| POST | /api/auth/signout-all | HandleSignOutAll | revoke all user tokens |
+| POST | /api/auth/login | HandleLogin | rememberMe body |
+| POST | /api/auth/register | HandleRegister | |
+| POST | /api/auth/logout | HandleLogout | revoke token jti |
+| POST | /api/auth/logout-all | HandleLogoutAll | revoke all user tokens |
 | GET | /api/auth/session | HandleSession | returns user from access token |
 | POST | /api/auth/refresh | HandleRefresh | rotate tokens, fingerprint check |
-| GET | /api/auth/status | HandleStatus | needsSignup, signUpEnabled |
+| GET | /api/auth/status | HandleStatus | needsRegister, registerEnabled |
 
 ## Progress
 
@@ -247,7 +247,7 @@ throw new AuthException(AuthErrors.InvalidCredentials);
 
 ### Phase 7: SettingsService
 - [ ] getSetting, setSetting
-- [ ] isSignUpEnabled
+- [ ] isRegisterEnabled
 
 ### Phase 8: Testing
 - [ ] Test all endpoints

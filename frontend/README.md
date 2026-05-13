@@ -8,10 +8,10 @@ Vite + React shell for the Namorix desktop interface.
 frontend/
 ├── src/
 │   ├── main.tsx                  # Entry: imports styles, init i18n, configureCore, render
-│   ├── App.tsx                   # Router: /signin, /signup, / (guarded)
+│   ├── App.tsx                   # Router: /login, /register, / (guarded)
 │   ├── assets/
 │   │   └── controllers/
-│   │       └── auth.controller.ts  # signUp, signIn, signOut — API calls
+│   │       └── auth.controller.ts  # login, register, logout — API calls
 │   ├── components/
 │   │   ├── Auth/
 │   │   │   ├── AuthPage.tsx       # Two-column layout (hero + form panel)
@@ -57,7 +57,7 @@ pnpm preview      # Preview production build
 ```typescript
 // Routes are protected by async guards that check auth state
 <GuardedRoute guard={authGuard}><Desktop /></GuardedRoute>
-<GuardedRoute guard={signinGuard}><Login /></GuardedRoute>
+<GuardedRoute guard={loginGuard}><Login /></GuardedRoute>
 ```
 
 ### Client-side Validation
@@ -73,7 +73,7 @@ const error = validate(t)
 ### i18n Layering
 ```
 @namorix/core (namespace "core")  →  common.validation.*, common.fields.*
-frontend (namespace "translation") →  auth.signin.*, auth.signup.*
+frontend (namespace "translation") →  auth.login.*, auth.register.*
 ```
 
 ## Environment Variables

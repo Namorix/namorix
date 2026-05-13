@@ -101,7 +101,7 @@ namorix/
     └── src/
         ├── config/           # env loading, config export
         ├── routes/
-        │   └── auth.ts       # auth endpoints (signin/signup/signout/session/refresh/status)
+        │   └── auth.ts       # auth endpoints (login/register/logout/session/refresh/status)
         ├── services/
         │   ├── auth.service.ts   # signIn, signUp, verifyAccessToken, refreshToken, revokeToken
         │   └── settings.service.ts  # getSetting, setSetting, isSignUpEnabled
@@ -132,9 +132,9 @@ import { http, getApiBaseUrl } from "@namorix/core"
 import { ApiAuthRoutes } from "@namorix/shared"
 
 export const authController = {
-  signUp: async (username: string, password: string) => {
+  register: async (username: string, password: string) => {
     const data = await http
-      .url(getApiBaseUrl() + ApiAuthRoutes.signup)
+      .url(getApiBaseUrl() + ApiAuthRoutes.register)
       .post({ username, password })
       .json()
     if (!data.success) throw ApiError.fromResponse(data)
@@ -154,7 +154,7 @@ export class AuthController {
     username: { required: true, type: "string", minLength: 1, maxLength: 32, trim: true },
     password: { required: true, type: "string", minLength: 8 },
   })
-  @Post("/signup")
+  @Post("/register")
   async signUp(req: Request, res: Response) { /* body validated */ }
 }
 ```
@@ -179,7 +179,7 @@ Routes registered via `registerController(router, AuthController)` — reads Ref
 ## Milestones
 
 1. **M1** — Static shell UI + mock auth page ✅
-2. **M2** — Full auth backend (signin/signup/signout/refresh/session, decorators, i18n, validation) ✅
+2. **M2** — Full auth backend (login/register/logout/refresh/session, decorators, i18n, validation) ✅
 3. **M3** — System apps (File manager, Terminal, Settings, Log viewer) 🔜
 4. **M4** — External addon system (Docker lifecycle, addon manager)
 5. **M5** — @namorix/core publish npm + addon integration guide

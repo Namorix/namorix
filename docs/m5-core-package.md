@@ -103,7 +103,7 @@ const DESKTOP = 'http://192.168.1.100:3000'
 // Check session
 const session = await getSession(DESKTOP)
 if (!session) {
-  window.location.href = `${DESKTOP}/signin?redirect=${encodeURIComponent(location.href)}`
+  window.location.href = `${DESKTOP}/login?redirect=${encodeURIComponent(location.href)}`
 }
 
 // Listen for notifications
