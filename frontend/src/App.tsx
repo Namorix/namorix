@@ -10,24 +10,24 @@ import { Navigate, Route, Routes } from "react-router-dom"
 import { Desktop, Register, Login } from "./pages"
 
 const authGuard = createAuthGuard(authService)
-const signInGuard = createLoginGuard(authService)
-const signUpGuard = createRegisterGuard(authService)
+const loginGuard = createLoginGuard(authService)
+const registerGuard = createRegisterGuard(authService)
 
 export const App: React.FC = () => {
   return (
     <Routes>
       <Route
-        path="/signin"
+        path="/login"
         element={
-          <GuardedRoute guard={signInGuard}>
+          <GuardedRoute guard={loginGuard}>
             <Login />
           </GuardedRoute>
         }
       />
       <Route
-        path="/signup"
+        path="/register"
         element={
-          <GuardedRoute guard={signUpGuard}>
+          <GuardedRoute guard={registerGuard}>
             <Register />
           </GuardedRoute>
         }

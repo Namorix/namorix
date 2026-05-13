@@ -154,7 +154,7 @@ export const Register: React.FC = () => {
             </NmxFormActions>
             <div className="nmx-auth-page__secondary-actions">
               <span>{t("auth.register.secondaryText")}</span>
-              <Link to="/signin" className="nmx-auth-page__secondary-link">
+              <Link to="/login" className="nmx-auth-page__secondary-link">
                 {t("auth.register.secondaryActionLabel")}
               </Link>
             </div>

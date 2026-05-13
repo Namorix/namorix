@@ -135,7 +135,7 @@ export const Login: React.FC = () => {
             </NmxFormActions>
             <div className="nmx-auth-page__secondary-actions">
               <span>{t("auth.login.secondaryText")}</span>
-              <Link to="/signup" className="nmx-auth-page__secondary-link">
+              <Link to="/register" className="nmx-auth-page__secondary-link">
                 {t("auth.login.secondaryActionLabel")}
               </Link>
             </div>

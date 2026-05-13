@@ -3,37 +3,37 @@
     "login": {
       "heroTitle": "Namorix\nDesktop",
       "heroDescription": "Secure access to your self-hosted desktop workspace",
-      "title": "Sign in",
+      "title": "Login",
       "description": "Welcome back. Please enter your username and password",
       "usernameLabel": "Username",
       "passwordLabel": "Password",
       "usernamePlaceholder": "Username",
       "passwordPlaceholder": "********",
       "rememberLabel": "Remember this device",
-      "buttonLabel": "Sign in",
+      "buttonLabel": "Login",
       "secondaryText": "Don't have an account?",
-      "secondaryActionLabel": "Sign up",
+      "secondaryActionLabel": "Register",
       "errors": {
-        "generic": "An error occurred during sign in. Please try again"
+        "generic": "An error occurred during login. Please try again"
       },
-      "success": "Sign in successful. Redirecting to dashboard..."
+      "success": "Login successful. Redirecting to dashboard..."
     },
     "register": {
       "heroTitle": "Create\nAccount",
       "heroDescription": "Set up your Namorix desktop credentials to get started",
       "title": "Create account",
-      "description": "Register when your administrator has opened sign-up",
+      "description": "Register when your administrator has opened register",
       "usernameLabel": "Username",
       "passwordLabel": "Password",
       "confirmPasswordLabel": "Confirm Password",
       "usernamePlaceholder": "Username",
       "passwordPlaceholder": "********",
       "confirmPasswordPlaceholder": "********",
-      "buttonLabel": "Sign up",
+      "buttonLabel": "Register",
       "secondaryText": "Already have an account?",
-      "secondaryActionLabel": "Sign in",
+      "secondaryActionLabel": "Login",
       "errors": {
-        "generic": "An error occurred during sign up. Please try again"
+        "generic": "An error occurred during register. Please try again"
       },
       "initialRegistration": "Initial registration: This account will be granted Administrative privileges",
       "success": "Account created successfully. Taking you to login..."
