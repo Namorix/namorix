@@ -72,7 +72,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 app.UseApiErrorHandling();
 app.UseSecurityHeaders();
-app.UseXForwardedHeaders();
+app.UseTrustedProxy();
 app.UseRouting();
 app.UseCors();
 app.UseRateLimiter();

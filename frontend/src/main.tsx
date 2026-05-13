@@ -8,7 +8,10 @@ import { App } from "./App"
 import "./i18n"
 
 configureCore({
-  apiBaseUrl: import.meta.env.VITE_API_URL ?? window.location.origin,
+  apiBaseUrl:
+    (import.meta.env.VITE_API_URL ?? window.location.host === "izerocs.space")
+      ? "https://api.izerocs.space"
+      : window.location.origin,
 })
 generateFingerprint().catch(console.error)
 

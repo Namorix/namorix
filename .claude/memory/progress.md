@@ -124,14 +124,14 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| root (namorix) | 0.2.1 | M2 (security headers, settings cache, SecureCookie fix) |
-| frontend | 0.5.3 | M2 (Vite proxy config, API URL default fix) |
+| root (namorix) | 0.3.0 | M2 (TrustedProxyMiddleware, SettingsController, GetClientIp refactor) |
+| frontend | 0.5.4 | M2 (conditional API URL based on host, Vite proxy forward) |
 | @namorix/core | 0.6.3 | M2 (field name refactoring: needsSignup→needsRegister, signUpEnabled→registerEnabled) |
 | @namorix/styles | 0.2.0 | M2 (variables.scss + exports subpath) |
 | @namorix/ui | 0.3.0 | M2 |
 | @namorix/backend-core | 0.6.0 | M2 (getClientIP utility, trustProxy + secureCookie middleware, secure flag on cookies) |
 | @namorix/shared | 0.7.0 | M2 (breaking: AuthStatus fields rename + REGISTER_CLOSED error code) |
-| backend | 0.14.1 | M2 (SecurityHeadersMiddleware, IMemoryCache, SecureCookie fix, UseXForwardedHeaders, Kestrel body limit) |
+| backend | 0.15.0 | M2 (TrustedProxyMiddleware, SettingsController, SettingsService trusted proxies, HttpContextKeys extension) |
 
 ## Version Rules
 
@@ -153,7 +153,14 @@
 
 ## Version History
 
-### 2026-05-13 (latest — SecurityHeaders, Settings cache, SecureCookie fix)
+### 2026-05-14 (latest — TrustedProxyMiddleware, SettingsController)
+| Package | Version | Changes |
+|---------|---------|---------|
+| backend | 0.15.0 | TrustedProxyMiddleware (chỉ trust X-Forwarded-For từ IP trong trusted list, block untrusted proxy), SettingsController (GET/PUT /api/settings/proxies), SettingsService GetTrustedProxies/SetTrustedProxies, HttpContextKeys (TrustedProxy, RealIp, RealScheme), GetClientIp dùng RealIp từ context trước, fallback RemoteIpAddress |
+| frontend | 0.5.4 | main.tsx conditional API URL (izerocs.space → https), vite.config.ts conditional X-Forwarded-For forward (chỉ forward nếu đã có từ upstream) |
+| root (namorix) | 0.3.0 | Backend 0.15.0 new feature (trusted proxy system) |
+
+### 2026-05-13 (SecurityHeaders, Settings cache, SecureCookie fix)
 | Package | Version | Changes |
 |---------|---------|---------|
 | backend | 0.14.1 | SecurityHeadersMiddleware (X-ContentType-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy), SettingsService IMemoryCache (5min), SecureCookie dùng AppConfig trực tiếp thay vì AllowedOrigins heuristic, UseXForwardedHeaders extension (KnownNetworks/KnownProxies clear), Kestrel 10KB body limit, JsonErrorMiddleware StatusCodes constants, AccessToken TTL 15→5 |

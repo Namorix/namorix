@@ -211,15 +211,16 @@ public class AuthController(AuthService authService, SettingsService settingsSer
     
     private string? GetClientIp()
     {
-        var headers = Request.Headers;
-        var ip = headers["cf-connecting-ip"].FirstOrDefault()
-               ?? headers["x-forwarded-for"].FirstOrDefault()?.Split(",")[0].Trim()
-               ?? headers["x-real-ip"].FirstOrDefault()
-               ?? headers["x-client-ip"].FirstOrDefault()
-               ?? headers["true-client-ip"].FirstOrDefault()
-               ?? HttpContext.Connection.RemoteIpAddress?.ToString();
-
-        return string.IsNullOrEmpty(ip) ? null : CleanIp(ip);
+        if (HttpContext.Items.TryGetValue(HttpContextKeys.RealIp, out var ip) &&
+            ip is string realIp &&
+            !string.IsNullOrEmpty(realIp))
+        {
+            return CleanIp(realIp);
+        }
+        
+        return HttpContext.Connection.RemoteIpAddress == null
+            ? null
+            : CleanIp(HttpContext.Connection.RemoteIpAddress.ToString());
     }
 
     private string? GetFingerprint() =>

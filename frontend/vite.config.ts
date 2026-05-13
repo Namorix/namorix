@@ -12,9 +12,13 @@ export default defineConfig({
         changeOrigin: true,
         configure: (proxy) => {
           proxy.on("proxyReq", (proxyReq, req) => {
-            const ip = req.socket.remoteAddress
-            if (ip) {
-              proxyReq.setHeader("x-forwarded-for", ip)
+            const realIp =
+              req.headers["x-real-ip"] || req.headers["x-forwarded-for"]
+
+            // Chỉ forward nếu đã có sẵn từ upstream (NPM), không tự tạo
+            if (realIp) {
+              proxyReq.setHeader("x-forwarded-for", realIp)
+              proxyReq.setHeader("x-real-ip", realIp)
             }
           })
         },

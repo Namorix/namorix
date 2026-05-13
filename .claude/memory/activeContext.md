@@ -20,6 +20,13 @@ M2 — Full Auth Backend → **Complete** ✅ + **Harden** ✅ + **ESLint** ✅ 
 - **C# Migration Phase 4**: AuthController (7 endpoints), typed ApiResponse<T>, SettingsService, CleanIp helper
 - Moving to M3 (System Apps)
 
+## Recent Changes (2026-05-14)
+
+### TrustedProxyMiddleware, SettingsController
+- **backend (0.15.0)**: New TrustedProxyMiddleware — chỉ trust X-Forwarded-For khi RemoteIpAddress nằm trong trusted list (từ Settings DB), block request với forwarded header từ untrusted proxy (400). New SettingsController: GET/PUT `/api/settings/proxies`. SettingsService thêm GetTrustedProxies/SetTrustedProxies (cùng IMemoryCache pattern). HttpContextKeys mở rộng (TrustedProxy, RealIp, RealScheme). GetClientIp dùng RealIp từ context trước, fallback RemoteIpAddress. Xóa UseXForwardedHeaders cũ.
+- **frontend (0.5.4)**: API URL conditional (izerocs.space → https://api.izerocs.space). Vite proxy chỉ forward X-Forwarded-For nếu đã có từ upstream.
+- **root (0.3.0)**: Backend trusted proxy feature
+
 ## Recent Changes (2026-05-13)
 
 ### Security Headers, Settings Cache, SecureCookie Fix, Vite Proxy
