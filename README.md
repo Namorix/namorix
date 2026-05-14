@@ -35,21 +35,18 @@ git clone <repo-url> namorix
 cd namorix
 
 # Install dependencies (uses pnpm)
-pnpm install
+cd frontend && pnpm install
 
 # Run development (2 terminals)
 cd backend && dotnet watch run  # Backend C# (port 3000)
 # or: cd backend && dotnet run
-cd frontend && npm run dev      # Frontend (Vite port 5173)
+cd frontend && pnpm dev         # Frontend (Vite port 5173)
 ```
 
 ## Repository Structure
 
 ```
 namorix/
-├── package.json              # pnpm workspaces root
-├── pnpm-workspace.yaml       # workspace config
-├── tsconfig.base.json        # shared TypeScript config
 ├── docs/
 │   ├── architecture.md       # source of truth kỹ thuật
 │   ├── m1-shell-ui.md        # M1 spec
@@ -57,32 +54,33 @@ namorix/
 │   ├── m3-system-apps.md    # M3 spec
 │   ├── m4-addon-system.md    # M4 spec
 │   └── m5-core-package.md    # M5 spec
-├── packages/
-│   ├── core/                 # @namorix/core — browser-only types, utils (publishable)
-│   │   └── src/
-│   │       ├── auth/         # auth.service.ts (AuthChecker for guards)
-│   │       ├── http/         # ApiError, http client with auto-refresh
-│   │       ├── router/       # GuardedRoute, createAuthGuard, createSignInGuard, createSignUpGuard
-│   │       ├── config.ts     # configureCore(), getApiBaseUrl()
-│   │       └── utils/        # cx (className utility)
-│   ├── styles/               # @namorix/styles — SCSS tokens, reset, fonts
-│   ├── ui/                   # @namorix/ui — React primitive components
-│   │   └── src/
-│   │       └── Primitives/
-│   │           ├── NmxButton/
-│   │           ├── NmxForm/   # FormField, FormInput, FormActions, FormHeader, FormPage, FormCard
-│   │           ├── NmxInlineAlert/
-│   │           └── NmxToggle/
-│   └── shared/               # @namorix/shared — shared code for backend + frontend
-│       └── src/
-│           ├── types/        # ApiResponse, User, AuthStatus, ValidateErrorMeta, etc.
-│           ├── api-routes.ts # ApiAuthRoutes constants
-│           └── constants.ts  # HttpStatus, NMX_COOKIE_*, etc.
-├── frontend/                 # Vite + React shell (port 5173)
+├── frontend/
+│   ├── package.json          # pnpm workspace root
+│   ├── pnpm-workspace.yaml   # workspace config
+│   ├── tsconfig.base.json    # shared TypeScript config
+│   ├── packages/
+│   │   ├── core/             # @namorix/core — browser-only types, utils (publishable)
+│   │   │   └── src/
+│   │   │       ├── auth/     # auth.service.ts (AuthChecker for guards)
+│   │   │       ├── http/     # ApiError, http client with auto-refresh
+│   │   │       ├── router/   # GuardedRoute, createAuthGuard, createLoginGuard, createRegisterGuard
+│   │   │       ├── i18n/     # NmxI18n, ValidationRunner, validation-messages
+│   │   │       ├── config.ts # configureCore(), getApiBaseUrl()
+│   │   │       ├── api-routes.ts
+│   │   │       ├── constants.ts
+│   │   │       └── utils/    # cx (className utility)
+│   │   ├── styles/           # @namorix/styles — SCSS tokens, reset, fonts
+│   │   └── ui/               # @namorix/ui — React primitive components
+│   │       └── src/
+│   │           └── Primitives/
+│   │               ├── NmxButton/
+│   │               ├── NmxForm/
+│   │               ├── NmxInlineAlert/
+│   │               └── NmxToggle/
 │   └── src/
 │       ├── assets/
 │       │   └── controllers/
-│       │       └── auth.controller.ts  # signUp, signIn, signOut
+│       │       └── auth.controller.ts
 │       ├── components/
 │       ├── pages/
 │       │   ├── Login.tsx
@@ -108,10 +106,9 @@ namorix/
 
 | Package | Purpose | Importable By |
 |---------|---------|---------------|
-| `@namorix/core` | Browser-only types, `ApiError`, `cx` utility, auth guards | frontend, @namorix/ui |
+| `@namorix/core` | Types, auth guards, http client, `ApiError`, i18n, validation, constants | frontend, @namorix/ui, external addons |
 | `@namorix/styles` | SCSS tokens, reset, fonts | frontend, @namorix/ui, external addons |
 | `@namorix/ui` | NmxButton, NmxForm, NmxInlineAlert, NmxToggle, etc. | frontend |
-| `@namorix/shared` | Types, constants, ValidateErrorMeta | all packages |
 | `backend` | ASP.NET Core 8 API server | - |
 | `frontend` | Vite React shell | - |
 
@@ -123,8 +120,7 @@ Frontend uses controller pattern for API calls:
 
 ```typescript
 // frontend/src/assets/controllers/auth.controller.ts
-import { http, getApiBaseUrl } from "@namorix/core"
-import { ApiAuthRoutes } from "@namorix/shared"
+import { http, getApiBaseUrl, ApiError, ApiAuthRoutes } from "@namorix/core"
 
 export const authController = {
   register: async (username: string, password: string) => {

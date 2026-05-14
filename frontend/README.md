@@ -44,10 +44,9 @@ pnpm preview      # Preview production build
 
 | Package | Purpose |
 |---------|---------|
-| `@namorix/core` | Auth guards, http client, ApiError, NmxI18n, ValidationRunner |
+| `@namorix/core` | Auth guards, http client, ApiError, i18n, ValidationRunner, constants |
 | `@namorix/styles` | SCSS design tokens, reset, fonts |
 | `@namorix/ui` | NmxButton, NmxForm, NmxInlineAlert, NmxToggle |
-| `@namorix/shared` | AuthConstraints, ApiAuthRoutes |
 | `react-router-dom` | Client-side routing with guard pattern |
 | `react-i18next` | i18n with layered namespaces |
 

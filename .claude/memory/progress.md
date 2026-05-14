@@ -15,9 +15,7 @@
   - `ValidationRunner` (fluent client-side validation)
   - `formatApiError`, `formatValidationError`, `formatAuthError`
   - `authService` (async `isAuthenticated` via `/api/auth/session`)
-- **Lưu ý:** `@namorix/backend-core` đã được xoá (migrated to C# backend) — xem version history ngày 2026-05-14
-- `@namorix/shared` (types, constants, error helpers, ValidationErrorMeta, HttpHeader, CSRF constants)
-- tsconfig.base.json shared across project
+- `@namorix/shared` merged into `@namorix/core` (2026-05-14 restructure)
 - React Router setup with /login, /register, / routes
 - Auth pages (Login, Register with AuthPage wrapper) + responsive layout
 - i18next with react-i18next (en/vi locales, layered namespaces)
@@ -117,12 +115,10 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| root (namorix) | 0.3.1 | M2 (cleanup: xoá backend-n + packages/backend-core) |
-| frontend | 0.5.4 | M2 (conditional API URL based on host, Vite proxy forward) |
-| @namorix/core | 0.6.3 | M2 (field name refactoring: needsSignup→needsRegister, signUpEnabled→registerEnabled) |
-| @namorix/styles | 0.2.0 | M2 (variables.scss + exports subpath) |
+| frontend | 0.6.0 | M2 (workspace restructure: packages moved into frontend/) |
+| @namorix/core | 0.7.0 | M2 (shared merged into core: types, api-routes, constants) |
+| @namorix/styles | 0.2.0 | M2 |
 | @namorix/ui | 0.3.0 | M2 |
-| @namorix/shared | 0.7.0 | M2 (breaking: AuthStatus fields rename + REGISTER_CLOSED error code) |
 | backend | 0.15.0 | M2 (TrustedProxyMiddleware, SettingsController, SettingsService trusted proxies, HttpContextKeys extension) |
 
 ## Version Rules
@@ -135,19 +131,25 @@
 
 | Package | Bump Patch when | Bump Minor when |
 |---------|----------------|-----------------|
-| root (namorix) | Bug fixes, config tweaks, dependency updates (any package) | New feature, new package, milestone completion, workspace structure change |
 | frontend | Bug fixes, CSS tweaks | New pages, routing changes, auth flow, i18n |
-| @namorix/core | Bug fixes | New utility, new type, new module (i18n, validation) |
+| @namorix/core | Bug fixes | New type, new module, breaking change |
 | @namorix/styles | Token fixes | New token, new variable, new export |
 | @namorix/ui | Bug fixes | New component, component breaking change |
-| backend | Bug fixes | New API endpoint, auth feature, refactor to decorators |
+| backend | Bug fixes, C# config tweaks | New endpoint, new service, auth feature |
 
 ## Version History
+
+### 2026-05-14 (Workspace restructure: packages → frontend/ + shared → core)
+| Package | Version | Changes |
+|---------|---------|---------|
+| frontend | 0.6.0 | Workspace restructure: xoá root package.json, pnpm-workspace.yaml, tsconfig.base.json; chuyển `packages/*` vào `frontend/packages/*`; frontend tự đứng với workspace riêng; eslint.config.js→.ts; thêm jiti |
+| @namorix/core | 0.7.0 | Merge `@namorix/shared` vào core: types/, api-routes.ts, constants.ts; core giờ là package duy nhất cho frontend + external addon |
+| root (namorix) | — | Đã xoá `package.json`, `tsconfig.base.json`, `pnpm-workspace.yaml` khỏi root — workspace chuyển vào frontend/ |
 
 ### 2026-05-14 (Cleanup: xoá backend-n + packages/backend-core)
 | Package | Version | Changes |
 |---------|---------|---------|
-| root (namorix) | 0.3.1 | Xoá thư mục `backend-n/` (Node.js backend cũ) và `packages/backend-core/` (TypeScript utilities). Cập nhật docs: CLAUDE.md, README.md, architecture.md, memory files, m2-auth.md, migration-backend-csharp.md, m4-addon-system.md, skill file |
+| root (namorix) | 0.3.1 | Xoá thư mục `backend-n/` (Node.js backend cũ) và `packages/backend-core/` (TypeScript utilities). Cập nhật docs: CLAUDE.md, README.md, architecture.md, memory files, m2-auth.md, m4-addon-system.md, skill file |
 
 ### 2026-05-14 (latest — TrustedProxyMiddleware, SettingsController)
 | Package | Version | Changes |

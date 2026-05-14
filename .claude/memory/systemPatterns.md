@@ -48,8 +48,8 @@
 
 ### 3. SQLite + EF Core for Database
 - Single-node deployment simplicity
-- Drizzle ORM for type-safe queries
-- **Why:** No separate DB server needed for self-hosted
+- No separate DB server needed for self-hosted
+- **Why:** Simple, zero-config for personal/home server
 
 ### 4. Socket.IO for Realtime
 - Shell events: `nmx:notification`, `nmx:addon-status`
@@ -65,12 +65,11 @@
 
 | Package | Can Import |
 |---------|------------|
-| `@namorix/shared` | **Nothing** internal — zero deps |
-| `@namorix/core` | `@namorix/shared`, React ecosystem |
+| `@namorix/core` | React ecosystem. Single package for frontend + external addons (shared merged in) |
 | `@namorix/styles` | **Nothing** — pure SCSS |
 | `@namorix/ui` | `@namorix/core`, React deps. Uses `--nmx-*` CSS vars from `@namorix/styles` (consumer must import) |
-| `frontend` | `@namorix/core`, `@namorix/styles`, `@namorix/ui`, `@namorix/shared`, React deps |
-| `backend` | `@namorix/shared`, ASP.NET Core 8 ecosystem |
+| `frontend` | `@namorix/core`, `@namorix/styles`, `@namorix/ui`, React deps |
+| `backend` | ASP.NET Core 8 ecosystem only |
 
 ## Key Interfaces
 
@@ -98,10 +97,9 @@ interface NmxAddonStatus { addonId: string; status: 'installed' | 'running' | 's
 - **Client:** `ValidationRunner` — fluent builder, returns translated strings
 - **Bridge:** `formatApiError()` parses API response, resolves code → i18n key → formatted string
 
-### Decorator-based Routing (Backend)
-- `@Controller(prefix)`, `@Get/@Post/@Put/@Patch/@Delete(path)`, `@Validate(schema)` store metadata
-- `registerController(router, ControllerClass)` reads Reflect metadata, wires Express routes
-- Uses `Symbol.for()` for cross-module metadata keys (NOT `Symbol()`)
+### Decorator-based Routing (Backend — C#)
+- ASP.NET Core attributes: `[ApiController]`, `[Route]`, `[HttpPost]`, `[HttpGet]`, `[Validate]`
+- `AddControllers()` / `MapControllers()` for built-in route registration
 
 ### Authentication (Async isAuthenticated)
 - `AuthChecker.isAuthenticated()` is **async** — calls `GET /api/auth/session` with `credentials: "include"`
@@ -166,3 +164,97 @@ interface NmxAddonStatus { addonId: string; status: 'installed' | 'running' | 's
 4. Logout → POST /api/auth/logout → clear cookies, revoke token jti
 5. CSRF on mutating requests: read nmx_csrf_token cookie → send X-CSRF-Token header
 ```
+
+## Shell UI Architecture
+
+### WindowState
+```typescript
+type WindowState = {
+  windowId: string        // UUID
+  appId: string           // 'file-manager' | 'terminal' | 'settings' | ...
+  title: string
+  icon?: string
+  position: { x: number; y: number }
+  size: { width: number; height: number }
+  minimized: boolean
+  maximized: boolean
+  zIndex: number
+}
+```
+
+### Zustand Stores (Planned)
+| Store | Responsibility |
+|-------|----------------|
+| `auth.store` | `user`, `status` (`anonymous` \| `loading` \| `authenticated`), `expiresAt` |
+| `windows.store` | `windows: WindowState[]`, `focusOrder`, `openWindow`, `closeWindow`, `focusWindow` |
+| `addons.store` | `AddonInfo[]` synced from WebSocket `shell:addons` |
+| `desktop.store` | `theme`, `locale`, `wallpaper` |
+
+### Window Manager
+- `focusOrder`: array of windowId; last element = focused window
+- On focus: move windowId to end of `focusOrder`, assign zIndex higher than others
+- Drag/resize: Pointer Events on title bar and window edges
+
+### Z-index Layer Stack
+| Layer | z-index | Notes |
+|-------|---------|-------|
+| Auth overlay | 9000 | Full screen when not logged in |
+| Notification center | 8000 | Notification panel |
+| App launcher | 7000 | Start menu |
+| Taskbar | 1000 | Always on top of window content |
+| Windows | 100+ | Dynamic zIndex managed by WindowManager |
+| Desktop icons | 50 | Desktop background |
+
+### System Apps
+- Each system app is mounted inside Window.tsx by appId (switch/registry map)
+- Taskbar: shows running windows, focus, minimize/restore
+- AppLauncher: shortcuts to open system apps (creates new WindowState)
+- System apps: File Manager, Terminal, Settings, Log Viewer
+
+## WebSocket Architecture
+
+### /namorix-shell-ws (Socket.IO)
+Server → Client:
+| Event | Payload | Notes |
+|-------|---------|-------|
+| `shell:addons` | `AddonInfo[]` | Full snapshot on connect + status changes |
+| `shell:addon:logLine` | `{ addonId, line }` | Streaming logs |
+| `nmx:deprecation` | `NmxDeprecation` | Incompatible core version |
+
+Client → Server:
+| Event | Payload | Notes |
+|-------|---------|-------|
+| `nmx:handshake` | `{ addonId, coreVersion }` | Auto-emit on connectEvents() |
+| `shell:addon:install` | `{ imageRef }` | |
+| `shell:addon:start` | `{ addonId }` | |
+| `shell:addon:stop` | `{ addonId }` | |
+| `shell:addon:remove` | `{ addonId }` | |
+| `shell:addon:logs` | `{ addonId, since? }` | |
+
+Reconnection: Socket.IO with backoff; server sends full `shell:addons` on reconnect.
+
+### /namorix-terminal-ws (PTY bridge)
+Client → Server: `{ type: 'input' | 'resize'; data: string; cols?: number; rows?: number }`
+Server → Client: `{ type: 'output'; data: string }`
+
+## External Addon System
+
+### Docker Lifecycle
+- Client sends commands via shell WebSocket: install, start, stop, remove, logs
+- Server uses Docker client via Unix socket (`/var/run/docker.sock`)
+- Addon containers on `namorix_net` bridge network
+
+### DockerMonitor & Auto-Discover
+- Polls container changes; detects containers with label `namorix.addon=true`
+- Metadata from labels: `namorix.addon.id`, `namorix.addon.display_name`, `namorix.addon.internal_port`
+- Auto-discovers addons created outside UI
+
+### Addon Launch
+- User clicks addon → `window.open` to `http://<host>:<hostPort>/`
+- Addon app runs independently in new browser tab
+- `@namorix/core` in addon: `getSession()`, `createApiClient()`, `connectEvents()`
+
+### Addon Auth Flows
+Two distinct auth mechanisms:
+1. **Server-to-server (AddonToken):** Desktop generates AddonSecret on install, injects via Docker env. Addon calls `POST /api/addon/handshake` to exchange secret for long-lived AddonToken.
+2. **Browser-to-addon (nmx_token):** Cross-origin redirect flow — Desktop login → redirect with one-time `nmx_token` → addon exchanges for session via `POST /api/addon/session-exchange`.

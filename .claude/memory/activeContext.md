@@ -22,9 +22,15 @@ M2 — Full Auth Backend → **Complete** ✅ + **Harden** ✅ + **ESLint** ✅ 
 
 ## Recent Changes (2026-05-14)
 
+### Workspace Restructure: packages → frontend/ + shared → core
+- **frontend (0.6.0)**: Xoá root package.json, tsconfig.base.json, pnpm-workspace.yaml; chuyển `packages/*` vào `frontend/packages/*`; frontend tự đứng với workspace riêng; eslint.config.js → .ts + thêm jiti
+- **@namorix/core (0.7.0)**: Merge `@namorix/shared` vào core — thêm types/, api-routes.ts, constants.ts. Core là package duy nhất cho frontend + external addon
+- **root**: Đã xoá package.json khỏi root, workspace chuyển vào frontend/
+- **CLAUDE.md, docs**: Cập nhật package boundaries, file structure, dev commands, scopes
+
 ### Cleanup: Xoá backend-n + packages/backend-core
 - **root (0.3.1)**: Xoá thư mục `backend-n/` (Node.js backend cũ) và `packages/backend-core/` (TypeScript utilities) — đã được C# backend `backend/` thay thế hoàn toàn
-- Cập nhật tất cả docs: CLAUDE.md, README.md, architecture.md, memory files, m2-auth.md, migration-backend-csharp.md, m4-addon-system.md, skill file
+- Cập nhật tất cả docs: CLAUDE.md, README.md, architecture.md, memory files, m2-auth.md, m4-addon-system.md, skill file
 - Chạy `pnpm install` để cleanup lockfile
 
 ### TrustedProxyMiddleware, SettingsController
@@ -49,7 +55,7 @@ M2 — Full Auth Backend → **Complete** ✅ + **Harden** ✅ + **ESLint** ✅ 
 - **@namorix/core (0.6.3)**: auth.service.ts field access updated, validation-messages key renamed, guards updated
 - **frontend (0.5.2)**: i18n en.json text ("Sign in"→"Log in", "Sign up"→"Register"), page links updated
 - **backend (0.12.0)**: SettingsService method renames (`IsSignUpEnabled`→`IsRegisterEnabled`), CORS middleware added, custom [Validate] attribute (IValidationSchema, ValidateAttribute, ValidationRule, LoginSchema, RegisterSchema), JsonErrorMiddleware fix
-- **Docs**: architecture.md, m1-shell-ui.md, m2-auth.md, m5-core-package.md, migration-backend-csharp.md, frontend/README.md, .claude/CLAUDE.md all updated
+- **Docs**: architecture.md, m1-shell-ui.md, m2-auth.md, m5-core-package.md, frontend/README.md, .claude/CLAUDE.md all updated
 - **Memory bank**: progress.md, activeContext.md, systemPatterns.md all updated
 
 ### Validation System Expansion (C#)

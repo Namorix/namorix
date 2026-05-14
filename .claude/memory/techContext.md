@@ -20,8 +20,7 @@
 ### Packages
 | Package | Purpose | Dependencies |
 |---------|---------|--------------|
-| `@namorix/shared` | Types, constants, error codes, HttpHeader | None |
-| `@namorix/core` | Browser-only: auth, http, i18n, validation, router | @namorix/shared, react, react-router-dom, i18next, react-i18next |
+| `@namorix/core` | Browser-only: auth, http, i18n, validation, router, types, constants | react, react-router-dom, i18next, react-i18next |
 | `@namorix/styles` | SCSS tokens, reset, fonts, variables | None (pure SCSS) |
 | `@namorix/ui` | React primitive components | React, @namorix/core, @namorix/styles |
 
@@ -34,11 +33,12 @@
 
 ### Commands
 ```bash
-npm install                    # Install all workspaces
-npm run dev                    # Run all dev servers (needs multiple terminals)
-npm run dev --workspace frontend   # Frontend only (Vite port 5173)
-npm run build                  # Build all packages
-npm run test                   # Run tests
+cd frontend && pnpm install    # Install frontend workspace
+cd backend && dotnet restore   # Restore backend packages
+cd backend && dotnet watch run # Backend only (port 3000)
+cd frontend && pnpm dev        # Frontend only (Vite port 5173)
+cd frontend && pnpm build      # Build all frontend packages
+cd frontend && pnpm test       # Run frontend tests
 ```
 
 ### Environment Variables (Frontend)
@@ -54,37 +54,32 @@ npm run test                   # Run tests
 
 ### Packages Structure
 ```
-packages/
+frontend/packages/
 ├── core/           # @namorix/core — TypeScript contracts, http, auth
 │   └── src/
 │       ├── auth/          # auth.service.ts (async isAuthenticated)
 │       ├── http/          # ApiError, RequestBuilder (CSRF auto-injection)
 │       ├── i18n/          # NmxI18n, ValidationRunner, validation-messages
 │       ├── router/        # GuardedRoute, createAuthGuard, etc.
+│       ├── types/         # ApiResponse, AuthStatus, error codes, helpers (merged from shared)
+│       ├── api-routes.ts  # (merged from shared)
+│       ├── constants.ts   # NMX_COOKIE_*, AuthConstraints (merged from shared)
 │       ├── config.ts
 │       └── utils/cx.ts
 ├── styles/         # @namorix/styles — SCSS tokens
 │   └── src/
-│       ├── tokens.scss      # CSS variables (--nmx-*)
+│       ├── index.scss
 │       ├── reset.scss       # CSS reset
 │       ├── fonts.scss       # font imports
 │       ├── mixins.scss
-│       ├── variables.scss
-│       └── index.scss       # @use all partials
-├── ui/             # @namorix/ui — React primitives
-│   └── src/
-│       ├── Primitives/
-│       │   ├── NmxButton/
-│       │   ├── NmxForm/
-│       │   ├── NmxInlineAlert/
-│       │   └── NmxToggle/
-│       └── index.ts
-└── shared/         # @namorix/shared — zero-deps types + constants
+│       └── variables.scss
+└── ui/             # @namorix/ui — React primitives
     └── src/
-        ├── types/         # ApiResponse, AuthStatus, error codes, helpers
-        ├── api-routes.ts
-        ├── constants.ts        # NMX_COOKIE_*, AuthConstraints
-        ├── http-headers.ts     # HttpHeader (lowercase for Express)
+        ├── Primitives/
+        │   ├── NmxButton/
+        │   ├── NmxForm/
+        │   ├── NmxInlineAlert/
+        │   └── NmxToggle/
         └── index.ts
 ```
 
@@ -110,28 +105,101 @@ packages/
 
 ## Technical Constraints
 
-1. **`@namorix/core` is browser-only** — can import @namorix/shared + React ecosystem
-2. **`@namorix/shared` has zero internal deps** — pure TypeScript types + constants + HttpHeader
-3. **`@namorix/styles` is pure SCSS** — provides CSS custom properties (--nmx-*)
-4. **Single-node deployment** — SQLite file-based, no separate DB server
-5. **Same-machine Docker** — Unix socket, not TCP
-6. **ES2023 target** — with bundler module resolution
-7. **experimentalDecorators + emitDecoratorMetadata** — required for @Controller, @Validate decorators
-8. **Package boundaries enforced** — no cross-package imports outside allowed list
-9. **HttpOnly cookies** — auth tokens not readable by JS; isAuthenticated must use API call
-10. **CSRF double-submit** — non-HttpOnly CSRF cookie + X-CSRF-Token header, enabled via CSRF_MODE env
+1. **`@namorix/core` is browser-only** — single package for frontend + external addons (shared merged in)
+2. **`@namorix/styles` is pure SCSS** — provides CSS custom properties (--nmx-*)
+3. **Single-node deployment** — SQLite file-based, no separate DB server
+4. **Same-machine Docker** — Unix socket, not TCP
+5. **ES2023 target** — with bundler module resolution
+6. **Package boundaries enforced** — no cross-package imports outside allowed list
+7. **HttpOnly cookies** — auth tokens not readable by JS; isAuthenticated must use API call
+8. **CSRF double-submit** — non-HttpOnly CSRF cookie + X-CSRF-Token header, enabled via CSRF_DISABLE env
+
+## Database Schema (EF Core / SQLite)
+
+### Tables
+
+**`Users`**
+| Column | Type | Constraints |
+|--------|------|-------------|
+| `Id` | int | PK, auto-increment |
+| `Username` | text | unique, not null |
+| `PasswordHash` | text | not null (BCrypt) |
+| `Role` | int | not null, default 0 (bitmask: `ADMIN = 1 << 0`) |
+| `CreatedAt` | datetime | not null |
+
+**`RefreshTokens`**
+| Column | Type | Constraints |
+|--------|------|-------------|
+| `Jti` | text | PK |
+| `UserId` | int | FK → Users.Id |
+| `TokenHash` | text | not null |
+| `UserAgent` | text | nullable |
+| `Fingerprint` | text | nullable |
+| `IpAddress` | text | nullable |
+| `LastUsedAt` | datetime | nullable |
+| `ExpiresAt` | datetime | not null |
+| `CreatedAt` | datetime | not null |
+
+**`Settings`**
+| Column | Type | Constraints |
+|--------|------|-------------|
+| `Key` | text | PK |
+| `Value` | text | not null |
+
+### Migration Strategy
+- EF Core migrations in `backend/Migrations/`
+- Run: `dotnet ef database update`
+- Or auto-apply at startup: `DbContext.Database.Migrate()`
+
+## REST API Endpoints
+
+### Auth (`/api/auth`)
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/auth/login` | Login with username + password + rememberMe? |
+| POST | `/api/auth/register` | Register new user |
+| POST | `/api/auth/logout` | Clear cookies, revoke refresh token |
+| POST | `/api/auth/logout-all` | Revoke all user refresh tokens |
+| GET | `/api/auth/session` | Validate access token, return user info |
+| POST | `/api/auth/refresh` | Rotate tokens (fingerprint + IP check) |
+| GET | `/api/auth/status` | Return `{ needsRegister, registerEnabled }` |
+
+### Settings (`/api/settings`)
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/settings/proxies` | Get trusted proxy IP list |
+| PUT | `/api/settings/proxies` | Set trusted proxy IPs |
+
+### Addon (Planned — M4)
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/addon/handshake` | Exchange addon secret for AddonToken |
+| POST | `/api/addon/session-exchange` | Exchange one-time nmx_token for session |
+| GET | `/api/logs/addons` | List addon log sources |
+| GET | `/api/logs?addonId=` | Fetch addon logs |
+
+## Middleware Pipeline
+```
+CORS → SecurityHeaders → TrustedProxy → Routing → RateLimiter (100 req/min) → CSRF → Controllers
+```
+
+## Docker Labels (External Addons)
+```dockerfile
+LABEL namorix.addon=true
+LABEL namorix.addon.id=homethread
+LABEL namorix.addon.display_name=HomeThread
+LABEL namorix.addon.internal_port=4000
+```
 
 ## Key Files
 
 | Path | Purpose |
 |------|---------|
-| `packages/core/src/` | Browser contracts (AuthChecker, http client, i18n, validation) |
-| `packages/core/src/auth/auth.service.ts` | Async auth checker (calls /api/auth/session) |
-| `packages/core/src/http/client.ts` | RequestBuilder with CSRF auto-injection |
-| `packages/shared/src/` | Shared types, error codes, constants, HttpHeader |
-| `packages/shared/src/http-headers.ts` | HttpHeader const (moved from core, all lowercase) |
-| `packages/styles/src/` | SCSS tokens and reset |
-| `packages/ui/src/` | React primitive components |
+| `frontend/packages/core/src/` | Browser contracts (AuthChecker, http client, i18n, validation, types, constants) |
+| `frontend/packages/core/src/auth/auth.service.ts` | Async auth checker (calls /api/auth/session) |
+| `frontend/packages/core/src/http/client.ts` | RequestBuilder with CSRF auto-injection |
+| `frontend/packages/styles/src/` | SCSS tokens and reset |
+| `frontend/packages/ui/src/` | React primitive components |
 | `frontend/src/` | React shell UI |
 | `backend/` | ASP.NET Core 8 API (Controllers, Services, Middleware, Models) |
 | `backend/Program.cs` | Entry point + middleware pipeline |
