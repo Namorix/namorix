@@ -16,7 +16,12 @@ import {
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link, useNavigate } from "react-router-dom"
-import { AuthConstraints, validate, ValidationFields } from "@namorix/core"
+import {
+  AuthConstraints,
+  DefaultPaths,
+  validate,
+  ValidationFields,
+} from "@namorix/core"
 import { authController } from "../controllers/auth.controller"
 import { useAuthForm } from "../hooks/useAuthForm"
 
@@ -61,7 +66,7 @@ export const Login: React.FC = () => {
       await authController.login(username, password, rememberMe)
       setAlert("success", t("auth.login.success"))
       setTimeout(() => {
-        navigate("/")
+        navigate(DefaultPaths.HOME)
       }, 2000)
     } catch (err: unknown) {
       handlerError(err, t, "auth.login.errors.generic")
@@ -134,7 +139,10 @@ export const Login: React.FC = () => {
             </NmxFormActions>
             <div className="nmx-auth-page__secondary-actions">
               <span>{t("auth.login.secondaryText")}</span>
-              <Link to="/register" className="nmx-auth-page__secondary-link">
+              <Link
+                to={DefaultPaths.REGISTER}
+                className="nmx-auth-page__secondary-link"
+              >
                 {t("auth.login.secondaryActionLabel")}
               </Link>
             </div>

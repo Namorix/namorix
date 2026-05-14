@@ -18,6 +18,7 @@ import { authController } from "../controllers/auth.controller"
 import {
   AuthConstraints,
   authService,
+  DefaultPaths,
   validate,
   ValidationFields,
 } from "@namorix/core"
@@ -74,7 +75,7 @@ export const Register: React.FC = () => {
       await authController.register(username, password)
       setAlert("success", t("auth.register.success"))
       setTimeout(() => {
-        navigate("/login")
+        navigate(DefaultPaths.LOGIN)
       }, 2000)
     } catch (err: unknown) {
       handlerError(err, t, "auth.register.errors.generic")
@@ -158,7 +159,10 @@ export const Register: React.FC = () => {
             </NmxFormActions>
             <div className="nmx-auth-page__secondary-actions">
               <span>{t("auth.register.secondaryText")}</span>
-              <Link to="/login" className="nmx-auth-page__secondary-link">
+              <Link
+                to={DefaultPaths.LOGIN}
+                className="nmx-auth-page__secondary-link"
+              >
                 {t("auth.register.secondaryActionLabel")}
               </Link>
             </div>

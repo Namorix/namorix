@@ -115,11 +115,11 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.7.0 | M2 (Blocked page, health controller, controllers restructuring) |
-| @namorix/core | 0.8.0 | M2 (MiddlewareErrorCodes, statusCode in ApiResponse, ApiMiddlewareRoutes, formatMiddlewareError) |
+| frontend | 0.7.1 | M2 (Blocked page integration, guard refinements) |
+| @namorix/core | 0.8.1 | M2 (DefaultPaths extracted, guards refactor) |
 | @namorix/styles | 0.2.0 | M2 |
 | @namorix/ui | 0.3.0 | M2 |
-| backend | 0.16.0 | M2 (HealthController, NetworkHelper, Error.cs refactoring, middleware pipeline fixes) |
+| backend | 0.17.0 | M2 (Permission/RBAC system, auth middleware, 404 handler, CORS dynamic config) |
 
 ## Version Rules
 
@@ -138,6 +138,13 @@
 | backend | Bug fixes, C# config tweaks | New endpoint, new service, auth feature |
 
 ## Version History
+
+### 2026-05-15 (Permission/RBAC system, auth middleware, attribute filters, CORS dynamic config)
+| Package | Version | Changes |
+|---------|---------|---------|
+| backend | 0.17.0 | New Permission/RBAC system: PermissionController, UserPermissionController, PermissionService (cached), Permission/UserPermission models; New middleware: AuthMiddleware (JWT decode → HttpContext.User), NotFoundMiddleware (404 → ApiResponse JSON), RequireAuthAttribute, RequireAdminAttribute, RequirePermissionAttribute; New constants: HttpHeaders, Time, User (Admin=1/User=0); New Responses/ForbiddenObjectResult; SettingsController dynamic CORS origins (IMemoryCache); SettingsService generic GetListAsync/SetListAsync; AuthController session user existence check + cookie cleanup on invalid user; PermissionService with assignment/revocation + cache |
+| @namorix/core | 0.8.1 | guards.ts: extracted DefaultPaths as reusable const object |
+| frontend | 0.7.1 | App.tsx: Blocked page health check on mount; guard wiring refinements |
 
 ### 2026-05-14 (Trusted proxy detection, health endpoint, Blocked page, error code refactoring)
 | Package | Version | Changes |

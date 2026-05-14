@@ -4,6 +4,7 @@ import {
   createAuthGuard,
   createLoginGuard,
   createRegisterGuard,
+  DefaultPaths,
   GuardedRoute,
 } from "@namorix/core"
 import React, { useEffect, useState } from "react"
@@ -36,7 +37,7 @@ export const App: React.FC = () => {
   return (
     <Routes>
       <Route
-        path="/login"
+        path={DefaultPaths.LOGIN}
         element={
           <GuardedRoute guard={loginGuard}>
             <Login />
@@ -44,7 +45,7 @@ export const App: React.FC = () => {
         }
       />
       <Route
-        path="/register"
+        path={DefaultPaths.REGISTER}
         element={
           <GuardedRoute guard={registerGuard}>
             <Register />
@@ -52,14 +53,14 @@ export const App: React.FC = () => {
         }
       />
       <Route
-        path="/"
+        path={DefaultPaths.HOME}
         element={
           <GuardedRoute guard={authGuard}>
             <Desktop />
           </GuardedRoute>
         }
       />
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<Navigate to={DefaultPaths.HOME} replace />} />
     </Routes>
   )
 }

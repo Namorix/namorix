@@ -301,6 +301,21 @@ Lý do: frontend luôn gửi fingerprint, nếu thiếu lúc refresh là dấu h
 - CSRF token: `httpOnly: false, sameSite: "lax"` (readable by JS for double-submit)
 - `sameSite: "lax"` chosen over `"strict"` because frontend/backend run on different ports in dev
 
+### Service Error Handling — DB Failures Go Unwrapped (Tech Debt)
+Các service method (PermissionService, SettingsService) không có try/catch cho DB operations. Nếu EF Core failed (unique constraint, connection loss, etc.), exception propagate lên controller rồi ExceptionMiddleware trả 500 generic. Thiếu error response cụ thể cho từng case (vd: "Permission already exists").
+
+**Cần làm:**
+- Controller catch exception → trả response với error code cụ thể
+- Hoặc service throw custom exception → controller catch và map thành response
+
+### Auth Filter Attribute — Inconsistent Pattern (Tech Debt)
+Ba attribute filter dùng 3 pattern khác nhau:
+- `RequireAuthAttribute` — extend `Attribute`, implement `IAsyncActionFilter` trực tiếp
+- `RequireAdminAttribute` — extend `ActionFilterAttribute`, override sync `OnActionExecuting`
+- `RequirePermissionAttribute` — extend `ActionFilterAttribute`, override async `OnActionExecutionAsync`
+
+Cần thống nhất về 1 pattern (ưu tiên `ActionFilterAttribute` + async override để dễ mở rộng).
+
 ## Next Steps
 
 1. M3 — Desktop shell UI (taskbar, launcher, window manager)

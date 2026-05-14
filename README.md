@@ -73,16 +73,16 @@ namorix/
 │       │   └── Desktop.tsx
 │       └── i18n/
 └── backend/                   # ASP.NET Core 8 API (port 3000)
-    ├── Controllers/           # API endpoints (Auth, Settings, Health)
-    ├── Services/              # AuthService, SettingsService, TokenCleanupService
-    ├── Models/                # EF Core entities (User, RefreshToken, Setting)
-    ├── Middleware/            # CSRF, Exception, SecurityHeaders, TrustedProxy
+    ├── Controllers/           # API endpoints (Auth, Settings, Health, Permissions)
+    ├── Services/              # AuthService, SettingsService, TokenCleanupService, PermissionService
+    ├── Models/                # EF Core entities (User, RefreshToken, Setting, Permission, UserPermission)
+    ├── Middleware/            # CSRF, Exception, SecurityHeaders, TrustedProxy, Auth, NotFound, Require*
     ├── Config/                # AppConfig, JwtConfig (IOptions<T>)
     ├── Validation/            # IValidationSchema, ValidateAttribute, schemas
     ├── Helpers/               # NetworkHelper
-    ├── Constants/             # AuthConstraints, Cookie names, error codes
+    ├── Constants/             # AuthConstraints, Cookie names, error codes, UserRole, HttpHeaders
     ├── Migrations/            # EF Core migrations
-    ├── Responses/             # ApiResponse<T>
+    ├── Responses/             # ApiResponse<T>, ForbiddenObjectResult
     ├── Extensions/            # ApplicationBuilderExtensions
     ├── Program.cs             # Entry point + middleware pipeline
     └── appsettings.json       # Configuration
