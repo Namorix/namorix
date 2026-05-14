@@ -1,4 +1,31 @@
 {
+  "blocked": {
+    "untrusted": {
+      "title": "Untrusted Proxy Detected",
+      "description": "Your request was blocked because it originated from an untrusted proxy or network address. Contact the administrator if you believe this is an error"
+    },
+    "internalError": {
+      "title": "Internal Server Error",
+      "description": "The server encountered an unexpected condition that prevented it from fulfilling the request"
+    },
+    "notFound": {
+      "title": "Resource not found",
+      "description": "The requested resource could not be found on this server. Please check the URL and try again."
+    },
+    "unknown": {
+      "title": "An unexpected error occurred",
+      "description": "We encountered an unknown issue. Please try again or contact support if the problem persists."
+    },
+    "meta": {
+      "label": {
+        "status": "Status",
+        "timestamp": "Timestamp"
+      },
+      "value": {
+        "blocked": "Blocked"
+      }
+    }
+  },
   "auth": {
     "login": {
       "heroTitle": "Namorix\nDesktop",

@@ -14,8 +14,13 @@ import {
 } from "@namorix/ui/Primitives"
 import { useTranslation } from "react-i18next"
 import { Link, useNavigate } from "react-router-dom"
-import { authController } from "../assets/controllers/auth.controller"
-import { AuthConstraints, authService, validate, ValidationFields } from "@namorix/core"
+import { authController } from "../controllers/auth.controller"
+import {
+  AuthConstraints,
+  authService,
+  validate,
+  ValidationFields,
+} from "@namorix/core"
 import { useAuthForm } from "../hooks/useAuthForm"
 
 export const Register: React.FC = () => {

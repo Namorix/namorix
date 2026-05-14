@@ -1,0 +1,71 @@
+.nmx-blocked-page {
+  min-height: 100vh;
+  background: var(--nmx-color-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--nmx-spacing-lg);
+
+  &__card {
+    max-width: 400px;
+    width: 100%;
+    background: var(--nmx-color-surface-low);
+    border-radius: var(--nmx-radius-md);
+    padding: var(--nmx-spacing-2xl) var(--nmx-spacing-lg);
+    text-align: center;
+  }
+
+  &__icon {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--nmx-radius-full);
+    background: color-mix(in oklab, var(--nmx-color-danger) 12%, transparent);
+    border: 0.5px solid color-mix(in oklab, var(--nmx-color-danger) 20%, transparent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--nmx-spacing-lg);
+    color: var(--nmx-color-danger);
+  }
+
+  &__title {
+    font-size: var(--nmx-font-size-xl);
+    font-weight: var(--nmx-font-weight-medium);
+    color: var(--nmx-color-on-surface);
+    margin: 0 0 var(--nmx-spacing-md);
+  }
+
+  &__desc {
+    font-size: var(--nmx-font-size-sm);
+    color: var(--nmx-color-on-surface-variant);
+    line-height: var(--nmx-line-height-relaxed);
+    margin: 0 0 var(--nmx-spacing-3xl);
+  }
+
+  &__meta {
+    display: flex;
+    flex-direction: column;
+    gap: var(--nmx-spacing-sm);
+  }
+
+  &__meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: var(--nmx-font-size-xs);
+  }
+
+  &__meta-label {
+    color: var(--nmx-color-on-surface-variant);
+    font-family: var(--nmx-font-mono) serif;
+  }
+
+  &__meta-value {
+    color: var(--nmx-color-on-surface);
+    font-family: var(--nmx-font-mono) serif;
+
+    &--danger {
+      color: var(--nmx-color-danger);
+    }
+  }
+}
