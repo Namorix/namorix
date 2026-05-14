@@ -1,3 +1,4 @@
+using backend.Middleware;
 using backend.Responses;
 using backend.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -5,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace backend.Controllers;
 
 [ApiController]
+[RequireAdmin]
 [Route("api/settings")]
 public class SettingsController(SettingsService settingsService) : ControllerBase
 {
@@ -21,9 +23,28 @@ public class SettingsController(SettingsService settingsService) : ControllerBas
         await settingsService.SetTrustedProxies(request.Proxies);
         return Ok(ApiResponse.Ok());
     }
+    
+    [HttpGet("origins")]
+    public async Task<IActionResult> GetAllowedOrigins()
+    {
+        var origins = await settingsService.GetAllowedOrigins();
+        return Ok(ApiResponse.Ok(origins));
+    }
+    
+    [HttpPut("origins")]
+    public async Task<IActionResult> SetAllowedOrigins([FromBody] OriginsRequest request)
+    {
+        await settingsService.SetAllowedOrigins(request.Origins);
+        return Ok(ApiResponse.Ok());
+    }
 }
 
 public class ProxiesRequest
 {
     public List<string> Proxies { get; init; } = [];
+}
+
+public class OriginsRequest
+{
+    public List<string> Origins { get; init; } = [];
 }

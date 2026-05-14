@@ -25,7 +25,14 @@ public class TokenCleanupService(IServiceProvider serviceProvider,
         await CleanupExpiredTokens(stoppingToken);
 
         using var timer = new PeriodicTimer(TimeSpan.FromHours(24));
-        while (await timer.WaitForNextTickAsync(stoppingToken))
-            await CleanupExpiredTokens(stoppingToken);
+        try
+        {
+            while (await timer.WaitForNextTickAsync(stoppingToken))
+                await CleanupExpiredTokens(stoppingToken);
+        }
+        catch (OperationCanceledException)
+        {
+            logger.LogInformation("Token cleanup service stopping");
+        }
     }
 }

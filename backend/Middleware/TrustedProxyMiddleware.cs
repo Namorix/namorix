@@ -44,13 +44,13 @@ public class TrustedProxyMiddleware(RequestDelegate requestDelegate)
 
         httpContext.Items[HttpContextKeys.TrustedProxy] = isTrusted;
 
-        var hasForwardedHeaders = httpContext.Request.Headers.ContainsKey("x-forwarded-for") ||
-                                  httpContext.Request.Headers.ContainsKey("x-forwarded-proto");
+        var hasForwardedHeaders = httpContext.Request.Headers.ContainsKey(HttpHeaders.XForwardedFor) ||
+                                  httpContext.Request.Headers.ContainsKey(HttpHeaders.XForwardedProto);
         if (hasForwardedHeaders && !isTrusted)
         {
             httpContext.Items[HttpContextKeys.Validated] = true;
             httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-            httpContext.Response.ContentType = "application/json";
+            httpContext.Response.ContentType = System.Net.Mime.MediaTypeNames.Application.Json;
             await httpContext.Response.WriteAsJsonAsync(ApiResponse.Fail(MiddlewareErrorCodes.UntrustedProxy,
                 "Untrusted proxy. Add this proxy to trusted proxies list"));
             return;
@@ -58,11 +58,11 @@ public class TrustedProxyMiddleware(RequestDelegate requestDelegate)
         
         if (isTrusted)
         {
-            var fwd = httpContext.Request.Headers["x-forwarded-for"].FirstOrDefault();
+            var fwd = httpContext.Request.Headers[HttpHeaders.XForwardedFor].FirstOrDefault();
             if (!string.IsNullOrEmpty(fwd))
                 httpContext.Items[HttpContextKeys.RealIp] = fwd.Split(",")[0].Trim();
 
-            var proto = httpContext.Request.Headers["x-forwarded-proto"].FirstOrDefault();
+            var proto = httpContext.Request.Headers[HttpHeaders.XForwardedProto].FirstOrDefault();
             if (!string.IsNullOrEmpty(proto))
                 httpContext.Items[HttpContextKeys.RealScheme] = proto;
         }

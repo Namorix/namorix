@@ -7,13 +7,11 @@ namespace backend.Services;
 
 public class SettingsService(AppDbContext dbContext, IMemoryCache memoryCache)
 {
-    private static readonly TimeSpan ExpirationRelativeToNow = TimeSpan.FromMinutes(5);
-    
     public async Task<bool> IsRegisterEnabled()
     {
         return await memoryCache.GetOrCreateAsync(SettingKeys.RegisterEnabled, async entry =>
         {
-            entry.AbsoluteExpirationRelativeToNow = ExpirationRelativeToNow;
+            entry.AbsoluteExpirationRelativeToNow = Time.ExpirationRelativeToNow;
             var setting = await dbContext.Settings.FirstOrDefaultAsync(s => s.Key == SettingKeys.RegisterEnabled);
             return setting?.Value.Equals(SettingValues.True, StringComparison.OrdinalIgnoreCase) ?? true;
         });
@@ -33,30 +31,30 @@ public class SettingsService(AppDbContext dbContext, IMemoryCache memoryCache)
         }
 
         await dbContext.SaveChangesAsync();
-        memoryCache.Set(SettingKeys.RegisterEnabled, enabled, ExpirationRelativeToNow);
+        memoryCache.Set(SettingKeys.RegisterEnabled, enabled, Time.ExpirationRelativeToNow);
     }
 
-    public async Task<List<string>> GetTrustedProxies()
+    private async Task<List<string>> GetListAsync(string key)
     {
-        var value = await memoryCache.GetOrCreateAsync(SettingKeys.TrustedProxies, async entry =>
+        var value = await memoryCache.GetOrCreateAsync(key, async entry =>
         {
-            entry.AbsoluteExpirationRelativeToNow = ExpirationRelativeToNow;
-            var setting = await dbContext.Settings.FirstOrDefaultAsync(s => s.Key == SettingKeys.TrustedProxies);
-            return setting?.Value ?? "";
+            entry.AbsoluteExpirationRelativeToNow = Time.ExpirationRelativeToNow;
+            return (await dbContext.Settings.FirstOrDefaultAsync(s => s.Key == key))?.Value ?? "";
         });
 
-        return string.IsNullOrEmpty(value) ? [] :
-            value.Split(",", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+        return string.IsNullOrEmpty(value)
+            ? []
+            : value.Split(",", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
                 .ToList();
     }
 
-    public async Task SetTrustedProxies(List<string> proxies)
+    private async Task SetListAsync(string key, List<string> items)
     {
-        var value = string.Join(",", proxies);
-        var setting = await dbContext.Settings.FirstOrDefaultAsync(s => s.Key == SettingKeys.TrustedProxies);
+        var value = string.Join(",", items);
+        var setting = await dbContext.Settings.FirstOrDefaultAsync(s => s.Key == key);
         if (setting == null)
         {
-            setting = new Setting { Key = SettingKeys.TrustedProxies, Value = value };
+            setting = new Setting { Key = key, Value = value };
             dbContext.Settings.Add(setting);
         }
         else
@@ -65,8 +63,20 @@ public class SettingsService(AppDbContext dbContext, IMemoryCache memoryCache)
         }
 
         await dbContext.SaveChangesAsync();
-        memoryCache.Set(SettingKeys.TrustedProxies, value, ExpirationRelativeToNow);
+        memoryCache.Set(key, value, Time.ExpirationRelativeToNow);
     }
+
+    public async Task<List<string>> GetTrustedProxies() =>
+        await GetListAsync(SettingKeys.TrustedProxies);
+
+    public async Task SetTrustedProxies(List<string> proxies) =>
+        await SetListAsync(SettingKeys.TrustedProxies, proxies);
+
+    public async Task<List<string>> GetAllowedOrigins() =>
+        await GetListAsync(SettingKeys.AllowedOrigins);
+
+    public async Task SetAllowedOrigins(List<string> origins) =>
+        await SetListAsync(SettingKeys.AllowedOrigins, origins);
     
     public async Task<(bool needsRegister, bool registerEnabled)> GetAuthStatus()
     {

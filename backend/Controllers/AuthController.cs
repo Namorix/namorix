@@ -107,7 +107,7 @@ public class AuthController(AuthService authService, SettingsService settingsSer
     }
 
     [HttpGet("session")]
-    public IActionResult Session()
+    public async Task<IActionResult> Session()
     {
         var accessToken = GetAccessCookie();
         if (string.IsNullOrEmpty(accessToken))
@@ -116,13 +116,22 @@ public class AuthController(AuthService authService, SettingsService settingsSer
         var payload = authService.VerifyAccessToken(accessToken);
         if (!payload.HasValue)
             return Unauthorized(ApiResponse.Fail(AuthErrors.Unauthorized));
-        
-        return Ok(ApiResponse<UserResponse>.Ok(new UserResponse
+
+        var user = await authService.GetUserById(payload.Value.userId);
+        if (user != null)
         {
-            Id = payload.Value.userId,
-            Username = payload.Value.username,
-            Role = payload.Value.role
-        }));
+            return Ok(ApiResponse<UserResponse>.Ok(new UserResponse
+            {
+                Id = payload.Value.userId,
+                Username = payload.Value.username,
+                Role = payload.Value.role
+            }));
+        }
+
+        ClearAccessCookie();
+        ClearRefreshCookie();
+        return Unauthorized(ApiResponse.Fail(AuthErrors.Unauthorized));
+
     }
 
 

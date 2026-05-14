@@ -9,7 +9,7 @@ public class ExceptionMiddleware(RequestDelegate requestDelegate, ILogger<Except
     public async Task InvokeAsync(HttpContext httpContext)
     {
         var originalBody = httpContext.Response.Body;
-        
+
         try
         {
             await requestDelegate(httpContext);
@@ -18,10 +18,14 @@ public class ExceptionMiddleware(RequestDelegate requestDelegate, ILogger<Except
         {
             logger.LogError(ex, "Unhandled exception");
             httpContext.Response.Body = originalBody;
-            httpContext.Response.ContentType = "application/json";
+            httpContext.Response.ContentType = System.Net.Mime.MediaTypeNames.Application.Json;
             httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
             await httpContext.Response.WriteAsJsonAsync(ApiResponse.Fail(HttpErrorCodes.InternalError,
                 "An unexpected error occurred"));
+        }
+        finally
+        {
+            httpContext.Response.Body = originalBody;
         }
     }
 }

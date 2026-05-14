@@ -34,7 +34,7 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig)
             throw new AuthException(AuthErrors.UsernameExists);
 
         var userCount = await dbContext.Users.CountAsync();
-        var role = userCount == 0 ? 1 : 0;
+        var role = userCount == 0 ? UserRole.Admin : UserRole.User;
         var user = new User
         {
             Username = username,
@@ -46,6 +46,9 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig)
         await dbContext.SaveChangesAsync();
         return user;
     }
+
+    public async Task<User?> GetUserById(int userId) =>
+        await dbContext.Users.FindAsync(userId);
 
     private (string accessToken, string refreshToken, string jti) GenerateTokens(User user)
     {
