@@ -28,7 +28,6 @@ For each modified/new/deleted/renamed file, categorize by scope:
 | Scope | Matches |
 |-------|---------|
 | `core` | `packages/core/` |
-| `backend-core` | `packages/backend-core/` |
 | `ui` | `packages/ui/` |
 | `shared` | `packages/shared/`, `packages/shared/src/` |
 | `styles` | `packages/styles/` |

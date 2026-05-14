@@ -30,10 +30,9 @@ Tài liệu này là **source of truth** kỹ thuật cho dự án Namorix. Impl
 | Thành phần | Vai trò |
 |------------|---------|
 | `frontend` | UI shell React: window manager, taskbar, system apps. |
-| `backend` | Express API, WebSocket shell + terminal, auth, logs, điều khiển addon. |
+| `backend` | ASP.NET Core 8 API, WebSocket shell + terminal, auth, logs, điều khiển addon. |
 | `packages/core` | Client thư viện trình duyệt cho addon (auth, HTTP, events); publish npm. |
-| `packages/backend-core` | Tiện ích server nội bộ: logger, JWT, DB, Docker, config. |
-| SQLite | Lưu user, addon install, revoked tokens, settings. |
+| SQLite | Lưu user, refresh tokens, settings. |
 | Docker | Chạy external addon; discover qua label image/container. |
 
 ### 1.4 Dependency bổ sung (ngoài bảng stack chính)
@@ -42,9 +41,7 @@ Các gói sau **được phép** vì phục vụ trực tiếp phần đã mô t
 
 | Package | Nơi dùng | Lý do |
 |---------|----------|--------|
-| `pino` | `@namorix/backend-core` (logger) | Log có cấu trúc, hiệu năng tốt cho server Node. |
 | `xterm.js` | Terminal system app | Terminal trong trình duyệt chuẩn de-facto. |
-| `socket.io-client` | `@namorix/core` (events) | Cùng giao thức với server Socket.IO. |
 
 ---
 
@@ -68,18 +65,6 @@ namorix/
 │   │       ├── router/         # GuardedRoute, createAuthGuard, etc.
 │   │       ├── config.ts       # configureCore(), getApiBaseUrl()
 │   │       └── utils/          # cx (className utility)
-│   ├── backend-core/            # @namorix/backend-core — shared desktop + addon
-│   │   ├── package.json
-│   │   ├── tsconfig.json
-│   │   └── src/
-│   │       ├── db/             # NmxDataBase class
-│   │       ├── decorators/     # @Controller, @Get, @Post, @Validate, registerController
-│   │       ├── jwt/           # signAccessToken, verifyToken
-│   │       ├── logger/        # createLogger
-│   │       ├── middleware/    # createMiddleware, handleJsonError
-│   │       ├── utils/         # cookie helpers, sendSuccess, sendError
-│   │       ├── validate/     # validate() middleware, Schema, Rule
-│   │       └── index.ts
 │   ├── shared/                  # @namorix/shared — backend + frontend shared
 │   │   └── src/
 │   │       ├── types/         # ApiResponse, ValidateErrorMeta, etc.
@@ -95,28 +80,24 @@ namorix/
 │   │   ├── pages/
 │   │   └── components/
 │   └── vite.config.ts
-└── backend/                     # Express API
-    └── src/
-        ├── config/
-        ├── routes/auth.ts
-        ├── services/
-        ├── middleware/          # uses createMiddleware from backend-core
-        └── db/
+└── backend/                     # ASP.NET Core 8 API
+    └── Controllers/
+        ├── AuthController.cs
+        └── SettingsController.cs
 ```
 
-**Lý do tách `core` và `backend-core`:** `core` chỉ chạy trên browser và phải publish; `backend-core` chứa Node/Docker/SQLite — tránh lẫn môi trường và tránh leak implementation server vào addon.
+**Lý do tách `core` và `shared`:** `core` chỉ chạy trên browser và phải publish; `shared` chứa types/constants dùng chung — tránh lẫn môi trường và tránh leak implementation server vào addon.
 
 ### 2.2 Dependency rules (ai import ai)
 
 | Package / app | Được phép import |
 |---------------|-------------------|
 | `@namorix/shared` | **Không** import bất kỳ package nội bộ Namorix nào (zero internal deps). |
-| `@namorix/core` | `@namorix/shared`, React ecosystem. **Không** import `@namorix/backend-core`, `@namorix/ui`, frontend, backend. |
+| `@namorix/core` | `@namorix/shared`, React ecosystem. **Không** import `@namorix/shared` từ server code. |
 | `@namorix/styles` | **Không** import gì — pure SCSS. |
 | `@namorix/ui` | `@namorix/core` (utils), React deps. |
-| `@namorix/backend-core` | `@namorix/shared`, express, pino, jsonwebtoken, drizzle, etc. **Không** import `@namorix/core`. |
 | `frontend` | `@namorix/core`, `@namorix/styles`, `@namorix/ui`, `@namorix/shared`, React deps. |
-| `backend` | `@namorix/backend-core`, `@namorix/shared`, Express. |
+| `backend` | `@namorix/shared`, ASP.NET Core 8 ecosystem. |
 | External addon (repo khác) | `@namorix/core` từ **npm**. |
 
 **Đồng bộ contract API:** Kiểu JSON response của REST và payload WebSocket phải khớp định nghĩa trong `shared` (`types`) và implementation backend. Khi đổi contract, đổi `shared` + backend + tài liệu cùng phiên bản.
@@ -335,7 +316,7 @@ frontend locales (namespace "translation")
 ```json
 {
   "name": "@namorix/core",
-  "version": "0.3.0",
+  "version": "0.6.3",
   "type": "module",
   "sideEffects": false,
   "exports": {
@@ -521,7 +502,7 @@ export class AuthController {
 
 | Tầng | Vị trí | Công cụ | Cơ chế |
 |------|--------|---------|--------|
-| Server | `@namorix/backend-core` | `validate(schema)` middleware | Schema-based, trả `ApiResponse` với `ValidationErrorCode` |
+| Server | `backend/Validation/` | `[Validate(typeof(Schema))]` attribute | Schema-based, trả `ApiResponse` với `ValidationErrorCode` |
 | Client | `@namorix/core/i18n` | `ValidationRunner` (fluent builder) | Trả translated string, dùng `formatApiError()` parse lỗi từ API |
 
 **Server-side** (`validate(schema)`):
@@ -621,7 +602,7 @@ Mỗi system app là component được mount **bên trong** `Window.tsx` theo `
 
 ### 6.1 Docker lifecycle qua Shell WebSocket
 
-Client **admin** gửi message qua `/namorix-shell-ws` (chi tiết mục 7): `install`, `start`, `stop`, `remove`, `logs`. Server dùng `DockerClient` từ `@namorix/backend-core` để thực thi.
+Client **admin** gửi message qua `/namorix-shell-ws` (chi tiết mục 7): `install`, `start`, `stop`, `remove`, `logs`. Server dùng Docker client (Docker.DotNet) để thực thi.
 
 **Lý do:** Một kênh realtime cho thao tác dài (pull image, stream log) và đẩy cập nhật trạng thái về UI.
 
@@ -756,8 +737,8 @@ Dùng chung để revoke cả access token của user và `AddonToken` (dùng `j
 
 ### 8.2 Migration strategy
 
-- Migration Drizzle lưu trong repo (ví dụ `backend/drizzle/`).
-- Khởi động server: `runMigrations(db)` từ `@namorix/backend-core` trước khi nhận traffic (hoặc bước CLI riêng trong CI/production — phải được ghi rõ trong README khi implement).
+- Migration EF Core lưu trong repo (`backend/Migrations/`).
+- Khởi động server: `dotnet ef database update` trước khi nhận traffic (hoặc `applied automatically` trong Program.cs nếu dùng `DbContext.Database.Migrate()`).
 
 **Lý do:** SQLite không tự migrate; một lần chạy nhất quán tránh lệch schema giữa môi trường.
 

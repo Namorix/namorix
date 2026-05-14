@@ -29,12 +29,11 @@ Map each changed file to a package and determine impact:
 | Changed Files | Package | Impact |
 |--------------|---------|--------|
 | `packages/core/src/` | @namorix/core | Check if new module, utility, or bug fix |
-| `packages/backend-core/src/` | @namorix/backend-core | Check if new module, middleware, or bug fix |
 | `packages/shared/src/` | @namorix/shared | Check if new type, constant, or error code |
 | `packages/ui/src/` | @namorix/ui | Check if new component, or fix |
 | `packages/styles/src/` | @namorix/styles | Check if new token, variable, or fix |
 | `frontend/src/` | frontend | Check if new page, route, or bug fix |
-| `backend/src/` | backend | Check if new endpoint, service, or bug fix |
+| `backend/` | backend | Check if new endpoint, service, or bug fix (C#) |
 | Root config files | root (namorix) | Check if workspace scripts, tooling changed |
 
 ### Step 3: Determine Version Bumps
@@ -48,7 +47,6 @@ Use the bump triggers from CLAUDE.md Meta Rules and `progress.md`:
 | @namorix/core | Bug fixes | New utility, new type, new module (i18n, validation) |
 | @namorix/styles | Token fixes | New token, new variable, new export |
 | @namorix/ui | Bug fixes | New component, component breaking change |
-| @namorix/backend-core | Bug fixes | New module (decorators, csrf), new middleware |
 | @namorix/shared | Bug fixes | New type, new constant, new error code, new helper |
 | backend | Bug fixes | New API endpoint, auth feature, refactor to decorators |
 
@@ -64,6 +62,7 @@ Read ONLY these files (skip if unchanged):
 - `.claude/memory/productContext.md` — only if UX changed
 - `.claude/memory/projectbrief.md` — rarely changes
 - Package `.json` files — only for packages being bumped
+- `README.md` — always read (may contain version badges, tech stack table, quick start commands)
 - `docs/` markdown files — only if related to changed code
 
 **Never read:**
@@ -86,9 +85,24 @@ Read ONLY these files (skip if unchanged):
 - `techContext.md`: new deps, new config, new key files
 - `productContext.md`: UX changes
 
-### Step 6: Update package.json Versions
+### Step 6: Update All Version References
 
 For each bumped package, update the `"version"` field in its `package.json`.
+
+Then **search the entire project** for other references to the old version string and update them:
+- `README.md` — version badges, tech stack table, quick start commands, package versions table
+- `docs/` markdown files — version numbers in example code, config samples, or compatibility notes
+- `.claude/memory/techContext.md` — dependency version notes
+- `frontend/` — API URL or version constants in source code
+- Any `.env.example` or config files mentioning version-specific values
+
+Use `grep` to find all occurrences of the old version before updating:
+
+```bash
+grep -rn '"0\.5\.0"' --include='*.{md,json,ts,tsx,cs,csproj,yml,yaml}' . --exclude-dir=node_modules
+```
+
+**Rule:** A version bump is not complete until all references across the project are updated. Incomplete updates cause confusion and integration bugs.
 
 ### Step 7: Present Changes for Approval
 
@@ -99,6 +113,7 @@ Show a table of all changes:
 |------|--------|
 | .claude/memory/progress.md | Update versions table + history |
 | .claude/memory/activeContext.md | Add recent changes entry |
+| README.md | Update version badge, package versions table, quick start |
 | packages/core/package.json | 0.5.0 → 0.5.1 |
 | ... | ... |
 ```
@@ -113,3 +128,9 @@ Ask user to confirm before writing.
 4. **Version notation:** `MAJOR.MINOR.PATCH`, no leading `v`
 5. **Ask before writing** — present the plan, wait for approval
 6. **Follow existing format** in progress.md — match the table style exactly
+7. **Always update README.md** — khi version bump, kiểm tra và cập nhật:
+   - Tech stack table (nếu backend/frontend stack thay đổi)
+   - Package versions table (nếu có)
+   - Quick start commands (nếu dev workflow thay đổi)
+   - Directory structure (nếu workspace thay đổi)
+8. **Search the whole project** — sau khi bump version, dùng `grep` để tìm tất cả references đến version cũ trong toàn bộ dự án (không chỉ package.json). Update tất cả để tránh inconsistency.

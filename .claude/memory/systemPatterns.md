@@ -4,7 +4,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                      Browser                             │
+│                    Browser                             │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐ │
 │  │   Shell UI   │  │  Addon Tabs  │  │  Terminal App    │ │
 │  │  (React)     │  │  (external)  │  │  (xterm.js)     │ │
@@ -13,7 +13,7 @@
           │                 │                    │
           ▼                 ▼                    ▼
 ┌─────────────────────────────────────────────────────────┐
-│                    Backend (Express)                      │
+│               Backend (ASP.NET Core 8)                    │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐  │
 │  │   REST API   │  │ Shell WS    │  │  Terminal WS     │  │
 │  │  (auth, etc) │  │ (Socket.IO) │  │  (PTY bridge)   │  │
@@ -21,8 +21,7 @@
 │         │                 │                    │           │
 │         ▼                 ▼                    ▼           │
 │  ┌─────────────────────────────────────────────────────┐ │
-│  │              @namorix/backend-core                    │ │
-│  │  JWT │ Logger │ SQLite/Drizzle │ Docker │ Config    │ │
+│  │          EF Core / SQLite  │ JWT │ Logger           │ │
 │  └─────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────┘
           │
@@ -45,10 +44,9 @@
 - `@namorix/core` — TypeScript contracts, zero deps, browser-only
 - `@namorix/styles` — SCSS design tokens (--nmx-* CSS variables)
 - `@namorix/ui` — React primitive components (NmxButton, NmxInput, etc.)
-- `@namorix/backend-core` — server utilities, never imported by frontend
 - **Why:** Type drift prevention, consistent design across addons
 
-### 3. SQLite + Drizzle for Database
+### 3. SQLite + EF Core for Database
 - Single-node deployment simplicity
 - Drizzle ORM for type-safe queries
 - **Why:** No separate DB server needed for self-hosted
@@ -71,9 +69,8 @@
 | `@namorix/core` | `@namorix/shared`, React ecosystem |
 | `@namorix/styles` | **Nothing** — pure SCSS |
 | `@namorix/ui` | `@namorix/core`, React deps. Uses `--nmx-*` CSS vars from `@namorix/styles` (consumer must import) |
-| `@namorix/backend-core` | `@namorix/shared`, express, pino, drizzle, etc. **Not** `@namorix/core` |
 | `frontend` | `@namorix/core`, `@namorix/styles`, `@namorix/ui`, `@namorix/shared`, React deps |
-| `backend` | `@namorix/backend-core`, `@namorix/shared`, Express |
+| `backend` | `@namorix/shared`, ASP.NET Core 8 ecosystem |
 
 ## Key Interfaces
 

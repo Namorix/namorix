@@ -4,7 +4,7 @@ Document quá trình chuyển backend từ Node.js/TypeScript (Express) sang C# 
 
 ## Status
 
-**Đang tiến hành** — M2 phase.
+**Hoàn thành** — Tất cả chức năng từ Node.js backend đã migrated sang C#. Các thư mục `backend-n/` và `packages/backend-core/` đã được xoá.
 
 ## Mục tiêu
 
@@ -51,7 +51,7 @@ backend/
 ### Ngoài scope (giữ TypeScript)
 - `@namorix/shared` — TypeScript types/constants cho frontend
 - `@namorix/core` — browser-only code
-- `@namorix/backend-core` — TypeScript utilities → **deprecated**
+- ~~`@namorix/backend-core`~~ — **đã xoá** (TypeScript utils không còn cần thiết)
 - WebSocket handlers (Socket.IO shell + terminal) — làm sau
 
 ## Tech Stack
@@ -265,7 +265,7 @@ throw new AuthException(AuthErrors.InvalidCredentials);
 
 ## Notes
 
-- `@namorix/backend-core` → deprecated
+- ~~`@namorix/backend-core`~~ → **đã xoá**
 - Decorator pattern from TypeScript → Controller-based routing trong C# (thay vì Minimal API như dự tính ban đầu, vì Controller hỗ trợ ActionFilter tốt hơn cho validation)
 - Validation → `[Validate]` attribute với schema classes
 - Addon viết bằng C# có thể reference project hoặc tách package riêng

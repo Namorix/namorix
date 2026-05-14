@@ -15,14 +15,7 @@
   - `ValidationRunner` (fluent client-side validation)
   - `formatApiError`, `formatValidationError`, `formatAuthError`
   - `authService` (async `isAuthenticated` via `/api/auth/session`)
-- `@namorix/backend-core`:
-  - Logger (pino), JWT (signAccessToken with optional TTL, signRefreshToken, verifyToken), DB (NmxDataBase)
-  - Middleware (createMiddleware: helmet, cors, rateLimit, cookieParser, CSRF, json)
-  - Validate (Schema-based middleware)
-  - Decorators (@Controller, @Get, @Post, @Put, @Patch, @Delete, @Validate, registerController)
-  - Utils (sendSuccess, sendError, response helpers)
-  - CSRF double-submit (setCsrfCookie, validateCsrf)
-  - tsconfig.json
+- **Lưu ý:** `@namorix/backend-core` đã được xoá (migrated to C# backend) — xem version history ngày 2026-05-14
 - `@namorix/shared` (types, constants, error helpers, ValidationErrorMeta, HttpHeader, CSRF constants)
 - tsconfig.base.json shared across project
 - React Router setup with /login, /register, / routes
@@ -124,12 +117,11 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| root (namorix) | 0.3.0 | M2 (TrustedProxyMiddleware, SettingsController, GetClientIp refactor) |
+| root (namorix) | 0.3.1 | M2 (cleanup: xoá backend-n + packages/backend-core) |
 | frontend | 0.5.4 | M2 (conditional API URL based on host, Vite proxy forward) |
 | @namorix/core | 0.6.3 | M2 (field name refactoring: needsSignup→needsRegister, signUpEnabled→registerEnabled) |
 | @namorix/styles | 0.2.0 | M2 (variables.scss + exports subpath) |
 | @namorix/ui | 0.3.0 | M2 |
-| @namorix/backend-core | 0.6.0 | M2 (getClientIP utility, trustProxy + secureCookie middleware, secure flag on cookies) |
 | @namorix/shared | 0.7.0 | M2 (breaking: AuthStatus fields rename + REGISTER_CLOSED error code) |
 | backend | 0.15.0 | M2 (TrustedProxyMiddleware, SettingsController, SettingsService trusted proxies, HttpContextKeys extension) |
 
@@ -148,10 +140,14 @@
 | @namorix/core | Bug fixes | New utility, new type, new module (i18n, validation) |
 | @namorix/styles | Token fixes | New token, new variable, new export |
 | @namorix/ui | Bug fixes | New component, component breaking change |
-| @namorix/backend-core | Bug fixes | New module (decorators, csrf), new middleware |
 | backend | Bug fixes | New API endpoint, auth feature, refactor to decorators |
 
 ## Version History
+
+### 2026-05-14 (Cleanup: xoá backend-n + packages/backend-core)
+| Package | Version | Changes |
+|---------|---------|---------|
+| root (namorix) | 0.3.1 | Xoá thư mục `backend-n/` (Node.js backend cũ) và `packages/backend-core/` (TypeScript utilities). Cập nhật docs: CLAUDE.md, README.md, architecture.md, memory files, m2-auth.md, migration-backend-csharp.md, m4-addon-system.md, skill file |
 
 ### 2026-05-14 (latest — TrustedProxyMiddleware, SettingsController)
 | Package | Version | Changes |

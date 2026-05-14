@@ -16,10 +16,13 @@ Login/logout/refresh/session/register, cookie, revoke, bootstrap admin. Nối fr
 
 ### 1. Backend Infrastructure ✅
 
-- [x] `@namorix/backend-core` setup
-  - [x] `logger` with tag + custom timestamp format
-  - [x] `jwt` utilities (signAccessToken, signRefreshToken, verifyToken)
-  - [x] `db` utilities (NmxDataBase class, getDB)
+- [x] `backend/` (ASP.NET Core 8) setup
+  - [x] `AuthService` — login, register, refresh, revoke
+  - [x] `AuthController` — 7 REST endpoints
+  - [x] `SettingsService` — with IMemoryCache
+  - [x] Middleware — CSRF, rate limiting, security headers, trusted proxy
+  - [x] JWT — System.IdentityModel.Tokens.Jwt
+  - [x] Database — EF Core + SQLite migrations
 - [x] `@namorix/shared` setup
   - [x] types (ApiResponse, ValidateErrorMeta, User, AuthStatus)
   - [x] constants (ApiAuthRoutes, HttpStatus, NMX_COOKIE_*)
@@ -44,9 +47,12 @@ Login/logout/refresh/session/register, cookie, revoke, bootstrap admin. Nối fr
 
 ### 4. Middleware ✅
 
-- [x] `createMiddleware` from `@namorix/backend-core` (helmet, cors, rateLimit, cookieParser, express.json, handleJsonError)
-- [x] `validate` middleware from `@namorix/backend-core` (Schema-based validation)
-- [x] Error handler middleware (`handleJsonError`)
+- [x] CSRF middleware (double-submit pattern)
+- [x] Rate limiting (100 req/min, .NET 8 built-in)
+- [x] Security headers middleware
+- [x] Trusted Proxy middleware
+- [x] Exception + JSON error middleware
+- [x] Custom `[Validate]` attribute (schema-based validation)
 
 ### 5. Frontend Integration ✅
 
@@ -68,47 +74,49 @@ Login/logout/refresh/session/register, cookie, revoke, bootstrap admin. Nối fr
 
 ```
 backend/
-├── src/
-│   ├── index.ts               # Express app entry
-│   ├── config/
-│   │   ├── index.ts           # env loading
-│   │   ├── types.ts           # Config interface
-│   │   └── secret.ts          # JWT secret management
-│   ├── routes/
-│   │   └── auth.ts            # AuthController class với decorator (@Controller, @Validate, @Post, @Get)
-│   ├── services/
-│   │   └── auth.service.ts    # login, register, verifyAccessToken, refreshToken, revokeToken
-│   └── middleware/
-│       └── index.ts           # uses createMiddleware from @namorix/backend-core
-
-packages/backend-core/src/
-├── db/
-│   ├── index.ts              # NmxDataBase class
-│   └── types.ts             # NmxDB type
-├── jwt/
-│   ├── index.ts             # signAccessToken, signRefreshToken, verifyToken
-│   └── types.ts            # JwtPayload, TokenPair
-├── logger/
-│   ├── index.ts             # createLogger with tag + custom timestamp
-│   └── types.ts            # LoggerConfig
-├── middleware/
-│   ├── index.ts             # barrel export
-│   ├── types.ts             # MiddlewareConfig, defaultMiddlewareConfig
-│   ├── apply.ts             # createMiddleware()
-│   └── json-error.ts        # handleJsonError
-├── utils/
-│   ├── index.ts             # barrel export
-│   ├── cookie.ts            # setAccessCookie, getAccessCookie, etc.
-│   └── response.ts          # sendSuccess, sendError
-├── validate/
-│   └── index.ts             # validate() middleware, Schema, Rule
-├── decorators/
-│   ├── controller.ts        # @Controller
-│   ├── http-methods.ts      # @Get, @Post, @Put, @Patch, @Delete
-│   ├── validate.ts          # @Validate
-│   ├── register.ts          # registerController()
-│   └── index.ts             # barrel export
-└── index.ts                 # barrel export
+├── Controllers/           # ASP.NET Core controllers
+│   └── AuthController.cs
+├── Services/
+│   ├── AuthService.cs
+│   ├── SettingsService.cs
+│   └── TokenCleanupService.cs
+├── Models/
+│   ├── User.cs
+│   ├── RefreshToken.cs
+│   ├── Setting.cs
+│   └── AppDbContext.cs
+├── Middleware/
+│   ├── CsrfMiddleware.cs
+│   ├── ExceptionMiddleware.cs
+│   ├── JsonErrorMiddleware.cs
+│   ├── SecurityHeadersMiddleware.cs
+│   └── TrustedProxyMiddleware.cs
+├── Config/
+│   ├── AppConfig.cs
+│   └── JwtConfig.cs
+├── Constants/
+│   ├── Auth.cs
+│   ├── Cookie.cs
+│   ├── Error.cs
+│   ├── Http.cs
+│   ├── Jwt.cs
+│   ├── Settings.cs
+│   └── Validation.cs
+├── Exceptions/
+│   └── AuthException.cs
+├── Extensions/
+│   └── ApplicationBuilderExtensions.cs
+├── Responses/
+│   └── ApiResponse.cs
+├── Validation/
+│   ├── IValidationSchema.cs
+│   ├── ValidateAttribute.cs
+│   ├── ValidationRule.cs
+│   └── Schemas/
+│       ├── LoginSchema.cs
+│       └── RegisterSchema.cs
+├── Program.cs
+└── appsettings.json
 
 packages/shared/src/
 ├── types/
@@ -138,21 +146,24 @@ frontend/src/
 
 ## Current Status
 
-### Done ✅
-- Backend scaffold (Express + TypeScript + tsx)
-- `@namorix/backend-core` setup (logger, jwt, db, middleware, validate, utils, decorators)
-- `@namorix/shared` setup (types, constants, error helpers, ValidationErrorMeta)
-- Database schema (users, refreshTokens, settings)
+### Done ✅ (C# .NET 8)
+- Backend scaffold (ASP.NET Core 8)
+- C# AuthService (Login, Register, RefreshToken, RevokeToken, RevokeAllUserTokens)
+- C# SettingsService (IMemoryCache, register toggle, trusted proxies)
+- C# TokenCleanupService (BackgroundService, 24h interval)
+- Database models (User, RefreshToken, Setting) + EF Core + SQLite migrations
 - Auth API endpoints (login/register/logout/logout-all/session/refresh/status)
-- JWT utilities (signAccessToken with optional TTL, signRefreshToken, verifyToken)
-- Config + secret management
-- Auth service (login, register, verifyAccessToken, refreshToken, revokeToken, revokeAllUserTokens, getAuthStatus)
-- Cookie-based auth (HttpOnly cookies with sameSite: lax)
-- Token refresh with rotation
+- JWT (access + refresh tokens, Issuer/Audience validation)
+- Config (IOptions<T>, AppConfig + JwtConfig)
+- Cookie-based auth (HttpOnly, sameSite: Lax)
+- Token refresh with fingerprint rotation
 - First user = admin logic
-- `validate()` middleware in backend-core (Schema-based)
-- `createMiddleware()` in backend-core (configurable stack)
-- Decorator system (`@Controller`, `@Get`, `@Post`, `@Validate`, `registerController`)
+- CSRF middleware (double-submit pattern)
+- Rate limiting (100 req/min, .NET 8 built-in)
+- Security headers middleware
+- Trusted Proxy middleware
+- Exception + JSON error middleware
+- Custom `[Validate]` attribute (schema-based validation)
 - Client-side validation (`ValidationRunner` + `formatApiError`)
 - Frontend controller pattern (auth.controller.ts)
 - Register page with API connection and validation error handling
@@ -187,7 +198,12 @@ frontend/src/
 ## Decorator-based Route Registration
 
 ```typescript
-import { Controller, Post, Validate } from "@namorix/backend-core"
+// Moved to ASP.NET Core C#:
+// [ApiController]
+// [Route("api/auth")]
+// [HttpPost("login")]
+// [Validate(typeof(LoginSchema))]
+// AuthController with ControllerBase inheritance
 import { AuthConstraints } from "@namorix/shared"
 
 @Controller("/api/auth")

@@ -22,6 +22,11 @@ M2 — Full Auth Backend → **Complete** ✅ + **Harden** ✅ + **ESLint** ✅ 
 
 ## Recent Changes (2026-05-14)
 
+### Cleanup: Xoá backend-n + packages/backend-core
+- **root (0.3.1)**: Xoá thư mục `backend-n/` (Node.js backend cũ) và `packages/backend-core/` (TypeScript utilities) — đã được C# backend `backend/` thay thế hoàn toàn
+- Cập nhật tất cả docs: CLAUDE.md, README.md, architecture.md, memory files, m2-auth.md, migration-backend-csharp.md, m4-addon-system.md, skill file
+- Chạy `pnpm install` để cleanup lockfile
+
 ### TrustedProxyMiddleware, SettingsController
 - **backend (0.15.0)**: New TrustedProxyMiddleware — chỉ trust X-Forwarded-For khi RemoteIpAddress nằm trong trusted list (từ Settings DB), block request với forwarded header từ untrusted proxy (400). New SettingsController: GET/PUT `/api/settings/proxies`. SettingsService thêm GetTrustedProxies/SetTrustedProxies (cùng IMemoryCache pattern). HttpContextKeys mở rộng (TrustedProxy, RealIp, RealScheme). GetClientIp dùng RealIp từ context trước, fallback RemoteIpAddress. Xóa UseXForwardedHeaders cũ.
 - **frontend (0.5.4)**: API URL conditional (izerocs.space → https://api.izerocs.space). Vite proxy chỉ forward X-Forwarded-For nếu đã có từ upstream.

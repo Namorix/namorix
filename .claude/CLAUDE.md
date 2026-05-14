@@ -30,7 +30,7 @@ All coding rules are in `.claude/rules/` — read the relevant ones for your tas
 
 - **Frontend:** Vite + React (window manager, taskbar, system apps)
 - **Backend:** ASP.NET Core 8, WebSocket (shell + terminal), auth, logs
-- **Packages:** `@namorix/core` (browser-only), `@namorix/backend-core` (server utilities for frontend/backend shared), `@namorix/shared` (types/constants), `@namorix/ui` (React primitives), `@namorix/styles` (SCSS tokens)
+- **Packages:** `@namorix/core` (browser-only), `@namorix/shared` (types/constants), `@namorix/ui` (React primitives), `@namorix/styles` (SCSS tokens)
 - **Database:** SQLite + EF Core
 - **Terminal:** xterm.js
 - **Realtime:** Socket.IO
@@ -40,10 +40,9 @@ All coding rules are in `.claude/rules/` — read the relevant ones for your tas
 | Package | Can Import |
 |---------|------------|
 | `@namorix/shared` | **Nothing** internal — zero deps |
-| `@namorix/core` | React, @namorix/shared. **Not** backend-core/ui/frontend/backend |
+| `@namorix/core` | @namorix/shared, React ecosystem |
 | `@namorix/styles` | **Nothing** — pure SCSS |
 | `@namorix/ui` | @namorix/core, React, @namorix/styles |
-| `@namorix/backend-core` | @namorix/shared. **Not** @namorix/core |
 | `frontend` | @namorix/core, @namorix/styles, @namorix/ui, @namorix/shared, React |
 | `backend` | @namorix/shared, ASP.NET Core 8 |
 
@@ -161,13 +160,6 @@ Never suggest code without understanding the current state. This prevents:
 @namorix/core — allowed to import:
 - @namorix/shared
 - React ecosystem
-- MUST NOT import internal packages (@namorix/backend-core, @namorix/ui, frontend)
-
-@namorix/backend-core — allowed to import:
-- @namorix/shared
-- External packages (express, pino, jsonwebtoken, drizzle, etc.)
-- Node.js builtins
-- MUST NOT import @namorix/core
 
 frontend — allowed to import:
 - @namorix/core
@@ -206,10 +198,9 @@ import { getSession } from "@namorix/core/auth"
 ```
 1. React / framework
 2. @namorix/core
-3. @namorix/backend-core
-4. @namorix/shared
-5. Internal imports (./, ../)
-6. Types (type imports only)
+3. @namorix/shared
+4. Internal imports (./, ../)
+5. Types (type imports only)
 ```
 
 ---
@@ -360,7 +351,6 @@ bugfix/M{number}-{short-description}    # bugfix/M2-session-refresh
 
 ### Scopes
 - `core`: @namorix/core
-- `backend-core`: @namorix/backend-core
 - `ui`: @namorix/ui
 - `shared`: @namorix/shared
 - `styles`: @namorix/styles
@@ -416,16 +406,6 @@ packages/
 │           ├── NmxForm/
 │           ├── NmxInlineAlert/
 │           └── NmxToggle/
-├── backend-core/
-│   └── src/
-│       ├── db/            # NmxDataBase class
-│       ├── decorators/    # @Controller, @Get, @Post, @Validate, registerController
-│       ├── jwt/           # Token generation/verification
-│       ├── logger/        # pino logger setup
-│       ├── middleware/    # createMiddleware, csrf, json-error
-│       ├── utils/         # response helpers
-│       ├── validate/      # Schema-based validation
-│       └── index.ts
 └── shared/
     └── src/
         ├── types/         # ApiResponse, User, AuthStatus, error codes

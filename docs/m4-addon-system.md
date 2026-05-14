@@ -14,9 +14,9 @@ Docker lifecycle qua shell WS, DockerMonitor, Addon Manager UI, mở addon tab m
 
 ## Deliverables
 
-### 1. Docker Integration (@namorix/backend-core)
+### 1. Docker Integration (C# backend)
 
-- [ ] `docker.ts` — DockerClient class
+- [ ] DockerClient class (C#, Docker.DotNet nuget package)
 - [ ] Docker socket connection
 - [ ] Container lifecycle (pull, create, start, stop, remove)
 - [ ] Port binding với `ADDON_HOST_BIND`
@@ -67,8 +67,8 @@ Docker lifecycle qua shell WS, DockerMonitor, Addon Manager UI, mở addon tab m
 ## File Structure Target
 
 ```
-packages/backend-core/src/
-└── docker.ts        # DockerClient + DockerMonitor
+backend/Services/
+└── DockerService.cs   # DockerClient + DockerMonitor
 
 apps/desktop/backend/
 ├── src/

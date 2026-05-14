@@ -11,14 +11,11 @@
 - **Styling:** SCSS modules + CSS custom properties
 
 ### Backend
-- **Runtime:** Node.js
-- **Framework:** Express.js
-- **WebSocket:** Socket.IO
-- **Database:** SQLite + Drizzle ORM
-- **Decorators:** reflect-metadata (experimentalDecorators)
-- **Docker:** dockerode (via Unix socket)
-- **Logging:** pino
-- **Password hashing:** bcrypt
+- **Runtime:** .NET 8
+- **Framework:** ASP.NET Core 8
+- **Database:** SQLite + EF Core
+- **JWT:** System.IdentityModel.Tokens.Jwt
+- **Password hashing:** BCrypt.Net
 
 ### Packages
 | Package | Purpose | Dependencies |
@@ -27,7 +24,6 @@
 | `@namorix/core` | Browser-only: auth, http, i18n, validation, router | @namorix/shared, react, react-router-dom, i18next, react-i18next |
 | `@namorix/styles` | SCSS tokens, reset, fonts, variables | None (pure SCSS) |
 | `@namorix/ui` | React primitive components | React, @namorix/core, @namorix/styles |
-| `@namorix/backend-core` | Server utilities (JWT, DB, middleware, validate, decorators, CSRF) | @namorix/shared, express, pino, drizzle, jsonwebtoken, reflect-metadata, cookie-parser, cors, helmet, express-rate-limit |
 
 ## Development Setup
 
@@ -83,17 +79,6 @@ packages/
 │       │   ├── NmxInlineAlert/
 │       │   └── NmxToggle/
 │       └── index.ts
-├── backend-core/   # @namorix/backend-core — server utils
-│   ├── tsconfig.json
-│   └── src/
-│       ├── db/            # NmxDataBase
-│       ├── decorators/    # @Controller, @Get, @Post, @Validate, registerController
-│       ├── jwt/           # signAccessToken, signRefreshToken, verifyToken
-│       ├── logger/        # pino
-│       ├── middleware/     # createMiddleware, handleJsonError, csrf
-│       ├── utils/         # sendSuccess, sendError
-│       ├── validate/      # Schema-based middleware
-│       └── index.ts
 └── shared/         # @namorix/shared — zero-deps types + constants
     └── src/
         ├── types/         # ApiResponse, AuthStatus, error codes, helpers
@@ -132,12 +117,9 @@ packages/
 5. **Same-machine Docker** — Unix socket, not TCP
 6. **ES2023 target** — with bundler module resolution
 7. **experimentalDecorators + emitDecoratorMetadata** — required for @Controller, @Validate decorators
-8. **Symbol.for() for shared metadata keys** — decorators and registerController are in separate modules
-9. **Package boundaries enforced** — no cross-package imports outside allowed list
-10. **HttpOnly cookies** — auth tokens not readable by JS; isAuthenticated must use API call
-11. **CSRF double-submit** — non-HttpOnly CSRF cookie + X-CSRF-Token header, enabled via CSRF_MODE env
-12. **All header values in shared/http-headers.ts are lowercase** — Express normalizes request headers to lowercase
-13. **Trust proxy + express-rate-limit warning** — `trust proxy: true` allows IP spoofing that can bypass rate limiting. For production (behind nginx/Caddy), this is acceptable since proxy is trusted. For dev, rate limit uses `validate: { trustProxy: false }` to suppress warning.
+8. **Package boundaries enforced** — no cross-package imports outside allowed list
+9. **HttpOnly cookies** — auth tokens not readable by JS; isAuthenticated must use API call
+10. **CSRF double-submit** — non-HttpOnly CSRF cookie + X-CSRF-Token header, enabled via CSRF_MODE env
 
 ## Key Files
 
@@ -151,7 +133,7 @@ packages/
 | `packages/styles/src/` | SCSS tokens and reset |
 | `packages/ui/src/` | React primitive components |
 | `frontend/src/` | React shell UI |
-| `backend/src/` | Express API + WebSocket |
-| `backend/src/config/types.ts` | Config interface (incl. csrfMode) |
-| `packages/backend-core/src/middleware/apply.ts` | createMiddleware (helmet, cors, rateLimit, cookieParser, CSRF, json) |
-| `packages/backend-core/src/middleware/csrf.ts` | setCsrfCookie + validateCsrf (double-submit) |
+| `backend/` | ASP.NET Core 8 API (Controllers, Services, Middleware, Models) |
+| `backend/Program.cs` | Entry point + middleware pipeline |
+| `backend/Middleware/CsrfMiddleware.cs` | CSRF double-submit middleware |
+| `backend/Middleware/TrustedProxyMiddleware.cs` | Trusted proxy validation |

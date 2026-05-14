@@ -14,8 +14,8 @@ Browser-based desktop shell, self-hosted.
 | Layer | Technology |
 |-------|------------|
 | Frontend | Vite + React |
-| Backend | Express + Socket.IO |
-| Database | SQLite + Drizzle |
+| Backend | ASP.NET Core 8 |
+| Database | SQLite + EF Core |
 | Auth | JWT (access + refresh) with HttpOnly cookies |
 | Terminal | xterm.js |
 
@@ -38,8 +38,9 @@ cd namorix
 pnpm install
 
 # Run development (2 terminals)
-pnpm --filter backend dev     # Backend (port 3000)
-pnpm --filter frontend dev    # Frontend (Vite port 5173)
+cd backend && dotnet watch run  # Backend C# (port 3000)
+# or: cd backend && dotnet run
+cd frontend && npm run dev      # Frontend (Vite port 5173)
 ```
 
 ## Repository Structure
@@ -72,15 +73,6 @@ namorix/
 │   │           ├── NmxForm/   # FormField, FormInput, FormActions, FormHeader, FormPage, FormCard
 │   │           ├── NmxInlineAlert/
 │   │           └── NmxToggle/
-│   ├── backend-core/         # @namorix/backend-core — server utilities (shared with addons)
-│   │   └── src/
-│   │       ├── db/           # NmxDataBase class, getDB
-│   │       ├── jwt/          # signAccessToken, signRefreshToken, verifyToken
-│   │       ├── logger/       # createLogger with tag + custom timestamp
-│   │       ├── middleware/   # createMiddleware, handleJsonError
-│   │       ├── utils/        # cookie, response helpers
-│   │       ├── validate/    # validation middleware (Schema-based)
-│   │       └── index.ts      # barrel export
 │   └── shared/               # @namorix/shared — shared code for backend + frontend
 │       └── src/
 │           ├── types/        # ApiResponse, User, AuthStatus, ValidateErrorMeta, etc.
@@ -97,15 +89,19 @@ namorix/
 │       │   ├── Register.tsx
 │       │   └── Desktop.tsx
 │       └── i18n/
-└── backend/                   # Express API (port 3000)
-    └── src/
-        ├── config/           # env loading, config export
-        ├── routes/
-        │   └── auth.ts       # auth endpoints (login/register/logout/session/refresh/status)
-        ├── services/
-        │   ├── auth.service.ts   # signIn, signUp, verifyAccessToken, refreshToken, revokeToken
-        │   └── settings.service.ts  # getSetting, setSetting, isSignUpEnabled
-        └── middleware/       # uses createMiddleware from @namorix/backend-core
+└── backend/                   # ASP.NET Core 8 API (port 3000)
+    ├── Controllers/           # API endpoints (Auth, Settings)
+    ├── Services/              # AuthService, SettingsService, TokenCleanupService
+    ├── Models/                # EF Core entities (User, RefreshToken, Setting)
+    ├── Middleware/            # CSRF, Exception, SecurityHeaders, TrustedProxy
+    ├── Config/                # AppConfig, JwtConfig (IOptions<T>)
+    ├── Validation/            # IValidationSchema, ValidateAttribute, schemas
+    ├── Constants/             # AuthConstraints, Cookie names, error codes
+    ├── Migrations/            # EF Core migrations
+    ├── Responses/             # ApiResponse<T>
+    ├── Extensions/            # ApplicationBuilderExtensions
+    ├── Program.cs             # Entry point + middleware pipeline
+    └── appsettings.json       # Configuration
 ```
 
 ## Packages
@@ -115,9 +111,8 @@ namorix/
 | `@namorix/core` | Browser-only types, `ApiError`, `cx` utility, auth guards | frontend, @namorix/ui |
 | `@namorix/styles` | SCSS tokens, reset, fonts | frontend, @namorix/ui, external addons |
 | `@namorix/ui` | NmxButton, NmxForm, NmxInlineAlert, NmxToggle, etc. | frontend |
-| `@namorix/backend-core` | Logger, JWT, DB, middleware, validate, utils | backend |
-| `@namorix/shared` | Types, constants, ValidateErrorMeta | backend, frontend |
-| `backend` | Express API server | - |
+| `@namorix/shared` | Types, constants, ValidateErrorMeta | all packages |
+| `backend` | ASP.NET Core 8 API server | - |
 | `frontend` | Vite React shell | - |
 
 ## Auth Architecture
@@ -143,38 +138,38 @@ export const authController = {
 }
 ```
 
-### Decorator-based Routes
+### Decorator-based Controllers (C#)
 
-Backend uses TypeScript decorators for route declaration:
+Backend uses ASP.NET Core attributes for route declaration:
 
-```typescript
-@Controller("/api/auth")
-export class AuthController {
-  @Validate({
-    username: { required: true, type: "string", minLength: 1, maxLength: 32, trim: true },
-    password: { required: true, type: "string", minLength: 8 },
-  })
-  @Post("/register")
-  async signUp(req: Request, res: Response) { /* body validated */ }
+```csharp
+[ApiController]
+[Route("api/auth")]
+public class AuthController(AuthService authService) : ControllerBase
+{
+    [HttpPost("register")]
+    [Validate(typeof(RegisterSchema))]
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+    {
+        var result = await authService.Register(request.Username, request.Password);
+        return Ok(ApiResponse.Ok(result));
+    }
 }
 ```
 
-Routes registered via `registerController(router, AuthController)` — reads Reflect metadata from `@Controller`, `@Get/@Post`, `@Validate` decorators and wires Express automatically.
-
 ## Environment Variables
 
-### Backend
+### Backend (ASP.NET Core, `__` separator for hierarchy)
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PORT` | 3000 | HTTP port |
-| `DESKTOP_ORIGIN` | http://localhost:5173 | Frontend origin for CORS |
-| `COOKIE_SECURE` | false | HTTPS only cookies |
-| `JWT_SECRET` | (generated) | JWT signing secret |
-| `DATA_DIR` | ./data | Database and secrets directory |
-| `DOCKER_SOCKET_PATH` | /var/run/docker.sock | Docker socket |
-| `ADDON_NETWORK` | namorix_net | Docker network |
-| `ADDON_HOST_BIND` | 127.0.0.1 | Bind addon ports |
+| Variable | Config Path | Default | Description |
+|----------|-------------|---------|-------------|
+| `JWT__Secret` | Jwt.Secret | (required) | JWT signing key |
+| `JWT__AccessTokenExpirationMinutes` | Jwt.AccessTokenExpirationMinutes | 15 | Access token TTL |
+| `JWT__RefreshTokenExpirationDays` | Jwt.RefreshTokenExpirationDays | 7 | Refresh token TTL |
+| `JWT__RefreshTokenExpirationDaysRemember` | Jwt.RefreshTokenExpirationDaysRemember | 90 | Remember-me TTL |
+| `ConnectionStrings__DefaultConnection` | ConnectionStrings.DefaultConnection | `Data Source=namorix.db` | SQLite connection string |
+| `SECURE_COOKIE` | AppConfig.SecureCookie | false | Set true for HTTPS |
+| `CSRF_DISABLE` | AppConfig.CsrfEnabled | false | Set true to disable CSRF |
 
 ## Milestones
 
