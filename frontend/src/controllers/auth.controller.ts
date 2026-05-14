@@ -9,9 +9,7 @@ async function login(
     .url(getApiBaseUrl() + ApiAuthRoutes.login)
     .post({ username, password, rememberMe })
     .json<void>()
-  if (!data.success) {
-    throw ApiError.fromResponse(data)
-  }
+  if (!data.success) throw ApiError.fromResponse(data)
 }
 
 async function register(username: string, password: string): Promise<void> {
@@ -19,9 +17,7 @@ async function register(username: string, password: string): Promise<void> {
     .url(getApiBaseUrl() + ApiAuthRoutes.register)
     .post({ username, password })
     .json<void>()
-  if (!data.success) {
-    throw ApiError.fromResponse(data)
-  }
+  if (!data.success) throw ApiError.fromResponse(data)
 }
 
 async function logout(): Promise<void> {
@@ -29,9 +25,7 @@ async function logout(): Promise<void> {
     .url(getApiBaseUrl() + ApiAuthRoutes.logout)
     .post()
     .json<void>()
-  if (!data.success) {
-    throw ApiError.fromResponse(data)
-  }
+  if (!data.success) throw ApiError.fromResponse(data)
 }
 
 export const authController = { login, register, logout }
