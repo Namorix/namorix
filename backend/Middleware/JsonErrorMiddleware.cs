@@ -15,8 +15,8 @@ public class JsonErrorMiddleware(RequestDelegate requestDelegate)
         
         var errorCode = statusCode switch
         {
-            StatusCodes.Status415UnsupportedMediaType => HttpErrorCodes.UnsupportedMediaType,
-            _ => HttpErrorCodes.InvalidRequestBody
+            StatusCodes.Status415UnsupportedMediaType => MiddlewareErrorCodes.UnsupportedMediaType,
+            _ => MiddlewareErrorCodes.InvalidRequestBody
         };
         
         return ApiResponse.Fail(errorCode, errorMessage);

@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Sockets;
 using backend.Constants;
+using backend.Responses;
 using backend.Services;
 
 namespace backend.Middleware;
@@ -9,6 +10,12 @@ public class TrustedProxyMiddleware(RequestDelegate requestDelegate)
 {
     public async Task InvokeAsync(HttpContext httpContext, SettingsService settingsService)
     {
+        if (HttpMethods.IsOptions(httpContext.Request.Method))
+        {
+            await requestDelegate(httpContext);
+            return;
+        }
+        
         var remoteIp = httpContext.Connection.RemoteIpAddress;
         var isTrusted = false;
         
@@ -41,8 +48,11 @@ public class TrustedProxyMiddleware(RequestDelegate requestDelegate)
                                   httpContext.Request.Headers.ContainsKey("x-forwarded-proto");
         if (hasForwardedHeaders && !isTrusted)
         {
+            httpContext.Items[HttpContextKeys.Validated] = true;
             httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-            await httpContext.Response.WriteAsync("Untrusted proxy. Add this proxy to trusted proxies list");
+            httpContext.Response.ContentType = "application/json";
+            await httpContext.Response.WriteAsJsonAsync(ApiResponse.Fail(MiddlewareErrorCodes.UntrustedProxy,
+                "Untrusted proxy. Add this proxy to trusted proxies list"));
             return;
         }
         

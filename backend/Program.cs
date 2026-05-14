@@ -1,8 +1,10 @@
+using System.Net;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using backend.Config;
 using backend.Constants;
 using backend.Extensions;
+using backend.Helpers;
 using backend.Models;
 using backend.Responses;
 using backend.Services;
@@ -47,7 +49,7 @@ builder.Services.AddRateLimiter(options =>
     {
         context.HttpContext.Response.ContentType = "application/json";
         await context.HttpContext.Response.WriteAsJsonAsync(
-            ApiResponse.Fail(HttpErrorCodes.RateLimitExceeded, "Too many requests, please slow down"),
+            ApiResponse.Fail(MiddlewareErrorCodes.RateLimitExceeded, "Too many requests, please slow down"),
             cancellationToken: _);
     };
 });
@@ -61,8 +63,8 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy
-            .SetIsOriginAllowed(_ => true)
+        // policy.SetIsOriginAllowed(_ => true)
+        policy.SetIsOriginAllowed(NetworkHelper.OriginAllow)
             .AllowCredentials()
             .AllowAnyHeader()
             .AllowAnyMethod();
@@ -71,10 +73,10 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 app.UseApiErrorHandling();
+app.UseCors();
 app.UseSecurityHeaders();
 app.UseTrustedProxy();
 app.UseRouting();
-app.UseCors();
 app.UseRateLimiter();
 app.UseCsrfProtection();
 app.MapControllers();

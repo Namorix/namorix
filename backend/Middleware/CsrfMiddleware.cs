@@ -44,7 +44,7 @@ public class CsrfMiddleware(RequestDelegate requestDelegate, IOptions<AppConfig>
             {
                 httpContext.Response.StatusCode = StatusCodes.Status403Forbidden;
                 await httpContext.Response.WriteAsJsonAsync(
-                    ApiResponse.Fail(HttpErrorCodes.CsrfTokenMismatch, "CSRF validation failed"));
+                    ApiResponse.Fail(MiddlewareErrorCodes.CsrfTokenMismatch, "CSRF validation failed"));
                 return;
             }
         }

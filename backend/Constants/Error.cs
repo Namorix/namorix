@@ -27,9 +27,14 @@ public static class ValidationErrorCodes
 public static class HttpErrorCodes
 {
     public const string NotFound = "NOT_FOUND";
-    public const string CsrfTokenMismatch = "CSRF_TOKEN_MISMATCH";
     public const string InternalError = "INTERNAL_ERROR";
+}
+
+public static class MiddlewareErrorCodes
+{
+    public const string CsrfTokenMismatch = "CSRF_TOKEN_MISMATCH";
     public const string UnsupportedMediaType = "UNSUPPORTED_MEDIA_TYPE";
     public const string InvalidRequestBody = "INVALID_REQUEST_BODY";
     public const string RateLimitExceeded = "RATE_LIMIT_EXCEEDED";
+    public const string UntrustedProxy = "UNTRUSTED_PROXY";
 }
