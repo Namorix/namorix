@@ -19,14 +19,6 @@ Browser-based desktop shell, self-hosted.
 | Auth | JWT (access + refresh) with HttpOnly cookies |
 | Terminal | xterm.js |
 
-## Documentation
-
-| Doc | Description |
-|-----|-------------|
-| [Architecture](docs/architecture.md) | Source of truth kỹ thuật |
-| [M2 Auth](docs/m2-auth.md) | Auth backend spec |
-| [M1 Shell UI](docs/m1-shell-ui.md) | Shell UI spec |
-
 ## Quick Start
 
 ```bash
@@ -47,13 +39,6 @@ cd frontend && pnpm dev         # Frontend (Vite port 5173)
 
 ```
 namorix/
-├── docs/
-│   ├── architecture.md       # source of truth kỹ thuật
-│   ├── m1-shell-ui.md        # M1 spec
-│   ├── m2-auth.md           # M2 spec
-│   ├── m3-system-apps.md    # M3 spec
-│   ├── m4-addon-system.md    # M4 spec
-│   └── m5-core-package.md    # M5 spec
 ├── frontend/
 │   ├── package.json          # pnpm workspace root
 │   ├── pnpm-workspace.yaml   # workspace config
