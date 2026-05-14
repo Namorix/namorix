@@ -9,6 +9,7 @@ public static class AuthErrors
     public const string InvalidToken = "INVALID_TOKEN";
     public const string RegisterClosed = "REGISTER_CLOSED";
     public const string Unauthorized = "UNAUTHORIZED";
+    public const string Forbidden = "FORBIDDEN";
 }
 
 public static class ValidationErrorCodes
@@ -28,6 +29,7 @@ public static class HttpErrorCodes
 {
     public const string NotFound = "NOT_FOUND";
     public const string InternalError = "INTERNAL_ERROR";
+    public const string BadRequest = "BAD_REQUEST";
 }
 
 public static class MiddlewareErrorCodes

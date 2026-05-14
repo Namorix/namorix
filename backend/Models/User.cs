@@ -17,4 +17,5 @@ public class User
     public DateTime? UpdatedAt { get; init; }
 
     public ICollection<RefreshToken> RefreshTokens { get; init; } = new List<RefreshToken>();
+    public ICollection<UserPermission> UserPermissions { get; init; } = new List<UserPermission>();
 }

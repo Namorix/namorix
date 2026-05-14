@@ -21,6 +21,8 @@ public class AppDbContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<Setting> Settings { get; set; }
+    public DbSet<Permission> Permissions { get; set; }
+    public DbSet<UserPermission> UserPermissions { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -28,5 +30,12 @@ public class AppDbContext : DbContext
         {
             optionsBuilder.UseSqlite(_config.ConnectionString);
         }
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Permission>()
+            .HasIndex(p => new { p.Name, p.Value })
+            .IsUnique();
     }
 }
