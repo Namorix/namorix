@@ -22,6 +22,13 @@ M2 — Full Auth Backend → **Complete** ✅ + **Harden** ✅ + **ESLint** ✅ 
 
 ## Recent Changes (2026-05-14)
 
+### Trusted proxy detection, health endpoint, Blocked page, error code refactoring
+- **@namorix/core (0.8.0)**: MiddlewareErrorCodes tách từ HttpErrorCodes; ApiResponse thêm statusCode field; ApiMiddlewareRoutes cho health endpoint; client.ts inject HTTP status code; formatMiddlewareError trong validation-messages
+- **frontend (0.7.0)**: New Blocked page với switch-case theo error code từ API; health.controller.ts (trả về raw response); controllers restructuring (assets/controllers/ → controllers/); App.tsx health check on mount blocking route; Blocked page i18n (4 error types)
+- **backend (0.16.0)**: New HealthController (GET /api/health, DisableRateLimiting); NetworkHelper (OriginAllow/IsPrivateIp); Error.cs refactor (MiddlewareErrorCodes); TrustedProxyMiddleware trả về JSON ApiResponse; CORS pipeline reorder (UseCors trước UseTrustedProxy); JsonErrorMiddleware Validated flag fix
+
+## Recent Changes (2026-05-14)
+
 ### Workspace Restructure: packages → frontend/ + shared → core
 - **frontend (0.6.0)**: Xoá root package.json, tsconfig.base.json, pnpm-workspace.yaml; chuyển `packages/*` vào `frontend/packages/*`; frontend tự đứng với workspace riêng; eslint.config.js → .ts + thêm jiti
 - **@namorix/core (0.7.0)**: Merge `@namorix/shared` vào core — thêm types/, api-routes.ts, constants.ts. Core là package duy nhất cho frontend + external addon

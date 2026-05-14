@@ -78,9 +78,9 @@ namorix/
 │   │               ├── NmxInlineAlert/
 │   │               └── NmxToggle/
 │   └── src/
-│       ├── assets/
-│       │   └── controllers/
-│       │       └── auth.controller.ts
+│       ├── controllers/
+│       │   ├── auth.controller.ts
+│       │   └── health.controller.ts
 │       ├── components/
 │       ├── pages/
 │       │   ├── Login.tsx
@@ -88,12 +88,13 @@ namorix/
 │       │   └── Desktop.tsx
 │       └── i18n/
 └── backend/                   # ASP.NET Core 8 API (port 3000)
-    ├── Controllers/           # API endpoints (Auth, Settings)
+    ├── Controllers/           # API endpoints (Auth, Settings, Health)
     ├── Services/              # AuthService, SettingsService, TokenCleanupService
     ├── Models/                # EF Core entities (User, RefreshToken, Setting)
     ├── Middleware/            # CSRF, Exception, SecurityHeaders, TrustedProxy
     ├── Config/                # AppConfig, JwtConfig (IOptions<T>)
     ├── Validation/            # IValidationSchema, ValidateAttribute, schemas
+    ├── Helpers/               # NetworkHelper
     ├── Constants/             # AuthConstraints, Cookie names, error codes
     ├── Migrations/            # EF Core migrations
     ├── Responses/             # ApiResponse<T>
@@ -119,7 +120,7 @@ namorix/
 Frontend uses controller pattern for API calls:
 
 ```typescript
-// frontend/src/assets/controllers/auth.controller.ts
+// frontend/src/controllers/auth.controller.ts
 import { http, getApiBaseUrl, ApiError, ApiAuthRoutes } from "@namorix/core"
 
 export const authController = {

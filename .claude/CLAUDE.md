@@ -65,7 +65,7 @@ interface AuthChecker {
 
 ## Key Patterns
 
-- **Controller pattern** for frontend API calls (`frontend/src/assets/controllers/`)
+- **Controller pattern** for frontend API calls (`frontend/src/controllers/`)
 - **Decorator-based routing** (C#: `[HttpGet]`, `[HttpPost]`, `[Validate]`, `[Controller]`; Frontend: registerController)
 - **CSRF double-submit** — `nmx_csrf_token` cookie + `X-CSRF-Token` header, enabled via `CSRF_MODE=double-submit`
 - **i18n layering** — core namespace + frontend translation namespace, `fallbackNS: ["core", "translation"]`

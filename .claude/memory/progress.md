@@ -115,11 +115,11 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.6.0 | M2 (workspace restructure: packages moved into frontend/) |
-| @namorix/core | 0.7.0 | M2 (shared merged into core: types, api-routes, constants) |
+| frontend | 0.7.0 | M2 (Blocked page, health controller, controllers restructuring) |
+| @namorix/core | 0.8.0 | M2 (MiddlewareErrorCodes, statusCode in ApiResponse, ApiMiddlewareRoutes, formatMiddlewareError) |
 | @namorix/styles | 0.2.0 | M2 |
 | @namorix/ui | 0.3.0 | M2 |
-| backend | 0.15.0 | M2 (TrustedProxyMiddleware, SettingsController, SettingsService trusted proxies, HttpContextKeys extension) |
+| backend | 0.16.0 | M2 (HealthController, NetworkHelper, Error.cs refactoring, middleware pipeline fixes) |
 
 ## Version Rules
 
@@ -138,6 +138,13 @@
 | backend | Bug fixes, C# config tweaks | New endpoint, new service, auth feature |
 
 ## Version History
+
+### 2026-05-14 (Trusted proxy detection, health endpoint, Blocked page, error code refactoring)
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.8.0 | New types: MiddlewareErrorCodes tách từ HttpErrorCodes; ApiResponse thêm statusCode; api-routes thêm ApiMiddlewareRoutes; client.ts inject HTTP status code via spread; validation-messages thêm formatMiddlewareError; i18n thêm common.errors.untrustedProxy |
+| frontend | 0.7.0 | New Blocked page (switch-case theo error code), Blocked.scss (color-mix), health.controller.ts, controllers restructuring (assets/controllers/ → controllers/), App.tsx health check on mount với blocking logic, i18n thêm blocked section (4 error types) |
+| backend | 0.16.0 | New HealthController (GET /api/health), NetworkHelper (CORS origin validation), Error.cs refactoring (tách MiddlewareErrorCodes), TrustedProxyMiddleware trả về JSON ApiResponse, middleware pipeline reorder (UseCors trước UseTrustedProxy) |
 
 ### 2026-05-14 (Workspace restructure: packages → frontend/ + shared → core)
 | Package | Version | Changes |
