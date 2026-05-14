@@ -1,13 +1,8 @@
-import {
-  apiSystemError,
-  type ApiResponse,
-  NMX_COOKIE_CSRF_KEY,
-  HttpStatus,
-  ApiAuthRoutes,
-  SystemErrorCode,
-} from "@namorix/shared"
 import { getApiBaseUrl } from "../config"
 import { getFingerprint } from "../fingerprint"
+import { NMX_COOKIE_CSRF_KEY } from "../constants"
+import { type ApiResponse, apiSystemError, HttpStatus, SystemErrorCode } from "../types"
+import { ApiAuthRoutes } from "../api-routes"
 
 class RequestBuilder {
   private readonly _url: string

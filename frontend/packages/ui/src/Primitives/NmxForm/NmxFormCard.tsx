@@ -2,7 +2,7 @@ import React from "react"
 import { cx } from "@namorix/core/utils"
 import "./NmxForm.scss"
 
-interface NmxFormCardProps extends React.HTMLAttributes<HTMLDivElement> {}
+type NmxFormCardProps = React.HTMLAttributes<HTMLDivElement>
 
 export const NmxFormCard: React.FC<NmxFormCardProps> = ({
   children,

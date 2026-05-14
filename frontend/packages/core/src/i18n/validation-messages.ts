@@ -1,5 +1,5 @@
 import { ApiError } from "../http"
-import { AuthErrorCode, ValidationErrorCode } from "@namorix/shared"
+import { AuthErrorCode, ValidationErrorCode } from "../types"
 
 export type TFunction = (
   key: string,

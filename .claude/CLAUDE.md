@@ -30,7 +30,7 @@ All coding rules are in `.claude/rules/` — read the relevant ones for your tas
 
 - **Frontend:** Vite + React (window manager, taskbar, system apps)
 - **Backend:** ASP.NET Core 8, WebSocket (shell + terminal), auth, logs
-- **Packages:** `@namorix/core` (browser-only), `@namorix/shared` (types/constants), `@namorix/ui` (React primitives), `@namorix/styles` (SCSS tokens)
+- **Frontend packages:** `@namorix/core` (types, auth, http, i18n, guards), `@namorix/ui` (React primitives), `@namorix/styles` (SCSS tokens) — all at `frontend/packages/*`
 - **Database:** SQLite + EF Core
 - **Terminal:** xterm.js
 - **Realtime:** Socket.IO
@@ -39,12 +39,11 @@ All coding rules are in `.claude/rules/` — read the relevant ones for your tas
 
 | Package | Can Import |
 |---------|------------|
-| `@namorix/shared` | **Nothing** internal — zero deps |
-| `@namorix/core` | @namorix/shared, React ecosystem |
+| `@namorix/core` | React ecosystem |
 | `@namorix/styles` | **Nothing** — pure SCSS |
 | `@namorix/ui` | @namorix/core, React, @namorix/styles |
-| `frontend` | @namorix/core, @namorix/styles, @namorix/ui, @namorix/shared, React |
-| `backend` | @namorix/shared, ASP.NET Core 8 |
+| `frontend` | @namorix/core, @namorix/styles, @namorix/ui, React |
+| `backend` | ASP.NET Core 8 |
 
 ## Key Interfaces
 
@@ -76,15 +75,15 @@ interface AuthChecker {
 ## Development
 
 ```bash
-# Frontend
-npm run dev --workspace frontend   # Frontend (Vite port 5173)
+# Frontend (from repo root)
+cd frontend && pnpm dev             # Frontend (Vite port 5173)
 
 # Backend (C# .NET 8)
 cd backend && dotnet run            # Backend (port 3000)
 
-# Build all
-npm run build                      # Build all packages
-npm run test                       # Run tests
+# Build all (from repo root)
+cd frontend && pnpm build           # Build all frontend packages
+cd frontend && pnpm test            # Run tests
 ```
 
 ## Milestones
@@ -198,9 +197,8 @@ import { getSession } from "@namorix/core/auth"
 ```
 1. React / framework
 2. @namorix/core
-3. @namorix/shared
-4. Internal imports (./, ../)
-5. Types (type imports only)
+3. Internal imports (./, ../)
+4. Types (type imports only)
 ```
 
 ---
@@ -352,11 +350,9 @@ bugfix/M{number}-{short-description}    # bugfix/M2-session-refresh
 ### Scopes
 - `core`: @namorix/core
 - `ui`: @namorix/ui
-- `shared`: @namorix/shared
 - `styles`: @namorix/styles
 - `frontend`: frontend
 - `backend`: backend (ASP.NET Core)
-- `root`: monorepo root
 
 ### Examples
 ```
@@ -375,7 +371,7 @@ Same format as commit. Body describes WHAT and WHY, not HOW.
 ## Package Structure (Required)
 
 ```
-packages/
+frontend/packages/
 ├── core/
 │   ├── package.json
 │   ├── tsconfig.json
@@ -384,17 +380,19 @@ packages/
 │       ├── auth/index.ts
 │       ├── http/index.ts      # ApiError, http client
 │       ├── router/index.ts    # GuardedRoute, guards
+│       ├── i18n/index.ts
 │       ├── config.ts
+│       ├── api-routes.ts
+│       ├── constants.ts
 │       └── utils/cx.ts
 ├── styles/
 │   ├── package.json
 │   └── src/
-│       ├── tokens.scss
+│       ├── index.scss
 │       ├── reset.scss
 │       ├── fonts.scss
 │       ├── mixins.scss
-│       ├── variables.scss
-│       └── index.scss
+│       └── variables.scss
 ├── ui/
 │   ├── package.json
 │   ├── tsconfig.json
@@ -406,13 +404,6 @@ packages/
 │           ├── NmxForm/
 │           ├── NmxInlineAlert/
 │           └── NmxToggle/
-└── shared/
-    └── src/
-        ├── types/         # ApiResponse, User, AuthStatus, error codes
-        ├── api-routes.ts
-        ├── constants.ts   # NMX_COOKIE_*, AuthConstraints
-        ├── http-headers.ts
-        └── index.ts
 
 backend/
 ├── Controllers/          # ASP.NET Core controllers
@@ -476,8 +467,3 @@ If only major/minor known: set `PATCH = 0` (e.g. legacy `v0.8` → `0.8.0`)
 ## Giao Tiếp Bằng Tiếng Việt
 Luôn giao tiếp với người dùng bằng tiếng Việt. Tất cả phản hồi, giải thích, câu hỏi đều dùng tiếng Việt.
 
-## Root Version Bump Triggers
-| Bump | When |
-|------|------|
-| PATCH | Bug fixes, config tweaks, dependency updates (any package) |
-| MINOR | New feature, new package, milestone completion, workspace structure change |

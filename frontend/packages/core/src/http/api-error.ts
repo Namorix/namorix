@@ -1,4 +1,4 @@
-import type { ApiResponse, ValidationErrorMeta } from "@namorix/shared"
+import type { ApiResponse, ValidationErrorMeta } from "../types"
 
 export class ApiError extends Error {
   code?: string

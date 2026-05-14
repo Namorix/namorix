@@ -1,4 +1,4 @@
-import { ValidationErrorCode } from "@namorix/shared"
+import { ValidationErrorCode } from "../types"
 import {
   emitValidationError,
   type MetaType,

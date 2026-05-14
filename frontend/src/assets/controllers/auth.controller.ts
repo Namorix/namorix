@@ -1,5 +1,4 @@
-import { ApiError, getApiBaseUrl, http } from "@namorix/core"
-import { ApiAuthRoutes } from "@namorix/shared"
+import { ApiAuthRoutes, ApiError, getApiBaseUrl, http } from "@namorix/core"
 
 async function login(
   username: string,

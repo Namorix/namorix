@@ -2,7 +2,7 @@ import React from "react"
 import { cx } from "@namorix/core/utils"
 import "./NmxForm.scss"
 
-interface NmxFormPageProps extends React.HTMLAttributes<HTMLDivElement> {}
+type NmxFormPageProps = React.HTMLAttributes<HTMLDivElement>
 
 export const NmxFormPage: React.FC<NmxFormPageProps> = ({
   children,

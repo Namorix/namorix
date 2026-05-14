@@ -16,8 +16,7 @@ import {
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link, useNavigate } from "react-router-dom"
-import { AuthConstraints } from "@namorix/shared"
-import { validate, ValidationFields } from "@namorix/core"
+import { AuthConstraints, validate, ValidationFields } from "@namorix/core"
 import { authController } from "../assets/controllers/auth.controller"
 import { useAuthForm } from "../hooks/useAuthForm"
 
