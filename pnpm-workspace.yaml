@@ -1,7 +1,6 @@
 packages:
   - "packages/*"
   - "frontend"
-  - "backend"
 allowBuilds:
   "@parcel/watcher": true
   bcrypt: true
