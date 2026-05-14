@@ -1,8 +1,8 @@
 import {
   type ApiErrorCode,
-  AuthErrorCode,
-  SystemErrorCode,
-  ValidationErrorCode,
+  AuthErrorCodes,
+  HttpErrorCodes,
+  ValidationErrorCodes,
 } from "./error"
 import type { ApiResponse } from "./api"
 
@@ -26,11 +26,11 @@ const createApiError =
     ...(meta && { meta }),
   })
 
-/** @see {@link AuthErrorCode} */
-export const apiAuthError = createApiError<AuthErrorCode>()
+/** @see {@link AuthErrorCodes} */
+export const apiAuthError = createApiError<AuthErrorCodes>()
 
-/** @see {@link SystemErrorCode} */
-export const apiSystemError = createApiError<SystemErrorCode>()
+/** @see {@link HttpErrorCodes} */
+export const apiHttpError = createApiError<HttpErrorCodes>()
 
-/** @see {@link ValidationErrorCode} */
-export const apiValidateError = createApiError<ValidationErrorCode>()
+/** @see {@link ValidationErrorCodes} */
+export const apiValidateError = createApiError<ValidationErrorCodes>()

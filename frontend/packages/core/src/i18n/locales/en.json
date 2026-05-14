@@ -22,6 +22,9 @@
         "unauthorized": "Unauthorized. Please login again",
         "registerClosed": "Registration is currently closed"
       }
+    },
+    "errors": {
+      "untrustedProxy": "Proxy is not trusted. This proxy must be added to the trusted proxies list in Settings"
     }
   }
 }

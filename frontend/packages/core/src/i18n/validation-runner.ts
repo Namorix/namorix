@@ -1,4 +1,4 @@
-import { ValidationErrorCode } from "../types"
+import { ValidationErrorCodes } from "../types"
 import {
   emitValidationError,
   type MetaType,
@@ -28,7 +28,7 @@ export class ValidationRunner {
     if (!this._firstError && value.length <= 0) {
       this._firstError = emitValidationError(
         this._t,
-        ValidationErrorCode.REQUIRED,
+        ValidationErrorCodes.REQUIRED,
         field,
       )
     }
@@ -39,7 +39,7 @@ export class ValidationRunner {
     if (!this._firstError && value.length < count) {
       this._firstError = emitValidationError(
         this._t,
-        ValidationErrorCode.TOO_SHORT,
+        ValidationErrorCodes.TOO_SHORT,
         field,
         { count },
       )
@@ -51,7 +51,7 @@ export class ValidationRunner {
     if (!this._firstError && value.length > count) {
       this._firstError = emitValidationError(
         this._t,
-        ValidationErrorCode.TOO_LONG,
+        ValidationErrorCodes.TOO_LONG,
         field,
         { count },
       )
@@ -73,7 +73,7 @@ export class ValidationRunner {
     if (v < min || v > max) {
       this._firstError = emitValidationError(
         this._t,
-        ValidationErrorCode.OUT_OF_RANGE,
+        ValidationErrorCodes.OUT_OF_RANGE,
         field,
         { min, max },
       )
@@ -85,7 +85,7 @@ export class ValidationRunner {
     if (!this._firstError && value !== expected) {
       this._firstError = emitValidationError(
         this._t,
-        ValidationErrorCode.MISMATCH,
+        ValidationErrorCodes.MISMATCH,
         field,
       )
     }
@@ -94,7 +94,7 @@ export class ValidationRunner {
 
   custom(
     predicate: boolean,
-    code: ValidationErrorCode,
+    code: ValidationErrorCodes,
     field: FieldType,
     meta?: MetaType,
   ): this {

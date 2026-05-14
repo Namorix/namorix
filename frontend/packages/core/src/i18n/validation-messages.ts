@@ -1,5 +1,9 @@
 import { ApiError } from "../http"
-import { AuthErrorCode, ValidationErrorCode } from "../types"
+import {
+  AuthErrorCodes,
+  MiddlewareErrorCodes,
+  ValidationErrorCodes,
+} from "../types"
 
 export type TFunction = (
   key: string,
@@ -14,13 +18,13 @@ export interface ValidationMessage {
 
 export interface ValidationRule {
   predicate: boolean
-  code: ValidationErrorCode
+  code: ValidationErrorCodes
   field: string
   meta?: MetaType
 }
 
 export function createValidationMessage(
-  code: ValidationErrorCode,
+  code: ValidationErrorCodes,
   fieldKey: string,
   meta?: MetaType,
 ): ValidationMessage {
@@ -28,19 +32,19 @@ export function createValidationMessage(
 
   let key: string
   switch (code) {
-    case ValidationErrorCode.REQUIRED:
+    case ValidationErrorCodes.REQUIRED:
       key = "common.validation.required"
       break
-    case ValidationErrorCode.TOO_SHORT:
+    case ValidationErrorCodes.TOO_SHORT:
       key = "common.validation.min"
       break
-    case ValidationErrorCode.TOO_LONG:
+    case ValidationErrorCodes.TOO_LONG:
       key = "common.validation.max"
       break
-    case ValidationErrorCode.OUT_OF_RANGE:
+    case ValidationErrorCodes.OUT_OF_RANGE:
       key = "common.validation.range"
       break
-    case ValidationErrorCode.MISMATCH:
+    case ValidationErrorCodes.MISMATCH:
       key = "common.validation.mismatch"
       break
     default:
@@ -68,7 +72,7 @@ export function formatValidationMessage(
 
 export function emitValidationError(
   t: TFunction,
-  code: ValidationErrorCode,
+  code: ValidationErrorCodes,
   fieldKey: string,
   meta?: MetaType,
   customField?: string,
@@ -86,7 +90,7 @@ export function resolveValidationError(
   const code = err.code
   if (
     !code ||
-    !Object.values(ValidationErrorCode).includes(code as ValidationErrorCode)
+    !Object.values(ValidationErrorCodes).includes(code as ValidationErrorCodes)
   ) {
     return null
   }
@@ -96,26 +100,26 @@ export function resolveValidationError(
   }
 
   switch (code) {
-    case ValidationErrorCode.REQUIRED:
+    case ValidationErrorCodes.REQUIRED:
       return { key: "common.validation.required", params }
-    case ValidationErrorCode.TOO_SHORT:
+    case ValidationErrorCodes.TOO_SHORT:
       return {
         key: "common.validation.min",
         params: { ...params, count: err.meta?.minLength },
       }
-    case ValidationErrorCode.TOO_LONG:
+    case ValidationErrorCodes.TOO_LONG:
       return {
         key: "common.validation.max",
         params: { ...params, count: err.meta?.maxLength },
       }
-    case ValidationErrorCode.OUT_OF_RANGE:
+    case ValidationErrorCodes.OUT_OF_RANGE:
       return {
         key: "common.validation.range",
         params: { ...params, min: err.meta?.min ?? 0, max: err.meta?.max ?? 0 },
       }
-    case ValidationErrorCode.INVALID_FORMAT:
-    case ValidationErrorCode.INVALID_TYPE:
-    case ValidationErrorCode.INVALID_ENUM:
+    case ValidationErrorCodes.INVALID_FORMAT:
+    case ValidationErrorCodes.INVALID_TYPE:
+    case ValidationErrorCodes.INVALID_ENUM:
       return { key: "common.validation.invalidFormat", params }
     default:
       return null
@@ -124,22 +128,25 @@ export function resolveValidationError(
 
 export function resolveAuthError(err: ApiError): ValidationMessage | null {
   const code = err.code
-  if (!code || !Object.values(AuthErrorCode).includes(code as AuthErrorCode)) {
+  if (
+    !code ||
+    !Object.values(AuthErrorCodes).includes(code as AuthErrorCodes)
+  ) {
     return null
   }
 
   let key: string
   switch (code) {
-    case AuthErrorCode.INVALID_CREDENTIALS:
+    case AuthErrorCodes.INVALID_CREDENTIALS:
       key = "common.auth.errors.invalidCredentials"
       break
-    case AuthErrorCode.USERNAME_EXISTS:
+    case AuthErrorCodes.USERNAME_EXISTS:
       key = "common.auth.errors.usernameExists"
       break
-    case AuthErrorCode.UNAUTHORIZED:
+    case AuthErrorCodes.UNAUTHORIZED:
       key = "common.auth.errors.unauthorized"
       break
-    case AuthErrorCode.REGISTER_CLOSED:
+    case AuthErrorCodes.REGISTER_CLOSED:
       key = "common.auth.errors.registerClosed"
       break
     default:
@@ -170,7 +177,21 @@ export function formatAuthError(t: TFunction, err: ApiError): string | null {
 }
 
 export function formatApiError(t: TFunction, err: ApiError): string | null {
-  return formatValidationError(t, err) ?? formatAuthError(t, err)
+  return (
+    formatValidationError(t, err) ??
+    formatAuthError(t, err) ??
+    formatMiddlewareError(t, err)
+  )
+}
+
+export function formatMiddlewareError(
+  t: TFunction,
+  err: ApiError,
+): string | null {
+  if (err.code === MiddlewareErrorCodes.UNTRUSTED_PROXY) {
+    return t("common.errors.untrustedProxy")
+  }
+  return null
 }
 
 export function runValidation(

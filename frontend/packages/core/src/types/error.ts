@@ -1,17 +1,24 @@
-export const AuthErrorCode = {
+export const AuthErrorCodes = {
   INVALID_CREDENTIALS: "INVALID_CREDENTIALS",
   USERNAME_EXISTS: "USERNAME_EXISTS",
   UNAUTHORIZED: "UNAUTHORIZED",
   REGISTER_CLOSED: "REGISTER_CLOSED",
 } as const
 
-export const SystemErrorCode = {
-  INTERNAL_ERROR: "INTERNAL_ERROR",
+export const HttpErrorCodes = {
   NOT_FOUND: "NOT_FOUND",
-  CSRF_MISMATCH: "CSRF_MISMATCH",
+  INTERNAL_ERROR: "INTERNAL_ERROR",
 } as const
 
-export const ValidationErrorCode = {
+export const MiddlewareErrorCodes = {
+  CSRF_TOKEN_MISMATCH: "CSRF_TOKEN_MISMATCH",
+  UNSUPPORTED_MEDIA_TYPE: "UNSUPPORTED_MEDIA_TYPE",
+  INVALID_REQUEST_BODY: "INVALID_REQUEST_BODY",
+  RATE_LIMIT_EXCEEDED: "RATE_LIMIT_EXCEEDED",
+  UNTRUSTED_PROXY: "UNTRUSTED_PROXY",
+} as const
+
+export const ValidationErrorCodes = {
   REQUIRED: "REQUIRED",
   TOO_SHORT: "TOO_SHORT",
   TOO_LONG: "TOO_LONG",
@@ -22,9 +29,16 @@ export const ValidationErrorCode = {
   INVALID_ENUM: "INVALID_ENUM",
 } as const
 
-export type AuthErrorCode = (typeof AuthErrorCode)[keyof typeof AuthErrorCode]
-export type SystemErrorCode =
-  (typeof SystemErrorCode)[keyof typeof SystemErrorCode]
-export type ValidationErrorCode =
-  (typeof ValidationErrorCode)[keyof typeof ValidationErrorCode]
-export type ApiErrorCode = AuthErrorCode | SystemErrorCode | ValidationErrorCode
+export type AuthErrorCodes =
+  (typeof AuthErrorCodes)[keyof typeof AuthErrorCodes]
+export type HttpErrorCodes =
+  (typeof HttpErrorCodes)[keyof typeof HttpErrorCodes]
+export type MiddlewareErrorCodes =
+  (typeof MiddlewareErrorCodes)[keyof typeof MiddlewareErrorCodes]
+export type ValidationErrorCodes =
+  (typeof ValidationErrorCodes)[keyof typeof ValidationErrorCodes]
+export type ApiErrorCode =
+  | AuthErrorCodes
+  | HttpErrorCodes
+  | MiddlewareErrorCodes
+  | ValidationErrorCodes

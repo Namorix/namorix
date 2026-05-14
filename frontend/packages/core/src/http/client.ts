@@ -1,7 +1,12 @@
 import { getApiBaseUrl } from "../config"
 import { getFingerprint } from "../fingerprint"
 import { NMX_COOKIE_CSRF_KEY } from "../constants"
-import { type ApiResponse, apiSystemError, HttpStatus, SystemErrorCode } from "../types"
+import {
+  type ApiResponse,
+  apiHttpError,
+  HttpStatus,
+  HttpErrorCodes,
+} from "../types"
 import { ApiAuthRoutes } from "../api-routes"
 
 class RequestBuilder {
@@ -87,9 +92,9 @@ class RequestBuilder {
       }
       return (await result.json()) as ApiResponse<T>
     } catch {
-      return apiSystemError(
+      return apiHttpError(
         "Network error",
-        SystemErrorCode.INTERNAL_ERROR,
+        HttpErrorCodes.INTERNAL_ERROR,
       ) as ApiResponse<T>
     }
   }
