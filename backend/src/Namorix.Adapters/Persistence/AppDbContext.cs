@@ -14,6 +14,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IOptions<AppCo
     public DbSet<Setting> Settings { get; set; }
     public DbSet<Permission> Permissions { get; set; }
     public DbSet<UserPermission> UserPermissions { get; set; }
+    public DbSet<ThemeManifest> ThemeManifests { get; set; }
+    public DbSet<AddonManifest> AddonManifests { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -27,6 +29,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IOptions<AppCo
     {
         modelBuilder.Entity<Permission>()
             .HasIndex(p => new { p.Name, p.Value })
+            .IsUnique();
+
+        modelBuilder.Entity<ThemeManifest>()
+            .HasIndex(t => t.Id)
+            .IsUnique();
+
+        modelBuilder.Entity<AddonManifest>()
+            .HasIndex(a => a.Id)
             .IsUnique();
     }
 }

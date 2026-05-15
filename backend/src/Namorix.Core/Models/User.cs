@@ -13,6 +13,10 @@ public class User
     public string Password { get; init; } = string.Empty;
     
     public int Role { get; init; }
+    
+    [MaxLength(100)]
+    public string ThemeId { get; init; } = string.Empty;
+    
     public DateTime CreatedAt { get; init; }
     public DateTime? UpdatedAt { get; init; }
 
