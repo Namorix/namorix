@@ -1,4 +1,11 @@
-import { ApiAuthRoutes, ApiError, getApiBaseUrl, http } from "@namorix/core"
+import {
+  ApiAuthRoutes,
+  ApiError,
+  ApiUserRoutes,
+  getApiBaseUrl,
+  http,
+  NMX_THEME_STORAGE_KEY,
+} from "@namorix/core"
 
 async function login(
   username: string,
@@ -10,6 +17,14 @@ async function login(
     .post({ username, password, rememberMe })
     .json<void>()
   if (!data.success) throw ApiError.fromResponse(data)
+
+  const themeRes = await http
+    .url(getApiBaseUrl() + ApiUserRoutes.theme)
+    .get()
+    .json<{ themeId: string }>()
+  if (themeRes.success && themeRes.data) {
+    localStorage.setItem(NMX_THEME_STORAGE_KEY, themeRes.data.themeId)
+  }
 }
 
 async function register(username: string, password: string): Promise<void> {

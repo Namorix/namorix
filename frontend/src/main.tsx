@@ -1,9 +1,16 @@
 import "./styles/main.scss"
 
-import { StrictMode } from "react"
+import { StrictMode, useEffect, useState } from "react"
 import { createRoot } from "react-dom/client"
 import { BrowserRouter } from "react-router-dom"
-import { configureCore, generateFingerprint } from "@namorix/core"
+import {
+  ThemeProvider,
+  configureCore,
+  generateFingerprint,
+  getAllThemes,
+  restoreTheme,
+  type ThemeManifest,
+} from "@namorix/core"
 import { App } from "./App"
 import "./i18n"
 import "./addons"
@@ -14,12 +21,29 @@ configureCore({
       ? "https://api.izerocs.space"
       : window.location.origin,
 })
-generateFingerprint().catch(console.error)
 
-createRoot(document.getElementById("root")!).render(
+generateFingerprint().catch(console.error)
+restoreTheme()
+
+const container = document.getElementById("root")!
+export const Root = () => {
+  const [themes, setThemes] = useState<ThemeManifest[]>([])
+
+  useEffect(() => {
+    getAllThemes().then(setThemes)
+  }, [])
+
+  return (
+    <ThemeProvider themes={themes}>
+      <App />
+    </ThemeProvider>
+  )
+}
+
+createRoot(container).render(
   <StrictMode>
     <BrowserRouter>
-      <App />
+      <Root />
     </BrowserRouter>
   </StrictMode>,
 )
