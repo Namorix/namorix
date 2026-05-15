@@ -24,7 +24,7 @@ All coding rules are in `.claude/rules/` — read the relevant ones for your tas
 | Monorepo + publishable `core` package | Shell and third-party addons share contracts (`@namorix/core`). |
 | SQLite + EF Core | Simple for single-node self-hosted (ASP.NET Core 8 + Entity Framework Core). |
 | Docker via Unix socket | Desktop backend runs on same machine as Docker. |
-| Socket.IO | Unified realtime layer for shell events. |
+| SignalR | Unified realtime layer for backend events. |
 
 ## Tech Stack
 
@@ -33,7 +33,7 @@ All coding rules are in `.claude/rules/` — read the relevant ones for your tas
 - **Frontend packages:** `@namorix/core` (types, auth, http, i18n, guards), `@namorix/ui` (React primitives), `@namorix/styles` (SCSS tokens) — all at `frontend/packages/*`
 - **Database:** SQLite + EF Core
 - **Terminal:** xterm.js
-- **Realtime:** Socket.IO
+- **Realtime:** SignalR
 
 ## Package Boundaries
 

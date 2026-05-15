@@ -13,9 +13,10 @@
 ### Backend
 - **Runtime:** .NET 8
 - **Framework:** ASP.NET Core 8
-- **Database:** SQLite + EF Core
-- **JWT:** System.IdentityModel.Tokens.Jwt
-- **Password hashing:** BCrypt.Net
+- **Database:** SQLite + EF Core 8
+- **Auth:** JWT (System.IdentityModel.Tokens.Jwt), BCrypt (BCrypt.Net-Next)
+- **Caching:** IMemoryCache
+- **Docker:** Docker.DotNet.Enhanced (fork từ Docker.DotNet, maintain bởi Testcontainers team)
 
 ### Packages
 | Package | Purpose | Dependencies |
@@ -28,7 +29,7 @@
 
 ### Prerequisites
 - Node.js 18+
-- npm 9+
+- pnpm 9+
 - Docker (for addon containers)
 
 ### Commands
@@ -174,7 +175,7 @@ frontend/packages/
 | Method | Path | Description |
 |--------|------|-------------|
 | POST | `/api/addon/handshake` | Exchange addon secret for AddonToken |
-| POST | `/api/addon/session-exchange` | Exchange one-time nmx_token for session |
+| POST | `/api/addon/session-exchange` | Exchange one-time nmx_handshake_token for session (full app mode) |
 | GET | `/api/logs/addons` | List addon log sources |
 | GET | `/api/logs?addonId=` | Fetch addon logs |
 

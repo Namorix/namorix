@@ -25,6 +25,13 @@ M2 — Full Auth Backend → **Complete** ✅ + **Harden** ✅ + **ESLint** ✅ 
 ### Bug fixes + Multi-project migration
 - **backend (0.17.1)**: Bug fixes: Refresh token flow (hash Base64 lookup, không parse JWT nữa), NetworkHelper IPv6 crash, CsrfMiddleware first-request 403, PermissionService dead code, RequireAdminAttribute int.TryParse, Logout dùng RevokeTokenByHash. Refactor: multi-project migration từ flat `backend/` sang `backend/src/{Namorix.Core, Namorix.Adapters, Namorix.Server, Namorix.Workers}`.
 
+### Documentation updates
+- **CLAUDE.md**: Socket.IO → SignalR (Architecture Principles, Tech Stack)
+- **root README.md**: Thêm addon 3 modes, SignalR/gRPC/Docker.DotNet.Enhanced vào Tech Stack, Addon Architecture section
+- **backend README.md**: Cập nhật multi-project structure, thêm tech stack entries (planned), planned addon endpoints, Docker Management + Realtime Events sections
+- **frontend README.md**: Sửa structure đúng với codebase, VITE_API_URL env var, thêm Upcoming section
+- **Memory bank docs**: Cập nhật systemPatterns.md, techContext.md, productContext.md, projectbrief.md với addon architecture mới (gRPC, SignalR, 3 modes, nmx_handshake_token, Event Bus)
+
 ## Recent Changes (2026-05-14)
 
 ### Trusted proxy detection, health endpoint, Blocked page, error code refactoring
@@ -278,21 +285,8 @@ packages/backend-core/src/middleware/csrf.ts
 - Logout: DELETE one jti. Logout-all: DELETE all by userId
 - No token_version column needed — whitelist approach is simpler and gives per-device control
 
-### Fingerprint Validation Strategy (Pending — Loose → Strict)
-Hiện tại dùng **Loose**: chỉ revoke khi cả fingerprint AND IP đều khác. Nếu chỉ fingerprint khác (cùng IP) → allow (browser/OS update).
-
-Cần chuyển sang **Strict** cho prod:
-```csharp
-if (!string.IsNullOrEmpty(storedToken.Fingerprint))
-{
-    if (string.IsNullOrEmpty(fingerprint) || storedToken.Fingerprint != fingerprint)
-    {
-        await RevokeAllUserTokens(userId);
-        throw new AuthException(AuthErrors.FingerprintMismatch);
-    }
-}
-```
-Lý do: frontend luôn gửi fingerprint, nếu thiếu lúc refresh là dấu hiệu bất thường (token bị steal).
+### Fingerprint Validation Strategy ✅ (Resolved — Strict)
+Đã là **Strict mode**: fingerprint mismatch → `RevokeAllUserTokens`. Không cần xét IP. Code ở `RefreshToken()` lines 165-171 đã kiểm tra fingerprint !== stored fingerprint và revoke ngay.
 
 ### Token Refresh Strategy
 - Auto-refresh on 401 handled in `RequestBuilder.json()` (HTTP client level, transparent to callers)
@@ -306,20 +300,13 @@ Lý do: frontend luôn gửi fingerprint, nếu thiếu lúc refresh là dấu h
 - CSRF token: `httpOnly: false, sameSite: "lax"` (readable by JS for double-submit)
 - `sameSite: "lax"` chosen over `"strict"` because frontend/backend run on different ports in dev
 
-### Service Error Handling — DB Failures Go Unwrapped (Tech Debt)
-Các service method (PermissionService, SettingsService) không có try/catch cho DB operations. Nếu EF Core failed (unique constraint, connection loss, etc.), exception propagate lên controller rồi ExceptionMiddleware trả 500 generic. Thiếu error response cụ thể cho từng case (vd: "Permission already exists").
+### Service Error Handling — DB Failures Go Unwrapped (Intentional)
+Các service method (PermissionService, SettingsService) không có try/catch cho DB operations. Nếu EF Core failed (unique constraint, connection loss, etc.), exception propagate lên controller rồi ExceptionMiddleware trả 500 generic.
 
-**Cần làm:**
-- Controller catch exception → trả response với error code cụ thể
-- Hoặc service throw custom exception → controller catch và map thành response
+**Quyết định:** Đây là lỗi hệ thống, không cần bắt. ExceptionMiddleware trả 500 đủ để người dùng biết và báo quản trị viên. Chỉ try/catch những operation quan trọng (vd: transaction rollback trong PermissionService.DeletePermission).
 
-### Auth Filter Attribute — Inconsistent Pattern (Tech Debt)
-Ba attribute filter dùng 3 pattern khác nhau:
-- `RequireAuthAttribute` — extend `Attribute`, implement `IAsyncActionFilter` trực tiếp
-- `RequireAdminAttribute` — extend `ActionFilterAttribute`, override sync `OnActionExecuting`
-- `RequirePermissionAttribute` — extend `ActionFilterAttribute`, override async `OnActionExecutionAsync`
-
-Cần thống nhất về 1 pattern (ưu tiên `ActionFilterAttribute` + async override để dễ mở rộng).
+### Auth Filter Attribute — Inconsistent Pattern ✅ (Resolved)
+Cả 3 attribute filter (`RequireAuthAttribute`, `RequireAdminAttribute`, `RequirePermissionAttribute`) đã thống nhất dùng `ActionFilterAttribute` + async `OnActionExecutionAsync`.
 
 ## Next Steps
 

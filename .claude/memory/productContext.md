@@ -14,8 +14,8 @@
 1. User navigates to server URL → sees login page
 2. After login → sees desktop with taskbar, launcher
 3. Click system app icon → window opens in shell
-4. Click addon icon → addon opens in new browser tab
-5. All notifications appear via realtime socket
+4. Click addon icon → tùy mode: widget mở trong dashboard, hoặc full app mở tab mới
+5. All notifications appear via SignalR realtime channel
 
 ### Design Language
 

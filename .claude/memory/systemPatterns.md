@@ -5,10 +5,11 @@
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                    Browser                             │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐ │
-│  │   Shell UI   │  │  Addon Tabs  │  │  Terminal App    │ │
-│  │  (React)     │  │  (external)  │  │  (xterm.js)     │ │
-│  └──────┬───────┘  └──────┬───────┘  └────────┬────────┘ │
+│  ┌─────────────────────┐  ┌──────────────────────────┐ │
+│  │   Shell Dashboard    │  │  Terminal App             │ │
+│  │  (React: shell UI +  │  │  (xterm.js)               │ │
+│  │   addon DOM slots)  │  │                           │ │
+│  └──────────┬──────────┘  └────────────┬─────────────┘ │
 └─────────┼─────────────────┼────────────────────┼──────────┘
           │                 │                    │
           ▼                 ▼                    ▼
@@ -51,14 +52,16 @@
 - No separate DB server needed for self-hosted
 - **Why:** Simple, zero-config for personal/home server
 
-### 4. Socket.IO for Realtime
-- Shell events: `nmx:notification`, `nmx:addon-status`
+### 4. Socket.IO for Backend Realtime Events
+- Backend → Shell events: `nmx:notification`, `nmx:addon-status`, `nmx:deprecation`
 - WebSocket endpoints: `/namorix-shell-ws`, `/namorix-terminal-ws`
-- **Why:** Unified realtime layer, works behind proxies
+- **Chỉ dùng cho backend communication.** Shell ↔ Addon trong browser dùng Event Bus (`@namorix/core`), không qua Socket.IO.
 
-### 5. Docker via Unix Socket
+### 5. Docker via Unix Socket (Docker.DotNet.Enhanced)
 - Desktop backend runs on same machine as Docker
-- Addon containers on `namorix_net` bridge network
+- NuGet package: `Docker.DotNet.Enhanced` — fork maintained bởi Testcontainers team (repo gốc `Docker.DotNet` từ dotnet org không còn maintain)
+- Kết nối qua Unix socket (`/var/run/docker.sock`)
+- Addon containers trên `namorix_net` bridge network
 - **Why:** Secure addon isolation, native Docker management
 
 ## Package Boundary (STRICT)
@@ -77,7 +80,26 @@
 interface NmxSession { user: NmxUser; expiresAt: string }
 interface NmxUser { id: number; username: string; role: number }
 interface NmxAddonManifest { id: string; displayName: string; internalPort: number }
-interface NmxAddonStatus { addonId: string; status: 'installed' | 'running' | 'stopped' | 'error' }
+
+// AddonEntry — mỗi addon phải export default interface này
+interface AddonEntry {
+  mount(container: HTMLElement, context: AddonContext): void
+  unmount(): void
+}
+
+// AddonContext — shell truyền vào khi mount addon
+interface AddonContext {
+  addonId: string
+  locale: string
+  theme: 'light' | 'dark'
+}
+
+// Event Bus — shell ↔ addon communication (cùng JS context)
+interface EventBus {
+  emit<K extends keyof EventMap>(event: K, payload: EventMap[K]): void
+  on<K extends keyof EventMap>(event: K, handler: (payload: EventMap[K]) => void): () => void
+  off<K extends keyof EventMap>(event: K, handler: (payload: EventMap[K]) => void): void
+}
 ```
 
 ## Design Patterns
@@ -114,6 +136,27 @@ interface NmxAddonStatus { addonId: string; status: 'installed' | 'running' | 's
 - **Cookie policy:** Auth cookies `httpOnly: true, sameSite: "lax"`; CSRF cookie `httpOnly: false, sameSite: "lax"`
 - Attacker can't read CSRF cookie from cross-origin → cannot forge matching header
 
+### Shell ↔ Addon Communication (Event Bus)
+- Shell và addon cùng bundle → cùng JS context → không cần postMessage hay WebSocket
+- Giao tiếp qua `eventBus` export từ `@namorix/core` (`emit/on/off`)
+- Event types phân biệt chiều: `shell:*` → addon lắng nghe, `addon:*` → shell lắng nghe
+- Shell subscribe `addon:*` events, addon subscribe `shell:*` events
+- return value của `on()` là unsubscribe function, gọi trong `unmount()`
+- **Không share Zustand store trực tiếp giữa shell và addon**
+
+```typescript
+type EventMap = {
+  // Shell → Addon
+  "shell:theme-changed": { theme: "light" | "dark" }
+  "shell:locale-changed": { locale: string }
+  "shell:file-open": { path: string }
+  // Addon → Shell
+  "addon:notification": { addonId: string; title: string; message: string }
+  "addon:open-file": { addonId: string; path: string }
+  "addon:request-focus": { addonId: string }
+}
+```
+
 ### Fingerprint Verification on Token Refresh (Option C Balanced)
 - **Client:** `generateFingerprint()` creates SHA-256 hash from `FingerprintComponents` (userAgent, acceptLanguage, acceptEncoding, screenResolution, timezone, platform). Falls back to base64 if non-HTTPS.
 - **Header:** Fingerprint sent via `x-device-fingerprint` header on every request (auto-attached in `RequestBuilder.json()`)
@@ -142,7 +185,20 @@ interface NmxAddonStatus { addonId: string; status: 'installed' | 'running' | 's
 - Throws `ApiError.fromResponse(data)` on non-success
 
 ### State Management (Zustand) — Planned, Not Yet Implemented
-- Stores: `useAuthStore`, `useWindowsStore`, `useAddonsStore`, `useDesktopStore`
+- Tất cả store bọc middleware `devtools` để support Redux DevTools:
+  ```typescript
+  import { devtools } from "zustand/middleware"
+  const useWindowStore = create(devtools((set) => ({ ... }), { name: "WindowStore" }))
+  ```
+- Store definitions:
+
+  | Store | Key State | Key Actions |
+  |-------|-----------|-------------|
+  | `windowStore` | `windows: Window[]`, `activeWindowId` | `openWindow`, `closeWindow`, `focusWindow`, `minimizeWindow` |
+  | `authStore` | `user: User \| null`, `isAuthenticated` | `setUser`, `clearUser` |
+  | `addonStore` | `installedAddons: Addon[]`, `runningContainers` | `installAddon`, `uninstallAddon`, `startContainer`, `stopContainer` |
+  | `desktopStore` | `theme`, `locale`, `wallpaper` | — |
+
 - File pattern: `{name}.store.ts`
 - **Note:** No Zustand stores exist yet — will be created during M3 (Desktop shell)
 
@@ -185,10 +241,10 @@ type WindowState = {
 ### Zustand Stores (Planned)
 | Store | Responsibility |
 |-------|----------------|
-| `auth.store` | `user`, `status` (`anonymous` \| `loading` \| `authenticated`), `expiresAt` |
-| `windows.store` | `windows: WindowState[]`, `focusOrder`, `openWindow`, `closeWindow`, `focusWindow` |
-| `addons.store` | `AddonInfo[]` synced from WebSocket `shell:addons` |
-| `desktop.store` | `theme`, `locale`, `wallpaper` |
+| `windowStore` | `windows: WindowState[]`, `activeWindowId`, `openWindow`, `closeWindow`, `focusWindow`, `minimizeWindow` |
+| `authStore` | `user`, `isAuthenticated`, `setUser`, `clearUser` |
+| `addonStore` | `installedAddons`, `runningContainers`, `installAddon`, `uninstallAddon`, `startContainer`, `stopContainer` |
+| `desktopStore` | `theme`, `locale`, `wallpaper` |
 
 ### Window Manager
 - `focusOrder`: array of windowId; last element = focused window
@@ -213,25 +269,23 @@ type WindowState = {
 
 ## WebSocket Architecture
 
-### /namorix-shell-ws (Socket.IO)
+### /namorix-shell-ws (Socket.IO — Backend Events Only)
 Server → Client:
 | Event | Payload | Notes |
 |-------|---------|-------|
-| `shell:addons` | `AddonInfo[]` | Full snapshot on connect + status changes |
-| `shell:addon:logLine` | `{ addonId, line }` | Streaming logs |
+| `nmx:addon-status` | `AddonInfo[]` | Backend báo trạng thái Docker container |
+| `nmx:notification` | `{ title, message }` | Backend gửi notification |
 | `nmx:deprecation` | `NmxDeprecation` | Incompatible core version |
 
 Client → Server:
 | Event | Payload | Notes |
 |-------|---------|-------|
-| `nmx:handshake` | `{ addonId, coreVersion }` | Auto-emit on connectEvents() |
-| `shell:addon:install` | `{ imageRef }` | |
-| `shell:addon:start` | `{ addonId }` | |
-| `shell:addon:stop` | `{ addonId }` | |
-| `shell:addon:remove` | `{ addonId }` | |
-| `shell:addon:logs` | `{ addonId, since? }` | |
+| `nmx:handshake` | `{ coreVersion }` | Auto-emit on connect |
 
-Reconnection: Socket.IO with backoff; server sends full `shell:addons` on reconnect.
+Reconnection: Socket.IO with backoff; server resends state on reconnect.
+
+**Note:** Addon communication trong browser dùng Event Bus (`@namorix/core`), không qua Socket.IO.
+Shell ↔ Addon events (install, start, stop, remove, logs) gọi REST API, không dùng WebSocket.
 
 ### /namorix-terminal-ws (PTY bridge)
 Client → Server: `{ type: 'input' | 'resize'; data: string; cols?: number; rows?: number }`
@@ -239,22 +293,123 @@ Server → Client: `{ type: 'output'; data: string }`
 
 ## External Addon System
 
-### Docker Lifecycle
-- Client sends commands via shell WebSocket: install, start, stop, remove, logs
-- Server uses Docker client via Unix socket (`/var/run/docker.sock`)
-- Addon containers on `namorix_net` bridge network
+### Mô hình tổng quát
+```
+Shell (Namorix Dashboard)
+├── Addon Slot A  ←  addonA/addonEntry.js  ←  Docker container A
+├── Addon Slot B  ←  addonB/addonEntry.js  ←  Docker container B
+└── Addon Slot C  ←  addonC/addonEntry.js  ←  Docker container C
+```
 
-### DockerMonitor & Auto-Discover
-- Polls container changes; detects containers with label `namorix.addon=true`
-- Metadata from labels: `namorix.addon.id`, `namorix.addon.display_name`, `namorix.addon.internal_port`
-- Auto-discovers addons created outside UI
+Mỗi addon:
+- Chạy trong Docker container riêng (backend/service)
+- Export file `addonEntry.js` — được shell load động
+- Shell wrap trong `<div className="addon-slot addon-{addonId}">`
+- Addon tự quản lý state nội bộ (có thể dùng bất kỳ thư viện nào)
+- Giao tiếp với shell qua Event Bus (`@namorix/core`)
 
-### Addon Launch
-- User clicks addon → `window.open` to `http://<host>:<hostPort>/`
-- Addon app runs independently in new browser tab
-- `@namorix/core` in addon: `getSession()`, `createApiClient()`, `connectEvents()`
+### Addon Entry Contract
+```typescript
+// Mỗi addon bắt buộc export default:
+export default {
+  mount(container: HTMLElement, context: AddonContext): void {
+    // Render vào container shell cấp
+    // Đăng ký event listeners
+  },
+  unmount(): void {
+    // Cleanup listeners, timers, subscriptions
+  }
+}
+```
+
+### Shell Load Addon
+```typescript
+const addonModule = await import(/* addonEntry URL */)
+addonModule.default.mount(document.getElementById(`addon-slot-${addonId}`), context)
+// Khi cần unmount:
+addonModule.default.unmount()
+```
+
+### CSS Isolation
+- Convention-based scoping (không dùng Shadow DOM)
+- Addon dùng `@namorix/ui` và `@namorix/styles` là chính
+- CSS riêng của addon phải scope theo `.addon-{addonId}`
+- Addon dev guide chi tiết ở M5
+
+### Addon Modes
+
+Addon có 3 mode hoạt động:
+
+| Mode | Cách mở | Auth | DOM slot? | Token needed? |
+|------|---------|------|-----------|---------------|
+| **1. Widget** | Nhúng trong dashboard | Cookie shell (cùng origin) | ✅ | ❌ |
+| **2. Full app (từ dashboard)** | `window.open` từ shell | `nmx_handshake_token` truyền qua URL | ❌ | ✅ |
+| **3. Full app (direct URL)** | User tự nhập URL / bookmark | Addon tự xử lý (login riêng / redirect) | ❌ | Tuỳ addon |
+
+#### Mode 1 — Widget (DOM slot)
+- Như đã mô tả ở trên: shell load `addonEntry.js`, render vào `<div className="addon-slot addon-{addonId}">`
+- Dùng chung cookie của shell → auth tự động (không cần token)
+
+#### Mode 2 — Full app từ dashboard
+- User click addon → shell gọi `window.open(url)` với `nmx_handshake_token` trong query string
+- Shell tạo `nmx_handshake_token` (one-time), lưu tạm, truyền qua URL cho addon
+- Addon nhận token → gọi `POST /api/addon/session-exchange` → đổi lấy session
+- **Cross-origin** nên không dùng được cookie shell → cần handshake token
+
+#### Mode 3 — Direct URL (bookmark, tự gõ)
+- User vào trực tiếp URL addon, không qua shell → không có token
+- Addon tự quyết định: redirect user về shell để lấy token, hoặc có login page riêng
+- Đây là trách nhiệm của addon developer
 
 ### Addon Auth Flows
-Two distinct auth mechanisms:
-1. **Server-to-server (AddonToken):** Desktop generates AddonSecret on install, injects via Docker env. Addon calls `POST /api/addon/handshake` to exchange secret for long-lived AddonToken.
-2. **Browser-to-addon (nmx_token):** Cross-origin redirect flow — Desktop login → redirect with one-time `nmx_token` → addon exchanges for session via `POST /api/addon/session-exchange`.
+- **Widget mode (DOM slot):** Dùng `@namorix/core` http client — cookie shell có sẵn, tự động auth
+- **Full app mode (window.open):** Dùng `nmx_handshake_token` exchange flow
+- **Server-to-server:** Desktop inject AddonSecret qua Docker env, addon gọi `POST /api/addon/handshake` để lấy AddonToken
+### Docker Lifecycle (M4)
+- NuGet package: `Docker.DotNet.Enhanced` (fork từ `Docker.DotNet`, maintain bởi Testcontainers team)
+- Kết nối Docker qua Unix socket (`/var/run/docker.sock`)
+- REST API endpoints: install (pull & create), start, stop, remove container
+- DockerMonitor: poll container changes, detect container với label `namorix.addon=true`
+- Labels: `namorix.addon.id`, `namorix.addon.display_name`, `namorix.addon.internal_port`
+
+---
+
+## Backend Communication Architecture
+
+### Tổng quan
+```
+Dashboard Widget / Addon Frontend (browser)
+    ↕ SignalR (WebSocket + fallback)
+Namorix Backend (ASP.NET Core 8)
+    ↕ gRPC Bidirectional Streaming
+Addon Backend (Docker container)
+```
+**Trạng thái hiện tại:** Backend thuần REST (5 controllers). gRPC, SignalR chưa implement.
+
+### Namorix Backend ↔ Addon Backend: gRPC (M4)
+- **Cần thêm:** package `Grpc.AspNetCore` vào server, define `.proto` file
+- Namorix là **gRPC client** (chủ động connect vào từng addon), addon là **gRPC server**
+- Proto: `rpc Session(stream ShellCommand) returns (stream AddonEvent)`
+  - `ShellCommand`: StartCommand, PauseCommand, CancelCommand, ConfigCommand
+  - `AddonEvent`: ProgressEvent, ResultEvent, LogEvent, ErrorEvent
+- Addon backend có thể viết bằng bất kỳ ngôn ngữ nào (Go, Python, Node.js...)
+
+### Dashboard / Addon Frontend ↔ Namorix Backend: SignalR (M4)
+- SignalR có sẵn trong ASP.NET Core 8 — **không cần thêm package backend**
+- **Cần thêm npm package:** `@microsoft/signalr` cho frontend
+- Tạo Hub class, map với `app.MapHub<AddonHub>("/hubs/addon")`
+- Dashboard Widget gọi `HubConnection` trong `mount()`, `stop()` trong `unmount()`
+- Vì cả 2 đầu đều C# + JS, SignalR tận dụng WebSocket + fallback tự động
+
+### Addon Frontend ↔ Addon Backend: SignalR
+- Addon frontend dùng SignalR kết nối thẳng với addon backend của nó — không qua Namorix
+- Addon backend C# tự host SignalR Hub, lý do giống Namorix (cùng stack, không cần package)
+
+### Relay: gRPC → SignalR
+Namorix Backend relay event từ gRPC stream của addon → forward qua SignalR Hub tới Dashboard. Có thể filter/transform trước khi relay.
+
+| Đoạn | Protocol | Trạng thái |
+|------|----------|------------|
+| Namorix ↔ Addon Backend | gRPC | Chưa (M4 — cần `Grpc.AspNetCore`) |
+| Dashboard ↔ Namorix | SignalR | Chưa (M4 — có sẵn ASP.NET, cần `@microsoft/signalr`) |
+| Addon Frontend ↔ Addon Backend | SignalR | Addon tự làm, cùng stack C# |

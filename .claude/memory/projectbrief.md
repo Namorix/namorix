@@ -2,7 +2,7 @@
 
 ## What This Project Is
 
-**Namorix** is a browser-based desktop shell, self-hosted. Users open the server URL and see a desktop interface: taskbar, launcher, window manager. System apps (File manager, Terminal, Settings, Log viewer) run in internal shell windows. External addons (apps in Docker containers) open in a **new tab**.
+**Namorix** is a browser-based desktop shell, self-hosted. Users open the server URL and see a desktop interface: taskbar, launcher, window manager. System apps (File manager, Terminal, Settings, Log viewer) run in internal shell windows. External addons (apps in Docker containers) have 3 modes: widget DOM slot, full app via window.open from dashboard, or direct URL.
 
 Desktop acts as the central orchestrator: user authentication, addon container lifecycle coordination, and event bus for the entire system.
 
@@ -18,7 +18,7 @@ Desktop acts as the central orchestrator: user authentication, addon container l
 1. **Unified desktop experience** — Browser-based shell with window management, taskbar, launcher
 2. **Addon ecosystem** — Docker-based addons that run locally but open in browser tabs
 3. **Centralized auth** — Desktop issues/trusts sessions; addons verify but don't issue tokens
-4. **Realtime events** — Socket.IO for shell notifications and addon status updates
+4. **Realtime events** — SignalR for backend-server events (addon status, notifications)
 
 ## Intended Outcome
 
