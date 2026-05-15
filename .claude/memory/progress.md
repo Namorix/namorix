@@ -87,11 +87,11 @@
 - [ ] Vitest tests for auth.service (no test files exist yet)
 
 ### M3 — System Apps
-**Status:** Not Started
+**Status:** Desktop Shell UI — In Progress 🔜
 
-- [ ] Desktop shell UI (taskbar, launcher, desktop area)
-- [ ] Zustand stores (auth, windows, addons, desktop)
-- [ ] WindowManager component
+- [x] Desktop shell UI (taskbar, launcher, desktop area)
+- [x] Zustand stores (windows, launcher)
+- [x] WindowManager + WindowFrame (drag, resize, minimize, maximize)
 - [ ] File manager app
 - [ ] Terminal app (xterm.js + PTY bridge)
 - [ ] Settings app (register toggle)
@@ -107,7 +107,6 @@
 
 - Vitest tests for auth.service listed in M2 but no test files exist
 - i18n `vi.json` locale contains keys but translations are English
-- Zustand stores documented but not yet created
 - `addonInstalls` table documented but not yet in schema (only 3 of 4 tables)
 - `frontend/src/components/index.ts` only exports AuthPage
 
@@ -115,7 +114,7 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.7.1 | M2 (Blocked page integration, guard refinements) |
+| frontend | 0.8.0 | M3 (Desktop shell UI: taskbar, launcher, window manager, stores) |
 | @namorix/core | 0.8.1 | M2 (DefaultPaths extracted, guards refactor) |
 | @namorix/styles | 0.2.0 | M2 |
 | @namorix/ui | 0.3.0 | M2 |
@@ -138,6 +137,11 @@
 | backend | Bug fixes, C# config tweaks | New endpoint, new service, auth feature |
 
 ## Version History
+
+### 2026-05-15 (Desktop shell UI: taskbar, launcher, window manager + stores + types)
+| Package | Version | Changes |
+|---------|---------|---------|
+| frontend | 0.8.0 | New desktop shell UI: Taskbar (clock, launcher toggle, window buttons), DesktopArea (icon shortcuts), WindowFrame (drag, resize, minimize, maximize, close), WindowManager, Launcher (start menu). New stores: window.store.ts (Zustand — open/close/focus/minimize/maximize/move/resize), launcher.store.ts. New types: WindowId, WindowState. Desktop.tsx — placeholder → full shell layout. App tokens: --nmx-taskbar-height, --nmx-window-frame-edge-size. Deps: added zustand |
 
 ### 2026-05-15 (Bug fixes: refresh token, IPv6, CSRF; multi-project migration)
 | Package | Version | Changes |

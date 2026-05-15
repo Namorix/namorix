@@ -2,9 +2,9 @@
 
 ## Current Work Focus
 
-M2 — Full Auth Backend → **Complete** ✅ + **Harden** ✅ + **ESLint** ✅ + **Phase A** ✅ + **Phase B** ✅ + **C# Migration** ✅ (Phase 1-4 complete)
+M3 — Desktop Shell UI → **In Progress** 🔜
 
-- All auth endpoints implemented and connected
+- Desktop shell: Taskbar, DesktopArea, WindowManager, Launcher ✅
 - Login page fully connected with client-side validation + error handling
 - Register page fully connected
 - Decorator-based routing system in backend-core
@@ -21,6 +21,9 @@ M2 — Full Auth Backend → **Complete** ✅ + **Harden** ✅ + **ESLint** ✅ 
 - Moving to M3 (System Apps)
 
 ## Recent Changes (2026-05-15)
+
+### Desktop shell UI (taskbar, launcher, window manager + stores)
+- **frontend (0.8.0)**: New shell components — Taskbar (clock, launcher toggle, window buttons), DesktopArea (icon shortcuts), WindowFrame (drag/resize/minimize/maximize/close), WindowManager, Launcher (start menu with system apps list). New Zustand stores — window.store.ts (windows lifecycle, z-index stacking, position/size management), launcher.store.ts (start menu toggle). New types — WindowId, WindowState. Desktop.tsx — từ placeholder `<div>Test</div>` sang full shell layout. tokens.scss — thêm --nmx-taskbar-height, --nmx-window-frame-edge-size. Deps: thêm zustand 5.0.13.
 
 ### Bug fixes + Multi-project migration
 - **backend (0.17.1)**: Bug fixes: Refresh token flow (hash Base64 lookup, không parse JWT nữa), NetworkHelper IPv6 crash, CsrfMiddleware first-request 403, PermissionService dead code, RequireAdminAttribute int.TryParse, Logout dùng RevokeTokenByHash. Refactor: multi-project migration từ flat `backend/` sang `backend/src/{Namorix.Core, Namorix.Adapters, Namorix.Server, Namorix.Workers}`.
@@ -310,9 +313,8 @@ Cả 3 attribute filter (`RequireAuthAttribute`, `RequireAdminAttribute`, `Requi
 
 ## Next Steps
 
-1. M3 — Desktop shell UI (taskbar, launcher, window manager)
-2. M3 — Zustand stores (auth, windows, addons, desktop)
-3. M3 — WindowState type + WindowManager component
-4. M3 — System apps: File manager, Terminal (xterm.js + PTY), Settings (register toggle), Log viewer
-5. Write Vitest tests for auth.service
-6. Add Vietnamese translations (vi.json is empty)
+1. M3 — System app content (File Manager, Terminal, Settings, Log Viewer)
+2. M3 — Zustand stores (auth, addons, desktop)
+3. M3 — SystemAppRouter (mount component by app type)
+4. Write Vitest tests for auth.service
+5. Add Vietnamese translations (vi.json is empty)

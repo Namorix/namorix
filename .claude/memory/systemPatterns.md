@@ -344,7 +344,7 @@ Addon có 3 mode hoạt động:
 |------|---------|------|-----------|---------------|
 | **1. Widget** | Nhúng trong dashboard | Cookie shell (cùng origin) | ✅ | ❌ |
 | **2. Full app (từ dashboard)** | `window.open` từ shell | `nmx_handshake_token` truyền qua URL | ❌ | ✅ |
-| **3. Full app (direct URL)** | User tự nhập URL / bookmark | Addon tự xử lý (login riêng / redirect) | ❌ | Tuỳ addon |
+| **3. Full app (direct URL)** | User tự nhập URL / bookmark → addon redirect về shell xin token | `nmx_handshake_token` (cùng flow mode 2) | ❌ | ✅ |
 
 #### Mode 1 — Widget (DOM slot)
 - Như đã mô tả ở trên: shell load `addonEntry.js`, render vào `<div className="addon-slot addon-{addonId}">`
@@ -357,9 +357,11 @@ Addon có 3 mode hoạt động:
 - **Cross-origin** nên không dùng được cookie shell → cần handshake token
 
 #### Mode 3 — Direct URL (bookmark, tự gõ)
-- User vào trực tiếp URL addon, không qua shell → không có token
-- Addon tự quyết định: redirect user về shell để lấy token, hoặc có login page riêng
-- Đây là trách nhiệm của addon developer
+- User vào trực tiếp URL addon, không qua shell → addon frontend không có token
+- Addon **redirect user về Namorix shell** kèm `returnUrl` (ví dụ: `https://namorix/auth?returnUrl=<addon-url>`)
+- Namorix kiểm tra shell session, nếu valid → tạo `nmx_handshake_token` rồi redirect về addon kèm token
+- Addon nhận token → gọi `POST /api/addon/session-exchange` → đổi lấy session
+- **Cùng flow `nmx_handshake_token` với mode 2**, chỉ khác ai khởi tạo: mode 2 do shell chủ động `window.open`, mode 3 do addon redirect về shell xin token
 
 ### Addon Auth Flows
 - **Widget mode (DOM slot):** Dùng `@namorix/core` http client — cookie shell có sẵn, tự động auth

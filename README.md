@@ -144,7 +144,7 @@ Addon có 3 mode tích hợp:
 |------|----------------|------|
 | **Widget** | Addon frontend render trong DOM slot trên Dashboard, mount/unmount qua `addonEntry.js` contract (`mount(container, context)` / `unmount()`) | HttpOnly cookie (same-origin) |
 | **Full App** | Mở tab mới qua `window.open` từ Dashboard, addon dùng `nmx_handshake_token` để exchange lấy session | One-time token exchange |
-| **Direct URL** | User truy cập trực tiếp URL addon, addon tự xử lý auth riêng | Addon tự quản lý |
+| **Direct URL** | User nhập URL addon → addon redirect về shell xin `nmx_handshake_token` → shell redirect lại addon kèm token → addon exchange lấy session | One-time token exchange (cùng flow mode 2) |
 
 ### Communication
 
