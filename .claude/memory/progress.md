@@ -119,7 +119,7 @@
 | @namorix/core | 0.8.1 | M2 (DefaultPaths extracted, guards refactor) |
 | @namorix/styles | 0.2.0 | M2 |
 | @namorix/ui | 0.3.0 | M2 |
-| backend | 0.17.0 | M2 (Permission/RBAC system, auth middleware, 404 handler, CORS dynamic config) |
+| backend | 0.17.1 | M2 (Bug fixes: refresh token flow, IPv6 crash, CSRF first-request; multi-project refactor) |
 
 ## Version Rules
 
@@ -139,12 +139,17 @@
 
 ## Version History
 
+### 2026-05-15 (Bug fixes: refresh token, IPv6, CSRF; multi-project migration)
+| Package | Version | Changes |
+|---------|---------|---------|
+| backend | 0.17.1 | Bug fixes: Refresh token flow — hash Base64 lookup thay vì parse JWT; NetworkHelper — xử lý IPv6 loopback + pure IPv6; CsrfMiddleware — dùng biến `token` local cho first-request 403; Program.cs CORS — fallback về AppConfig.AllowedOrigins; PermissionService — xoá dead code; RequireAdminAttribute — int.TryParse thay vì ToString(); Logout — RevokeTokenByHash thay vì ExtractJtiFromToken. Refactor: multi-project migration (Namorix.Core, Namorix.Adapters, Namorix.Server, Namorix.Workers). Cleanup: ExtractJtiFromToken, using SQLitePCL dư |
+| @namorix/core | 0.8.1 | guards.ts: extracted DefaultPaths as reusable const object |
+| frontend | 0.7.1 | App.tsx: Blocked page health check on mount; guard wiring refinements |
+
 ### 2026-05-15 (Permission/RBAC system, auth middleware, attribute filters, CORS dynamic config)
 | Package | Version | Changes |
 |---------|---------|---------|
 | backend | 0.17.0 | New Permission/RBAC system: PermissionController, UserPermissionController, PermissionService (cached), Permission/UserPermission models; New middleware: AuthMiddleware (JWT decode → HttpContext.User), NotFoundMiddleware (404 → ApiResponse JSON), RequireAuthAttribute, RequireAdminAttribute, RequirePermissionAttribute; New constants: HttpHeaders, Time, User (Admin=1/User=0); New Responses/ForbiddenObjectResult; SettingsController dynamic CORS origins (IMemoryCache); SettingsService generic GetListAsync/SetListAsync; AuthController session user existence check + cookie cleanup on invalid user; PermissionService with assignment/revocation + cache |
-| @namorix/core | 0.8.1 | guards.ts: extracted DefaultPaths as reusable const object |
-| frontend | 0.7.1 | App.tsx: Blocked page health check on mount; guard wiring refinements |
 
 ### 2026-05-14 (Trusted proxy detection, health endpoint, Blocked page, error code refactoring)
 | Package | Version | Changes |

@@ -73,19 +73,13 @@ namorix/
 │       │   └── Desktop.tsx
 │       └── i18n/
 └── backend/                   # ASP.NET Core 8 API (port 3000)
-    ├── Controllers/           # API endpoints (Auth, Settings, Health, Permissions)
-    ├── Services/              # AuthService, SettingsService, TokenCleanupService, PermissionService
-    ├── Models/                # EF Core entities (User, RefreshToken, Setting, Permission, UserPermission)
-    ├── Middleware/            # CSRF, Exception, SecurityHeaders, TrustedProxy, Auth, NotFound, Require*
-    ├── Config/                # AppConfig, JwtConfig (IOptions<T>)
-    ├── Validation/            # IValidationSchema, ValidateAttribute, schemas
-    ├── Helpers/               # NetworkHelper
-    ├── Constants/             # AuthConstraints, Cookie names, error codes, UserRole, HttpHeaders
-    ├── Migrations/            # EF Core migrations
-    ├── Responses/             # ApiResponse<T>, ForbiddenObjectResult
-    ├── Extensions/            # ApplicationBuilderExtensions
-    ├── Program.cs             # Entry point + middleware pipeline
-    └── appsettings.json       # Configuration
+    ├── Makefile               # Build/EF commands
+    ├── Namorix.sln            # Solution file
+    └── src/
+        ├── Namorix.Core/      # Config, Constants, Models, Exceptions, Responses, Validation
+        ├── Namorix.Adapters/  # Persistence (AppDbContext, migrations), Services (Auth, Permission, Settings)
+        ├── Namorix.Server/    # Controllers, Middleware, Extensions, Helpers, Program.cs
+        └── Namorix.Workers/   # TokenCleanupWorker (background service)
 ```
 
 ## Packages

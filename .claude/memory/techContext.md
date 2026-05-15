@@ -147,7 +147,7 @@ frontend/packages/
 | `Value` | text | not null |
 
 ### Migration Strategy
-- EF Core migrations in `backend/Migrations/`
+- EF Core migrations in `backend/src/Namorix.Adapters/Migrations/`
 - Run: `dotnet ef database update`
 - Or auto-apply at startup: `DbContext.Database.Migrate()`
 
@@ -201,7 +201,10 @@ LABEL namorix.addon.internal_port=4000
 | `frontend/packages/styles/src/` | SCSS tokens and reset |
 | `frontend/packages/ui/src/` | React primitive components |
 | `frontend/src/` | React shell UI |
-| `backend/` | ASP.NET Core 8 API (Controllers, Services, Middleware, Models) |
-| `backend/Program.cs` | Entry point + middleware pipeline |
-| `backend/Middleware/CsrfMiddleware.cs` | CSRF double-submit middleware |
-| `backend/Middleware/TrustedProxyMiddleware.cs` | Trusted proxy validation |
+| `backend/src/Namorix.Server/` | ASP.NET Core 8 API (Controllers, Middleware, Program.cs) |
+| `backend/src/Namorix.Core/` | Shared contracts (Config, Constants, Models, Exceptions, Responses, Validation) |
+| `backend/src/Namorix.Adapters/` | Persistence + Services (AppDbContext, AuthService, PermissionService, SettingsService) |
+| `backend/src/Namorix.Workers/` | Background services (TokenCleanupWorker) |
+| `backend/src/Namorix.Server/Program.cs` | Entry point + middleware pipeline |
+| `backend/src/Namorix.Server/Middleware/CsrfMiddleware.cs` | CSRF double-submit middleware |
+| `backend/src/Namorix.Server/Middleware/TrustedProxyMiddleware.cs` | Trusted proxy validation |

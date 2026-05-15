@@ -20,6 +20,11 @@ M2 — Full Auth Backend → **Complete** ✅ + **Harden** ✅ + **ESLint** ✅ 
 - **C# Migration Phase 4**: AuthController (7 endpoints), typed ApiResponse<T>, SettingsService, CleanIp helper
 - Moving to M3 (System Apps)
 
+## Recent Changes (2026-05-15)
+
+### Bug fixes + Multi-project migration
+- **backend (0.17.1)**: Bug fixes: Refresh token flow (hash Base64 lookup, không parse JWT nữa), NetworkHelper IPv6 crash, CsrfMiddleware first-request 403, PermissionService dead code, RequireAdminAttribute int.TryParse, Logout dùng RevokeTokenByHash. Refactor: multi-project migration từ flat `backend/` sang `backend/src/{Namorix.Core, Namorix.Adapters, Namorix.Server, Namorix.Workers}`.
+
 ## Recent Changes (2026-05-14)
 
 ### Trusted proxy detection, health endpoint, Blocked page, error code refactoring

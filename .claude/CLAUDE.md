@@ -406,14 +406,13 @@ frontend/packages/
 │           └── NmxToggle/
 
 backend/
-├── Controllers/          # ASP.NET Core controllers
-├── Services/             # AuthService, SettingsService, etc.
-├── Models/               # Entity models, DTOs
-├── Data/                 # NmxDbContext, migrations
-├── Middleware/           # applyMiddleware()
-├── Config/               # env loading, config classes
-├── Program.cs
-└── appsettings.json
+├── Makefile
+├── Namorix.sln
+└── src/
+    ├── Namorix.Core/        # Config, Constants, Models, Exceptions, Responses, Validation
+    ├── Namorix.Adapters/    # Persistence (AppDbContext, migrations), Services (Auth, Permission, Settings)
+    ├── Namorix.Server/      # Controllers, Middleware, Extensions, Helpers, Program.cs
+    └── Namorix.Workers/     # TokenCleanupWorker (background service)
 ```
 
 ---
