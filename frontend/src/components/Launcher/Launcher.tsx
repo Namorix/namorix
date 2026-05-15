@@ -3,13 +3,7 @@ import { useWindowsStore } from "../../stores/window.store"
 import { useLauncherStore } from "../../stores/launcher.store"
 import { useShallow } from "zustand/react/shallow"
 import "./Launcher.scss"
-
-const SYSTEM_APPS = [
-  { id: "file-manager", label: "File Manager", icon: "📁" },
-  { id: "terminal", label: "Terminal", icon: "💻" },
-  { id: "settings", label: "Settings", icon: "⚙️" },
-  { id: "log-viewer", label: "Log Viewer", icon: "📋" },
-]
+import { listAddons } from "../../addons"
 
 export const Launcher: React.FC = () => {
   const openWindow = useWindowsStore((state) => state.openWindow)
@@ -29,15 +23,19 @@ export const Launcher: React.FC = () => {
   return (
     <div className="nmx-launcher-overlay" onMouseDown={close}>
       <div className="nmx-launcher" onMouseDown={(e) => e.stopPropagation()}>
-        {SYSTEM_APPS.map((app) => (
+        {listAddons().map((addon) => (
           <button
-            key={app.id}
+            key={addon.manifest.id}
             className="nmx-launcher__item"
             type="button"
-            onMouseDown={() => handlerLauncher(app.id, app.label)}
+            onMouseDown={() =>
+              handlerLauncher(addon.manifest.id, addon.manifest.displayName)
+            }
           >
-            <span className="nmx-launcher__icon">{app.icon}</span>
-            <span className="nmx-launcher__label">{app.label}</span>
+            <span className="nmx-launcher__icon">{addon.manifest.icon}</span>
+            <span className="nmx-launcher__label">
+              {addon.manifest.displayName}
+            </span>
           </button>
         ))}
       </div>

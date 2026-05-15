@@ -1,8 +1,9 @@
 import "./WindowFrame.scss"
 import type { WindowState } from "../../types"
-import React, { useCallback, useRef } from "react"
+import React, { useCallback, useEffect, useRef } from "react"
 import { useWindowsStore } from "../../stores/window.store"
-import { cx } from "@namorix/core"
+import { type AddonContext, cx } from "@namorix/core"
+import { resolveAddon } from "../../addons"
 
 interface WindowFrameProps {
   win: WindowState
@@ -136,6 +137,30 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ win }) => {
     },
     [win.id, moveWindow, resizeWindow],
   )
+
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const addon = resolveAddon(win.app)
+    if (!addon) {
+      return
+    }
+
+    const context: AddonContext = {
+      addonId: win.app,
+      locale: "en",
+      theme: "dark",
+    }
+
+    if (containerRef.current) {
+      addon.entry.mount(containerRef.current, context)
+    }
+
+    return () => {
+      addon.entry.unmount()
+    }
+  }, [win.app])
+
   return (
     <div
       className={cx("nmx-window-frame", {
@@ -204,6 +229,7 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ win }) => {
       </div>
 
       <div className="nmx-window-frame__content">
+        <div ref={containerRef} className="nmx-window-frame__mount"></div>
         <div
           className="nmx-window-frame__resize-handle nmx-window-frame__resize-handle--n"
           onMouseDown={onResizeStart("n")}

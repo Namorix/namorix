@@ -6,6 +6,7 @@ import { BrowserRouter } from "react-router-dom"
 import { configureCore, generateFingerprint } from "@namorix/core"
 import { App } from "./App"
 import "./i18n"
+import "./addons"
 
 configureCore({
   apiBaseUrl:

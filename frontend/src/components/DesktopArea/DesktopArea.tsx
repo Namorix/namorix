@@ -1,28 +1,28 @@
 import React from "react"
 import "./DesktopArea.scss"
 import { useWindowsStore } from "../../stores/window.store"
-
-const DESKTOP_APPS = [
-  { id: "file-manager", label: "File Manager", icon: "📁" },
-  { id: "terminal", label: "Terminal", icon: "💻" },
-  { id: "settings", label: "Settings", icon: "⚙️" },
-  { id: "log-viewer", label: "Log Viewer", icon: "📋" },
-]
+import { listAddons } from "../../addons"
 
 export const DesktopArea: React.FC = () => {
   const openWindow = useWindowsStore((state) => state.openWindow)
   return (
     <div className="nmx-desktop-area">
       <div className="nmx-desktop-area__grid">
-        {DESKTOP_APPS.map((app) => (
+        {listAddons().map((addon) => (
           <button
-            key={app.id}
+            key={addon.manifest.id}
             className="nmx-desktop-area__icon"
             type="button"
-            onDoubleClick={() => openWindow(app.id, app.label)}
+            onDoubleClick={() =>
+              openWindow(addon.manifest.id, addon.manifest.displayName)
+            }
           >
-            <span className="nmx-desktop-area__icon-img">{app.icon}</span>
-            <span className="nmx-desktop-area__icon-label">{app.label}</span>
+            <span className="nmx-desktop-area__icon-img">
+              {addon.manifest.icon}
+            </span>
+            <span className="nmx-desktop-area__icon-label">
+              {addon.manifest.displayName}
+            </span>
           </button>
         ))}
       </div>

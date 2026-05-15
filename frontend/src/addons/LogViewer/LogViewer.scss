@@ -1,0 +1,73 @@
+@use "@namorix/styles" as *;
+
+.nmx-log-viewer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  font-family: var(--nmx-font-mono);
+  font-size: var(--nmx-font-size-sm);
+
+  &__toolbar {
+    display: flex;
+    gap: var(--nmx-spacing-sm);
+    padding: var(--nmx-spacing-xs) var(--nmx-spacing-sm);
+    background: var(--nmx-color-surface-low);
+    border-bottom: 1px solid var(--nmx-color-surface-high);
+  }
+
+  &__source-filter {
+    padding: var(--nmx-spacing-xs) var(--nmx-spacing-sm);
+    background: var(--nmx-color-surface);
+    color: var(--nmx-color-on-surface);
+    border: 1px solid var(--nmx-color-surface-high);
+    border-radius: var(--nmx-radius-sm);
+  }
+
+  &__refresh {
+    padding: var(--nmx-spacing-xs) var(--nmx-spacing-md);
+    background: var(--nmx-color-primary);
+    color: var(--nmx-color-white);
+    border: none;
+    border-radius: var(--nmx-radius-sm);
+    cursor: pointer;
+  }
+
+  &__list {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--nmx-spacing-xs) 0;
+    @include scrollbar-none;
+  }
+
+  &__entry {
+    display: grid;
+    grid-template-columns: auto 48px 1fr;
+    gap: var(--nmx-spacing-sm);
+    padding: 2px var(--nmx-spacing-sm);
+    white-space: nowrap;
+
+    &:hover {
+      background: var(--nmx-color-surface-low);
+    }
+
+    &--error {
+      color: var(--nmx-color-danger);
+    }
+
+    &--warn {
+      color: var(--nmx-color-warning);
+    }
+
+    &--info {
+      color: var(--nmx-color-on-surface);
+    }
+
+    &--debug {
+      color: var(--nmx-color-surface-high);
+    }
+  }
+
+  &__time { color: var(--nmx-color-on-surface); }
+  &__level { font-weight: bold; }
+  &__source { color: var(--nmx-color-primary); }
+}
