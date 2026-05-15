@@ -2,13 +2,14 @@
 
 ## Current Work Focus
 
-M3 — Desktop Shell UI ✅ + Addon System 🔜
+M3 — Desktop Shell UI ✅ + Addon System (contract, registry, Log Viewer) ✅
 
 - Desktop shell: Taskbar, DesktopArea, WindowManager, Launcher ✅
 - Addon contract dùng chung cho system + external: AddonEntry, NmxAddonManifest, AddonContext
 - Internal addon (built-in) và external addon (Docker) — cùng contract, khác cách load + permission
 - Frontend: `addons/registry.ts` (registerAddon, resolveAddon, listAddons), `*.addon.ts`, bootstrap qua `addons/index.ts`
-- Backend: AddonManifest/AddonIds → Namorix.Core, AddonRegistry/AddonHandshake → Namorix.Adapters, AddonController → Namorix.Server
+- LogViewer addon: LogViewer.tsx + LogViewer.scss + LogViewer.addon.tsx (useEffect+registry mount)
+- Backend addon metadata deferred — chỉ cần khi M4 external addon
 - WindowFrame mount addon vào content area qua ref + AddonEntry lifecycle
 
 ## Recent Changes (2026-05-15)
@@ -18,6 +19,12 @@ M3 — Desktop Shell UI ✅ + Addon System 🔜
 - **Frontend**: `addons/` directory với `registry.ts` (Map-based: registerAddon, resolveAddon, listAddons), mỗi addon có `*.addon.ts` export manifest + default entry, bootstrap qua `addons/index.ts` import top-level.
 - **Backend**: Không tách project mới. AddonManifest + AddonIds → Namorix.Core (Models/Constants), AddonRegistry + AddonHandshake → Namorix.Adapters (Services), AddonController → Namorix.Server (REST surface).
 - **WindowFrame**: Dùng ref mount addon vào content area qua `entry.mount(el, context)` / `entry.unmount()`. Cả internal và external dùng chung cơ chế này.
+
+### Addon contract + registry + LogViewer implementation
+- **@namorix/core (0.9.0)**: New addon module — addon/types.ts (NmxAddonManifest, AddonContext, AddonEntry, AddonModule), barrel export
+- **frontend (0.9.0)**: registry.ts (registerAddon, resolveAddon, listAddons), WindowFrame addon mounting (useEffect + resolveAddon), Launcher + DesktopArea dùng listAddons() thay hardcoded array
+- **LogViewer addon**: LogViewer.tsx + LogViewer.scss + LogViewer.addon.tsx (mount via createRoot), registerAddon, bootstrap trong addons/index.ts
+- **Backend addon metadata deferred**: Chỉ cần khi M4 external addon
 
 ### Desktop shell UI (taskbar, launcher, window manager + stores)
 - **frontend (0.8.0)**: New shell components — Taskbar (clock, launcher toggle, window buttons), DesktopArea (icon shortcuts), WindowFrame (drag/resize/minimize/maximize/close), WindowManager, Launcher (start menu with system apps list). New Zustand stores — window.store.ts (windows lifecycle, z-index stacking, position/size management), launcher.store.ts (start menu toggle). New types — WindowId, WindowState. Desktop.tsx — từ placeholder `<div>Test</div>` sang full shell layout. tokens.scss — thêm --nmx-taskbar-height, --nmx-window-frame-edge-size. Deps: thêm zustand 5.0.13.
@@ -310,10 +317,10 @@ Cả 3 attribute filter (`RequireAuthAttribute`, `RequireAdminAttribute`, `Requi
 
 ## Next Steps
 
-1. M3 — Define addon contract trong `@namorix/core/src/addon/` (AddonEntry, NmxAddonManifest, AddonContext)
-2. M3 — Frontend addon registry (registry.ts: registerAddon, resolveAddon, listAddons)
-3. M3 — Internal system addon: File Manager (first addon, verify full flow)
-4. M3 — Backend addon metadata (AddonManifest model, AddonController)
-5. M3 — Zustand stores (auth, addons, desktop)
+1. M3 — Internal addon: File Manager
+2. M3 — Internal addon: Terminal (xterm.js)
+3. M3 — Internal addon: Settings
+4. M3 — Zustand stores (auth, addons, desktop)
+5. M4 — SignalR + backend addon metadata
 6. Write Vitest tests for auth.service
 7. Add Vietnamese translations (vi.json is empty)

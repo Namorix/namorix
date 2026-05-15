@@ -92,12 +92,14 @@
 - [x] Desktop shell UI (taskbar, launcher, desktop area)
 - [x] Zustand stores (windows, launcher)
 - [x] WindowManager + WindowFrame (drag, resize, minimize, maximize)
-- [ ] Addon contract trong `@namorix/core` (AddonEntry, NmxAddonManifest, AddonContext)
-- [ ] Frontend addon registry (registerAddon, resolveAddon, listAddons)
-- [ ] Internal addon: File Manager (first system addon, verify full flow)
+- [x] Addon contract trong `@namorix/core` (AddonEntry, NmxAddonManifest, AddonContext)
+- [x] Frontend addon registry (registerAddon, resolveAddon, listAddons)
+- [x] WindowFrame addon mounting (useEffect + registry)
+- [x] Launcher + DesktopArea dùng listAddons() từ registry
+- [x] Internal addon: Log Viewer (LogViewer component + mount/unmount lifecycle)
+- [ ] Internal addon: File Manager
 - [ ] Internal addon: Terminal
 - [ ] Internal addon: Settings
-- [ ] Internal addon: Log Viewer
 
 ### M4 — External Addon System (Docker)
 **Status:** Not Started
@@ -120,8 +122,8 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.8.0 | M3 (Desktop shell UI: taskbar, launcher, window manager, stores) |
-| @namorix/core | 0.8.1 | M2 (DefaultPaths extracted, guards refactor) |
+| frontend | 0.9.0 | M3 (Addon system: contract, registry, LogViewer addon) |
+| @namorix/core | 0.9.0 | M3 (New addon module: AddonEntry, NmxAddonManifest, AddonContext) |
 | @namorix/styles | 0.2.0 | M2 |
 | @namorix/ui | 0.3.0 | M2 |
 | backend | 0.17.1 | M2 (Bug fixes: refresh token flow, IPv6 crash, CSRF first-request; multi-project refactor) |
@@ -143,6 +145,12 @@
 | backend | Bug fixes, C# config tweaks | New endpoint, new service, auth feature |
 
 ## Version History
+
+### 2026-05-15 (Addon system: contract, registry, LogViewer addon)
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.9.0 | New addon module: addon/types.ts (NmxAddonManifest, AddonContext, AddonEntry, AddonModule), barrel export |
+| frontend | 0.9.0 | New addon system: registry.ts (registerAddon, resolveAddon, listAddons), WindowFrame addon mounting via useEffect + resolveAddon, Launcher + DesktopArea dùng listAddons() thay hardcoded array. New LogViewer addon (LogViewer.tsx + LogViewer.scss + LogViewer.addon.tsx) |
 
 ### 2026-05-15 (Desktop shell UI: taskbar, launcher, window manager + stores + types)
 | Package | Version | Changes |

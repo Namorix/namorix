@@ -102,7 +102,7 @@ namorix/
 
 | Package | Purpose | Importable By |
 |---------|---------|---------------|
-| `@namorix/core` | Types, auth guards, http client, `ApiError`, i18n, validation, constants | frontend, @namorix/ui, external addons |
+| `@namorix/core` | Types, auth guards, http client, `ApiError`, i18n, validation, constants, addon | frontend, @namorix/ui, external addons |
 | `@namorix/styles` | SCSS tokens, reset, fonts | frontend, @namorix/ui, external addons |
 | `@namorix/ui` | NmxButton, NmxForm, NmxInlineAlert, NmxToggle, etc. | frontend |
 | `backend` | ASP.NET Core 8 API server | - |
@@ -155,7 +155,7 @@ public class AuthController(AuthService authService) : ControllerBase
 
 System addons (File Manager, Terminal, Settings, Log Viewer) sử dụng chung addon contract với external addons:
 - **AddonEntry**: `mount(container, context)` / `unmount()` lifecycle
-- **NmxAddonManifest**: id, displayName, version, icon
+- **NmxAddonManifest**: id, displayName, description?, icon?
 - **AddonContext**: addonId, locale, theme
 
 Internal addons import tĩnh, bundle sẵn trong shell, full permission.

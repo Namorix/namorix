@@ -1,6 +1,6 @@
 {
   "name": "@namorix/core",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "license": "GPL-3.0-only",
   "type": "module",
   "main": "./src/index.ts",
@@ -17,6 +17,10 @@
     "./auth": {
       "types": "./src/auth/index.ts",
       "import": "./src/auth/index.ts"
+    },
+    "./addon": {
+      "types": "./src/addon/index.ts",
+      "import": "./src/addon/index.ts"
     },
     "./utils": {
       "types": "./src/utils/index.ts",
