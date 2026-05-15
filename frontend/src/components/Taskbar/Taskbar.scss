@@ -1,0 +1,71 @@
+@use "@namorix/styles" as *;
+
+.nmx-taskbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--nmx-taskbar-height);
+  display: flex;
+  align-items: center;
+  background: var(--nmx-color-surface-low);
+  z-index: 9999;
+
+  @include backdrop-filter(blur(8px));
+  @include no-user-select;
+
+  &__start {
+    padding: 0 var(--nmx-spacing-sm);
+  }
+
+  &__start-btn {
+    background: none;
+    border: 1px solid transparent;
+    color: var(--nmx-color-on-surface);
+    padding: var(--nmx-spacing-xs) var(--nmx-spacing-sm);
+    cursor: pointer;
+    font-size: var(--nmx-font-size-sm);
+
+    &:hover {
+      background: var(--nmx-color-surface-high);
+    }
+  }
+
+  &__apps {
+    flex: 1;
+    display: flex;
+    gap: 2px;
+    padding: 0 var(--nmx-spacing-sm);
+    overflow-x: auto;
+
+    @include scrollbar-none;
+  }
+
+  &__app-btn {
+    background: none;
+    border: 1px solid transparent;
+    color: var(--nmx-color-on-surface);
+    padding: var(--nmx-spacing-xs) var(--nmx-spacing-md);
+    cursor: pointer;
+    font-size: var(--nmx-font-size-xs);
+    white-space: nowrap;
+
+    &:hover {
+      background: var(--nmx-color-surface-high);
+    }
+
+    &--active {
+      background: var(--nmx-color-surface-mid);
+      border-color: var(--nmx-color-primary);
+    }
+  }
+
+  &__tray {
+    padding: 0 var(--nmx-spacing-sm);
+  }
+
+  &__clock {
+    color: var(--nmx-color-on-surface);
+    font-size: var(--nmx-font-size-xs);
+  }
+}

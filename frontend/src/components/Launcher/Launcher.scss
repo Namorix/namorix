@@ -1,0 +1,40 @@
+@use "@namorix/styles" as *;
+
+.nmx-launcher-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+}
+
+.nmx-launcher {
+  position: fixed;
+  bottom: calc(var(--nmx-taskbar-height) + var(--nmx-spacing-sm));
+  left: 0;
+  width: 280px;
+  background: var(--nmx-color-surface);
+  border: 1px solid var(--nmx-color-surface-high);
+  border-radius: var(--nmx-radius-md);
+  padding: var(--nmx-spacing-xs);
+  z-index: 9998;
+
+  &__item {
+    all: unset;
+    display: flex;
+    align-items: center;
+    gap: var(--nmx-spacing-sm);
+    width: 100%;
+    padding: var(--nmx-spacing-sm);
+    border-radius: var(--nmx-radius-sm);
+    color: var(--nmx-color-on-surface);
+    cursor: pointer;
+    font-size: var(--nmx-font-size-sm);
+
+    &:hover {
+      background: var(--nmx-color-surface-mid);
+    }
+  }
+
+  &__icon {
+    font-size: var(--nmx-font-size-lg);
+  }
+}

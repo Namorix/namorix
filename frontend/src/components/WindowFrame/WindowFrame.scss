@@ -1,0 +1,137 @@
+@use "@namorix/styles" as *;
+
+.nmx-window-frame {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  background: var(--nmx-color-surface);
+  border: 1px solid var(--nmx-color-surface-high);
+  border-radius: var(--nmx-radius-md);
+  overflow: hidden;
+
+  &__titlebar {
+    display: flex;
+    align-items: center;
+    height: 36px;
+    padding: 0 var(--nmx-spacing-sm);
+    background: var(--nmx-color-surface-low);
+    cursor: default;
+    flex-shrink: 0;
+  }
+
+  &__title {
+    flex: 1;
+    font-size: var(--nmx-font-size-sm);
+    color: var(--nmx-color-on-surface);
+
+    @include truncate;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 4px;
+  }
+
+  &__btn {
+    all: unset;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--nmx-font-size-sm);
+    color: var(--nmx-color-on-surface);
+    cursor: pointer;
+    border-radius: var(--nmx-radius-sm);
+
+    &:hover {
+      background: var(--nmx-color-surface-high);
+    }
+
+    &--close:hover {
+      background: var(--nmx-color-danger);
+      color: white;
+    }
+  }
+
+  &__content {
+    flex: 1;
+    overflow: hidden;
+  }
+
+  &__resize {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  &__resize-handle {
+    position: absolute;
+    pointer-events: auto;
+
+    &--n {
+      top: 0;
+      left: var(--nmx-window-frame-edge-size);
+      right: var(--nmx-window-frame-edge-size);
+      height: var(--nmx-window-frame-edge-size);
+      cursor: n-resize;
+    }
+
+    &--s {
+      bottom: 0;
+      left: var(--nmx-window-frame-edge-size);
+      right: var(--nmx-window-frame-edge-size);
+      height: var(--nmx-window-frame-edge-size);
+      cursor: s-resize;
+    }
+
+    &--e {
+      right: 0;
+      top: var(--nmx-window-frame-edge-size);
+      bottom: var(--nmx-window-frame-edge-size);
+      width: var(--nmx-window-frame-edge-size);
+      cursor: e-resize;
+    }
+
+    &--w {
+      left: 0;
+      top: var(--nmx-window-frame-edge-size);
+      bottom: var(--nmx-window-frame-edge-size);
+      width: var(--nmx-window-frame-edge-size);
+      cursor: w-resize;
+    }
+
+    &--ne {
+      top: 0;
+      right: 0;
+      width: calc(var(--nmx-window-frame-edge-size) * 2);
+      height: calc(var(--nmx-window-frame-edge-size) * 2);
+      cursor: ne-resize;
+    }
+
+
+    &--nw {
+      top: 0;
+      left: 0;
+      width: calc(var(--nmx-window-frame-edge-size) * 2);
+      height: calc(var(--nmx-window-frame-edge-size) * 2);
+      cursor: nw-resize;
+    }
+
+    &--se {
+      bottom: 0;
+      right: 0;
+      width: calc(var(--nmx-window-frame-edge-size) * 2);
+      height: calc(var(--nmx-window-frame-edge-size) * 2);
+      cursor: se-resize;
+    }
+
+    &--sw {
+      bottom: 0;
+      left: 0;
+      width: calc(var(--nmx-window-frame-edge-size) * 2);
+      height: calc(var(--nmx-window-frame-edge-size) * 2);
+      cursor: sw-resize;
+    }
+  }
+}

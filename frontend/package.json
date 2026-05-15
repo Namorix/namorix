@@ -1,7 +1,7 @@
 {
   "name": "@namorix/frontend",
   "private": true,
-  "version": "0.7.1",
+  "version": "0.8.0",
   "license": "GPL-3.0-only",
   "type": "module",
   "scripts": {
@@ -14,29 +14,28 @@
     "@namorix/core": "workspace:*",
     "@namorix/styles": "workspace:*",
     "@namorix/ui": "workspace:*",
-    "force": "0.0.3",
-    "i18next": "26.0.9",
+    "i18next": "26.2.0",
     "i18next-browser-languagedetector": "8.2.1",
-    "react": "19.2.5",
-    "react-dom": "19.2.5",
-    "react-i18next": "17.0.6",
-    "react-router-dom": "7.15.0"
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "react-i18next": "17.0.8",
+    "react-router-dom": "7.15.1",
+    "zustand": "5.0.13"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "@types/node": "24.12.2",
+    "@types/node": "25.8.0",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
-    "@vitejs/plugin-react": "6.0.1",
+    "@vitejs/plugin-react": "6.0.2",
     "eslint": "10.3.0",
     "eslint-plugin-react-hooks": "7.1.1",
     "eslint-plugin-react-refresh": "0.5.2",
-    "globals": "17.5.0",
-    "jiti": "2.7.0",
+    "globals": "17.6.0",
     "prettier": "3.8.3",
     "sass": "1.99.0",
-    "typescript": "6.0.2",
-    "typescript-eslint": "8.58.2",
-    "vite": "8.0.10"
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.59.3",
+    "vite": "8.0.13"
   }
 }
