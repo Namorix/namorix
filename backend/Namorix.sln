@@ -1,0 +1,48 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3266A258-3613-4741-AEAE-9FFD203E5BD1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Namorix.Core", "src\Namorix.Core\Namorix.Core.csproj", "{CD6DE245-ACBD-43EB-8701-45251D761093}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Namorix.Adapters", "src\Namorix.Adapters\Namorix.Adapters.csproj", "{337772B3-2675-4863-BCD8-3378493716AB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Namorix.Server", "src\Namorix.Server\Namorix.Server.csproj", "{A7B0DE59-5A7B-457F-B627-A23C03DF9EA6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Namorix.Workers", "src\Namorix.Workers\Namorix.Workers.csproj", "{DC96B65E-D622-42B1-A1DC-7B33396EBF15}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CD6DE245-ACBD-43EB-8701-45251D761093}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD6DE245-ACBD-43EB-8701-45251D761093}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD6DE245-ACBD-43EB-8701-45251D761093}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD6DE245-ACBD-43EB-8701-45251D761093}.Release|Any CPU.Build.0 = Release|Any CPU
+		{337772B3-2675-4863-BCD8-3378493716AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{337772B3-2675-4863-BCD8-3378493716AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{337772B3-2675-4863-BCD8-3378493716AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{337772B3-2675-4863-BCD8-3378493716AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7B0DE59-5A7B-457F-B627-A23C03DF9EA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7B0DE59-5A7B-457F-B627-A23C03DF9EA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7B0DE59-5A7B-457F-B627-A23C03DF9EA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7B0DE59-5A7B-457F-B627-A23C03DF9EA6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC96B65E-D622-42B1-A1DC-7B33396EBF15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC96B65E-D622-42B1-A1DC-7B33396EBF15}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC96B65E-D622-42B1-A1DC-7B33396EBF15}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC96B65E-D622-42B1-A1DC-7B33396EBF15}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CD6DE245-ACBD-43EB-8701-45251D761093} = {3266A258-3613-4741-AEAE-9FFD203E5BD1}
+		{337772B3-2675-4863-BCD8-3378493716AB} = {3266A258-3613-4741-AEAE-9FFD203E5BD1}
+		{A7B0DE59-5A7B-457F-B627-A23C03DF9EA6} = {3266A258-3613-4741-AEAE-9FFD203E5BD1}
+		{DC96B65E-D622-42B1-A1DC-7B33396EBF15} = {3266A258-3613-4741-AEAE-9FFD203E5BD1}
+	EndGlobalSection
+EndGlobal
