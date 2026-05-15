@@ -53,8 +53,10 @@ namorix/
 │   │   │       ├── http/     # ApiError, http client with auto-refresh
 │   │   │       ├── router/   # GuardedRoute, createAuthGuard, createLoginGuard, createRegisterGuard
 │   │   │       ├── i18n/     # NmxI18n, ValidationRunner, validation-messages
+│   │   │       ├── theme/    # ThemeManifest types, loader (hot swap CSS), registry
+│   │   │       ├── providers/# ThemeProvider, useTheme hook
 │   │   │       ├── config.ts # configureCore(), getApiBaseUrl()
-│   │   │       ├── api-routes.ts
+│   │   │       ├── apiRoutes.ts
 │   │   │       ├── constants.ts
 │   │   │       └── utils/    # cx (className utility)
 │   │   ├── styles/           # @namorix/styles — SCSS tokens, reset, fonts
@@ -102,7 +104,7 @@ namorix/
 
 | Package | Purpose | Importable By |
 |---------|---------|---------------|
-| `@namorix/core` | Types, auth guards, http client, `ApiError`, i18n, validation, constants, addon | frontend, @namorix/ui, external addons |
+| `@namorix/core` | Types, auth guards, http client, `ApiError`, i18n, validation, constants, addon, theme | frontend, @namorix/ui, external addons |
 | `@namorix/styles` | SCSS tokens, reset, fonts | frontend, @namorix/ui, external addons |
 | `@namorix/ui` | NmxButton, NmxForm, NmxInlineAlert, NmxToggle, etc. | frontend |
 | `backend` | ASP.NET Core 8 API server | - |
@@ -194,6 +196,6 @@ Addon có 3 mode tích hợp:
 
 1. **M1** — Static shell UI + mock auth page ✅
 2. **M2** — Full auth backend (login/register/logout/refresh/session, decorators, i18n, validation) ✅
-3. **M3** — System Addons (Built-in): addon contract + registry, File Manager, Terminal, Settings, Log Viewer 🔜
+3. **M3** — System Addons (Built-in): addon contract + registry, Log Viewer, theme system (hot swap CSS, localStorage+DB), File Manager, Terminal, Settings 🔜
 4. **M4** — External addon system (Docker lifecycle, addon manager)
 5. **M5** — @namorix/core publish npm + addon integration guide

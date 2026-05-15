@@ -365,6 +365,277 @@ Addon có 3 mode hoạt động:
 
 ---
 
+## Theme System Architecture
+
+### Theme Design Decisions (2026-05-15)
+
+| # | Decision | Detail |
+|---|----------|--------|
+| 1 | Hệ thống riêng | Theme **không phải addon** — hệ thống độc lập, không dùng addon registry/contract |
+| 2 | Live switch | Đổi theme không reload trang — giữ state Zustand, window position |
+| 3 | Hot swap `<link>` | Xóa `<link>` CSS cũ, chèn `<link>` CSS mới — chỉ 1 file theme tồn tại trong DOM |
+| 4 | File CSS | Mỗi theme = 1 file CSS, ghi đè trực tiếp `:root` — không dùng JSON/YAML config |
+| 5 | Kho themes backend | Backend quản lý danh sách theme (built-in + external), validate CSS trước khi cho tải |
+| 6 | `--nmx-*` variables | Theme CSS override các CSS variables đã định nghĩa trong `@namorix/styles` |
+
+### Why These Decisions
+
+- **Không phải addon:** Theme không có backend/service, không cần Docker container — chỉ là CSS + metadata
+- **Hot swap thay vì reload:** Giữ nguyên session, window state, addon state — UX mượt hơn reload
+- **File CSS thay vì JSON:** Cho phép theme override cả layout/CSS rules ngoài variables, can thiệp sâu hơn
+- **Kho backend:** Chặn CSS injection từ untrusted sources, validate trước khi phân phối
+
+### Theme Manifest (định nghĩa trong `@namorix/core`)
+
+```typescript
+interface ThemeManifest {
+  id: string
+  name: string
+  version: string
+  author: string
+  description: string
+  preview: string          // URL ảnh preview
+  css: string              // URL file CSS
+  tags: string[]
+}
+```
+
+### Caching Strategy: localStorage + DB
+
+- **DB là source of truth** — lưu `User.ThemeId` trong SQLite
+- **localStorage là cache** — tránh gọi API mỗi lần load trang, tránh flash
+
+**Flow:**
+
+```
+App load (restoreTheme)
+  └── Đọc localStorage("nmx-theme-id") → có? load CSS ngay (0 request, 0 flash)
+
+Login thành công
+  └── GET /api/user/theme → lưu localStorage → apply (override nếu khác)
+
+Đổi theme
+  ├── localStorage.setItem + loadTheme() ngay lập tức (instant)
+  └── PUT /api/user/theme { themeId } (background, fail silently)
+
+Logout
+  └── Xóa localStorage("nmx-theme-id") → next load dùng default
+```
+
+### Integration Points
+
+- **`@namorix/styles`** — định nghĩa `--nmx-*` CSS variables trong `:root`, theme CSS ghi đè
+- **`AddonContext.theme`** — đã có field `theme: "light" | "dark"`, sẽ mở rộng thành `string` để hỗ trợ theme ID
+- **`desktopStore`** — planned, sẽ chứa `theme: string` (theme ID đang active)
+- **Event Bus** — khi switch theme, shell emit `"shell:theme-changed"` để addon biết
+
+### Hot Swap Mechanism
+
+```typescript
+const THEME_CSS_ID = "nmx-theme-css"
+const THEME_STORAGE_KEY = "nmx-theme-id"
+
+// restore — chạy trước React render, đọc localStorage tránh flash
+export function restoreTheme(): void {
+  const savedId = localStorage.getItem(THEME_STORAGE_KEY)
+  if (!savedId) return
+  const link = document.createElement("link")
+  link.id = THEME_CSS_ID
+  link.rel = "stylesheet"
+  link.href = `/api/themes/${savedId}/css`
+  document.head.appendChild(link)
+}
+
+// switch — hot swap, instant, không chờ API
+export async function loadTheme(cssUrl: string, themeId: string): Promise<void> {
+  document.querySelector(`#${THEME_CSS_ID}`)?.remove()
+  localStorage.setItem(THEME_STORAGE_KEY, themeId)
+  return new Promise((resolve, reject) => {
+    const link = document.createElement("link")
+    link.id = THEME_CSS_ID
+    link.rel = "stylesheet"
+    link.href = cssUrl
+    link.onload = () => resolve()
+    link.onerror = () => reject()
+    document.head.appendChild(link)
+  })
+}
+```
+
+### Backend Theme Repository
+
+- **API endpoints (planned):**
+  - `GET /api/themes` — danh sách themes (built-in + external đã duyệt)
+  - `GET /api/themes/{id}/css` — file CSS của theme (cho hot swap load)
+  - `GET /api/user/theme` — lấy theme ID user đang dùng (dùng sau login)
+  - `PUT /api/user/theme` — lưu theme ID user (DB source of truth)
+  - `POST /api/themes/external` — admin thêm external theme URL → backend tải về validate → lưu
+  - `DELETE /api/themes/{id}` — xóa external theme
+- **Validate rules:** Chặn `url()`, `@import`, `@font-face` trỏ ra external domain; quét JS snippet trong CSS
+- **Storage:** File CSS lưu trong `backend/themes/` directory, metadata + User theme trong SQLite
+
+## SignalR Token Expiry Handling (M4 Design)
+
+### Design Decisions (2026-05-15)
+
+| # | Decision | Detail |
+|---|----------|--------|
+| 1 | Server-driven timer | DashboardHub tự schedule expiry dựa trên JWT `exp` claim — không cần client gửi token |
+| 2 | AuthController báo hub | Khi refresh API thành công → AuthController gọi `IHubContext<DashboardHub>` reset timer — client không cần `invoke` gì |
+| 3 | Token giữ trong HttpOnly | Access token không ra khỏi cookie — flow hoàn toàn server-side, tránh XSS |
+| 4 | Grace period 30s | Báo "TokenExpiring" 30s trước khi hết hạn → client có thời gian gọi refresh API |
+| 5 | CancellationTokenSource | Lưu CTS per connectionId trong `ConcurrentDictionary` — hủy timer cũ khi refresh thành công |
+
+### Flow
+
+```
+Client                      AuthController                 DashboardHub
+  │                              │                              │
+  │  ── connect SignalR ───────────────────────────────────→  │
+  │                              │                              │  OnConnectedAsync()
+  │                              │                              │  đọc JWT exp claim
+  │                              │                              │  ScheduleExpiry(connectionId, delay)
+  │                              │                              │
+  │                              │                              │  ... 4 phút 30 giây sau ...
+  │  ←── "TokenExpiring" ──────────────────────────────────  │  (còn 30s hết hạn)
+  │                              │                              │
+  │  ── POST /api/auth/refresh ──→  │                          │
+  │     (HttpOnly cookie)          │  set cookie mới           │
+  │                              │  IHubContext.NotifyRefresh  │
+  │                              │       (userId, newExp) ──→  │  Cancel timer cũ
+  │                              │                              │  ScheduleExpiry mới
+  │  ←── 200 OK ──────────────  │                              │
+  │                              │                              │
+  │  ←── "TokenRefreshed" ────────────────────────────────  │  (ACK)
+  │                              │                              │
+  │  ... nếu không refresh ...   │                              │
+  │  ←── "ForceLogout" ────────────────────────────────────  │  Context.Abort()
+```
+
+### Backend: DashboardHub
+
+```csharp
+public class DashboardHub : Hub
+{
+    private static readonly ConcurrentDictionary<string, CancellationTokenSource> _timers = new();
+    private readonly IHubContext<DashboardHub> _hubContext;
+
+    public DashboardHub(IHubContext<DashboardHub> hubContext)
+    {
+        _hubContext = hubContext;
+    }
+
+    public override async Task OnConnectedAsync()
+    {
+        var expClaim = Context.User?.FindFirst("exp")?.Value;
+        if (expClaim == null) { Context.Abort(); return; }
+
+        var exp = DateTimeOffset.FromUnixTimeSeconds(long.Parse(expClaim));
+        var delay = exp - DateTimeOffset.UtcNow;
+
+        if (delay <= TimeSpan.Zero) { Context.Abort(); return; }
+
+        ScheduleExpiry(Context.ConnectionId, delay);
+        await base.OnConnectedAsync();
+    }
+
+    // Gọi từ AuthController sau khi refresh thành công
+    public async Task NotifyTokenRefreshed(int userId, DateTimeOffset newExp)
+    {
+        var delay = newExp - DateTimeOffset.UtcNow;
+        ScheduleExpiry(Context.ConnectionId, delay);
+        await Clients.Caller.SendAsync("TokenRefreshed");
+    }
+
+    private void ScheduleExpiry(string connectionId, TimeSpan delay)
+    {
+        if (_timers.TryRemove(connectionId, out var oldCts))
+            oldCts.Cancel();
+
+        var cts = new CancellationTokenSource();
+        _timers[connectionId] = cts;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(delay - TimeSpan.FromSeconds(30), cts.Token);
+                await Clients.Client(connectionId)
+                    .SendAsync("TokenExpiring", cancellationToken: cts.Token);
+
+                await Task.Delay(TimeSpan.FromSeconds(30), cts.Token);
+                await Clients.Client(connectionId)
+                    .SendAsync("ForceLogout", "token_expired", cancellationToken: cts.Token);
+                Context.Abort();
+            }
+            catch (TaskCanceledException) { }
+        }, cts.Token);
+    }
+
+    public override Task OnDisconnectedAsync(Exception? exception)
+    {
+        if (_timers.TryRemove(Context.ConnectionId, out var cts))
+            cts.Cancel();
+        return base.OnDisconnectedAsync(exception);
+    }
+}
+```
+
+### Backend: AuthController gọi NotifyTokenRefreshed
+
+```csharp
+// AuthController.cs — thêm IHubContext<DashboardHub>
+[HttpPost("refresh")]
+public async Task<IActionResult> Refresh(
+    [FromServices] IHubContext<DashboardHub> hubContext)
+{
+    // ... refresh token flow hiện tại ...
+    var (user, newAccessToken, newRefreshToken) =
+        await authService.RefreshToken(refreshToken, fingerprint, ipAddress);
+
+    SetAccessCookie(newAccessToken);
+    SetRefreshCookie(newRefreshToken, false);
+
+    // Báo DashboardHub reset timer cho connection của user này
+    var exp = DateTimeOffset.UtcNow.AddMinutes(_jwtConfig.AccessTokenExpirationMinutes);
+    await hubContext.Clients.User(user.Id.ToString())
+        .SendAsync("NotifyTokenRefreshed", user.Id, exp);
+
+    return Ok(ApiResponse<UserResponse>.Ok(new UserResponse { ... }));
+}
+```
+
+### Frontend: SignalR connection
+
+```typescript
+const connection = new HubConnectionBuilder()
+    .withUrl("/hubs/dashboard")
+    .withAutomaticReconnect()
+    .build();
+
+connection.on("TokenExpiring", async () => {
+    try {
+        await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
+        // Nếu thành công, server sẽ gửi "TokenRefreshed" + reset timer
+        // Không cần invoke gì thêm
+    } catch {
+        // Refresh thất bại → server sẽ kick sau 30s
+        // Có thể tự logout sớm để UX tốt hơn
+    }
+});
+
+connection.on("TokenRefreshed", () => {
+    // Server đã reset timer, connection vẫn sống
+});
+
+connection.on("ForceLogout", (reason: string) => {
+    // Server kick, redirect về login
+    window.location.href = `/login?reason=${reason}`;
+});
+```
+
+---
+
 ## Backend Communication Architecture
 
 ### Tổng quan

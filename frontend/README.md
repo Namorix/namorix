@@ -7,7 +7,7 @@ Vite + React shell for the Namorix desktop interface.
 ```
 frontend/
 ├── src/
-│   ├── main.tsx                  # Entry: imports styles, init i18n, configureCore, render
+│   ├── main.tsx                  # Entry: imports styles, init i18n, configureCore, ThemeProvider wrap, restoreTheme
 │   ├── App.tsx                   # Router: /login, /register, / (guarded)
 │   ├── controllers/
 │   │   ├── auth.controller.ts    # login, register, logout — API calls
@@ -99,6 +99,7 @@ frontend (namespace "translation") →  auth.login.*, auth.register.*
 
 ## Upcoming (M3-M5)
 
+- **Theme System** — Hot swap CSS theme via `<link>`, localStorage + DB caching, ThemeProvider, built-in registry ✅
 - **System Addons** — File Manager, Terminal, Settings, Log Viewer (internal addons via registry) (M3)
 - **Addon Widget Slots** — DOM slot integration for external addon widgets (M4)
 - **Event Bus** — `@namorix/core` EventBus for shell↔addon communication (M4)

@@ -270,6 +270,29 @@ packages/backend-core/src/middleware/csrf.ts
 - Root `package.json` now has `"lint": "pnpm -r run lint"` script
 - Fixed 20+ ESLint errors (any from req.body/req.headers, dead code, async without await, template literal, type assertions)
 
+## Recent Changes (2026-05-15 — Theme System Design)
+
+### Theme system architecture decisions
+- **Theme là hệ thống riêng**, không phải addon — không dùng addon registry/contract
+- **Live switch** qua hot swap `<link>` — không reload trang, giữ state
+- **Mỗi theme = 1 file CSS** ghi đè `:root`, không dùng `[data-theme]` selector
+- **Kho themes do backend quản lý** — validate CSS trước khi cho tải, chặn untrusted sources
+- **Dùng `--nmx-*` CSS variables** — theme CSS override biến có sẵn từ `@namorix/styles`
+- **localStorage + DB**: localStorage cache tránh flash + gọi API khi login sync; DB là source of truth
+- **Ref:** `systemPatterns.md` — Theme System Architecture section (đầy đủ chi tiết)
+
+### Version bumps (2026-05-15)
+- **@namorix/core**: 0.9.0 → 0.10.0 — new theme module + providers + http.getJson
+- **frontend**: 0.9.0 → 0.10.0 — ThemeProvider integration + login theme sync
+- **backend**: 0.17.1 → 0.18.0 — ThemeManifest, UserController, UserService
+
+### SignalR token expiry handling (M4 design)
+- **Server-driven timer**: DashboardHub tự schedule expiry dựa trên JWT `exp`, không cần client gửi token
+- **AuthController → IHubContext**: Khi refresh API thành công, controller gọi hub reset timer — token giữ trong HttpOnly
+- **Grace period 30s**: Báo "TokenExpiring" → client có 30s gọi refresh → server kick nếu không phản hồi
+- **CancellationTokenSource**: Lưu per-connection trong `ConcurrentDictionary`, hủy timer cũ khi refresh
+- **Ref:** `systemPatterns.md` — SignalR Token Expiry Handling section (đầy đủ code)
+
 ## Active Decisions
 
 ### Authentication Check Strategy
@@ -314,6 +337,35 @@ Các service method (PermissionService, SettingsService) không có try/catch ch
 
 ### Auth Filter Attribute — Inconsistent Pattern ✅ (Resolved)
 Cả 3 attribute filter (`RequireAuthAttribute`, `RequireAdminAttribute`, `RequirePermissionAttribute`) đã thống nhất dùng `ActionFilterAttribute` + async `OnActionExecutionAsync`.
+
+## Pending Fixes (TODO tomorrow)
+
+### CSS URL resolution inconsistency
+- `restoreTheme()` ghép URL từ `ThemeRoutes.themes.replace("{id}", ...)`
+- `switchTheme()` dùng `manifest.css` trực tiếp — sau refresh load sai URL
+- **Fix:** Option A — thêm `NMX_THEME_CSS_URL_KEY`, lưu URL thật, restore ưu tiên URL này, fallback ghép từ ID
+- **Files:** `constants.ts`, `loader.ts` (thêm `saveThemePreference`), `ThemeProvider.tsx` (lưu URL khi switch), `auth.controller.ts` (lưu URL khi login sync)
+
+### ThemeManifest types drift
+- TS `ThemeManifest` thiếu `IsBuiltIn` field so với C# model — `getAllThemes()` gộp built-in + external, không phân biệt được
+- **Fix:** Thêm `isBuiltIn: boolean` vào TS interface
+
+### SetThemeRequest thiếu validation
+- `UserController.cs:45-47` — `SetThemeRequest.ThemeId` thiếu `[Required]`, `[MaxLength]`
+- `User.cs:16` — `ThemeId` thiếu `[MaxLength]` (các string field khác đều có)
+- **Fix:** Thêm `[Required]`, `[MaxLength(100)]` vào cả 2 chỗ
+
+### Login flow — theme fetch error propagation
+- `auth.controller.ts:20-27` — Nếu GET `/api/user/theme` fail, error propagate ra caller dù login đã OK
+- **Fix:** Tách try/catch riêng cho theme fetch, không block login
+
+### `/api/themes` không có handler
+- `ThemeController.cs` fully commented out, `ApiThemeRoutes.themes` = `/api/themes` luôn 404
+- **Fix:** Implement hoặc xoá route
+
+### Thiếu `public/themes/registry.json`
+- `ThemeRoutes.builtin` = `/themes/registry.json` — file chưa được tạo
+- **Fix:** Tạo thư mục `frontend/public/themes/` + file registry JSON
 
 ## Next Steps
 

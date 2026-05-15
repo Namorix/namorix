@@ -97,9 +97,10 @@
 - [x] WindowFrame addon mounting (useEffect + registry)
 - [x] Launcher + DesktopArea dùng listAddons() từ registry
 - [x] Internal addon: Log Viewer (LogViewer component + mount/unmount lifecycle)
+- [x] Theme system: types (`@namorix/core`), theme loader/registry (frontend), backend theme repository API
 - [ ] Internal addon: File Manager
 - [ ] Internal addon: Terminal
-- [ ] Internal addon: Settings
+- [ ] Internal addon: Settings (includes theme picker UI)
 
 ### M4 — External Addon System (Docker)
 **Status:** Not Started
@@ -123,10 +124,10 @@
 | Package | Version | Milestone |
 |---------|---------|-----------|
 | frontend | 0.9.0 | M3 (Addon system: contract, registry, LogViewer addon) |
-| @namorix/core | 0.9.0 | M3 (New addon module: AddonEntry, NmxAddonManifest, AddonContext) |
+| @namorix/core | 0.10.0 | M3 (Theme system: types, loader, registry, ThemeProvider) |
 | @namorix/styles | 0.2.0 | M2 |
 | @namorix/ui | 0.3.0 | M2 |
-| backend | 0.17.1 | M2 (Bug fixes: refresh token flow, IPv6 crash, CSRF first-request; multi-project refactor) |
+| backend | 0.18.0 | M3 (ThemeManifest model, UserController, UserService) |
 
 ## Version Rules
 
@@ -151,6 +152,13 @@
 |---------|---------|---------|
 | @namorix/core | 0.9.0 | New addon module: addon/types.ts (NmxAddonManifest, AddonContext, AddonEntry, AddonModule), barrel export |
 | frontend | 0.9.0 | New addon system: registry.ts (registerAddon, resolveAddon, listAddons), WindowFrame addon mounting via useEffect + resolveAddon, Launcher + DesktopArea dùng listAddons() thay hardcoded array. New LogViewer addon (LogViewer.tsx + LogViewer.scss + LogViewer.addon.tsx) |
+
+### 2026-05-15 (Theme system: types, loader, registry, ThemeProvider, backend API)
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.10.0 | New theme module: types.ts (ThemeManifest), loader.ts (restoreTheme, loadTheme), registry.ts (getBuiltInThemes, getAllThemes), barrel export. New providers module: ThemeProvider.tsx (ThemeContext, useTheme hook, switchTheme). New http.getJson method. New constants (NMX_THEME_CSS_ID, NMX_THEME_STORAGE_KEY). New API routes (ApiThemeRoutes, ThemeRoutes, ApiUserRoutes). |
+| frontend | 0.10.0 | Theme integration: Root component with ThemeProvider wrap, restoreTheme() on app start, getAllThemes() load. Login theme sync — fetch user themeId from `/api/user/theme` → localStorage. |
+| backend | 0.18.0 | New ThemeManifest model. User.ThemeId field. AppDbContext: ThemeManifests + AddonManifests DbSet + unique indexes. New UserService (GetThemeAsync, SetThemeAsync). New UserController (GET/PUT /api/user/theme). |
 
 ### 2026-05-15 (Desktop shell UI: taskbar, launcher, window manager + stores + types)
 | Package | Version | Changes |

@@ -56,10 +56,10 @@ backend/
     │   ├── Exceptions/
     │   │   └── AuthException.cs      # Custom exception with error code
     │   ├── Models/
-    │   │   ├── AppDbContext.cs       # EF Core DbContext
     │   │   ├── RefreshToken.cs       # Refresh token entity
     │   │   ├── Setting.cs            # Key-value settings entity
-    │   │   └── User.cs               # User entity
+    │   │   ├── ThemeManifest.cs      # Theme metadata (id, name, css, tags, IsBuiltIn)
+    │   │   └── User.cs               # User entity (includes ThemeId)
     │   ├── Responses/
     │   │   └── ApiResponse.cs        # Typed ApiResponse<T>
     │   └── Validation/
@@ -80,7 +80,8 @@ backend/
     ├── Namorix.Server/               # API + Middleware
     │   ├── Controllers/
     │   │   ├── AuthController.cs     # 7 auth endpoints
-    │   │   └── SettingsController.cs # Trusted proxies management
+    │   │   ├── SettingsController.cs # Trusted proxies management
+    │   │   └── UserController.cs     # User theme preferences (GET/PUT /api/user/theme)
     │   ├── Extensions/
     │   │   └── ApplicationBuilderExtensions.cs  # Middleware pipeline
     │   ├── Middleware/
@@ -116,6 +117,15 @@ backend/
 |--------|------|-------------|
 | GET | `/api/settings/proxies` | Get list of trusted proxy IPs |
 | PUT | `/api/settings/proxies` | Set trusted proxy IPs. Body: `{ proxies: string[] }` |
+
+### User (`/api/user`)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/user/theme` | Get current user's themeId |
+| PUT | `/api/user/theme` | Set user theme preference. Body: `{ themeId: string }` |
+
+> Both endpoints require authentication (`[RequireAuth]`).
 
 ### Addon (Planned — M4)
 
@@ -184,9 +194,11 @@ SQLite database file (`namorix.db`), tạo tự động khi chạy migrations.
 
 ### Models
 
-- **User** — `id`, `username`, `password`, `role`, `createdAt`
+- **User** — `id`, `username`, `password`, `role`, `themeId`, `createdAt`
 - **RefreshToken** — `jti`, `userId`, `tokenHash`, `userAgent`, `fingerprint`, `ipAddress`, `lastUsedAt`, `expiresAt`
 - **Setting** — `key` (PK), `value`
+- **ThemeManifest** — `id`, `name`, `version`, `author`, `description`, `preview`, `css`, `tags`, `isBuiltIn`
+- **AddonManifest** — `id`, `name`, `version`, `author`, `description`, `icon`, `entry`, `permissions` (for M4 external addons)
 
 ### Migrations
 

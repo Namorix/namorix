@@ -382,8 +382,10 @@ frontend/packages/
 │       ├── router/index.ts    # GuardedRoute, guards
 │       ├── i18n/index.ts
 │       ├── config.ts
-│       ├── api-routes.ts
+│       ├── apiRoutes.ts
 │       ├── constants.ts
+│       ├── theme/             # ThemeManifest, loader, registry
+│       ├── providers/         # ThemeProvider
 │       └── utils/cx.ts
 ├── styles/
 │   ├── package.json
