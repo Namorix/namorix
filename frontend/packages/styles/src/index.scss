@@ -1,5 +1,5 @@
-@use "fonts";
-@use "variables" as *;
-@use "tokens";
-@use "reset";
-@use "mixins" as *;
+@forward "fonts";
+@forward "variables";
+@forward "tokens";
+@forward "reset";
+@forward "mixins" ;
