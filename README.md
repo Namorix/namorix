@@ -6,7 +6,7 @@ Browser-based desktop shell, self-hosted.
 
 - **Desktop Shell** — Window manager, taskbar, app launcher in browser
 - **System Apps** — File manager, Terminal, Settings, Log viewer
-- **External Addons** — Docker-based apps open in new tab
+- **External Addons** — Docker-based addons with 3 modes: widget DOM slot, full app via window.open, direct URL
 - **Centralized Auth** — Single auth server for shell and addons
 
 ## Tech Stack
@@ -18,6 +18,9 @@ Browser-based desktop shell, self-hosted.
 | Database | SQLite + EF Core |
 | Auth | JWT (access + refresh) with HttpOnly cookies |
 | Terminal | xterm.js |
+| Realtime | SignalR (planned) |
+| Server-to-server | gRPC (planned) |
+| Docker | Docker.DotNet.Enhanced (planned) |
 
 ## Quick Start
 
@@ -132,6 +135,22 @@ public class AuthController(AuthService authService) : ControllerBase
     }
 }
 ```
+
+## Addon Architecture (Planned — M4)
+
+Addon có 3 mode tích hợp:
+
+| Mode | Cách hoạt động | Auth |
+|------|----------------|------|
+| **Widget** | Addon frontend render trong DOM slot trên Dashboard, mount/unmount qua `addonEntry.js` contract (`mount(container, context)` / `unmount()`) | HttpOnly cookie (same-origin) |
+| **Full App** | Mở tab mới qua `window.open` từ Dashboard, addon dùng `nmx_handshake_token` để exchange lấy session | One-time token exchange |
+| **Direct URL** | User truy cập trực tiếp URL addon, addon tự xử lý auth riêng | Addon tự quản lý |
+
+### Communication
+
+- **Server-to-server**: gRPC bidirectional streaming (Namorix Backend ↔ Addon Backend)
+- **Frontend realtime**: SignalR (Dashboard ↔ Namorix Backend, Addon Frontend ↔ Addon Backend)
+- **Shell ↔ Addon**: Event Bus (`@namorix/core`) — `shell:*` events và `addon:*` events
 
 ## Environment Variables
 

@@ -12,6 +12,9 @@ ASP.NET Core 8 API server cho Namorix desktop shell. Xử lý authentication, se
 | Database | SQLite |
 | JWT | System.IdentityModel.Tokens.Jwt |
 | Password | BCrypt.Net-Next |
+| Realtime | SignalR (planned) |
+| Server-to-server | gRPC (planned) |
+| Docker | Docker.DotNet.Enhanced (planned) |
 
 ## Quick Start
 
@@ -35,53 +38,62 @@ Server chạy tại `http://localhost:3000` (mặc định).
 
 ```
 backend/
-├── Config/               # IOptions<T> config classes
-│   ├── AppConfig.cs      # Root config (Jwt, ConnectionString, CsrfEnabled, SecureCookie)
-│   └── JwtConfig.cs      # JWT settings (Secret, Issuer, Audience, expiration)
-├── Constants/            # Static constants
-│   ├── Auth.cs           # AuthConstraints (username/password min/max length)
-│   ├── Cookie.cs         # Cookie names (nmx_access_token, nmx_refresh_token, nmx_csrf_token)
-│   ├── Error.cs          # HttpErrorCodes, AuthErrorCodes
-│   ├── Http.cs           # HttpContextKeys
-│   ├── Jwt.cs            # JwtClaims (UserId, Username, Role, Jti, Iat)
-│   ├── Settings.cs       # SettingKeys (RegisterEnabled, TrustedProxies)
-│   └── Validation.cs     # ValidationErrorCodes
-├── Controllers/          # API endpoints
-│   ├── AuthController.cs      # 7 auth endpoints
-│   └── SettingsController.cs  # Trusted proxies management
-├── Exceptions/
-│   └── AuthException.cs       # Custom exception with error code
-├── Extensions/
-│   └── ApplicationBuilderExtensions.cs  # Middleware pipeline extensions
-├── Middleware/
-│   ├── CsrfMiddleware.cs           # Double-submit CSRF protection
-│   ├── ExceptionMiddleware.cs      # Global exception handler
-│   ├── JsonErrorMiddleware.cs      # Consistent JSON error responses
-│   ├── SecurityHeadersMiddleware.cs # Security headers (nosniff, DENY frame, etc.)
-│   └── TrustedProxyMiddleware.cs   # Trusted proxy validation for X-Forwarded-For
-├── Migrations/           # EF Core migrations
-├── Models/
-│   ├── AppDbContext.cs   # EF Core DbContext
-│   ├── RefreshToken.cs   # Refresh token entity
-│   ├── Setting.cs        # Key-value settings entity
-│   └── User.cs           # User entity
-├── Responses/
-│   └── ApiResponse.cs    # Typed ApiResponse<T>
-├── Services/
-│   ├── AuthService.cs         # Login, Register, RefreshToken, RevokeToken, VerifyAccessToken
-│   ├── SettingsService.cs     # IsRegisterEnabled, GetTrustedProxies (IMemoryCache)
-│   └── TokenCleanupService.cs # BackgroundService, cleans expired tokens every 24h
-├── Validation/
-│   ├── IValidationSchema.cs       # Marker interface
-│   ├── ValidateAttribute.cs       # ActionFilterAttribute
-│   ├── ValidationRule.cs          # Abstract + concrete rules
-│   └── Schemas/
-│       ├── LoginSchema.cs
-│       └── RegisterSchema.cs
-├── Program.cs             # Entry point + middleware pipeline
-├── appsettings.json       # Config values
-├── appsettings.Development.json
-└── Makefile               # Migration shortcuts
+├── Makefile                          # Build/EF shortcuts
+├── Namorix.sln                       # Solution file (4 projects)
+└── src/
+    ├── Namorix.Core/                 # Shared contracts
+    │   ├── Config/                   # IOptions<T> config classes
+    │   │   ├── AppConfig.cs          # Root config (Jwt, ConnectionString, CsrfEnabled, SecureCookie)
+    │   │   └── JwtConfig.cs          # JWT settings (Secret, Issuer, Audience, expiration)
+    │   ├── Constants/                # Static constants
+    │   │   ├── Auth.cs               # AuthConstraints (username/password min/max length)
+    │   │   ├── Cookie.cs             # Cookie names (nmx_access_token, nmx_refresh_token, nmx_csrf_token)
+    │   │   ├── Error.cs              # HttpErrorCodes, AuthErrorCodes
+    │   │   ├── Http.cs               # HttpContextKeys
+    │   │   ├── Jwt.cs                # JwtClaims (UserId, Username, Role, Jti, Iat)
+    │   │   ├── Settings.cs           # SettingKeys (RegisterEnabled, TrustedProxies)
+    │   │   └── Validation.cs         # ValidationErrorCodes
+    │   ├── Exceptions/
+    │   │   └── AuthException.cs      # Custom exception with error code
+    │   ├── Models/
+    │   │   ├── AppDbContext.cs       # EF Core DbContext
+    │   │   ├── RefreshToken.cs       # Refresh token entity
+    │   │   ├── Setting.cs            # Key-value settings entity
+    │   │   └── User.cs               # User entity
+    │   ├── Responses/
+    │   │   └── ApiResponse.cs        # Typed ApiResponse<T>
+    │   └── Validation/
+    │       ├── IValidationSchema.cs  # Marker interface
+    │       ├── ValidateAttribute.cs  # ActionFilterAttribute
+    │       ├── ValidationRule.cs     # Abstract + concrete rules
+    │       └── Schemas/
+    │           ├── LoginSchema.cs
+    │           └── RegisterSchema.cs
+    ├── Namorix.Adapters/             # Persistence + Services
+    │   ├── Migrations/               # EF Core migrations
+    │   ├── Persistence/
+    │   │   └── AppDbContext.cs       # EF Core DbContext
+    │   └── Services/
+    │       ├── AuthService.cs        # Login, Register, RefreshToken, RevokeToken, VerifyAccessToken
+    │       ├── SettingsService.cs    # IsRegisterEnabled, GetTrustedProxies (IMemoryCache)
+    │       └── TokenCleanupService.cs (hosted in Workers project)
+    ├── Namorix.Server/               # API + Middleware
+    │   ├── Controllers/
+    │   │   ├── AuthController.cs     # 7 auth endpoints
+    │   │   └── SettingsController.cs # Trusted proxies management
+    │   ├── Extensions/
+    │   │   └── ApplicationBuilderExtensions.cs  # Middleware pipeline
+    │   ├── Middleware/
+    │   │   ├── CsrfMiddleware.cs     # Double-submit CSRF protection
+    │   │   ├── ExceptionMiddleware.cs# Global exception handler
+    │   │   ├── JsonErrorMiddleware.cs# Consistent JSON error responses
+    │   │   ├── SecurityHeadersMiddleware.cs  # nosniff, DENY frame, etc.
+    │   │   └── TrustedProxyMiddleware.cs     # X-Forwarded-For validation
+    │   ├── Program.cs                # Entry point + middleware pipeline
+    │   ├── appsettings.json
+    │   └── appsettings.Development.json
+    └── Namorix.Workers/              # Background services
+        └── TokenCleanupWorker.cs     # Cleans expired tokens every 24h
 ```
 
 ## API Endpoints
@@ -104,6 +116,20 @@ backend/
 |--------|------|-------------|
 | GET | `/api/settings/proxies` | Get list of trusted proxy IPs |
 | PUT | `/api/settings/proxies` | Set trusted proxy IPs. Body: `{ proxies: string[] }` |
+
+### Addon (Planned — M4)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/addon` | List installed addons |
+| POST | `/api/addon/install` | Install new addon from Docker image |
+| POST | `/api/addon/{id}/start` | Start addon container |
+| POST | `/api/addon/{id}/stop` | Stop addon container |
+| POST | `/api/addon/{id}/remove` | Remove addon container |
+| POST | `/api/addon/handshake` | Exchange addon secret for AddonToken |
+| POST | `/api/addon/session-exchange` | Exchange one-time nmx_handshake_token for session (full app mode) |
+| GET | `/api/addon/{id}/stream` | SSE stream for widget events |
+| POST | `/api/addon/{id}/command` | Send command (cancel, pause, config) to addon |
 
 ## Middleware Pipeline
 
@@ -191,6 +217,25 @@ make db_reset
 - Refresh rotation: old token bị revoke ngay khi refresh
 - Fingerprint verification: nếu cả fingerprint + IP đều thay đổi → revoke tất cả tokens (anti-theft)
 - Token reuse detection: unknown jti → revoke tất cả user tokens
+
+## Docker Management (Planned — M4)
+
+Namorix sẽ quản lý addon containers qua Docker Unix socket, sử dụng thư viện **Docker.DotNet.Enhanced** (fork bởi Testcontainers team).
+
+```
+DockerMonitor (BackgroundService)
+  ↓ phát hiện container mới/dừng
+AddonService
+  ↓ CRUD qua Docker API
+REST endpoints (AddonController)
+```
+
+## Realtime Events (Planned — M4)
+
+- **SignalR**: Dashboard UI nhận realtime events (addon status, notifications) từ backend
+- **gRPC**: Server-to-server bidirectional streaming giữa Namorix Backend và Addon Backend
+  - Namorix đóng vai trò gRPC client, Addon đóng vai trò gRPC server
+  - Proto contract: `rpc Session(stream ShellCommand) returns (stream AddonEvent)`
 
 ## Development
 

@@ -9,17 +9,19 @@ frontend/
 ├── src/
 │   ├── main.tsx                  # Entry: imports styles, init i18n, configureCore, render
 │   ├── App.tsx                   # Router: /login, /register, / (guarded)
-│   ├── assets/
-│   │   └── controllers/
-│   │       └── auth.controller.ts  # login, register, logout — API calls
+│   ├── controllers/
+│   │   ├── auth.controller.ts    # login, register, logout — API calls
+│   │   └── health.controller.ts  # health check
 │   ├── components/
 │   │   ├── Auth/
-│   │   │   ├── AuthPage.tsx       # Two-column layout (hero + form panel)
+│   │   │   ├── AuthPage.tsx      # Two-column layout (hero + form panel)
 │   │   │   └── AuthPage.scss
 │   │   └── index.ts
+│   ├── hooks/
+│   │   └── useAuthForm.ts        # Form state + validation hook
 │   ├── pages/
-│   │   ├── Login.tsx            # Username + password + remember-me toggle
-│   │   ├── Register.tsx            # Username + password + confirmPassword
+│   │   ├── Login.tsx             # Username + password + remember-me toggle
+│   │   ├── Register.tsx          # Username + password + confirmPassword
 │   │   └── Desktop.tsx           # Shell UI (M3)
 │   ├── styles/
 │   │   ├── main.scss             # Imports @namorix/styles + local tokens
@@ -79,4 +81,12 @@ frontend (namespace "translation") →  auth.login.*, auth.register.*
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `VITE_API_BASE_URL` | `http://localhost:3000` | Backend API URL |
+| `VITE_API_URL` | `http://localhost:3000` | Backend API URL |
+
+## Upcoming (M3-M5)
+
+- **Desktop Shell** — Window manager, taskbar, app launcher (M3)
+- **System Apps** — File manager, Terminal, Settings, Log viewer (M3)
+- **Addon Widget Slots** — DOM slot integration for addon widgets (M4)
+- **Event Bus** — `@namorix/core` EventBus for shell↔addon communication (M4)
+- **SignalR** — Realtime events (addon status, notifications) (M4)
