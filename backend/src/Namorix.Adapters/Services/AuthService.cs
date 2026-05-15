@@ -143,7 +143,7 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig)
         {
             tokenHash = HashToken(token);
         }
-        catch
+        catch (FormatException)
         {
             throw new AuthException(AuthErrors.InvalidToken);
         }
@@ -182,7 +182,16 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig)
             storedToken.UserAgent, fingerprint, ipAddress, ttlDays);
 
         dbContext.RefreshTokens.Add(newEntity);
-        await dbContext.SaveChangesAsync();
+        try
+        {
+            await dbContext.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            // Token was already deleted by a concurrent request (another refresh
+            // or cleanup worker). Treat as token reuse — client must re-login.
+            throw new AuthException(AuthErrors.TokenReuseDetected);
+        }
 
         return (user, newAccessToken, newRefreshToken);
     }
