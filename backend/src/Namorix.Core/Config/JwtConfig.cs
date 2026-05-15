@@ -5,7 +5,7 @@ public class JwtConfig
     public string Secret { get; init; } = string.Empty;
     public string Issuer { get; init; } = "Namorix";
     public string Audience { get; init; } = "Namorix";
-    public int AccessTokenExpirationMinutes { get; init; } = 1;
+    public int AccessTokenExpirationMinutes { get; init; } = 5;
     public int RefreshTokenExpirationDays { get; init; } = 7;
     public int RefreshTokenExpirationDaysRemember { get; init; } = 90;
 
