@@ -86,19 +86,25 @@
 - [x] eslint config + lint scripts across all packages (strictTypeChecked)
 - [ ] Vitest tests for auth.service (no test files exist yet)
 
-### M3 — System Apps
-**Status:** Desktop Shell UI — In Progress 🔜
+### M3 — System Addons (Built-in)
+**Status:** Desktop Shell UI ✅ + Addon System 🔜
 
 - [x] Desktop shell UI (taskbar, launcher, desktop area)
 - [x] Zustand stores (windows, launcher)
 - [x] WindowManager + WindowFrame (drag, resize, minimize, maximize)
-- [ ] File manager app
-- [ ] Terminal app (xterm.js + PTY bridge)
-- [ ] Settings app (register toggle)
-- [ ] Log viewer app
+- [ ] Addon contract trong `@namorix/core` (AddonEntry, NmxAddonManifest, AddonContext)
+- [ ] Frontend addon registry (registerAddon, resolveAddon, listAddons)
+- [ ] Internal addon: File Manager (first system addon, verify full flow)
+- [ ] Internal addon: Terminal
+- [ ] Internal addon: Settings
+- [ ] Internal addon: Log Viewer
 
-### M4 — External Addon System
+### M4 — External Addon System (Docker)
 **Status:** Not Started
+
+- Dùng chung contract với internal addon (AddonEntry, NmxAddonManifest)
+- External addon load động qua `import()` từ Docker container
+- Khác biệt: handshake token auth, EventBus sandbox, Docker lifecycle
 
 ### M5 — @namorix/core npm Publishing
 **Status:** Not Started

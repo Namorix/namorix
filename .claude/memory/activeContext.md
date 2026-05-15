@@ -2,25 +2,22 @@
 
 ## Current Work Focus
 
-M3 — Desktop Shell UI → **In Progress** 🔜
+M3 — Desktop Shell UI ✅ + Addon System 🔜
 
 - Desktop shell: Taskbar, DesktopArea, WindowManager, Launcher ✅
-- Login page fully connected with client-side validation + error handling
-- Register page fully connected
-- Decorator-based routing system in backend-core
-- i18n layering (core namespace + frontend translation namespace)
-- Client-side validation with ValidationRunner
-- Server-side validation with validate() middleware
-- **CSRF double-submit protection** implemented
-- **isAuthenticated fixed** — now calls `/api/auth/session` instead of checking `document.cookie`
-- **Token whitelist** with fingerprint + IP tracking
-- **Phase A**: rememberMe wired, secureCookie fix, getClientIP, logout-all in API routes
-- **Phase B**: frontend fingerprint generation (FingerprintComponents + SHA-256), backend verify on refresh (Option C balanced)
-- **C# Migration Phase 1-3**: AuthService, Config (IOptions<T>), Constants, Exceptions, Settings model
-- **C# Migration Phase 4**: AuthController (7 endpoints), typed ApiResponse<T>, SettingsService, CleanIp helper
-- Moving to M3 (System Apps)
+- Addon contract dùng chung cho system + external: AddonEntry, NmxAddonManifest, AddonContext
+- Internal addon (built-in) và external addon (Docker) — cùng contract, khác cách load + permission
+- Frontend: `addons/registry.ts` (registerAddon, resolveAddon, listAddons), `*.addon.ts`, bootstrap qua `addons/index.ts`
+- Backend: AddonManifest/AddonIds → Namorix.Core, AddonRegistry/AddonHandshake → Namorix.Adapters, AddonController → Namorix.Server
+- WindowFrame mount addon vào content area qua ref + AddonEntry lifecycle
 
 ## Recent Changes (2026-05-15)
+
+### Addon system architecture — unified contract (internal + external)
+- **Contract dùng chung**: Internal addon (M3) và external addon (M4) dùng cùng `AddonEntry` (mount/unmount lifecycle), `NmxAddonManifest` (id, displayName, icon), `AddonContext` (addonId, locale, theme). Khác biệt: internal import tĩnh bundle sẵn + full permission; external import động từ container + EventBus sandbox.
+- **Frontend**: `addons/` directory với `registry.ts` (Map-based: registerAddon, resolveAddon, listAddons), mỗi addon có `*.addon.ts` export manifest + default entry, bootstrap qua `addons/index.ts` import top-level.
+- **Backend**: Không tách project mới. AddonManifest + AddonIds → Namorix.Core (Models/Constants), AddonRegistry + AddonHandshake → Namorix.Adapters (Services), AddonController → Namorix.Server (REST surface).
+- **WindowFrame**: Dùng ref mount addon vào content area qua `entry.mount(el, context)` / `entry.unmount()`. Cả internal và external dùng chung cơ chế này.
 
 ### Desktop shell UI (taskbar, launcher, window manager + stores)
 - **frontend (0.8.0)**: New shell components — Taskbar (clock, launcher toggle, window buttons), DesktopArea (icon shortcuts), WindowFrame (drag/resize/minimize/maximize/close), WindowManager, Launcher (start menu with system apps list). New Zustand stores — window.store.ts (windows lifecycle, z-index stacking, position/size management), launcher.store.ts (start menu toggle). New types — WindowId, WindowState. Desktop.tsx — từ placeholder `<div>Test</div>` sang full shell layout. tokens.scss — thêm --nmx-taskbar-height, --nmx-window-frame-edge-size. Deps: thêm zustand 5.0.13.
@@ -313,8 +310,10 @@ Cả 3 attribute filter (`RequireAuthAttribute`, `RequireAdminAttribute`, `Requi
 
 ## Next Steps
 
-1. M3 — System app content (File Manager, Terminal, Settings, Log Viewer)
-2. M3 — Zustand stores (auth, addons, desktop)
-3. M3 — SystemAppRouter (mount component by app type)
-4. Write Vitest tests for auth.service
-5. Add Vietnamese translations (vi.json is empty)
+1. M3 — Define addon contract trong `@namorix/core/src/addon/` (AddonEntry, NmxAddonManifest, AddonContext)
+2. M3 — Frontend addon registry (registry.ts: registerAddon, resolveAddon, listAddons)
+3. M3 — Internal system addon: File Manager (first addon, verify full flow)
+4. M3 — Backend addon metadata (AddonManifest model, AddonController)
+5. M3 — Zustand stores (auth, addons, desktop)
+6. Write Vitest tests for auth.service
+7. Add Vietnamese translations (vi.json is empty)

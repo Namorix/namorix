@@ -16,21 +16,35 @@ frontend/
 │   │   ├── Auth/
 │   │   │   ├── AuthPage.tsx      # Two-column layout (hero + form panel)
 │   │   │   └── AuthPage.scss
+│   │   ├── Taskbar/              # Clock, start button, window buttons
+│   │   ├── DesktopArea/          # App icon shortcuts
+│   │   ├── WindowFrame/          # Draggable, resizable window chrome
+│   │   ├── WindowManager/        # Renders all open windows
+│   │   ├── Launcher/             # Start menu with system app list
+│   │   └── index.ts
+│   ├── stores/
+│   │   ├── window.store.ts       # Zustand — windows lifecycle, z-index
+│   │   └── launcher.store.ts     # Zustand — start menu toggle
+│   ├── types/
+│   │   ├── windowing.ts          # WindowId, WindowState interfaces
 │   │   └── index.ts
 │   ├── hooks/
 │   │   └── useAuthForm.ts        # Form state + validation hook
 │   ├── pages/
 │   │   ├── Login.tsx             # Username + password + remember-me toggle
 │   │   ├── Register.tsx          # Username + password + confirmPassword
-│   │   └── Desktop.tsx           # Shell UI (M3)
+│   │   └── Desktop.tsx           # Full shell layout: taskbar, desktop, windows, launcher
 │   ├── styles/
 │   │   ├── main.scss             # Imports @namorix/styles + local tokens
-│   │   └── tokens.scss           # --nmx-auth-card-* tokens
-│   └── i18n/
-│       ├── index.ts              # NmxI18n instance with core + translation namespaces
-│       └── locales/
-│           ├── en.json           # English translations
-│           └── vi.json           # Vietnamese translations (TODO)
+│   │   └── tokens.scss           # --nmx-auth-card-*, --nmx-taskbar-height, etc.
+│   ├── i18n/
+│   │   ├── index.ts              # NmxI18n instance with core + translation namespaces
+│   │   └── locales/
+│   │       ├── en.json           # English translations
+│   │       └── vi.json           # Vietnamese translations (TODO)
+│   └── addons/                   # System addons (internal)
+│       ├── registry.ts           # registerAddon, resolveAddon, listAddons
+│       └── index.ts              # Bootstrap — imports all *.addon.ts
 └── vite.config.ts
 ```
 
@@ -85,8 +99,7 @@ frontend (namespace "translation") →  auth.login.*, auth.register.*
 
 ## Upcoming (M3-M5)
 
-- **Desktop Shell** — Window manager, taskbar, app launcher (M3)
-- **System Apps** — File manager, Terminal, Settings, Log viewer (M3)
-- **Addon Widget Slots** — DOM slot integration for addon widgets (M4)
+- **System Addons** — File Manager, Terminal, Settings, Log Viewer (internal addons via registry) (M3)
+- **Addon Widget Slots** — DOM slot integration for external addon widgets (M4)
 - **Event Bus** — `@namorix/core` EventBus for shell↔addon communication (M4)
 - **SignalR** — Realtime events (addon status, notifications) (M4)

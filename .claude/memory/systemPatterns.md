@@ -52,10 +52,10 @@
 - No separate DB server needed for self-hosted
 - **Why:** Simple, zero-config for personal/home server
 
-### 4. Socket.IO for Backend Realtime Events
+### 4. SignalR for Backend Realtime Events
 - Backend → Shell events: `nmx:notification`, `nmx:addon-status`, `nmx:deprecation`
 - WebSocket endpoints: `/namorix-shell-ws`, `/namorix-terminal-ws`
-- **Chỉ dùng cho backend communication.** Shell ↔ Addon trong browser dùng Event Bus (`@namorix/core`), không qua Socket.IO.
+- **Chỉ dùng cho backend communication.** Shell ↔ Addon trong browser dùng Event Bus (`@namorix/core`), không qua SignalR.
 
 ### 5. Docker via Unix Socket (Docker.DotNet.Enhanced)
 - Desktop backend runs on same machine as Docker
@@ -79,7 +79,7 @@
 ```typescript
 interface NmxSession { user: NmxUser; expiresAt: string }
 interface NmxUser { id: number; username: string; role: number }
-interface NmxAddonManifest { id: string; displayName: string; internalPort: number }
+interface NmxAddonManifest { id: string; displayName: string; version: string; icon?: string }
 
 // AddonEntry — mỗi addon phải export default interface này
 interface AddonEntry {
@@ -184,23 +184,21 @@ type EventMap = {
 - Uses `http.url().post().json()` fluent API from `@namorix/core`
 - Throws `ApiError.fromResponse(data)` on non-success
 
-### State Management (Zustand) — Planned, Not Yet Implemented
+### State Management (Zustand)
 - Tất cả store bọc middleware `devtools` để support Redux DevTools:
   ```typescript
   import { devtools } from "zustand/middleware"
   const useWindowStore = create(devtools((set) => ({ ... }), { name: "WindowStore" }))
   ```
-- Store definitions:
-
-  | Store | Key State | Key Actions |
-  |-------|-----------|-------------|
-  | `windowStore` | `windows: Window[]`, `activeWindowId` | `openWindow`, `closeWindow`, `focusWindow`, `minimizeWindow` |
-  | `authStore` | `user: User \| null`, `isAuthenticated` | `setUser`, `clearUser` |
-  | `addonStore` | `installedAddons: Addon[]`, `runningContainers` | `installAddon`, `uninstallAddon`, `startContainer`, `stopContainer` |
-  | `desktopStore` | `theme`, `locale`, `wallpaper` | — |
-
 - File pattern: `{name}.store.ts`
-- **Note:** No Zustand stores exist yet — will be created during M3 (Desktop shell)
+
+| Store | Key State | Key Actions |
+|-------|-----------|-------------|
+| `windowStore` ✅ | `windows: WindowState[]`, `activeId` | `openWindow`, `closeWindow`, `focusWindow`, `minimizeWindow`, `maximizeWindow`, `moveWindow`, `resizeWindow` |
+| `launcherStore` ✅ | `isOpen` | `toggle`, `open`, `close` |
+| `authStore` | `user: User \| null`, `isAuthenticated` | `setUser`, `clearUser` |
+| `addonStore` | `installedAddons`, `runningContainers` | `installAddon`, `uninstallAddon`, `startContainer`, `stopContainer` |
+| `desktopStore` | `theme`, `locale`, `wallpaper` | — |
 
 ### React Component Patterns (@namorix/ui)
 - Components prefixed with `Nmx` (e.g., `NmxButton`, `NmxInput`)
@@ -226,38 +224,29 @@ type EventMap = {
 ### WindowState
 ```typescript
 type WindowState = {
-  windowId: string        // UUID
-  appId: string           // 'file-manager' | 'terminal' | 'settings' | ...
+  id: string             // UUID
+  app: string            // 'file-manager' | 'terminal' | 'settings' | ...
   title: string
-  icon?: string
-  position: { x: number; y: number }
-  size: { width: number; height: number }
+  x: number
+  y: number
+  width: number
+  height: number
   minimized: boolean
   maximized: boolean
   zIndex: number
 }
 ```
 
-### Zustand Stores (Planned)
-| Store | Responsibility |
-|-------|----------------|
-| `windowStore` | `windows: WindowState[]`, `activeWindowId`, `openWindow`, `closeWindow`, `focusWindow`, `minimizeWindow` |
-| `authStore` | `user`, `isAuthenticated`, `setUser`, `clearUser` |
-| `addonStore` | `installedAddons`, `runningContainers`, `installAddon`, `uninstallAddon`, `startContainer`, `stopContainer` |
-| `desktopStore` | `theme`, `locale`, `wallpaper` |
-
 ### Window Manager
-- `focusOrder`: array of windowId; last element = focused window
-- On focus: move windowId to end of `focusOrder`, assign zIndex higher than others
-- Drag/resize: Pointer Events on title bar and window edges
+- `nextZIndex` counter, `activeId` tracking
+- On focus: increment `nextZIndex`, assign to window, set `minimized: false`
+- Drag/resize: `onMouseDown` + `document.addEventListener("mousemove"/"mouseup")` trên titlebar và 8 resize handles
 
 ### Z-index Layer Stack
 | Layer | z-index | Notes |
 |-------|---------|-------|
-| Auth overlay | 9000 | Full screen when not logged in |
-| Notification center | 8000 | Notification panel |
-| App launcher | 7000 | Start menu |
-| Taskbar | 1000 | Always on top of window content |
+| Taskbar | 9999 | Always on top |
+| Launcher overlay | 9998 | Start menu + backdrop |
 | Windows | 100+ | Dynamic zIndex managed by WindowManager |
 | Desktop icons | 50 | Desktop background |
 
@@ -269,7 +258,7 @@ type WindowState = {
 
 ## WebSocket Architecture
 
-### /namorix-shell-ws (Socket.IO — Backend Events Only)
+### /namorix-shell-hub (SignalR — Backend Events Only)
 Server → Client:
 | Event | Payload | Notes |
 |-------|---------|-------|
@@ -280,11 +269,11 @@ Server → Client:
 Client → Server:
 | Event | Payload | Notes |
 |-------|---------|-------|
-| `nmx:handshake` | `{ coreVersion }` | Auto-emit on connect |
+| `nmx:handshake` | `{ coreVersion }` | Auto-send on connect |
 
-Reconnection: Socket.IO with backoff; server resends state on reconnect.
+Reconnection: SignalR automatic reconnect; server resends state on reconnect.
 
-**Note:** Addon communication trong browser dùng Event Bus (`@namorix/core`), không qua Socket.IO.
+**Note:** Addon communication trong browser dùng Event Bus (`@namorix/core`), không qua SignalR.
 Shell ↔ Addon events (install, start, stop, remove, logs) gọi REST API, không dùng WebSocket.
 
 ### /namorix-terminal-ws (PTY bridge)

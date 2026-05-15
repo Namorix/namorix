@@ -4,8 +4,8 @@ Browser-based desktop shell, self-hosted.
 
 ## Features
 
-- **Desktop Shell** — Window manager, taskbar, app launcher in browser
-- **System Apps** — File manager, Terminal, Settings, Log viewer
+- **Desktop Shell** — Window manager, taskbar, launcher, desktop icon shortcuts
+- **System Addons** — Built-in addons (File Manager, Terminal, Settings, Log Viewer) via addon contract
 - **External Addons** — Docker-based addons with 3 modes: widget DOM slot, full app via window.open, direct URL
 - **Centralized Auth** — Single auth server for shell and addons
 
@@ -70,10 +70,23 @@ namorix/
 │       │   ├── auth.controller.ts
 │       │   └── health.controller.ts
 │       ├── components/
+│       │   ├── Auth/            # AuthPage (hero + form panel layout)
+│       │   ├── Taskbar/         # Clock, start button, window buttons
+│       │   ├── DesktopArea/     # App icon shortcuts
+│       │   ├── WindowFrame/     # Draggable, resizable window chrome
+│       │   ├── WindowManager/   # Renders all open windows
+│       │   └── Launcher/        # Start menu with system app list
+│       ├── stores/
+│       │   ├── window.store.ts  # Zustand — windows lifecycle, z-index
+│       │   └── launcher.store.ts# Zustand — start menu toggle
+│       ├── types/
+│       │   ├── windowing.ts     # WindowId, WindowState interfaces
+│       │   └── index.ts
 │       ├── pages/
 │       │   ├── Login.tsx
 │       │   ├── Register.tsx
-│       │   └── Desktop.tsx
+│       │   └── Desktop.tsx      # Full shell layout
+│       ├── styles/
 │       └── i18n/
 └── backend/                   # ASP.NET Core 8 API (port 3000)
     ├── Makefile               # Build/EF commands
@@ -136,7 +149,18 @@ public class AuthController(AuthService authService) : ControllerBase
 }
 ```
 
-## Addon Architecture (Planned — M4)
+## Addon Architecture
+
+### Internal Addons (M3 — Built-in)
+
+System addons (File Manager, Terminal, Settings, Log Viewer) sử dụng chung addon contract với external addons:
+- **AddonEntry**: `mount(container, context)` / `unmount()` lifecycle
+- **NmxAddonManifest**: id, displayName, version, icon
+- **AddonContext**: addonId, locale, theme
+
+Internal addons import tĩnh, bundle sẵn trong shell, full permission.
+
+### External Addons (M4 — Docker)
 
 Addon có 3 mode tích hợp:
 
@@ -150,7 +174,7 @@ Addon có 3 mode tích hợp:
 
 - **Server-to-server**: gRPC bidirectional streaming (Namorix Backend ↔ Addon Backend)
 - **Frontend realtime**: SignalR (Dashboard ↔ Namorix Backend, Addon Frontend ↔ Addon Backend)
-- **Shell ↔ Addon**: Event Bus (`@namorix/core`) — `shell:*` events và `addon:*` events
+- **Shell ↔ Addon**: Event Bus (`@namorix/core`) — `shell:*` events và `addon:*` events (cùng JS context cho widget mode, postMessage cho full app mode)
 
 ## Environment Variables
 
@@ -170,6 +194,6 @@ Addon có 3 mode tích hợp:
 
 1. **M1** — Static shell UI + mock auth page ✅
 2. **M2** — Full auth backend (login/register/logout/refresh/session, decorators, i18n, validation) ✅
-3. **M3** — System apps (File manager, Terminal, Settings, Log viewer) 🔜
+3. **M3** — System Addons (Built-in): addon contract + registry, File Manager, Terminal, Settings, Log Viewer 🔜
 4. **M4** — External addon system (Docker lifecycle, addon manager)
 5. **M5** — @namorix/core publish npm + addon integration guide
