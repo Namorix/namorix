@@ -1,8 +1,8 @@
 import type { AuthChecker } from "../router"
 import { getApiBaseUrl } from "../config"
 import { http } from "../http"
-import { ApiAuthRoutes} from "../api-routes"
-import type { AuthStatus} from "../types"
+import { ApiAuthRoutes } from "../apiRoutes"
+import type { AuthStatus } from "../types"
 
 async function getAuthStatus(): Promise<AuthStatus> {
   const data = await http

@@ -1,5 +1,6 @@
 export const API_BASE = "/api"
 export const API_AUTH_BASE = API_BASE + "/auth"
+export const API_USER_BASE = API_BASE + "/user"
 
 export const ApiAuthRoutes = {
   status: API_AUTH_BASE + "/status",
@@ -11,6 +12,19 @@ export const ApiAuthRoutes = {
   session: API_AUTH_BASE + "/session",
 }
 
+export const ApiUserRoutes = {
+  theme: API_USER_BASE + "/theme",
+}
+
 export const ApiMiddlewareRoutes = {
   health: API_BASE + "/health",
+}
+
+export const ApiThemeRoutes = {
+  themes: API_BASE + "/themes",
+}
+
+export const ThemeRoutes = {
+  builtin: "/themes/registry.json",
+  themes: "/themes/{id}/theme.css",
 }

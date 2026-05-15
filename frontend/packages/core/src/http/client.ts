@@ -7,7 +7,7 @@ import {
   HttpStatus,
   HttpErrorCodes,
 } from "../types"
-import { ApiAuthRoutes } from "../api-routes"
+import { ApiAuthRoutes } from "../apiRoutes"
 
 class RequestBuilder {
   private readonly _url: string
@@ -102,4 +102,23 @@ class RequestBuilder {
 
 export const http = {
   url: (url: string) => new RequestBuilder(url),
+  getJson: async <T>(url: string): Promise<ApiResponse<T>> => {
+    try {
+      const result = await fetch(url, { credentials: "include" })
+      if (!result.ok) {
+        return apiHttpError(
+          `HTTP ${result.status}`,
+          HttpErrorCodes.INTERNAL_ERROR,
+        ) as ApiResponse<T>
+      }
+
+      const data = (await result.json()) as T
+      return { success: true, data } as ApiResponse<T>
+    } catch {
+      return apiHttpError(
+        "Network error",
+        HttpErrorCodes.INTERNAL_ERROR,
+      ) as ApiResponse<T>
+    }
+  },
 }
