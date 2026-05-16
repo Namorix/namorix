@@ -1,72 +1,7 @@
-@use "@namorix/styles" as *;
-
 .nmx-auth-page {
   position: absolute;
   height: 100%;
   width: 100%;
-}
-
-.nmx-auth-page__layout {
-  display: grid;
-  height: 100%;
-  width: 100%;
-  justify-content: center;
-  grid-template-columns: minmax(0, 1fr) minmax(var(--nmx-auth-card-min-width), min(var(--nmx-auth-card-max-width), 45%));
-}
-
-.nmx-auth-page__hero {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--nmx-spacing-lg);
-  padding: clamp(var(--nmx-spacing-xl), 5vw, var(--nmx-spacing-5xl));
-  background: transparent;
-}
-
-.nmx-auth-page__hero-title {
-  margin: 0;
-  font-weight: var(--nmx-font-weight-extrabold);
-  letter-spacing: var(--nmx-letter-spacing-tight);
-  line-height: var(--nmx-line-height-base);
-  font-size: clamp(var(--nmx-font-size-2xl), 6vw, var(--nmx-font-size-6xl));
-  color: var(--nmx-color-on-surface);
-}
-
-.nmx-auth-page__hero-text {
-  margin: 0;
-  max-width: 32rem;
-  font-size: var(--nmx-font-size-sm);
-  line-height: var(--nmx-line-height-base);
-  color: var(--nmx-color-on-surface-variant);
-}
-
-.nmx-auth-page__panel {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: clamp(var(--nmx-spacing-lg), 4vw, var(--nmx-spacing-3xl));
-  background: transparent;
-}
-
-.nmx-auth-page__card {
-  width: 100%;
-  // min-width: var(--nmx-auth-card-min-width);
-  // max-width: var(--nmx-auth-card-max-width);
-}
-
-.nmx-auth-page__page {
-  width: 100%;
-  // width: min(100%, var(--nmx-auth-card-max-width));
-}
-
-.nmx-auth-page__secondary-actions {
-  margin-top: var(--nmx-spacing-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--nmx-spacing-sm);
-  font-size: var(--nmx-font-size-sm);
-  color: var(--nmx-color-on-surface-variant);
 }
 
 .nmx-auth-page__secondary-link {
@@ -80,22 +15,10 @@
   }
 }
 
-@media (max-width: 54rem) {
-  .nmx-auth-page__layout {
-    grid-template-columns: 1fr;
-    min-height: auto;
-  }
-
-  .nmx-auth-page__hero {
-    display: none;
-  }
-
-  .nmx-auth-page__panel {
-    min-height: min(100vh, 44rem);
-    padding: var(--nmx-spacing-lg);
-  }
-
-  .nmx-auth-page__card {
-    width: min(100%, 30rem);
-  }
+.nmx-auth-page__card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--nmx-spacing-sm);
+  margin-top: var(--nmx-spacing-md);
 }

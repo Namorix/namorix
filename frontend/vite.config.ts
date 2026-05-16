@@ -29,12 +29,12 @@ export default defineConfig({
   },
   plugins: [
     react(),
-    {
-      name: "theme-hmr",
-      handleHotUpdate({ file, server }) {
-        if (file.includes("public/themes"))
-          server.ws.send({ type: "full-reload" })
-      },
-    },
+    // {
+    //   name: "theme-hmr",
+    //   handleHotUpdate({ file, server }) {
+    //     if (file.includes("public/themes"))
+    //       server.ws.send({ type: "full-reload" })
+    //   },
+    // },
   ],
 })

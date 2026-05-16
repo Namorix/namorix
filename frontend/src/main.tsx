@@ -15,7 +15,10 @@ configureCore({
 })
 
 generateFingerprint().catch(console.error)
-restoreTheme()
+
+if (!import.meta.env.DEV) {
+  restoreTheme()
+}
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

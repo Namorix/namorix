@@ -8,10 +8,6 @@
 
   &__card {
     max-width: 400px;
-    width: 100%;
-    background: var(--nmx-color-surface-low);
-    border-radius: var(--nmx-radius-md);
-    padding: var(--nmx-spacing-2xl) var(--nmx-spacing-lg);
     text-align: center;
   }
 
@@ -57,12 +53,12 @@
 
   &__meta-label {
     color: var(--nmx-color-on-surface-variant);
-    font-family: var(--nmx-font-mono) serif;
+    font-family: var(--nmx-font-mono), serif;
   }
 
   &__meta-value {
     color: var(--nmx-color-on-surface);
-    font-family: var(--nmx-font-mono) serif;
+    font-family: var(--nmx-font-mono), serif;
 
     &--danger {
       color: var(--nmx-color-danger);

@@ -22,10 +22,10 @@ export const AuthPage: React.FC<AuthPageProps> = ({
 
   return (
     <div className="nmx-auth-page">
-      <div className="nmx-auth-page__layout">
-        <section className="nmx-auth-page__hero" aria-hidden="true">
+      <div className="nmx-split-panel">
+        <section className="nmx-split-panel__hero" aria-hidden="true">
           {heroLines.length > 0 && (
-            <h1 className="nmx-auth-page__hero-title">
+            <h1 className="nmx-split-panel__hero-title">
               {heroLines.map((line, idx) => (
                 <React.Fragment key={idx}>
                   {idx > 0 && <br />}
@@ -35,10 +35,10 @@ export const AuthPage: React.FC<AuthPageProps> = ({
             </h1>
           )}
           {heroDescription && (
-            <p className="nmx-auth-page__hero-text">{heroDescription}</p>
+            <p className="nmx-split-panel__hero-text">{heroDescription}</p>
           )}
         </section>
-        <section className="nmx-auth-page__panel">{children}</section>
+        <section className="nmx-split-panel__content">{children}</section>
       </div>
     </div>
   )
