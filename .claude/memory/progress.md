@@ -123,11 +123,11 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.10.1 | M3 (Auth guard dedup, Root extraction, refresh fix) |
-| @namorix/core | 0.10.1 | M3 (Refresh: skip session URL, return proper error) |
-| @namorix/styles | 0.2.0 | M2 |
+| frontend | 0.10.2 | M3 (Theme CSS build config, minor tweaks) |
+| @namorix/core | 0.10.2 | M3 (dedupe, sanitizePath, production.ts, theme refinements) |
+| @namorix/styles | 0.3.0 | M3 (base/ subdir, themes/ structure, vite.config for theme CSS) |
 | @namorix/ui | 0.3.0 | M2 |
-| backend | 0.19.0 | M3 (ThemeController, UserService DI, AuthController refactor) |
+| backend | 0.19.1 | M3 (SetThemeSchema, ThemeManifest cssPath, AuthController refactor) |
 
 ## Version Rules
 
@@ -159,6 +159,14 @@
 | @namorix/core | 0.10.0 | New theme module: types.ts (ThemeManifest), loader.ts (restoreTheme, loadTheme), registry.ts (getBuiltInThemes, getAllThemes), barrel export. New providers module: ThemeProvider.tsx (ThemeContext, useTheme hook, switchTheme). New http.getJson method. New constants (NMX_THEME_CSS_ID, NMX_THEME_STORAGE_KEY). New API routes (ApiThemeRoutes, ThemeRoutes, ApiUserRoutes). |
 | frontend | 0.10.0 | Theme integration: Root component with ThemeProvider wrap, restoreTheme() on app start, getAllThemes() load. Login theme sync — fetch user themeId from `/api/user/theme` → localStorage. |
 | backend | 0.18.0 | New ThemeManifest model. User.ThemeId field. AppDbContext: ThemeManifests + AddonManifests DbSet + unique indexes. New UserService (GetThemeAsync, SetThemeAsync). New UserController (GET/PUT /api/user/theme). |
+
+### 2026-05-16 (Styles restructure: base/ + themes/, validation, dedupe, env fix)
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/styles | 0.3.0 | NEW: base/ subdir (reset, fonts, mixins, variables, tokens), themes/ structure (dark/index.scss). NEW: vite.config.ts, tsconfig.json, scss.d.ts for theme CSS build. Updated: index.scss forwards base. |
+| @namorix/core | 0.10.2 | NEW: env/production.ts (conditional DEV flag via package.json exports). NEW: utils/dedupe.ts, utils/sanitizePath.ts. Fix: theme/types.ts — isBuiltIn, cssPath fields. Fix: theme/loader.ts — {id}/{path} URI pattern. Fix: theme/registry.ts — merged built-in + API fetch. Fix: ThemeProvider.tsx — switch/restore. Fix: guards.ts — dedupeGuard wrapper. |
+| frontend | 0.10.2 | NEW: vite.config.ts — theme CSS build entries. Fix: main.tsx — restoreTheme, theme import. Fix: main.scss — @forward → @use. Fix: AuthPage.scss — minor. |
+| backend | 0.19.1 | NEW: SetThemeSchema (IValidationSchema). Fix: UserController — [Validate] attribute. Fix: ThemeManifest — css → cssPath. Fix: AuthController — TryRefresh refactor. Chore: migrations recreated. |
 
 ### 2026-05-16 (Auth fix: UserService DI, AuthController refactor, refresh + guard fixes)
 | Package | Version | Changes |

@@ -14,6 +14,14 @@ M3 — Desktop Shell UI ✅ + Addon System (contract, registry, Log Viewer) ✅
 
 ## Recent Changes (2026-05-16)
 
+### Styles restructure: base/ + themes/, validation, dedupe, env fix
+- **@namorix/styles (0.2.0 → 0.3.0)**: Restructure — base/ subdir (reset, fonts, mixins, variables, tokens), themes/ subdir (dark/index.scss). New vite.config.ts, tsconfig.json, scss.d.ts for theme CSS build.
+- **@namorix/core (0.10.1 → 0.10.2)**: New env/production.ts (conditional DEV flag via package.json exports). New utils/dedupe.ts (async dedup), utils/sanitizePath.ts. Theme fixes: types (isBuiltIn, cssPath), loader ({id}/{path} pattern), registry (merged fetch), ThemeProvider (switch/restore). Guards dedupeGuard wrapper.
+- **frontend (0.10.1 → 0.10.2)**: vite.config.ts theme CSS build entries. main.tsx restoreTheme. main.scss @forward → @use. AuthPage.scss tweak.
+- **backend (0.19.0 → 0.19.1)**: New SetThemeSchema (IValidationSchema). SetTheme [Validate] attribute. ThemeManifest css → cssPath. AuthController TryRefresh refactor. Migrations recreated.
+
+## Recent Changes (2026-05-16)
+
 ### Auth fix: UserService DI, AuthController refactor, refresh + guard fixes
 - **backend (0.19.0)**: New ThemeController (GET /api/themes) + ThemeService. Fix: UserService, ThemeService register DI — xoá lỗi 500. Fix: ThemeManifest nullable fields. Refactor: AuthController — session endpoint gọi TryRefresh() khi token expired thay vì 401 ngay; refactor cookie helpers (SetCookie dùng AuthService TTL); UserOk helper. Fix: AuthService TTL helper methods. Config: AccessTokenExpirationMinutes → AccessTokenExpirationSeconds (appsettings + JwtConfig).
 - **@namorix/core (0.10.1)**: Fix: client.ts — skip refresh cho session URL (tránh loop). Fix: client.ts — return refreshResponse khi refresh fail thay vì fallthrough parse lỗi.

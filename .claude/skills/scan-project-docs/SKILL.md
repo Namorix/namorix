@@ -22,12 +22,16 @@ memory bank index (`.claude/memory/MEMORY.md`):
 - Key patterns in use
 - All rule definitions (no separate rule files — everything is in CLAUDE.md)
 
+If `CLAUDE.md` does not exist → read `.claude/memory/MEMORY.md` directly as fallback.
+If neither exists → skip to Step 3 with no rules context, note the gap in the summary.
+
 ### Step 2: Map Task to Relevant Docs
 
 | User Task | Read These Files |
 |-----------|-----------------|
 | Frontend/React work | CLAUDE.md Rule 5 (React), Rule 6 (UI Primitives), Rule 4 (Imports) |
 | Backend/API work | CLAUDE.md Rule 3 (Package Boundary), Rule 7 (Error Handling) |
+| Full-stack feature | CLAUDE.md Rule 3, Rule 5, Rule 7 + `.claude/memory/systemPatterns.md` |
 | New feature | `.claude/memory/progress.md` (current version), `.claude/memory/activeContext.md` (current focus) |
 | Bug fix | CLAUDE.md Rule 7 (Error Handling), `.claude/memory/progress.md` (known issues) |
 | Package changes | CLAUDE.md Rule 3 (Package Boundary), Rule 1 (TypeScript Config) |
@@ -49,13 +53,17 @@ memory bank index (`.claude/memory/MEMORY.md`):
 Output a concise summary:
 ```
 ## Relevant Context
-- Current milestone: M3 (System Apps)
+- Current milestone: <from progress.md if read, else "unknown">
 - Active work: <from activeContext.md>
-- Key package versions: <from progress.md>
+- Key package versions: <from progress.md if read, else "not checked">
 
 ## Rules Applied
 - CLAUDE.md Rule N: <key rule summary>
 - CLAUDE.md Rule M: <key rule summary>
+
+## Missing Context (if any)
+- CLAUDE.md not found — rules context unavailable
+- <other gaps>
 
 ## Next Steps
 - <what to do>
@@ -68,3 +76,6 @@ Output a concise summary:
 - **Skip LICENSE** — per CLAUDE.md Meta Rules
 - **Skip unchanged packages** — only read files in scope
 - **Use git status** to check what files were recently changed before reading
+- **Fallback gracefully** — if key files missing, note the gap and continue
+- **Full-stack tasks read both sides** — frontend + backend rules apply together
+

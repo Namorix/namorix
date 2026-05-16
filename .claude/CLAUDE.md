@@ -67,7 +67,8 @@ interface AuthChecker {
 
 - **Controller pattern** for frontend API calls (`frontend/src/controllers/`)
 - **Decorator-based routing** (C#: `[HttpGet]`, `[HttpPost]`, `[Validate]`, `[Controller]`; Frontend: registerController)
-- **CSRF double-submit** — `nmx_csrf_token` cookie + `X-CSRF-Token` header, enabled via `CSRF_MODE=double-submit`
+- **CSRF double-submit** — `nmx_csrf_token` cookie + `X-CSRF-Token` header, enabled via `CsrfEnabled` config (C# middleware `UseCsrfProtection()`)
+- **Session self-heal** — `AuthController.Session()` gọi `TryRefresh()` khi access token expired, tự động refresh qua refresh token cookie trước khi trả về 401
 - **i18n layering** — core namespace + frontend translation namespace, `fallbackNS: ["core", "translation"]`
 - **Validation two-tier** — server: `[Validate]` attribute with schema; client: `ValidationRunner` + `formatApiError()`
 - **Token whitelist** — refresh_tokens table with fingerprint + IP tracking for theft detection
@@ -90,7 +91,7 @@ cd frontend && pnpm test            # Run tests
 
 1. **M1** — Static shell UI + mock auth ✅
 2. **M2** — Full auth backend ✅
-3. **M3** — System Addons (Built-in): addon contract + registry, File Manager, Terminal, Settings, Log Viewer 🔜
+3. **M3** — System Addons (Built-in) ✅ (Desktop shell UI, addon contract + registry, Log Viewer, theme system; File Manager, Terminal, Settings 🔜)
 4. **M4** — External addon system (Docker lifecycle, addon manager UI)
 5. **M5** — `@namorix/core` publish npm + addon integration guide
 
@@ -389,12 +390,22 @@ frontend/packages/
 │       └── utils/cx.ts
 ├── styles/
 │   ├── package.json
+│   ├── tsconfig.json
+│   ├── vite.config.ts
 │   └── src/
 │       ├── index.scss
-│       ├── reset.scss
-│       ├── fonts.scss
-│       ├── mixins.scss
-│       └── variables.scss
+│       ├── base/               # Structural styles
+│       │   ├── _index.scss
+│       │   ├── _reset.scss
+│       │   ├── _fonts.scss
+│       │   ├── _mixins.scss
+│       │   ├── _tokens.scss    # Structural tokens (radii, spacing, typography, layout)
+│       │   └── _variables.scss
+│       └── themes/             # Theme CSS entries (compiled by Vite)
+│           ├── dark/
+│           │   └── index.scss
+│           └── light/
+│               └── index.scss
 ├── ui/
 │   ├── package.json
 │   ├── tsconfig.json
@@ -412,7 +423,7 @@ backend/
 ├── Namorix.sln
 └── src/
     ├── Namorix.Core/        # Config, Constants, Models, Exceptions, Responses, Validation
-    ├── Namorix.Adapters/    # Persistence (AppDbContext, migrations), Services (Auth, Permission, Settings)
+    ├── Namorix.Adapters/    # Persistence (AppDbContext, migrations), Services (Auth, Permission, Settings, Theme, User)
     ├── Namorix.Server/      # Controllers, Middleware, Extensions, Helpers, Program.cs
     └── Namorix.Workers/     # TokenCleanupWorker (background service)
 ```

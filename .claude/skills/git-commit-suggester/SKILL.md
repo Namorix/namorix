@@ -18,10 +18,11 @@ Run these commands in parallel:
 ```bash
 git status
 git diff --stat
+git ls-files --others --exclude-standard
 git log --oneline -5
 ```
 
-If no changed files found → output "Nothing to commit" and stop.
+If no changed files found (no modified, no untracked) → output "Nothing to commit" and stop.
 
 ### 2. Analyze each changed file
 
@@ -45,7 +46,6 @@ Skip always:
 - `node_modules/`
 - `dist/`, `*.lock`, `*.log`
 - Symlinks inside `.claude/skills/`
-- `*.g.cs`, `*.Designer.cs`, EF migration auto-generated files
 
 ### 3. Group into logical commits
 
@@ -109,4 +109,4 @@ EOF
 8. **Never add `Co-Authored-By`** trailer — project convention không dùng.
 9. **No changes = stop early** — if `git status` shows clean working tree, say so and exit.
 10. **Breaking changes** — if a commit removes/renames a public API, use `!` suffix and explain impact in bullet points.
-
+11. **Must stage ALL changed files** — cross-check `git status` output with proposed commits before finishing. Every modified/untracked file must appear in exactly one commit. If any file is unaccounted for, add it before outputting commands.
