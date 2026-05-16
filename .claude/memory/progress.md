@@ -123,10 +123,10 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.10.3 | M3 (Import refactors, CSS cleanup, Login/Register NmxCard integration) |
-| @namorix/core | 0.10.2 | M3 (dedupe, sanitizePath, production.ts, theme refinements) |
-| @namorix/styles | 0.4.0 | M3 (base/components/, base/layouts/, themes/dark/tokens.scss, build via SCSS) |
-| @namorix/ui | 0.4.0 | M3 (NmxCard Components/, flattened Primitives, removed SCSS) |
+| frontend | 0.10.4 | M3 (NmxIcon integration, page prop refactoring, CSS rebuild) |
+| @namorix/core | 0.10.3 | M3 (cx moved to @namorix/ui) |
+| @namorix/styles | 0.5.0 | M3 (icomoon SCSS, icon component styles, typography, utilities) |
+| @namorix/ui | 0.5.0 | M3 (NmxIconFont, NmxIconBox, shared types/utils, primitive refactor) |
 | backend | 0.19.1 | M3 (SetThemeSchema, ThemeManifest cssPath, AuthController refactor) |
 
 ## Version Rules
@@ -159,6 +159,14 @@
 | @namorix/core | 0.10.0 | New theme module: types.ts (ThemeManifest), loader.ts (restoreTheme, loadTheme), registry.ts (getBuiltInThemes, getAllThemes), barrel export. New providers module: ThemeProvider.tsx (ThemeContext, useTheme hook, switchTheme). New http.getJson method. New constants (NMX_THEME_CSS_ID, NMX_THEME_STORAGE_KEY). New API routes (ApiThemeRoutes, ThemeRoutes, ApiUserRoutes). |
 | frontend | 0.10.0 | Theme integration: Root component with ThemeProvider wrap, restoreTheme() on app start, getAllThemes() load. Login theme sync — fetch user themeId from `/api/user/theme` → localStorage. |
 | backend | 0.18.0 | New ThemeManifest model. User.ThemeId field. AppDbContext: ThemeManifests + AddonManifests DbSet + unique indexes. New UserService (GetThemeAsync, SetThemeAsync). New UserController (GET/PUT /api/user/theme). |
+
+### 2026-05-16 (NmxIconFont, NmxIconBox, icon SCSS, shared types/utils)
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/styles | 0.5.0 | NEW: base/icomoon/ (variables.scss — font path + icon codes, fonts.scss — @font-face + icomoon base). NEW: base/components/icon/ (icon-font.scss, icon-box.scss component styles). NEW: base/typography.scss, base/utilities.scss. Fix: base/index.scss — reorder forwards, add icomoon/utilities/icon-font/typography. Fix: fonts.scss — quote style + DM Sans. Fix: variables.scss — semicolon. Fix: vite.config.ts — cssMinify: false. Fix: components/index.scss — forward icon. Format: button, form, inline-alert SCSS cleanup. |
+| @namorix/ui | 0.5.0 | NEW: Primitives/NmxIcon/ — NmxIconFont (symbol prop, cxSize), NmxIconBox (semantic color, children). NEW: types/ — base.ts (WithBaseProps, WithHTMLProps, WithSemanticColor, WithVariant), primitives.ts (NmxButtonVariant, NmxSemanticColor, NmxCxInput). NEW: utils/ — cx.ts (moved from core), cx-size.ts, cx-semantic.ts, cx-variant.ts. Refactor: NmxButton, NmxInlineAlert, NmxToggle, NmxCard — dùng shared types thay local. Exports: types, utils, NmxIcon added to index.ts/barrel. |
+| @namorix/core | 0.10.3 | Chore: remove cx export from utils/index.ts (moved to @namorix/ui). |
+| frontend | 0.10.4 | Fix: Login, Register, Blocked, Taskbar, WindowFrame — prop refactoring (semantic color, shouldRender). Chore: theme CSS rebuilt. Fix: index.html meta tag. |
 
 ### 2026-05-16 (Styles: base/components/, layouts/, dark tokens; UI: NmxCard, flatten primitives)
 | Package | Version | Changes |

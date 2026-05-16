@@ -208,6 +208,35 @@ type EventMap = {
 - Functional components only
 - `shouldRender` prop for conditional rendering
 
+### UI Component Design Philosophy
+
+**Phân loại:**
+
+| Type | Đặc điểm | Ví dụ |
+|------|----------|-------|
+| **Primitive** | size, variant, rounded riêng — độc lập | NmxButton, NmxIcon, NmxToggle |
+| **Composite** | Cha quyết → con CSS cascade | NmxCard → NmxCardHeader/Body/Footer |
+| **Layout** | Chỉ gap/align/justify | NmxStack, NmxGrid (future) |
+
+**Primitive prop pattern:**
+```typescript
+interface NmxPrimitiveProps {
+  size?: "sm" | "md" | "lg" | "xl"   // default "md"
+  variant?: "solid" | "outline" | "ghost"
+  rounded?: "sm" | "md" | "lg" | "full" | boolean
+  className?: string
+  children?: React.ReactNode
+  shouldRender?: boolean
+}
+```
+
+**SCSS conventions:**
+- Variants dùng CSS custom properties để override: `--nmx-btn-bg`, `--nmx-btn-color`
+- Size modifier đặt ở component cha, con cascade qua CSS
+- Component không chứa margin — layout cha lo bằng `gap`
+- Sub-component không có `size` prop — kích thước inherit từ cha
+- `shouldRender` thay cho conditional ternary bên ngoài
+
 ## Event Flow
 
 ### Auth Flow (Current)

@@ -14,6 +14,14 @@ M3 — Desktop Shell UI ✅ + Addon System (contract, registry, Log Viewer) ✅
 
 ## Recent Changes (2026-05-16)
 
+### NmxIconFont, NmxIconBox, icon SCSS, shared types/utils
+- **@namorix/core (0.10.2 → 0.10.3)**: Removed cx export from utils (moved to @namorix/ui).
+- **@namorix/styles (0.4.0 → 0.5.0)**: New icomoon SCSS module (variables + @font-face), new icon component styles (icon-font, icon-box), new typography + utilities modules. base/index.scss reordered. vite.config.ts cssMinify: false.
+- **@namorix/ui (0.4.0 → 0.5.0)**: New NmxIconFont primitive (symbol prop), NmxIconBox (semantic color + children). New shared types module (WithBaseProps, WithVariant, WithSemanticColor). New utils module (cx, cxSize, cxSemantic, cxVariant). Refactored all Primitives (NmxButton, NmxForm, NmxInlineAlert, NmxToggle) + NmxCard to use shared types.
+- **frontend (0.10.3 → 0.10.4)**: Login, Register, Blocked, Taskbar, WindowFrame prop refactoring. Theme CSS rebuilt.
+
+## Recent Changes (2026-05-16)
+
 ### Styles: base/components/, layouts/, dark tokens; UI: NmxCard, flatten primitives
 - **@namorix/styles (0.3.0 → 0.4.0)**: New base/components/ dir (card, form, inline-alert, toggle, button SCSS), base/layouts/ (split.scss). New themes/dark/tokens.scss (dark :root vars). Fix base/tokens.scss — light colors. Fix button BEM naming (--full-width, --upper-case). vite.config.ts — SCSS entries direct, xoá remove-js-output plugin. Xoá tsconfig.json, scss.d.ts, theme index.ts entries.
 - **@namorix/ui (0.3.0 → 0.4.0)**: New Components/ module — NmxCard, NmxCardContent, NmxCardBody, NmxCardHeader, NmxCardFooter. package.json exports ./Components, ./Primitives. Flattened Primitives (NmxButton, NmxInlineAlert, NmxToggle từ subfolder → flat files). Xoá SCSS khỏi ui (moved to @namorix/styles).

@@ -255,12 +255,33 @@ packages/ui/src/
 └── index.ts    # barrel export
 ```
 
+## Component Classification
+
+| Type | Tự quyết | Ví dụ |
+|------|----------|-------|
+| **Primitive** | size, variant, rounded riêng | NmxButton, NmxIcon, NmxToggle |
+| **Composite** | Cha quyết → con CSS cascade | NmxCard → NmxCardHeader/Body/Footer |
+| **Layout** | Chỉ gap/align/justify | NmxStack, NmxGrid (future) |
+
+## Primitive Prop Pattern
+```typescript
+interface NmxPrimitiveProps {
+  size?: "sm" | "md" | "lg" | "xl"   // default "md"
+  variant?: "solid" | "outline" | "ghost"
+  rounded?: "sm" | "md" | "lg" | "full" | boolean
+  className?: string
+  children?: React.ReactNode
+  shouldRender?: boolean
+}
+```
+
 ## Component Rules
 - Functional components only (no class components)
 - Props must have explicit TypeScript interface
 - No inline styles — all styling via SCSS module
 - No hardcoded colors or spacing — use `--nmx-*` CSS variables from `@namorix/styles`
 - Export named from `index.ts`
+- Sub-component (Composite child) không có `size` prop — nhận từ cha qua CSS cascade
 
 ## Usage
 ```tsx
@@ -286,6 +307,29 @@ const MyComponent = () => (
   font-family: var(--nmx-font-sans);
 }
 ```
+
+## Variant SCSS Pattern
+```scss
+// Variant dùng CSS custom properties để override
+// Component khai báo fallback = giá trị mặc định
+.nmx-button {
+  background: var(--nmx-btn-bg, var(--nmx-color-primary));
+  color: var(--nmx-btn-color, var(--nmx-color-on-primary));
+  border: 1px solid var(--nmx-btn-border, transparent);
+
+  &--ghost {
+    --nmx-btn-bg: transparent;
+    --nmx-btn-color: var(--nmx-color-on-surface);
+    --nmx-btn-border: var(--nmx-color-surface-mid);
+  }
+}
+```
+
+## CSS Cascade Rule
+- Size/variant modifier đặt ở component cha, sub-component cascade theo
+- Sub-component không có `size` prop — font-size, padding inherit từ cha
+- Component không chứa margin — layout cha lo bằng `gap`
+- `shouldRender` thay cho conditional ternary bên ngoài
 
 ---
 
@@ -420,6 +464,8 @@ frontend/packages/
 │   ├── package.json
 │   └── src/
 │       ├── index.ts
+│       ├── types.ts            # SizeType, VariantType, RoundedType (shared)
+│       ├── utils/              # cx helpers (cxRounded, cxSize)
 │       ├── Components/
 │       │   ├── index.ts
 │       │   └── NmxCard/
@@ -484,6 +530,10 @@ const COOKIE_NAME = "nmx_access"
 
 // CSS classes: nmx-kebab-case BEM
 // .nmx-button, .nmx-button--primary, .nmx-input--error
+
+// CSS theme variables: --nmx-{component}-{property}
+// --nmx-btn-bg, --nmx-btn-color, --nmx-btn-border
+// --nmx-card-bg, --nmx-card-shadow, --nmx-card-radius
 ```
 
 ---

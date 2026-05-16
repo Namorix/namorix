@@ -62,7 +62,7 @@ pnpm preview      # Preview production build
 |---------|---------|
 | `@namorix/core` | Auth guards, http client, ApiError, i18n, ValidationRunner, constants |
 | `@namorix/styles` | SCSS design tokens, reset, fonts |
-| `@namorix/ui` | NmxButton, NmxForm, NmxInlineAlert, NmxToggle, NmxCard |
+| `@namorix/ui` | NmxButton, NmxForm, NmxInlineAlert, NmxToggle, NmxCard, NmxIcon |
 | `react-router-dom` | Client-side routing with guard pattern |
 | `react-i18next` | i18n with layered namespaces |
 
