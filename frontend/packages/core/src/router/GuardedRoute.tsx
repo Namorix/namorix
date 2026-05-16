@@ -12,7 +12,9 @@ export function GuardedRoute({ guard, children }: Props) {
   )
 
   useEffect(() => {
-    if (!guard) return
+    if (!guard) {
+      return
+    }
 
     guard()
       .then(setTarget)

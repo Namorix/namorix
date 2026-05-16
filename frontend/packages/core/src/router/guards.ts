@@ -20,12 +20,29 @@ export const DefaultPaths: Required<GuardPaths> = {
 
 export type DefaultPaths = (typeof DefaultPaths)[keyof typeof DefaultPaths]
 
+/**
+ * Deduplicates concurrent calls to a guard function.
+ * While a guard is pending, subsequent calls return the same promise
+ * instead of creating a new one — preventing double requests in React StrictMode.
+ */
+function dedupeGuard(guard: GuardFn): GuardFn {
+  let pending: Promise<string | null> | null = null
+  return () => {
+    if (!pending) {
+      pending = guard().finally(() => {
+        pending = null
+      })
+    }
+    return pending
+  }
+}
+
 export function createAuthGuard(
   auth: AuthChecker,
   paths?: GuardPaths,
 ): GuardFn {
   const path = { ...DefaultPaths, ...paths }
-  return async () => {
+  return dedupeGuard(async () => {
     const hasUsers = await auth.checkHasUsers()
 
     if (!hasUsers) {
@@ -37,7 +54,7 @@ export function createAuthGuard(
     }
 
     return null
-  }
+  })
 }
 
 export function createLoginGuard(
@@ -45,7 +62,7 @@ export function createLoginGuard(
   paths?: GuardPaths,
 ): GuardFn {
   const path = { ...DefaultPaths, ...paths }
-  return async () => {
+  return dedupeGuard(async () => {
     if (await auth.isAuthenticated()) {
       return path.HOME
     }
@@ -56,7 +73,7 @@ export function createLoginGuard(
     }
 
     return null
-  }
+  })
 }
 
 export function createRegisterGuard(
@@ -64,7 +81,7 @@ export function createRegisterGuard(
   paths?: GuardPaths,
 ): GuardFn {
   const path = { ...DefaultPaths, ...paths }
-  return async () => {
+  return dedupeGuard(async () => {
     if (await auth.isAuthenticated()) {
       return path.HOME
     }
@@ -79,5 +96,5 @@ export function createRegisterGuard(
     }
 
     return null
-  }
+  })
 }
