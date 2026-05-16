@@ -1,3 +1,5 @@
+import { dedupe } from "../utils/dedupe"
+
 export interface GuardPaths {
   HOME?: string
   LOGIN?: string
@@ -26,15 +28,7 @@ export type DefaultPaths = (typeof DefaultPaths)[keyof typeof DefaultPaths]
  * instead of creating a new one — preventing double requests in React StrictMode.
  */
 function dedupeGuard(guard: GuardFn): GuardFn {
-  let pending: Promise<string | null> | null = null
-  return () => {
-    if (!pending) {
-      pending = guard().finally(() => {
-        pending = null
-      })
-    }
-    return pending
-  }
+  return dedupe(guard)
 }
 
 export function createAuthGuard(

@@ -2,6 +2,7 @@ import type { ThemeManifest } from "./types"
 import { http } from "../http"
 import { getApiBaseUrl } from "../config"
 import { ApiThemeRoutes, ThemeRoutes } from "../apiRoutes"
+import { dedupe } from "../utils/dedupe"
 
 async function getBuiltInThemes(): Promise<ThemeManifest[]> {
   const result = await http.getJson<{ themes: ThemeManifest[] }>(
@@ -10,7 +11,7 @@ async function getBuiltInThemes(): Promise<ThemeManifest[]> {
   return result.success ? result.data.themes : []
 }
 
-export async function getAllThemes(): Promise<ThemeManifest[]> {
+export const getAllThemes = dedupe(async (): Promise<ThemeManifest[]> => {
   const [builtIn, external] = await Promise.allSettled([
     getBuiltInThemes(),
     http
@@ -30,4 +31,4 @@ export async function getAllThemes(): Promise<ThemeManifest[]> {
   }
 
   return themes
-}
+})

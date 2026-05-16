@@ -1,6 +1,6 @@
 {
   "name": "@namorix/core",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "license": "GPL-3.0-only",
   "type": "module",
   "main": "./src/index.ts",
@@ -13,6 +13,11 @@
     ".": {
       "types": "./src/index.ts",
       "import": "./src/index.ts"
+    },
+    "./env": {
+      "types": "./src/env/development.ts",
+      "development": "./src/env/development.ts",
+      "default": "./src/env/production.ts"
     },
     "./auth": {
       "types": "./src/auth/index.ts",

@@ -1,6 +1,7 @@
 import type { ThemeManifest } from "../theme"
 import React, { createContext, useContext, useState } from "react"
 import { loadTheme } from "../theme/loader"
+import { NMX_THEME_CSS_PATH_KEY } from "../constants"
 
 export interface ThemeContextValue {
   current: string | null
@@ -34,7 +35,8 @@ export const ThemeProvider = ({
       return
     }
 
-    await loadTheme(manifest.css)
+    await loadTheme(manifest.id, manifest.cssPath)
+    localStorage.setItem(NMX_THEME_CSS_PATH_KEY, manifest.cssPath)
     setCurrentId(id)
     onSwitch?.(manifest)
   }

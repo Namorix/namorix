@@ -13,7 +13,7 @@ export const ApiAuthRoutes = {
 }
 
 export const ApiUserRoutes = {
-  theme: API_USER_BASE + "/theme",
+  theme: API_USER_BASE + "/themes",
 }
 
 export const ApiMiddlewareRoutes = {
@@ -26,5 +26,5 @@ export const ApiThemeRoutes = {
 
 export const ThemeRoutes = {
   builtin: "/themes/registry.json",
-  themes: "/themes/{id}/theme.css",
+  themes: "/themes/{id}/{path}",
 }

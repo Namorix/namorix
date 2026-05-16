@@ -5,6 +5,7 @@ export interface ThemeManifest {
   author?: string
   description?: string
   preview?: string
-  css: string
-  tags: string[]
+  cssPath: string
+  tags?: string[]
+  isBuiltIn: boolean
 }
