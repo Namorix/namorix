@@ -21,6 +21,8 @@ git diff --stat
 git log --oneline -5
 ```
 
+If no changed files found → output "Nothing to commit" and stop.
+
 ### 2. Analyze each changed file
 
 For each modified/new/deleted/renamed file, categorize by scope:
@@ -38,6 +40,13 @@ For each modified/new/deleted/renamed file, categorize by scope:
 
 Memory bank files (`.claude/memory/`) — scope: `docs`.
 
+Skip always:
+- `.idea/`
+- `node_modules/`
+- `dist/`, `*.lock`, `*.log`
+- Symlinks inside `.claude/skills/`
+- `*.g.cs`, `*.Designer.cs`, EF migration auto-generated files
+
 ### 3. Group into logical commits
 
 Group files that change for the same reason:
@@ -45,8 +54,11 @@ Group files that change for the same reason:
 - Bug fixes: `fix(scope): description`
 - Documentation: `docs: description`
 - Config/chores: `chore: description`
+- Breaking changes: `feat(scope)!: description` or `fix(scope)!: description`
 
 **Rule:** Files that are changed for the same purpose go together. Split unrelated changes into separate commits.
+
+**Cross-package rule:** If a feature spans multiple packages (e.g. `@namorix/core` + `frontend`), split into separate commits per package — one commit per scope.
 
 ### 4. Draft commit messages
 
@@ -54,7 +66,9 @@ Format: `{type}({scope}): {description}`
 
 Types: `feat`, `fix`, `refactor`, `docs`, `chore`
 
-The description should explain WHY, not just WHAT.
+- Use `!` suffix for breaking changes: `feat(core)!: rename auth hook`
+- The description should explain WHY, not just WHAT
+- Check `git log --oneline -5` to avoid duplicate messages
 
 ### 5. Output format
 
@@ -93,4 +107,6 @@ EOF
 6. **Separate untracked new files** from modified files — make it clear what's new vs changed
 7. **Do NOT actually commit** — only output the commands. The user will run them.
 8. **Never add `Co-Authored-By`** trailer — project convention không dùng.
+9. **No changes = stop early** — if `git status` shows clean working tree, say so and exit.
+10. **Breaking changes** — if a commit removes/renames a public API, use `!` suffix and explain impact in bullet points.
 

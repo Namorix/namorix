@@ -22,6 +22,8 @@ git diff --cached --stat    # staged changes
 git log --oneline -5        # recent commits for context
 ```
 
+If working tree is clean and no recent commits → output "Nothing to update" and stop.
+
 ### Step 2: Categorize Changed Files
 
 Map each changed file to a package and determine impact:
@@ -40,17 +42,21 @@ Map each changed file to a package and determine impact:
 
 Use the bump triggers from CLAUDE.md Meta Rules and `progress.md`:
 
-| Package | PATCH bump | MINOR bump |
-|---------|-----------|------------|
-| root (namorix) | Bug fixes, config tweaks, dependency updates (any package) | New feature, new package, milestone completion, workspace structure change |
-| frontend | Bug fixes, CSS tweaks | New pages, routing changes, auth flow, i18n |
-| @namorix/core | Bug fixes | New utility, new type, new module (i18n, validation) |
-| @namorix/styles | Token fixes | New token, new variable, new export |
-| @namorix/ui | Bug fixes | New component, component breaking change |
-| @namorix/shared | Bug fixes | New type, new constant, new error code, new helper |
-| backend | Bug fixes | New API endpoint, auth feature, refactor to decorators |
+| Package | PATCH bump | MINOR bump | MAJOR bump |
+|---------|-----------|------------|------------|
+| root (namorix) | Bug fixes, config tweaks, dependency updates | New feature, new package, milestone completion, workspace structure change | Breaking workspace change, dropped package |
+| frontend | Bug fixes, CSS tweaks | New pages, routing changes, auth flow, i18n | Breaking UX overhaul |
+| @namorix/core | Bug fixes | New utility, new type, new module (i18n, validation) | Removed/renamed public API |
+| @namorix/styles | Token fixes | New token, new variable, new export | Renamed/removed existing tokens |
+| @namorix/ui | Bug fixes | New component | Removed component, breaking prop change |
+| @namorix/shared | Bug fixes | New type, new constant, new error code, new helper | Removed/renamed exported type or constant |
+| backend | Bug fixes | New API endpoint, auth feature, refactor to decorators | Breaking API contract change |
 
 **Rule:** Only bump packages whose files actually changed. Don't bump unrelated packages.
+
+**Monorepo dependency rule:** If `@namorix/core` (or any package) is bumped, check all
+other packages and `frontend/package.json` that depend on it — update their version
+reference to match the new version.
 
 ### Step 4: Read Only What's Needed
 
@@ -61,14 +67,15 @@ Read ONLY these files (skip if unchanged):
 - `.claude/memory/techContext.md` — only if tech/deps changed
 - `.claude/memory/productContext.md` — only if UX changed
 - `.claude/memory/projectbrief.md` — rarely changes
-- Package `.json` files — only for packages being bumped
+- Package `.json` files — only for packages being bumped + their dependents
 - `README.md` — always read (may contain version badges, tech stack table, quick start commands)
 - `docs/` markdown files — only if related to changed code
 
 **Never read:**
-- `LICENSE` (rule from CLAUDE.md Meta Rules)
+- `LICENSE`
 - Unchanged packages
 - `node_modules/`
+- `*.g.cs`, `*.Designer.cs`, EF migration auto-generated files
 
 ### Step 5: Update Documentation
 
@@ -89,36 +96,41 @@ Read ONLY these files (skip if unchanged):
 
 For each bumped package, update the `"version"` field in its `package.json`.
 
-Then **search the entire project** for other references to the old version string and update them:
-- `README.md` — version badges, tech stack table, quick start commands, package versions table
-- `docs/` markdown files — version numbers in example code, config samples, or compatibility notes
-- `.claude/memory/techContext.md` — dependency version notes
-- `frontend/` — API URL or version constants in source code
-- Any `.env.example` or config files mentioning version-specific values
-
-Use `grep` to find all occurrences of the old version before updating:
+Then **search the entire project** for other references to the old version string:
 
 ```bash
-grep -rn '"0\.5\.0"' --include='*.{md,json,ts,tsx,cs,csproj,yml,yaml}' . --exclude-dir=node_modules
+# Without quotes — catches all formats
+grep -rn '0\.5\.0' --include='*.{md,json,ts,tsx,cs,csproj,yml,yaml}' . --exclude-dir=node_modules
 ```
 
-**Rule:** A version bump is not complete until all references across the project are updated. Incomplete updates cause confusion and integration bugs.
+Update all occurrences found in:
+- `README.md` — version badges, tech stack table, quick start commands, package versions table
+- `docs/` markdown files — version numbers in example code, config samples, compatibility notes
+- `.claude/memory/techContext.md` — dependency version notes
+- `frontend/` — API URL or version constants in source code
+- Other `package.json` files that reference the bumped package as a dependency
+- Any `.env.example` or config files mentioning version-specific values
+
+**Rule:** A version bump is not complete until all references across the project are
+updated. Incomplete updates cause confusion and integration bugs.
 
 ### Step 7: Present Changes for Approval
 
-Show a table of all changes:
+Show a table of all planned changes:
 
 ```
 | File | Change |
 |------|--------|
 | .claude/memory/progress.md | Update versions table + history |
 | .claude/memory/activeContext.md | Add recent changes entry |
-| README.md | Update version badge, package versions table, quick start |
+| README.md | Update version badge, package versions table |
 | packages/core/package.json | 0.5.0 → 0.5.1 |
+| frontend/package.json | @namorix/core: 0.5.0 → 0.5.1 |
 | ... | ... |
 ```
 
-Ask user to confirm before writing.
+Ask user to confirm the full plan before writing any file.
+If user rejects specific files, skip those and apply the rest.
 
 ## Important Rules
 
@@ -126,11 +138,16 @@ Ask user to confirm before writing.
 2. **Only read changed files + required doc files** — skip everything else
 3. **Don't bump unrelated packages** — only packages whose code changed
 4. **Version notation:** `MAJOR.MINOR.PATCH`, no leading `v`
-5. **Ask before writing** — present the plan, wait for approval
+5. **Ask before writing** — present the full plan, wait for approval; respect partial rejection
 6. **Follow existing format** in progress.md — match the table style exactly
 7. **Always update README.md** — khi version bump, kiểm tra và cập nhật:
    - Tech stack table (nếu backend/frontend stack thay đổi)
    - Package versions table (nếu có)
    - Quick start commands (nếu dev workflow thay đổi)
    - Directory structure (nếu workspace thay đổi)
-8. **Search the whole project** — sau khi bump version, dùng `grep` để tìm tất cả references đến version cũ trong toàn bộ dự án (không chỉ package.json). Update tất cả để tránh inconsistency.
+8. **Search the whole project** — dùng `grep` không có quotes để tìm tất cả references
+   đến version cũ. Update tất cả để tránh inconsistency.
+9. **Update monorepo dependents** — khi bump một package, tìm tất cả package.json
+   khác trong workspace reference đến nó và update version đó luôn.
+10. **Early exit** — nếu không có changes, dừng ngay và thông báo.
+
