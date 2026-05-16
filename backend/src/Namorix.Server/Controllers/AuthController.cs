@@ -4,6 +4,7 @@ using Namorix.Adapters.Services;
 using Namorix.Core.Config;
 using Namorix.Core.Constants;
 using Namorix.Core.Exceptions;
+using Namorix.Core.Models;
 using Namorix.Core.Responses;
 using Namorix.Core.Validation;
 using Namorix.Core.Validation.Schemas;
@@ -33,12 +34,7 @@ public class AuthController(AuthService authService, SettingsService settingsSer
             SetAccessCookie(accessToken);
             SetRefreshCookie(refreshToken, request.RememberMe);
 
-            return Ok(ApiResponse<UserResponse>.Ok(new UserResponse
-            {
-                Id = user.Id,
-                Username = user.Username,
-                Role = user.Role
-            }));
+            return UserOk(user);
         }
         catch (AuthException ex) when(ex.Code == AuthErrors.InvalidCredentials)
         {
@@ -58,12 +54,7 @@ public class AuthController(AuthService authService, SettingsService settingsSer
         try
         {
             var user = await authService.Register(request.Username, request.Password);
-            return Ok(ApiResponse<UserResponse>.Ok(new UserResponse
-            {
-                Id = user.Id,
-                Username = user.Username,
-                Role = user.Role
-            }));
+            return UserOk(user);
         }
         catch (AuthException ex) when (ex.Code == AuthErrors.UsernameExists)
         {
@@ -105,35 +96,55 @@ public class AuthController(AuthService authService, SettingsService settingsSer
     public async Task<IActionResult> Session()
     {
         var accessToken = GetAccessCookie();
+
         if (string.IsNullOrEmpty(accessToken))
-            return Unauthorized(ApiResponse.Fail(AuthErrors.Unauthorized));
+            return await TryRefresh();
 
         var payload = authService.VerifyAccessToken(accessToken);
+
         if (!payload.HasValue)
-            return Unauthorized(ApiResponse.Fail(AuthErrors.Unauthorized));
+            return await TryRefresh();
 
         var user = await authService.GetUserById(payload.Value.userId);
         if (user != null)
-        {
-            return Ok(ApiResponse<UserResponse>.Ok(new UserResponse
-            {
-                Id = user.Id,
-                Username = user.Username,
-                Role = user.Role
-            }));
-        }
+            return UserOk(user);
 
         ClearAccessCookie();
         ClearRefreshCookie();
         return Unauthorized(ApiResponse.Fail(AuthErrors.Unauthorized));
 
     }
-
-
+    
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh()
     {
+        return await TryRefresh();
+    }
+
+    [HttpGet("status")]
+    public async Task<IActionResult> Status()
+    {
+        var (needsRegister, registerEnabled) = await settingsService.GetAuthStatus();
+        return Ok(ApiResponse<StatusResponse>.Ok(new StatusResponse
+        {
+            NeedsRegister = needsRegister,
+            RegisterEnabled = registerEnabled
+        }));
+    }
+
+    private OkObjectResult UserOk(User user) =>
+        Ok(ApiResponse<UserResponse>.Ok(new UserResponse
+        {
+            Id = user.Id,
+            Username = user.Username,
+            Role = user.Role
+        }));
+    
+    private async Task<IActionResult> TryRefresh()
+    {
         var refreshToken = GetRefreshCookie();
+        Console.WriteLine($"Refresh token: {refreshToken}");
+        
         if (string.IsNullOrEmpty(refreshToken))
             return Unauthorized(ApiResponse.Fail(AuthErrors.Unauthorized));
 
@@ -147,57 +158,38 @@ public class AuthController(AuthService authService, SettingsService settingsSer
             SetAccessCookie(newAccessToken);
             SetRefreshCookie(newRefreshToken, false);
 
-            return Ok(ApiResponse<UserResponse>.Ok(new UserResponse
-            {
-                Id = user.Id,
-                Username = user.Username,
-                Role = user.Role
-            }));
+            Console.WriteLine($"New refresh token: {newRefreshToken}, access token: {newAccessToken}");
+
+            return UserOk(user);
         }
         catch (AuthException ex)
         {
+            Console.WriteLine("Clear cookie");
             ClearAccessCookie();
             ClearRefreshCookie();
             return Unauthorized(ApiResponse.Fail(ex.Code));
         }
     }
-
-    [HttpGet("status")]
-    public async Task<IActionResult> Status()
-    {
-        var (needsRegister, registerEnabled) = await settingsService.GetAuthStatus();
-        return Ok(ApiResponse<StatusResponse>.Ok(new StatusResponse
-        {
-            NeedsRegister = needsRegister,
-            RegisterEnabled = registerEnabled
-        }));
-    }
     
     private string? GetAccessCookie() => Request.Cookies[CookieName.AccessToken];
     private string? GetRefreshCookie() => Request.Cookies[CookieName.RefreshToken];
 
-    private void SetAccessCookie(string token)
+    private void SetCookie(string name, string token, DateTime expires)
     {
-        Response.Cookies.Append(CookieName.AccessToken, token, new CookieOptions
+        Response.Cookies.Append(name, token, new CookieOptions
         {
             HttpOnly = true,
             SameSite = SameSiteMode.Lax,
             Secure = _appConfig.SecureCookie,
-            Expires = DateTimeOffset.UtcNow.AddMinutes(_jwtConfig.AccessTokenExpirationMinutes)
+            Expires = expires
         });
     }
-    
-    private void SetRefreshCookie(string token, bool rememberMe)
-    {
-        var days = rememberMe ? _jwtConfig.RefreshTokenExpirationDaysRemember : _jwtConfig.RefreshTokenExpirationDays;
-        Response.Cookies.Append(CookieName.RefreshToken, token, new CookieOptions
-        {
-            HttpOnly = true,
-            SameSite = SameSiteMode.Lax,
-            Secure = _appConfig.SecureCookie,
-            Expires = DateTimeOffset.UtcNow.AddDays(days)
-        });
-    }
+
+    private void SetAccessCookie(string token) =>
+        SetCookie(CookieName.AccessToken, token, authService.GetAccessTokenExpirationDateTime());
+
+    private void SetRefreshCookie(string token, bool rememberMe) =>
+        SetCookie(CookieName.RefreshToken, token, authService.GetRefreshTokenExpirationDatetime(rememberMe));
 
     private void ClearAccessCookie() => Response.Cookies.Delete(CookieName.AccessToken);
     private void ClearRefreshCookie() => Response.Cookies.Delete(CookieName.RefreshToken);

@@ -53,10 +53,19 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig)
     public async Task<User?> GetUserById(int userId) =>
         await dbContext.Users.FindAsync(userId);
 
+    public DateTime GetAccessTokenExpirationDateTime() =>
+        DateTime.UtcNow.AddSeconds(_jwtConfig.AccessTokenExpirationSeconds);
+
+    public int GetRefreshTokenExpiration(bool rememberMe = false) =>
+        rememberMe ? _jwtConfig.RefreshTokenExpirationDaysRemember : _jwtConfig.RefreshTokenExpirationDays;
+    
+    public DateTime GetRefreshTokenExpirationDatetime(bool rememberMe = false) =>
+        DateTime.UtcNow.AddDays(GetRefreshTokenExpiration());
+    
     private (string accessToken, string refreshToken, string jti) GenerateTokens(User user)
     {
         var jti = Guid.NewGuid().ToString();
-        var expires = DateTime.UtcNow.AddMinutes(_jwtConfig.AccessTokenExpirationMinutes);
+        var expires = GetAccessTokenExpirationDateTime();
         var claims = new[]
         {
             new Claim(JwtClaims.UserId, user.Id.ToString()),
@@ -177,7 +186,7 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig)
         dbContext.RefreshTokens.Remove(storedToken);
 
         var (newAccessToken, newRefreshToken, newJti) = GenerateTokens(user);
-        var ttlDays = _jwtConfig.RefreshTokenExpirationDays;
+        var ttlDays = GetRefreshTokenExpiration();
         var newEntity = CreateRefreshToken(user, newJti, newRefreshToken,
             storedToken.UserAgent, fingerprint, ipAddress, ttlDays);
 
@@ -227,9 +236,7 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig)
         string username, string password, bool rememberMe, string? userAgent, string? fingerprint, string? ipAddress)
     {
         var user = await Login(username, password);
-        var ttlDays = rememberMe
-            ? _jwtConfig.RefreshTokenExpirationDaysRemember
-            : _jwtConfig.RefreshTokenExpirationDays;
+        var ttlDays = GetRefreshTokenExpiration(rememberMe);
 
         var (accessToken, refreshToken, jti) = GenerateTokens(user);
         var refreshTokenEntity = CreateRefreshToken(user, jti, refreshToken,

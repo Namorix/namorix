@@ -31,8 +31,10 @@ builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<SettingsService>();
 builder.Services.AddScoped<PermissionService>();
+builder.Services.AddScoped<ThemeService>();
 builder.Services.AddMemoryCache();
 builder.Services.AddHostedService<TokenCleanupWorker>();
 
