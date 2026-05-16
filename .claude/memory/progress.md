@@ -123,11 +123,11 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.9.0 | M3 (Addon system: contract, registry, LogViewer addon) |
-| @namorix/core | 0.10.0 | M3 (Theme system: types, loader, registry, ThemeProvider) |
+| frontend | 0.10.1 | M3 (Auth guard dedup, Root extraction, refresh fix) |
+| @namorix/core | 0.10.1 | M3 (Refresh: skip session URL, return proper error) |
 | @namorix/styles | 0.2.0 | M2 |
 | @namorix/ui | 0.3.0 | M2 |
-| backend | 0.18.0 | M3 (ThemeManifest model, UserController, UserService) |
+| backend | 0.19.0 | M3 (ThemeController, UserService DI, AuthController refactor) |
 
 ## Version Rules
 
@@ -159,6 +159,13 @@
 | @namorix/core | 0.10.0 | New theme module: types.ts (ThemeManifest), loader.ts (restoreTheme, loadTheme), registry.ts (getBuiltInThemes, getAllThemes), barrel export. New providers module: ThemeProvider.tsx (ThemeContext, useTheme hook, switchTheme). New http.getJson method. New constants (NMX_THEME_CSS_ID, NMX_THEME_STORAGE_KEY). New API routes (ApiThemeRoutes, ThemeRoutes, ApiUserRoutes). |
 | frontend | 0.10.0 | Theme integration: Root component with ThemeProvider wrap, restoreTheme() on app start, getAllThemes() load. Login theme sync — fetch user themeId from `/api/user/theme` → localStorage. |
 | backend | 0.18.0 | New ThemeManifest model. User.ThemeId field. AppDbContext: ThemeManifests + AddonManifests DbSet + unique indexes. New UserService (GetThemeAsync, SetThemeAsync). New UserController (GET/PUT /api/user/theme). |
+
+### 2026-05-16 (Auth fix: UserService DI, AuthController refactor, refresh + guard fixes)
+| Package | Version | Changes |
+|---------|---------|---------|
+| backend | 0.19.0 | New ThemeController (GET /api/themes) + ThemeService. Fix: UserService register DI (lỗi 500). Fix: ThemeManifest nullable fields. Refactor: AuthController — session endpoint gọi TryRefresh() thay vì 401 ngay; cookie helpers dùng AuthService TTL methods; UserOk helper. Fix: AuthService TTL methods (GetAccessTokenExpirationDateTime, GetRefreshTokenExpiration). Config: AccessTokenExpirationMinutes → AccessTokenExpirationSeconds (appsettings + JwtConfig). |
+| @namorix/core | 0.10.1 | Fix: client.ts — skip refresh cho session URL (tránh loop khi session expired). Fix: client.ts — return refreshResponse khi refresh fail thay vì fallthrough gây lỗi parse. |
+| frontend | 0.10.1 | Fix: guards.ts — dedupeGuard wrapper ngăn double guard call trong React StrictMode. Chore: Root.tsx — tách Root component khỏi main.tsx. |
 
 ### 2026-05-15 (Desktop shell UI: taskbar, launcher, window manager + stores + types)
 | Package | Version | Changes |

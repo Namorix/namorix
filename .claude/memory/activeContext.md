@@ -12,6 +12,13 @@ M3 — Desktop Shell UI ✅ + Addon System (contract, registry, Log Viewer) ✅
 - Backend addon metadata deferred — chỉ cần khi M4 external addon
 - WindowFrame mount addon vào content area qua ref + AddonEntry lifecycle
 
+## Recent Changes (2026-05-16)
+
+### Auth fix: UserService DI, AuthController refactor, refresh + guard fixes
+- **backend (0.19.0)**: New ThemeController (GET /api/themes) + ThemeService. Fix: UserService, ThemeService register DI — xoá lỗi 500. Fix: ThemeManifest nullable fields. Refactor: AuthController — session endpoint gọi TryRefresh() khi token expired thay vì 401 ngay; refactor cookie helpers (SetCookie dùng AuthService TTL); UserOk helper. Fix: AuthService TTL helper methods. Config: AccessTokenExpirationMinutes → AccessTokenExpirationSeconds (appsettings + JwtConfig).
+- **@namorix/core (0.10.1)**: Fix: client.ts — skip refresh cho session URL (tránh loop). Fix: client.ts — return refreshResponse khi refresh fail thay vì fallthrough parse lỗi.
+- **frontend (0.10.1)**: Fix: guards.ts — dedupeGuard wrapper ngăn double guard call trong React StrictMode. Chore: Root.tsx — tách Root component khỏi main.tsx.
+
 ## Recent Changes (2026-05-15)
 
 ### Addon system architecture — unified contract (internal + external)
@@ -360,8 +367,8 @@ Cả 3 attribute filter (`RequireAuthAttribute`, `RequireAdminAttribute`, `Requi
 - **Fix:** Tách try/catch riêng cho theme fetch, không block login
 
 ### `/api/themes` không có handler
-- `ThemeController.cs` fully commented out, `ApiThemeRoutes.themes` = `/api/themes` luôn 404
-- **Fix:** Implement hoặc xoá route
+- `ThemeController.cs` đã uncomment + implement, `ThemeService` register DI
+- **Fix:** Đã implement ✅
 
 ### Thiếu `public/themes/registry.json`
 - `ThemeRoutes.builtin` = `/themes/registry.json` — file chưa được tạo
