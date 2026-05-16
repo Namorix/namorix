@@ -77,20 +77,25 @@ class RequestBuilder {
         ...this._options,
         headers: this._headers,
       })
-      if (result.status === HttpStatus.UNAUTHORIZED && !this._retried) {
-        const isRefreshUrl = this._url.includes(ApiAuthRoutes.refresh)
-        if (!isRefreshUrl) {
-          const refreshResponse = await http
-            .url(getApiBaseUrl() + ApiAuthRoutes.refresh)
-            .post()
-            .json()
-          if (refreshResponse.success) {
-            this._retried = true
-            return await this.json<T>()
-          }
+      if (
+        result.status === HttpStatus.UNAUTHORIZED &&
+        !this._retried &&
+        !this._url.includes(ApiAuthRoutes.refresh) &&
+        !this._url.includes(ApiAuthRoutes.session)
+      ) {
+        const refreshResponse = await http
+          .url(getApiBaseUrl() + ApiAuthRoutes.refresh)
+          .post()
+          .json()
+
+        if (refreshResponse.success) {
+          this._retried = true
+          return await this.json<T>()
         }
+
+        return refreshResponse as unknown as ApiResponse<T>
       }
-      return (await result.json()) as ApiResponse<T>
+      return (await result.json()) as Promise<ApiResponse<T>>
     } catch {
       return apiHttpError(
         "Network error",
