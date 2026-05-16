@@ -1,6 +1,0 @@
-{
-  "compilerOptions": {
-    "types": []
-  },
-  "include": ["src/**/*", "src/scss.d.ts"]
-}

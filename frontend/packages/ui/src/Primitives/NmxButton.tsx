@@ -1,6 +1,5 @@
 import React from "react"
 import { cx } from "@namorix/core/utils"
-import "./NmxButton.scss"
 
 type NmxButtonVariant = "primary" | "ghost"
 

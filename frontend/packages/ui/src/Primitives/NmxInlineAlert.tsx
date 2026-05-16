@@ -1,6 +1,5 @@
 import React from "react"
 import { cx } from "@namorix/core/utils"
-import "./NmxInlineAlert.scss"
 
 export type NmxInlineAlertVariant = "error" | "warning" | "success" | "info"
 
