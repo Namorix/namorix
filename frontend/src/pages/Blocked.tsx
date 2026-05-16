@@ -6,6 +6,7 @@ import {
   MiddlewareErrorCodes,
 } from "@namorix/core"
 import "./Blocked.scss"
+import { NmxCard } from "@namorix/ui"
 
 interface BlockedProps {
   code: ApiErrorCode | null
@@ -43,7 +44,7 @@ export const Blocked: React.FC<BlockedProps> = ({ code }) => {
 
   return (
     <div className="nmx-blocked-page">
-      <div className="nmx-blocked-page__card">
+      <NmxCard className="nmx-blocked-page__card">
         <div className="nmx-blocked-page__icon">
           <svg
             width="24"
@@ -82,7 +83,7 @@ export const Blocked: React.FC<BlockedProps> = ({ code }) => {
             </span>
           </div>
         </div>
-      </div>
+      </NmxCard>
     </div>
   )
 }
