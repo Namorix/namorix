@@ -1,18 +1,25 @@
 {
   "name": "@namorix/styles",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "license": "GPL-3.0-only",
   "type": "module",
   "main": "src/index.scss",
   "scripts": {
-    "dev": ""
+    "dev": "vite build --watch",
+    "build": "vite build"
   },
   "exports": {
     ".": {
       "style": "./src/index.scss"
     },
+    "./base": {
+      "sass": "./src/base/index.scss"
+    },
     "./variables": {
-      "sass": "./src/variables.scss"
+      "sass": "./src/base/variables.scss"
     }
+  },
+  "devDependencies": {
+    "vite": "8.0.13"
   }
 }
