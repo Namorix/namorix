@@ -1,6 +1,5 @@
 import React, { useId } from "react"
 import { cx } from "@namorix/core/utils"
-import "./NmxToggle.scss"
 
 interface NmxToggleProps extends React.HTMLAttributes<HTMLDivElement> {
   id?: string

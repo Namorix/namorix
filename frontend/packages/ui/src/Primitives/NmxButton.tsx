@@ -37,8 +37,8 @@ export const NmxButton: React.FC<NmxButtonProps> = ({
       className={cx(
         "nmx-button",
         "nmx-button--" + variant,
-        { "nmx-button--fullwidth": fullWidth },
-        { "nmx-button--uppercase": uppercase },
+        { "nmx-button--full-width": fullWidth },
+        { "nmx-button--upper-case": uppercase },
         className,
       )}
     >

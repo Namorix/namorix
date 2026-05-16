@@ -1,6 +1,6 @@
 {
   "name": "@namorix/ui",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "license": "GPL-3.0-only",
   "type": "module",
   "main": "./src/index.ts",
@@ -12,6 +12,10 @@
     ".": {
       "types": "./src/index.ts",
       "import": "./src/index.ts"
+    },
+    "./Components": {
+      "types": "./src/Components/index.ts",
+      "import": "./src/Components/index.ts"
     },
     "./Primitives": {
       "types": "./src/Primitives/index.ts",

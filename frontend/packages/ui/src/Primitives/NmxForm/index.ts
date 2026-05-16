@@ -1,7 +1,4 @@
 export * from "./NmxForm"
-export * from "./NmxFormPage"
-export * from "./NmxFormHeader"
-export * from "./NmxFormCard"
 export * from "./NmxFormField"
 export * from "./NmxFormInput"
 export * from "./NmxFormActions"

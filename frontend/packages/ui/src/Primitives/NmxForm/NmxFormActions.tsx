@@ -1,6 +1,5 @@
 import React from "react"
 import { cx } from "@namorix/core/utils"
-import "./NmxForm.scss"
 
 interface NmxFormActionsProps extends React.HTMLAttributes<HTMLDivElement> {
   shouldRender?: boolean

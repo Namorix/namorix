@@ -1,5 +1,4 @@
 import React from "react"
-import "./NmxForm.scss"
 import { cx } from "@namorix/core/utils"
 
 interface NmxFormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -45,8 +44,8 @@ export const NmxFormInput: React.FC<NmxFormInputProps> = ({
       required={required}
       value={value}
       className={cx(
-        "nmx-form-control",
-        { "nmx-form-control--error": invalid },
+        "nmx-form-input",
+        { "nmx-form-input--error": invalid },
         className,
       )}
       onChange={(e) => onValueChange?.(e.target.value)}

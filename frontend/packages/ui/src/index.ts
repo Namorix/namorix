@@ -1,1 +1,2 @@
-export * from "./Primitives/NmxForm"
+export * from "./Components"
+export * from "./Primitives"

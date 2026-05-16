@@ -1,4 +1,4 @@
 export * from "./NmxForm"
 export * from "./NmxButton"
-export * from "./NmxInlineAlert/NmxInlineAlert"
-export * from "./NmxToggle/NmxToggle"
+export * from "./NmxInlineAlert"
+export * from "./NmxToggle"

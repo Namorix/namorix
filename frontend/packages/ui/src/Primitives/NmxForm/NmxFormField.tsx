@@ -1,5 +1,4 @@
 import React from "react"
-import "./NmxForm.scss"
 import { cx } from "@namorix/core/utils"
 
 interface NmxFormFieldProps extends React.HTMLAttributes<HTMLDivElement> {
