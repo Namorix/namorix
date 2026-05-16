@@ -14,7 +14,6 @@
   &__icon {
     width: 56px;
     height: 56px;
-    border-radius: var(--nmx-radius-full);
     background: color-mix(in oklab, var(--nmx-color-danger) 12%, transparent);
     border: 0.5px solid color-mix(in oklab, var(--nmx-color-danger) 20%, transparent);
     display: flex;

@@ -89,7 +89,7 @@ export const Login: React.FC = () => {
           <NmxCardBody>
             <NmxForm onSubmit={handleSubmit}>
               <NmxInlineAlert
-                variant={alertVariant}
+                semantic={alertVariant}
                 message={alertMessage}
                 shouldRender={!!alertMessage}
               />
@@ -132,7 +132,6 @@ export const Login: React.FC = () => {
               />
               <NmxFormActions>
                 <NmxButton
-                  variant="primary"
                   type="submit"
                   label={t("auth.login.buttonLabel")}
                   disabled={busy}

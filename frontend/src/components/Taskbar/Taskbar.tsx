@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { cx } from "@namorix/core"
+import { cx } from "@namorix/ui"
 import { useWindowsStore } from "../../stores/window.store"
 import "./Taskbar.scss"
 import { useLauncherStore } from "../../stores/launcher.store"

@@ -6,7 +6,8 @@ import {
   MiddlewareErrorCodes,
 } from "@namorix/core"
 import "./Blocked.scss"
-import { NmxCard } from "@namorix/ui"
+import { NmxCard, NmxCardHeader, NmxIconBox } from "@namorix/ui"
+import { NmxIconFont, NmxIconFontSymbol } from "@namorix/ui"
 
 interface BlockedProps {
   code: ApiErrorCode | null
@@ -45,25 +46,10 @@ export const Blocked: React.FC<BlockedProps> = ({ code }) => {
   return (
     <div className="nmx-blocked-page">
       <NmxCard className="nmx-blocked-page__card">
-        <div className="nmx-blocked-page__icon">
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M12 3a12 12 0 0 0 8.5 3A12 12 0 0 1 12 21 12 12 0 0 1 3.5 6 12 12 0 0 0 12 3z" />
-            <line x1="9" y1="9" x2="15" y2="15" />
-            <line x1="15" y1="9" x2="9" y2="15" />
-          </svg>
-        </div>
-
-        <h1 className="nmx-blocked-page__title">{title}</h1>
-        <p className="nmx-blocked-page__desc">{description}</p>
+        <NmxIconBox>
+          <NmxIconFont symbol={NmxIconFontSymbol.SECURITY} />
+        </NmxIconBox>
+        <NmxCardHeader title={title} description={description} />
 
         <div className="nmx-blocked-page__meta">
           <div className="nmx-blocked-page__meta-row">

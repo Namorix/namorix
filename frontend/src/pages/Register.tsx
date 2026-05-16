@@ -98,7 +98,7 @@ export const Register: React.FC = () => {
           <NmxCardBody>
             <NmxForm onSubmit={handleSubmit}>
               <NmxInlineAlert
-                variant={alertVariant}
+                semantic={alertVariant}
                 message={alertMessage}
                 shouldRender={!!alertMessage}
               />
@@ -152,7 +152,6 @@ export const Register: React.FC = () => {
               </NmxFormField>
               <NmxFormActions>
                 <NmxButton
-                  variant="primary"
                   type="submit"
                   label={t("auth.register.buttonLabel")}
                   disabled={busy}

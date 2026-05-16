@@ -2,8 +2,9 @@ import "./WindowFrame.scss"
 import type { WindowState } from "../../types"
 import React, { useCallback, useEffect, useRef } from "react"
 import { useWindowsStore } from "../../stores/window.store"
-import { type AddonContext, cx } from "@namorix/core"
+import { type AddonContext } from "@namorix/core"
 import { resolveAddon } from "../../addons"
+import { cx } from "@namorix/ui"
 
 interface WindowFrameProps {
   win: WindowState

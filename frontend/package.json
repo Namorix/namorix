@@ -1,11 +1,12 @@
 {
   "name": "@namorix/frontend",
   "private": true,
-  "version": "0.10.3",
+  "version": "0.10.4",
   "license": "GPL-3.0-only",
   "type": "module",
   "scripts": {
-    "dev": "pnpm --parallel -r --filter @namorix/styles dev & vite",
+    "dev": "vite",
+    "dev-style": "pnpm --parallel -r --filter @namorix/styles dev & vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
