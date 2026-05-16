@@ -1,7 +1,6 @@
 import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react"
 
-// https://vite.dev/config/
 export default defineConfig({
   server: {
     host: "0.0.0.0",
@@ -28,5 +27,14 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
   },
-  plugins: [react()],
+  plugins: [
+    react(),
+    {
+      name: "theme-hmr",
+      handleHotUpdate({ file, server }) {
+        if (file.includes("public/themes"))
+          server.ws.send({ type: "full-reload" })
+      },
+    },
+  ],
 })

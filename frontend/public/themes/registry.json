@@ -1,0 +1,10 @@
+{
+  "themes": [
+    {
+      "id": "light",
+      "name": "Light",
+      "cssPath": "/themes/light/theme.css",
+      "isBuiltIn": true
+    }
+  ]
+}
