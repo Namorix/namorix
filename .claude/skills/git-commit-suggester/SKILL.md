@@ -60,7 +60,24 @@ Group files that change for the same reason:
 
 **Cross-package rule:** If a feature spans multiple packages (e.g. `@namorix/core` + `frontend`), split into separate commits per package — one commit per scope.
 
-### 4. Draft commit messages
+### 4. Verify file existence before generating git add
+
+Before outputting any `git add` command, verify every file path exists on disk:
+
+```bash
+# For each path in the proposed git add list:
+test -f "path/to/file" || test -d "path/to/file"
+```
+
+Skip files that:
+- Are staged as **deleted** (D in `git status --short`) — they no longer exist
+- Are staged as **renamed** from (the source path) — only add the destination path
+- Are empty directories — `git add` ignores them
+
+**Rule:** Every path in `git add` must pass `test -f` or `test -d`. No exceptions.
+If unsure, run `ls` on the parent directory to confirm.
+
+### 5. Draft commit messages
 
 Format: `{type}({scope}): {description}`
 
@@ -70,7 +87,7 @@ Types: `feat`, `fix`, `refactor`, `docs`, `chore`
 - The description should explain WHY, not just WHAT
 - Check `git log --oneline -5` to avoid duplicate messages
 
-### 5. Output format
+### 6. Output format
 
 Present as numbered commits with file lists and ready-to-run bash:
 
@@ -110,3 +127,4 @@ EOF
 9. **No changes = stop early** — if `git status` shows clean working tree, say so and exit.
 10. **Breaking changes** — if a commit removes/renames a public API, use `!` suffix and explain impact in bullet points.
 11. **Never skip modified files** — every file in `git diff --stat` and `git ls-files --others --exclude-standard` output must appear in exactly one commit. No exceptions.
+12. **Verify file existence before git add** — before outputting any `git add` command, check `test -f <path>` or `test -d <path>` for every path. Skip files đã staged delete (D) hoặc là source path của staged rename (R) — những file này không còn trên disk.
