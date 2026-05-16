@@ -1,7 +1,8 @@
 import React from "react"
-import { cx } from "@namorix/core/utils"
+import { cx } from "../../utils"
+import type { WithBaseProps } from "../../types"
 
-interface NmxFormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface NmxFormInputProps extends WithBaseProps {
   id?: string
   type?: string
   name?: string
@@ -10,7 +11,6 @@ interface NmxFormInputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   required?: boolean
   disabled?: boolean
   invalid?: boolean
-  shouldRender?: boolean
   onValueChange?: (value: string) => void
 }
 

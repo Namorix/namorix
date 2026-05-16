@@ -1,14 +1,13 @@
 import React from "react"
-import { cx } from "@namorix/core/utils"
+import { cx } from "../../utils"
+import type { WithBaseProps } from "../../types"
 
-interface NmxFormActionsProps extends React.HTMLAttributes<HTMLDivElement> {
-  shouldRender?: boolean
-}
+type NmxFormActionsProps = WithBaseProps
 
 export const NmxFormActions: React.FC<NmxFormActionsProps> = ({
+  shouldRender = true,
   children,
   className,
-  shouldRender = true,
   ...rest
 }) => {
   if (!shouldRender) {

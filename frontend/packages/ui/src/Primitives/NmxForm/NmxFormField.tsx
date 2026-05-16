@@ -1,13 +1,13 @@
 import React from "react"
-import { cx } from "@namorix/core/utils"
+import { cx } from "../../utils"
+import type { WithBaseProps } from "../../types"
 
-interface NmxFormFieldProps extends React.HTMLAttributes<HTMLDivElement> {
+interface NmxFormFieldProps extends WithBaseProps {
   label?: string
   controlId?: string
   helper?: string
   error?: string
   required?: boolean
-  shouldRender?: boolean
 }
 
 export const NmxFormField: React.FC<NmxFormFieldProps> = ({

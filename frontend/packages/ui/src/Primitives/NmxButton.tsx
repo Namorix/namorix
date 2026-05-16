@@ -1,20 +1,18 @@
 import React from "react"
-import { cx } from "@namorix/core/utils"
+import type { WithBaseProps, WithVariant, WithSemanticColor } from "../types"
+import { cx, cxSemantic, cxVariant } from "../utils"
 
-type NmxButtonVariant = "primary" | "ghost"
-
-interface NmxButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: NmxButtonVariant
+interface NmxButtonProps extends WithBaseProps, WithVariant, WithSemanticColor {
   type?: "button" | "submit" | "reset"
   label?: string
   disabled?: boolean
   fullWidth?: boolean
   uppercase?: boolean
-  shouldRender?: boolean
 }
 
 export const NmxButton: React.FC<NmxButtonProps> = ({
-  variant = "primary",
+  variant = "filled",
+  semantic = "primary",
   type = "button",
   label,
   disabled = false,
@@ -36,9 +34,10 @@ export const NmxButton: React.FC<NmxButtonProps> = ({
       disabled={disabled}
       className={cx(
         "nmx-button",
-        "nmx-button--" + variant,
         { "nmx-button--full-width": fullWidth },
         { "nmx-button--upper-case": uppercase },
+        cxVariant("nmx-button", variant),
+        cxSemantic("nmx-button", semantic),
         className,
       )}
     >

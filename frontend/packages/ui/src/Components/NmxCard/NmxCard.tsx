@@ -1,13 +1,19 @@
 import React from "react"
-import { cx } from "@namorix/core/utils"
+import type { WithBaseProps } from "../../types"
+import { cx } from "../../utils"
 
-type NmxCardProps = React.HTMLAttributes<HTMLDivElement>
+type NmxCardProps = WithBaseProps
 
 export const NmxCard: React.FC<NmxCardProps> = ({
+  shouldRender = true,
   children,
   className,
   ...rest
 }) => {
+  if (!shouldRender) {
+    return
+  }
+
   return (
     <div {...rest} className={cx("nmx-card", className)}>
       {children}

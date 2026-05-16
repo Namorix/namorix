@@ -1,6 +1,6 @@
-type CxInput = string | undefined | null | false | Record<string, boolean>
+import type { NmxButtonVariant, NmxCxInput, NmxSemanticColor } from "../types"
 
-export function cx(...classes: CxInput[]): string {
+export function cx(...classes: NmxCxInput[]): string {
   return classes
     .flatMap((cls) => {
       if (!cls) return []
@@ -10,4 +10,12 @@ export function cx(...classes: CxInput[]): string {
         .map(([key]) => key)
     })
     .join(" ")
+}
+
+export function cxSemantic(prefix: string, semantic?: NmxSemanticColor) {
+  return !semantic ? "" : `${prefix}--${semantic}`
+}
+
+export function cxVariant(prefix: string, variant?: NmxButtonVariant) {
+  return !variant ? "" : `${prefix}--${variant}`
 }

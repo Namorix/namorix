@@ -1,10 +1,10 @@
 import React from "react"
-import { cx } from "@namorix/core/utils"
+import { cx } from "../../utils"
+import type { WithBaseProps } from "../../types"
 
-interface NmxCardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
+interface NmxCardHeaderProps extends WithBaseProps {
   title?: string
   description?: string
-  shouldRender?: boolean
 }
 
 export const NmxCardHeader: React.FC<NmxCardHeaderProps> = ({

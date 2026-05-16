@@ -1,17 +1,14 @@
 import React from "react"
-import { cx } from "@namorix/core/utils"
+import { cx, cxSemantic } from "../utils"
+import type { WithBaseProps, WithSemanticColor } from "../types"
 
-export type NmxInlineAlertVariant = "error" | "warning" | "success" | "info"
-
-interface NmxInlineAlertProps extends React.HTMLAttributes<HTMLDivElement> {
+interface NmxInlineAlertProps extends WithBaseProps, WithSemanticColor {
   message?: string | undefined | null
-  variant?: NmxInlineAlertVariant
-  shouldRender?: boolean
 }
 
 export const NmxInlineAlert: React.FC<NmxInlineAlertProps> = ({
   message,
-  variant = "info",
+  semantic = "info",
   shouldRender = true,
   className,
   ...rest
@@ -25,7 +22,7 @@ export const NmxInlineAlert: React.FC<NmxInlineAlertProps> = ({
       {...rest}
       className={cx(
         "nmx-inline-alert",
-        "nmx-inline-alert--" + variant,
+        cxSemantic("nmx-inline-alert", semantic),
         className,
       )}
     >

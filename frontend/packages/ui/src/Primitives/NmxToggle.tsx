@@ -1,13 +1,13 @@
 import React, { useId } from "react"
-import { cx } from "@namorix/core/utils"
+import { cx } from "../utils"
+import type { WithBaseProps } from "../types"
 
-interface NmxToggleProps extends React.HTMLAttributes<HTMLDivElement> {
+interface NmxToggleProps extends WithBaseProps {
   id?: string
   name?: string
   label?: string
   checked?: boolean
   disabled?: boolean
-  shouldRender?: boolean
   onCheckedChanged?: (checked: boolean) => void
 }
 
@@ -18,15 +18,15 @@ export const NmxToggle: React.FC<NmxToggleProps> = ({
   checked = false,
   disabled = false,
   shouldRender = true,
-  className,
   onCheckedChanged,
+  className,
   ...rest
 }) => {
   const generatedId = useId()
   const resolvedId = id || generatedId
 
   if (!shouldRender) {
-    return null
+    return
   }
 
   return (

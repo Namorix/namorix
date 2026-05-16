@@ -1,2 +1,4 @@
 export * from "./Components"
 export * from "./Primitives"
+export * from "./types"
+export * from "./utils"

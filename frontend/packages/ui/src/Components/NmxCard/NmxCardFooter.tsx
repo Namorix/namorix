@@ -1,9 +1,8 @@
 import React from "react"
-import { cx } from "@namorix/core/utils"
+import { cx } from "../../utils"
+import type { WithBaseProps } from "../../types"
 
-interface NmxCardFooterProps extends React.HTMLAttributes<HTMLDivElement> {
-  shouldRender?: boolean
-}
+type NmxCardFooterProps = WithBaseProps
 
 export const NmxCardFooter: React.FC<NmxCardFooterProps> = ({
   shouldRender = true,
@@ -12,7 +11,7 @@ export const NmxCardFooter: React.FC<NmxCardFooterProps> = ({
   ...rest
 }) => {
   if (!shouldRender) {
-    return null
+    return
   }
 
   return (
