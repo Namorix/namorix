@@ -109,4 +109,4 @@ EOF
 8. **Never add `Co-Authored-By`** trailer — project convention không dùng.
 9. **No changes = stop early** — if `git status` shows clean working tree, say so and exit.
 10. **Breaking changes** — if a commit removes/renames a public API, use `!` suffix and explain impact in bullet points.
-11. **Must stage ALL changed files** — cross-check `git status` output with proposed commits before finishing. Every modified/untracked file must appear in exactly one commit. If any file is unaccounted for, add it before outputting commands.
+11. **Never skip modified files** — every file in `git diff --stat` and `git ls-files --others --exclude-standard` output must appear in exactly one commit. No exceptions.

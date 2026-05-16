@@ -14,6 +14,13 @@ M3 — Desktop Shell UI ✅ + Addon System (contract, registry, Log Viewer) ✅
 
 ## Recent Changes (2026-05-16)
 
+### Styles: base/components/, layouts/, dark tokens; UI: NmxCard, flatten primitives
+- **@namorix/styles (0.3.0 → 0.4.0)**: New base/components/ dir (card, form, inline-alert, toggle, button SCSS), base/layouts/ (split.scss). New themes/dark/tokens.scss (dark :root vars). Fix base/tokens.scss — light colors. Fix button BEM naming (--full-width, --upper-case). vite.config.ts — SCSS entries direct, xoá remove-js-output plugin. Xoá tsconfig.json, scss.d.ts, theme index.ts entries.
+- **@namorix/ui (0.3.0 → 0.4.0)**: New Components/ module — NmxCard, NmxCardContent, NmxCardBody, NmxCardHeader, NmxCardFooter. package.json exports ./Components, ./Primitives. Flattened Primitives (NmxButton, NmxInlineAlert, NmxToggle từ subfolder → flat files). Xoá SCSS khỏi ui (moved to @namorix/styles).
+- **frontend (0.10.2 → 0.10.3)**: Login, Register dùng NmxCard. AuthPage import cleanup. Blocked, main, tokens CSS cleanup.
+
+## Recent Changes (2026-05-16)
+
 ### Styles restructure: base/ + themes/, validation, dedupe, env fix
 - **@namorix/styles (0.2.0 → 0.3.0)**: Restructure — base/ subdir (reset, fonts, mixins, variables, tokens), themes/ subdir (dark/index.scss). New vite.config.ts, tsconfig.json, scss.d.ts for theme CSS build.
 - **@namorix/core (0.10.1 → 0.10.2)**: New env/production.ts (conditional DEV flag via package.json exports). New utils/dedupe.ts (async dedup), utils/sanitizePath.ts. Theme fixes: types (isBuiltIn, cssPath), loader ({id}/{path} pattern), registry (merged fetch), ThemeProvider (switch/restore). Guards dedupeGuard wrapper.

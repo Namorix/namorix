@@ -123,10 +123,10 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.10.2 | M3 (Theme CSS build config, minor tweaks) |
+| frontend | 0.10.3 | M3 (Import refactors, CSS cleanup, Login/Register NmxCard integration) |
 | @namorix/core | 0.10.2 | M3 (dedupe, sanitizePath, production.ts, theme refinements) |
-| @namorix/styles | 0.3.0 | M3 (base/ subdir, themes/ structure, vite.config for theme CSS) |
-| @namorix/ui | 0.3.0 | M2 |
+| @namorix/styles | 0.4.0 | M3 (base/components/, base/layouts/, themes/dark/tokens.scss, build via SCSS) |
+| @namorix/ui | 0.4.0 | M3 (NmxCard Components/, flattened Primitives, removed SCSS) |
 | backend | 0.19.1 | M3 (SetThemeSchema, ThemeManifest cssPath, AuthController refactor) |
 
 ## Version Rules
@@ -159,6 +159,13 @@
 | @namorix/core | 0.10.0 | New theme module: types.ts (ThemeManifest), loader.ts (restoreTheme, loadTheme), registry.ts (getBuiltInThemes, getAllThemes), barrel export. New providers module: ThemeProvider.tsx (ThemeContext, useTheme hook, switchTheme). New http.getJson method. New constants (NMX_THEME_CSS_ID, NMX_THEME_STORAGE_KEY). New API routes (ApiThemeRoutes, ThemeRoutes, ApiUserRoutes). |
 | frontend | 0.10.0 | Theme integration: Root component with ThemeProvider wrap, restoreTheme() on app start, getAllThemes() load. Login theme sync — fetch user themeId from `/api/user/theme` → localStorage. |
 | backend | 0.18.0 | New ThemeManifest model. User.ThemeId field. AppDbContext: ThemeManifests + AddonManifests DbSet + unique indexes. New UserService (GetThemeAsync, SetThemeAsync). New UserController (GET/PUT /api/user/theme). |
+
+### 2026-05-16 (Styles: base/components/, layouts/, dark tokens; UI: NmxCard, flatten primitives)
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/styles | 0.4.0 | NEW: base/components/ (card, form, inline-alert, toggle, button SCSS), base/layouts/ (split). NEW: themes/dark/tokens.scss (dark :root vars). Fix: base/tokens.scss — light colors. Fix: base/components/button.scss — BEM naming (--full-width, --upper-case). Fix: vite.config.ts — SCSS entries direct (no TS), xoá remove-js-output plugin. Chore: xoá tsconfig.json, scss.d.ts, theme index.ts entries. |
+| @namorix/ui | 0.4.0 | NEW: Components/ — NmxCard, NmxCardContent, NmxCardBody, NmxCardHeader, NmxCardFooter. NEW: package.json exports (./Components, ./Primitives). Restructure: flattened Primitives (NmxButton, NmxInlineAlert, NmxToggle từ subfolder → flat). Chore: xoá SCSS khỏi ui (moved to @namorix/styles). |
+| frontend | 0.10.3 | Refactor: Login, Register dùng NmxCard thay layout custom. Fix: AuthPage import cleanup. Fix: Blocked.scss, main.scss, tokens.scss — CSS cleanup. |
 
 ### 2026-05-16 (Styles restructure: base/ + themes/, validation, dedupe, env fix)
 | Package | Version | Changes |

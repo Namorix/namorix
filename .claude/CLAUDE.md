@@ -390,33 +390,56 @@ frontend/packages/
 │       └── utils/cx.ts
 ├── styles/
 │   ├── package.json
-│   ├── tsconfig.json
 │   ├── vite.config.ts
 │   └── src/
 │       ├── index.scss
 │       ├── base/               # Structural styles
-│       │   ├── _index.scss
+│       │   ├── index.scss
 │       │   ├── _reset.scss
 │       │   ├── _fonts.scss
 │       │   ├── _mixins.scss
+│       │   ├── _variables.scss
 │       │   ├── _tokens.scss    # Structural tokens (radii, spacing, typography, layout)
-│       │   └── _variables.scss
+│       │   ├── components/     # Component SCSS (shared by all themes)
+│       │   │   ├── index.scss
+│       │   │   ├── _button.scss
+│       │   │   ├── _card.scss
+│       │   │   ├── _form.scss
+│       │   │   ├── _inline-alert.scss
+│       │   │   └── _toggle.scss
+│       │   └── layouts/        # Layout SCSS (shared by all themes)
+│       │       ├── index.scss
+│       │       └── _split.scss
 │       └── themes/             # Theme CSS entries (compiled by Vite)
-│           ├── dark/
+│           ├── default/
 │           │   └── index.scss
-│           └── light/
-│               └── index.scss
+│           └── dark/
+│               ├── index.scss
+│               └── _tokens.scss
 ├── ui/
 │   ├── package.json
-│   ├── tsconfig.json
 │   └── src/
 │       ├── index.ts
-│       ├── scss.d.ts
+│       ├── Components/
+│       │   ├── index.ts
+│       │   └── NmxCard/
+│       │       ├── NmxCard.tsx
+│       │       ├── NmxCardContent.tsx
+│       │       ├── NmxCardHeader.tsx
+│       │       ├── NmxCardBody.tsx
+│       │       ├── NmxCardFooter.tsx
+│       │       └── index.ts
 │       └── Primitives/
-│           ├── NmxButton/
+│           ├── index.ts
+│           ├── NmxButton.tsx
 │           ├── NmxForm/
-│           ├── NmxInlineAlert/
-│           └── NmxToggle/
+│           │   ├── NmxForm.tsx
+│           │   ├── NmxFormActions.tsx
+│           │   ├── NmxFormField.tsx
+│           │   ├── NmxFormInput.tsx
+│           │   └── index.ts
+│           ├── NmxInlineAlert.tsx
+│           └── NmxToggle.tsx
 
 backend/
 ├── Makefile
