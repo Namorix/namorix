@@ -1,26 +1,4 @@
 :root {
-  /* Core colors */
-  --nmx-color-bg: #111111;
-  --nmx-wallpaper: var(--nmx-color-bg);
-
-  --nmx-color-surface: #1a1a1a; // Main page/shell background behind cards and forms
-  --nmx-color-surface-lowest: #151515; // Input fields, textareas, select (default fill)
-  --nmx-color-surface-low: #202020; // Card/panel body (form card, setting card, modal body)
-  --nmx-color-surface-mid: #2a2a2a; // Highlighted block (selected card, intro strip, active tab bg)
-  --nmx-color-surface-high: #343434; // Hover state for cards/chips/buttons on dark surfaces
-  --nmx-color-surface-highest: #404040; //Strong emphasis (active chip, focused tile, key CTA container)
-
-  --nmx-color-on-surface: #e2e8f0;
-  --nmx-color-on-surface-variant: #4c535c;
-
-  --nmx-color-primary: #2563eb;
-  --nmx-color-on-primary: #ffffff;
-
-  /* Semantic */
-  --nmx-color-danger: #ef4444;
-  --nmx-color-success: #22c55e;
-  --nmx-color-warning: #f59e0b;
-
   /* Radii / spacing */
   --nmx-radius-sm: 4px;
   --nmx-radius-md: 8px;
@@ -34,20 +12,20 @@
 
   /* Spacing */
   --nmx-spacing-unit: 8px;
-  --nmx-spacing-xs: calc(var(--nmx-spacing-unit) * 0.5); // 4px (0.25rem)
-  --nmx-spacing-sm: calc(var(--nmx-spacing-unit) * 1); // 8px (0.5rem)
-  --nmx-spacing-md: calc(var(--nmx-spacing-unit) * 2); // 16px (1rem)
-  --nmx-spacing-lg: calc(var(--nmx-spacing-unit) * 3); // 24px (1.5rem)
-  --nmx-spacing-xl: calc(var(--nmx-spacing-unit) * 4); // 32px (2rem)
-  --nmx-spacing-2xl: calc(var(--nmx-spacing-unit) * 5); // 40px (2.5rem)
-  --nmx-spacing-3xl: calc(var(--nmx-spacing-unit) * 6); // 48px (3rem)
-  --nmx-spacing-4xl: calc(var(--nmx-spacing-unit) * 7); // 56px (3.5rem)
-  --nmx-spacing-5xl: calc(var(--nmx-spacing-unit) * 8); // 64px (4rem)
-  --nmx-spacing-6xl: calc(var(--nmx-spacing-unit) * 9); // 72px (4.5rem)
-  --nmx-spacing-7xl: calc(var(--nmx-spacing-unit) * 10); // 80px (5rem)
-  --nmx-spacing-8xl: calc(var(--nmx-spacing-unit) * 11); // 88px (5.5rem)
-  --nmx-spacing-9xl: calc(var(--nmx-spacing-unit) * 12); // 96px (6rem)
-  --nmx-spacing-10xl: calc(var(--nmx-spacing-unit) * 13); // 104px (6.5rem)
+  --nmx-spacing-xs: calc(var(--nmx-spacing-unit) * 0.5);
+  --nmx-spacing-sm: calc(var(--nmx-spacing-unit) * 1);
+  --nmx-spacing-md: calc(var(--nmx-spacing-unit) * 2);
+  --nmx-spacing-lg: calc(var(--nmx-spacing-unit) * 3);
+  --nmx-spacing-xl: calc(var(--nmx-spacing-unit) * 4);
+  --nmx-spacing-2xl: calc(var(--nmx-spacing-unit) * 5);
+  --nmx-spacing-3xl: calc(var(--nmx-spacing-unit) * 6);
+  --nmx-spacing-4xl: calc(var(--nmx-spacing-unit) * 7);
+  --nmx-spacing-5xl: calc(var(--nmx-spacing-unit) * 8);
+  --nmx-spacing-6xl: calc(var(--nmx-spacing-unit) * 9);
+  --nmx-spacing-7xl: calc(var(--nmx-spacing-unit) * 10);
+  --nmx-spacing-8xl: calc(var(--nmx-spacing-unit) * 11);
+  --nmx-spacing-9xl: calc(var(--nmx-spacing-unit) * 12);
+  --nmx-spacing-10xl: calc(var(--nmx-spacing-unit) * 13);
 
   /* Font sizes */
   --nmx-font-size-xs: 0.75rem;
@@ -96,12 +74,7 @@
   --nmx-color-mix-lighten: white;
   --nmx-color-mix-darken: black;
 
-  /* Form */
-  --nmx-form-page-max-width: 980px;
-
-  /* Colors */
-  --nmx-color-red-500: #ef4444;
-  --nmx-color-green-700: #22c55e;
-  --nmx-color-yellow-500: #f59e0b;
-  --nmx-color-blue-500: #2563eb;
+  /* Layouts-Split */
+  --nmx-split-panel-min-width: 480px;
+  --nmx-split-panel-max-width: 640px;
 }

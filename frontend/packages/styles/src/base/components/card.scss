@@ -1,0 +1,32 @@
+.nmx-card {
+  background: var(--nmx-color-surface-low);
+  border-radius: var(--nmx-radius-md);
+  padding: var(--nmx-spacing-xl);
+}
+
+.nmx-card__content {
+  width: 100%;
+}
+
+.nmx-card__header {
+  margin-bottom: var(--nmx-spacing-3xl);
+
+  &-title {
+    margin: 0 0 var(--nmx-spacing-md) 0;
+    color: var(--nmx-color-on-surface);
+    font-size: clamp(var(--nmx-font-size-2xl), 2.2vw, var(--nmx-font-size-3xl));
+    font-weight: var(--nmx-font-weight-semibold);
+    letter-spacing: var(--nmx-letter-spacing-tight);
+  }
+
+  &-description {
+    color: var(--nmx-color-on-surface-variant);
+    margin-top: var(--nmx-spacing-sm);
+    font-size: var(--nmx-font-size-sm);
+  }
+}
+
+.nmx-card__footer {
+  font-size: var(--nmx-font-size-sm);
+  color: var(--nmx-color-on-surface-variant);
+}
