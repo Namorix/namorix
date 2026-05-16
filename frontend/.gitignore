@@ -1,3 +1,11 @@
+public/themes
+public/fonts/icomoon/demo-files
+public/fonts/icomoon/demo.html
+public/fonts/icomoon/Read Me.txt
+public/fonts/icomoon/style.css
+public/fonts/icomoon/style.scss
+public/fonts/icomoon/variables.scss
+
 # Logs
 logs
 *.log

@@ -6,4 +6,3 @@ pnpm-lock.yaml
 .claude/skills/skill-creator
 .claude/skills/find-skills
 memory/
-public/themes
