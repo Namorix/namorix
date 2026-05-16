@@ -58,14 +58,14 @@ namespace Namorix.Adapters.Migrations
                 name: "ThemeManifests",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Version = table.Column<string>(type: "TEXT", nullable: false),
-                    Author = table.Column<string>(type: "TEXT", nullable: false),
-                    Description = table.Column<string>(type: "TEXT", nullable: false),
-                    Preview = table.Column<string>(type: "TEXT", nullable: false),
-                    Css = table.Column<string>(type: "TEXT", nullable: false),
-                    Tags = table.Column<string>(type: "TEXT", nullable: false),
+                    Id = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    Version = table.Column<string>(type: "TEXT", maxLength: 10, nullable: true),
+                    Author = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
+                    Description = table.Column<string>(type: "TEXT", maxLength: 250, nullable: true),
+                    Preview = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    CssPath = table.Column<string>(type: "TEXT", maxLength: 250, nullable: false),
+                    Tags = table.Column<string>(type: "TEXT", nullable: true),
                     IsBuiltIn = table.Column<bool>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
@@ -82,7 +82,7 @@ namespace Namorix.Adapters.Migrations
                     Username = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     Password = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     Role = table.Column<int>(type: "INTEGER", nullable: false),
-                    ThemeId = table.Column<string>(type: "TEXT", nullable: false),
+                    ThemeId = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: true)
                 },

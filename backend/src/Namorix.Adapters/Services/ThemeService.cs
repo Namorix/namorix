@@ -13,6 +13,7 @@ public class ThemeService(AppDbContext appDbContext)
             {
                 Id = "light",
                 Name = "Light",
+                CssPath = "/theme.css",
                 IsBuiltIn = true
             }
         ];

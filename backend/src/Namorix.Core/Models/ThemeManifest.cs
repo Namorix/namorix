@@ -23,7 +23,7 @@ public class ThemeManifest
     public string? Preview { get; init; } = string.Empty;
     
     [MaxLength(250)]
-    public string Css { get; init; } = string.Empty;
+    public string CssPath { get; init; } = string.Empty;
     
     public List<string>? Tags { get; init; } = [];
     public bool IsBuiltIn { get; init; } = true;

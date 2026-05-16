@@ -13,10 +13,9 @@ namespace Namorix.Server.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController(AuthService authService, SettingsService settingsService, IOptions<JwtConfig> jwtConfig,
+public class AuthController(AuthService authService, SettingsService settingsService,
     IOptions<AppConfig> appConfig) : ControllerBase
 {
-    private readonly JwtConfig _jwtConfig = jwtConfig.Value;
     private readonly AppConfig _appConfig = appConfig.Value;
     
     [HttpPost("login")]
@@ -143,7 +142,6 @@ public class AuthController(AuthService authService, SettingsService settingsSer
     private async Task<IActionResult> TryRefresh()
     {
         var refreshToken = GetRefreshCookie();
-        Console.WriteLine($"Refresh token: {refreshToken}");
         
         if (string.IsNullOrEmpty(refreshToken))
             return Unauthorized(ApiResponse.Fail(AuthErrors.Unauthorized));
@@ -158,13 +156,10 @@ public class AuthController(AuthService authService, SettingsService settingsSer
             SetAccessCookie(newAccessToken);
             SetRefreshCookie(newRefreshToken, false);
 
-            Console.WriteLine($"New refresh token: {newRefreshToken}, access token: {newAccessToken}");
-
             return UserOk(user);
         }
         catch (AuthException ex)
         {
-            Console.WriteLine("Clear cookie");
             ClearAccessCookie();
             ClearRefreshCookie();
             return Unauthorized(ApiResponse.Fail(ex.Code));

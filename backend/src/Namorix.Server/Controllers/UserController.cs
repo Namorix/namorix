@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Namorix.Adapters.Services;
 using Namorix.Core.Constants;
 using Namorix.Core.Responses;
+using Namorix.Core.Validation;
+using Namorix.Core.Validation.Schemas;
 using Namorix.Server.Middleware;
 
 namespace Namorix.Server.Controllers;
@@ -23,6 +25,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPut("theme")]
+    [Validate((typeof(SetThemeSchema)))]
     public async Task<IActionResult> SetTheme(
         [FromBody] SetThemeRequest request,
         [FromServices] UserService userService)
