@@ -23,9 +23,13 @@
 .nmx-inline-alert {
   margin: 0 0 var(--nmx-spacing-md);
   padding: var(--nmx-spacing-md);
-  border-radius: var(--nmx-radius-md);
   font-size: var(--nmx-font-size-sm);
   font-weight: var(--nmx-font-weight-medium);
-  background-color: color-mix(in oklab, var(--nmx-inline-alert-bg) 14%, transparent);
+  background-color: color-mix(
+    in oklab,
+    var(--nmx-inline-alert-bg) 14%,
+    transparent
+  );
+  border-radius: var(--nmx-radius-md);
   color: var(--nmx-inline-alert-text);
 }

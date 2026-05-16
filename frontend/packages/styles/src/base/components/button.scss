@@ -1,17 +1,21 @@
 .nmx-button {
   display: inline-flex;
+  border-radius: var(--nmx-radius-md);
   align-items: center;
   justify-content: center;
   gap: var(--nmx-spacing-sm);
   padding: var(--nmx-spacing-md) var(--nmx-spacing-lg);
-  border-radius: var(--nmx-radius-md);
   font-size: var(--nmx-font-size-sm);
   font-weight: var(--nmx-font-weight-semibold);
   font-family: inherit;
   border: 1px solid transparent;
   cursor: pointer;
   outline: 0;
-  transition: background 0.2s, color 0.2s, opacity 0.2s, transform 0.1s;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    opacity 0.2s,
+    transform 0.1s;
 
   &:active:not(:disabled) {
     transform: scale(0.98);
@@ -38,7 +42,11 @@
   border-color: transparent;
 
   &:hover:not(:disabled) {
-    background: color-mix(in oklab, var(--nmx-color-primary) 85%, var(--nmx-color-mix-darken));
+    background: color-mix(
+      in oklab,
+      var(--nmx-color-primary) 85%,
+      var(--nmx-color-mix-darken)
+    );
   }
 }
 

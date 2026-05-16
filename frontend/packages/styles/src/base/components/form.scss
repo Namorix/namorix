@@ -40,13 +40,13 @@
   display: block;
   box-sizing: border-box;
   width: 100%;
+  border-radius: var(--nmx-radius-md);
   padding: var(--nmx-spacing-md) var(--nmx-spacing-xl);
   font-size: var(--nmx-font-size-sm);
   line-height: var(--nmx-line-height-normal);
   color: var(--nmx-color-on-surface);
   background: var(--nmx-color-surface-lowest);
   border: 0;
-  border-radius: var(--nmx-radius-md);
   font-family: inherit;
   transition: border-color 0.15s;
   outline: none;
