@@ -1,8 +1,6 @@
 import React from "react"
-import { useWindowsStore } from "../../stores/window.store"
-import "./Taskbar.scss"
-import { useLauncherStore } from "../../stores/launcher.store"
-import { useTaskbarClock } from "../../hooks/useTaskbarClock"
+import { useLauncherStore, useWindowsStore } from "../../stores"
+import { useTaskbarClock } from "../../hooks"
 import { TaskbarView } from "./TaskbarView"
 import type { TaskbarApp } from "./Taskbar.types"
 
@@ -20,6 +18,7 @@ export const Taskbar: React.FC = () => {
 
   const apps: TaskbarApp[] = windows.map((win) => ({
     id: win.id,
+    icon: win.icon,
     title: win.title,
     isActive: win.id === activeId,
     isMaximized: win.maximized,

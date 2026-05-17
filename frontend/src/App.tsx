@@ -10,7 +10,7 @@ import {
 import React, { useEffect, useState } from "react"
 import { Navigate, Route, Routes } from "react-router-dom"
 import { Desktop, Register, Login, Blocked } from "./pages"
-import { healthController } from "./controllers/health.controller"
+import { healthController } from "./controllers"
 
 const authGuard = createAuthGuard(authService)
 const loginGuard = createLoginGuard(authService)

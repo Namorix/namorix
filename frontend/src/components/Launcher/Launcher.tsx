@@ -1,9 +1,8 @@
 import React from "react"
-import { useWindowsStore } from "../../stores/window.store"
-import { useLauncherStore } from "../../stores/launcher.store"
+import { useLauncherStore, useWindowsStore } from "../../stores"
 import { useShallow } from "zustand/react/shallow"
-import "./Launcher.scss"
-import { listAddons } from "../../addons"
+import { useLauncherSearch } from "./useLauncherSearch"
+import { LauncherView } from "./LauncherView"
 
 export const Launcher: React.FC = () => {
   const openWindow = useWindowsStore((state) => state.openWindow)
@@ -11,34 +10,26 @@ export const Launcher: React.FC = () => {
     useShallow((state) => ({ isOpen: state.isOpen, close: state.close })),
   )
 
-  const handlerLauncher = (app: string, label: string) => {
-    openWindow(app, label)
-    close()
-  }
+  const { query, setQuery, items, searchRef } = useLauncherSearch(isOpen)
 
   if (!isOpen) {
     return null
   }
 
+  const handleOpenApp = (id: string, label: string, icon?: React.ReactNode) => {
+    openWindow(id, label, icon)
+    close()
+  }
+
   return (
-    <div className="nmx-launcher-overlay" onMouseDown={close}>
-      <div className="nmx-launcher" onMouseDown={(e) => e.stopPropagation()}>
-        {listAddons().map((addon) => (
-          <button
-            key={addon.manifest.id}
-            className="nmx-launcher__item"
-            type="button"
-            onMouseDown={() =>
-              handlerLauncher(addon.manifest.id, addon.manifest.displayName)
-            }
-          >
-            <span className="nmx-launcher__icon">{addon.manifest.icon}</span>
-            <span className="nmx-launcher__label">
-              {addon.manifest.displayName}
-            </span>
-          </button>
-        ))}
-      </div>
-    </div>
+    <LauncherView
+      items={items}
+      query={query}
+      onQueryChange={setQuery}
+      onClearQuery={() => setQuery("")}
+      onOpenApp={handleOpenApp}
+      searchRef={searchRef}
+      onClose={close}
+    />
   )
 }

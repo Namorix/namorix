@@ -1,7 +1,7 @@
-import React from "react"
+import type { NmxAddonIconType } from "@namorix/core"
 
 export interface DesktopIconData {
   id: string
-  icon: React.ReactNode
+  icon?: NmxAddonIconType
   label: string
 }

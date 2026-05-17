@@ -1,6 +1,5 @@
 import React from "react"
-import "./DesktopArea.scss"
-import { useWindowsStore } from "../../stores/window.store"
+import { useWindowsStore } from "../../stores"
 import { listAddons } from "../../addons"
 import { DesktopAreaView } from "./DesktopAreaView"
 import type { DesktopIconData } from "./DesktopArea.types"
@@ -20,7 +19,7 @@ export const DesktopArea: React.FC = () => {
       onIconOpen={(id) => {
         const icon = icons.find((ic) => ic.id === id)
         if (icon) {
-          openWindow(id, icon.label)
+          openWindow(id, icon.label, icon.icon)
         }
       }}
     />

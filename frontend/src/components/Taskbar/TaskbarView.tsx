@@ -21,15 +21,13 @@ export const TaskbarView: React.FC<TaskViewProps> = ({
   return (
     <div className="nmx-taskbar">
       <div className="nmx-taskbar__inner">
-        <div className="nmx-taskbar__start">
-          <button
-            className="nmx-taskbar__start-btn"
-            type="button"
-            onMouseDown={onStartClick}
-          >
-            <NmxIconSvg symbol={NmxIconSvgSymbol.LOGO} size={48} />
-          </button>
-        </div>
+        <button
+          className="nmx-taskbar__start-btn"
+          type="button"
+          onMouseDown={onStartClick}
+        >
+          <NmxIconSvg symbol={NmxIconSvgSymbol.LOGO} />
+        </button>
 
         <div className="nmx-taskbar__apps">
           {apps.map((app) => (

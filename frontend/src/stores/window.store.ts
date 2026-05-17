@@ -1,12 +1,13 @@
 import { create, type StateCreator } from "zustand"
 import type { WindowId, WindowState } from "../types"
+import type { NmxAddonIconType } from "@namorix/core"
 
 interface WindowsState {
   windows: WindowState[]
   activeId: WindowId | null
   nextZIndex: number
 
-  openWindow: (app: string, title: string) => WindowId
+  openWindow: (app: string, title: string, icon?: NmxAddonIconType) => WindowId
   closeWindow: (id: WindowId) => void
   focusWindow: (id: WindowId) => void
   minimizeWindow: (id: WindowId) => void
@@ -33,13 +34,14 @@ const windowsStore: StateCreator<WindowsState> = (setState, getState) => ({
   activeId: null,
   nextZIndex: 1,
 
-  openWindow(app, title): WindowId {
+  openWindow(app: string, title: string, icon?: NmxAddonIconType): WindowId {
     const id = `win-${Date.now()}-${++_idCounter}`
     const { nextZIndex, windows } = getState()
 
     const win: WindowState = {
       id,
       app,
+      icon,
       title,
       x: 50 + windows.length * 30,
       y: 50 + windows.length * 30,
@@ -47,6 +49,7 @@ const windowsStore: StateCreator<WindowsState> = (setState, getState) => ({
       height: 500,
       minimized: false,
       maximized: false,
+      focused: false,
       zIndex: nextZIndex,
     }
 

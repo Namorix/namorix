@@ -1,5 +1,5 @@
 import React from "react"
-import { cx } from "@namorix/ui"
+import { cx, NmxIconSvg } from "@namorix/ui"
 import type { TaskbarApp } from "./Taskbar.types"
 
 interface TaskbarAppButtonProps {
@@ -21,6 +21,6 @@ export const TaskbarAppButton: React.FC<TaskbarAppButtonProps> = ({
     onMouseDown={() => onAppClick(app.id)}
     onDoubleClick={() => onAppDoubleClick(app.id)}
   >
-    {app.title}
+    {app.icon ? <NmxIconSvg symbol={app.icon} /> : app.title}
   </button>
 )

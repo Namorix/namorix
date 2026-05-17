@@ -1,1 +1,6 @@
-export * from "./Auth/AuthPage"
+export * from "./AuthView"
+export * from "./DesktopArea"
+export * from "./Launcher"
+export * from "./Taskbar"
+export * from "./WindowFrame"
+export * from "./WindowManager"

@@ -1,5 +1,6 @@
 import type { DesktopIconData } from "./DesktopArea.types"
 import React from "react"
+import { NmxIconSvg } from "@namorix/ui"
 
 interface DesktopIconProps {
   icon: DesktopIconData
@@ -8,11 +9,11 @@ interface DesktopIconProps {
 
 export const DesktopIcon: React.FC<DesktopIconProps> = ({ icon, onOpen }) => (
   <button
-    className="nmx-desktop-area__icon"
+    className="nmx-desktop-area__item"
     type="button"
     onDoubleClick={() => onOpen(icon.id)}
   >
-    <span className="nmx-desktop-area__icon-img">{icon.icon}</span>
+    <NmxIconSvg symbol={icon.icon} className="nmx-desktop-area__icon" />
     <span className="nmx-desktop-area__icon-label">{icon.label}</span>
   </button>
 )

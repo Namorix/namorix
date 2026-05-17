@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { AuthPage } from "../components"
+import { AuthView } from "../components"
 import {
   type NmxFormSubmitEvent,
   NmxButton,
@@ -85,7 +85,7 @@ export const Register: React.FC = () => {
   }
 
   return (
-    <AuthPage
+    <AuthView
       heroTitle={t("auth.register.heroTitle")}
       heroDescription={t("auth.register.heroDescription")}
     >
@@ -159,11 +159,11 @@ export const Register: React.FC = () => {
                   uppercase
                 />
               </NmxFormActions>
-              <NmxCardFooter className="nmx-auth-page__card__footer">
+              <NmxCardFooter className="nmx-auth-view__card__footer">
                 <span>{t("auth.register.secondaryText")}</span>
                 <Link
                   to={DefaultPaths.LOGIN}
-                  className="nmx-auth-page__secondary-link"
+                  className="nmx-auth-view__secondary-link"
                 >
                   {t("auth.register.secondaryActionLabel")}
                 </Link>
@@ -172,6 +172,6 @@ export const Register: React.FC = () => {
           </NmxCardBody>
         </NmxCardContent>
       </NmxCard>
-    </AuthPage>
+    </AuthView>
   )
 }

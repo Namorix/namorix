@@ -1,5 +1,5 @@
 import type React from "react"
-import { AuthPage } from "../components"
+import { AuthView } from "../components"
 import {
   type NmxFormSubmitEvent,
   NmxButton,
@@ -76,7 +76,7 @@ export const Login: React.FC = () => {
   }
 
   return (
-    <AuthPage
+    <AuthView
       heroTitle={t("auth.login.heroTitle")}
       heroDescription={t("auth.login.heroDescription")}
     >
@@ -139,11 +139,11 @@ export const Login: React.FC = () => {
                   uppercase
                 />
               </NmxFormActions>
-              <NmxCardFooter className="nmx-auth-page__card__footer">
+              <NmxCardFooter className="nmx-auth-view__card__footer">
                 <span>{t("auth.login.secondaryText")}</span>
                 <Link
                   to={DefaultPaths.REGISTER}
-                  className="nmx-auth-page__secondary-link"
+                  className="nmx-auth-view__secondary-link"
                 >
                   {t("auth.login.secondaryActionLabel")}
                 </Link>
@@ -152,6 +152,6 @@ export const Login: React.FC = () => {
           </NmxCardBody>
         </NmxCardContent>
       </NmxCard>
-    </AuthPage>
+    </AuthView>
   )
 }
