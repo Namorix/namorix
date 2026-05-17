@@ -2,30 +2,27 @@ import React from "react"
 import "./DesktopArea.scss"
 import { useWindowsStore } from "../../stores/window.store"
 import { listAddons } from "../../addons"
+import { DesktopAreaView } from "./DesktopAreaView"
+import type { DesktopIconData } from "./DesktopArea.types"
 
 export const DesktopArea: React.FC = () => {
   const openWindow = useWindowsStore((state) => state.openWindow)
+
+  const icons: DesktopIconData[] = listAddons().map((addon) => ({
+    id: addon.manifest.id,
+    icon: addon.manifest.icon,
+    label: addon.manifest.displayName,
+  }))
+
   return (
-    <div className="nmx-desktop-area">
-      <div className="nmx-desktop-area__grid">
-        {listAddons().map((addon) => (
-          <button
-            key={addon.manifest.id}
-            className="nmx-desktop-area__icon"
-            type="button"
-            onDoubleClick={() =>
-              openWindow(addon.manifest.id, addon.manifest.displayName)
-            }
-          >
-            <span className="nmx-desktop-area__icon-img">
-              {addon.manifest.icon}
-            </span>
-            <span className="nmx-desktop-area__icon-label">
-              {addon.manifest.displayName}
-            </span>
-          </button>
-        ))}
-      </div>
-    </div>
+    <DesktopAreaView
+      icons={icons}
+      onIconOpen={(id) => {
+        const icon = icons.find((ic) => ic.id === id)
+        if (icon) {
+          openWindow(id, icon.label)
+        }
+      }}
+    />
   )
 }

@@ -1,4 +1,4 @@
-@use "@namorix/styles" as *;
+@use "@namorix/styles/mixins" as *;
 
 .nmx-taskbar {
   position: fixed;
@@ -6,24 +6,33 @@
   left: 0;
   right: 0;
   height: var(--nmx-taskbar-height);
-  display: flex;
-  align-items: center;
   background: var(--nmx-color-surface-low);
   z-index: 9999;
 
   @include backdrop-filter(blur(8px));
   @include no-user-select;
 
+  &__inner {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    box-sizing: border-box;
+  }
+
   &__start {
-    padding: 0 var(--nmx-spacing-sm);
+    //padding: 0 var(--nmx-spacing-sm);
   }
 
   &__start-btn {
-    background: none;
-    border: 1px solid transparent;
+    background: red;
     color: var(--nmx-color-on-surface);
-    padding: var(--nmx-spacing-xs) var(--nmx-spacing-sm);
     cursor: pointer;
+    height: 100%;
+    outline: none;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
     font-size: var(--nmx-font-size-sm);
 
     &:hover {

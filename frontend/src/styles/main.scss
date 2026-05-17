@@ -1,2 +1,3 @@
-@use "@namorix/styles";
-@use "tokens";
+@forward "@namorix/styles";
+@forward "tokens";
+@forward "@namorix/styles/shell";

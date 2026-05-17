@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from "react"
-import { cx } from "@namorix/ui"
+import React from "react"
 import { useWindowsStore } from "../../stores/window.store"
 import "./Taskbar.scss"
 import { useLauncherStore } from "../../stores/launcher.store"
+import { useTaskbarClock } from "../../hooks/useTaskbarClock"
+import { TaskbarView } from "./TaskbarView"
+import type { TaskbarApp } from "./Taskbar.types"
 
 export const Taskbar: React.FC = () => {
   const {
@@ -14,71 +16,35 @@ export const Taskbar: React.FC = () => {
     restoreWindow,
   } = useWindowsStore()
   const toggleLauncher = useLauncherStore((state) => state.toggle)
-  const [time, setTime] = useState(
-    new Date().toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    }),
-  )
+  const time = useTaskbarClock()
 
-  useEffect(() => {
-    const id = setInterval(() => {
-      setTime(
-        new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false,
-        }),
-      )
-    }, 30_000)
-
-    return () => clearInterval(id)
-  }, [])
+  const apps: TaskbarApp[] = windows.map((win) => ({
+    id: win.id,
+    title: win.title,
+    isActive: win.id === activeId,
+    isMaximized: win.maximized,
+  }))
 
   return (
-    <div className="nmx-taskbar">
-      <div className="nmx-taskbar__start">
-        <button
-          className="nmx-taskbar__start-btn"
-          type="button"
-          onMouseDown={toggleLauncher}
-        >
-          Start
-        </button>
-      </div>
-
-      <div className="nmx-taskbar__apps">
-        {windows.map((win) => (
-          <button
-            key={win.id}
-            className={cx("nmx-taskbar__app-btn", {
-              "nmx-taskbar__app-btn--active": win.id === activeId,
-            })}
-            type="button"
-            onMouseDown={() => {
-              if (win.id === activeId) {
-                minimizeWindow(win.id)
-              } else {
-                focusWindow(win.id)
-              }
-            }}
-            onDoubleClick={() => {
-              if (win.maximized) {
-                restoreWindow(win.id)
-              } else {
-                maximizeWindow(win.id)
-              }
-            }}
-          >
-            {win.title}
-          </button>
-        ))}
-      </div>
-
-      <div className="nmx-taskbar__tray">
-        <span className="nmx-taskbar__clock">{time}</span>
-      </div>
-    </div>
+    <TaskbarView
+      apps={apps}
+      time={time}
+      onStartClick={toggleLauncher}
+      onAppClick={(id) => {
+        if (id === activeId) {
+          minimizeWindow(id)
+        } else {
+          focusWindow(id)
+        }
+      }}
+      onAppDoubleClick={(id) => {
+        const win = windows.find((w) => w.id === id)
+        if (win?.maximized) {
+          restoreWindow(id)
+        } else {
+          maximizeWindow(id)
+        }
+      }}
+    />
   )
 }

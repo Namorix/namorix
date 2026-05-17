@@ -49,7 +49,7 @@
     }
 
     &--close:hover {
-      background: var(--nmx-color-danger);
+      background: var(--nmx-color-error);
       color: white;
     }
   }
@@ -108,7 +108,6 @@
       height: calc(var(--nmx-window-frame-edge-size) * 2);
       cursor: ne-resize;
     }
-
 
     &--nw {
       top: 0;

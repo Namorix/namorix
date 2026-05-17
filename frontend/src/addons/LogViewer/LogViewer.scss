@@ -51,7 +51,7 @@
     }
 
     &--error {
-      color: var(--nmx-color-danger);
+      color: var(--nmx-color-error);
     }
 
     &--warn {
@@ -67,7 +67,13 @@
     }
   }
 
-  &__time { color: var(--nmx-color-on-surface); }
-  &__level { font-weight: bold; }
-  &__source { color: var(--nmx-color-primary); }
+  &__time {
+    color: var(--nmx-color-on-surface);
+  }
+  &__level {
+    font-weight: bold;
+  }
+  &__source {
+    color: var(--nmx-color-primary);
+  }
 }

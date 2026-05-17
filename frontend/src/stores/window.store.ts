@@ -60,13 +60,20 @@ const windowsStore: StateCreator<WindowsState> = (setState, getState) => ({
   },
 
   closeWindow(id) {
-    setState((state) => ({
-      windows: state.windows.filter((window) => window.id !== id),
-      activeId:
-        state.activeId === id
-          ? (state.windows.find((window) => window.id !== id)?.id ?? null)
-          : state.activeId,
-    }))
+    setState((state) => {
+      const remaining = state.windows.filter((win) => win.id !== id)
+
+      const topWindow =
+        remaining.length > 0
+          ? remaining.sort((a, b) => b.zIndex - a.zIndex)[0]
+          : null
+
+      return {
+        windows: remaining,
+        activeId:
+          state.activeId === id ? (topWindow?.id ?? null) : state.activeId,
+      }
+    })
   },
 
   focusWindow(id) {

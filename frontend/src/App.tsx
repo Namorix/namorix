@@ -30,7 +30,7 @@ export const App: React.FC = () => {
       .catch(() => {})
   }, [])
 
-  if (!blocked) {
+  if (blocked) {
     return <Blocked code={blocked} />
   }
 

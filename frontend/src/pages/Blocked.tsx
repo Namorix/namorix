@@ -6,7 +6,13 @@ import {
   MiddlewareErrorCodes,
 } from "@namorix/core"
 import "./Blocked.scss"
-import { NmxCard, NmxCardHeader, NmxIconBox } from "@namorix/ui"
+import {
+  NmxCard,
+  NmxCardHeader,
+  NmxIconBox,
+  NmxMetaItem,
+  NmxMetaList,
+} from "@namorix/ui"
 import { NmxIconFont, NmxIconFontSymbol } from "@namorix/ui"
 
 interface BlockedProps {
@@ -46,29 +52,30 @@ export const Blocked: React.FC<BlockedProps> = ({ code }) => {
   return (
     <div className="nmx-blocked-page">
       <NmxCard className="nmx-blocked-page__card">
-        <NmxIconBox>
-          <NmxIconFont symbol={NmxIconFontSymbol.SECURITY} />
+        <NmxIconBox className="nmx-blocked-page__icon-box">
+          <NmxIconFont
+            symbol={NmxIconFontSymbol.SECURITY}
+            className="nmx-blocked-page__icon-font"
+          />
         </NmxIconBox>
-        <NmxCardHeader title={title} description={description} />
+        <NmxCardHeader
+          title={title}
+          description={description}
+          titleClassName="nmx-blocked-page__header-title"
+          descriptionClassName="nmx-blocked-page__header-description"
+        />
 
-        <div className="nmx-blocked-page__meta">
-          <div className="nmx-blocked-page__meta-row">
-            <span className="nmx-blocked-page__meta-label">
-              {t("blocked.meta.label.status")}
-            </span>
-            <span className="nmx-blocked-page__meta-value nmx-blocked-page__meta-value--danger">
-              {t("blocked.meta.value.blocked")}
-            </span>
-          </div>
-          <div className="nmx-blocked-page__meta-row">
-            <span className="nmx-blocked-page__meta-label">
-              {t("blocked.meta.label.timestamp")}
-            </span>
-            <span className="nmx-blocked-page__meta-value">
-              {new Date().toISOString()}
-            </span>
-          </div>
-        </div>
+        <NmxMetaList className="nmx-blocked-page__meta-list">
+          <NmxMetaItem
+            label={t("blocked.meta.label.status")}
+            value={t("blocked.meta.value.blocked")}
+            semantic="error"
+          />
+          <NmxMetaItem
+            label={t("blocked.meta.label.timestamp")}
+            value={new Date().toISOString()}
+          />
+        </NmxMetaList>
       </NmxCard>
     </div>
   )
