@@ -3,9 +3,9 @@
 @font-face {
   font-family: '#{$icomoon-font-family}';
   src:
-    url('#{$icomoon-font-path}/#{$icomoon-font-family}.ttf?aicx8n') format('truetype'),
-    url('#{$icomoon-font-path}/#{$icomoon-font-family}.woff?aicx8n') format('woff'),
-    url('#{$icomoon-font-path}/#{$icomoon-font-family}.svg?aicx8n##{$icomoon-font-family}') format('svg');
+    url('#{$icomoon-font-path}/#{$icomoon-font-family}.ttf?3toj08') format('truetype'),
+    url('#{$icomoon-font-path}/#{$icomoon-font-family}.woff?3toj08') format('woff'),
+    url('#{$icomoon-font-path}/#{$icomoon-font-family}.svg?3toj08##{$icomoon-font-family}') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -26,6 +26,88 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.ic-logo-symbol-light .path1 {
+  &:before {
+    content: $ic-logo-symbol-light-path1;  
+    color: rgb(0, 122, 255);
+  }
+}
+.ic-logo-symbol-light .path2 {
+  &:before {
+    content: $ic-logo-symbol-light-path2;  
+    margin-left: -1em;  
+    color: rgb(28, 28, 30);
+  }
+}
+.ic-logo-symbol-light .path3 {
+  &:before {
+    content: $ic-logo-symbol-light-path3;  
+    margin-left: -1em;  
+    color: rgb(0, 122, 255);
+  }
+}
+.ic-logo-symbol-light .path4 {
+  &:before {
+    content: $ic-logo-symbol-light-path4;  
+    margin-left: -1em;  
+    color: rgb(0, 122, 255);
+  }
+}
+.ic-logo-symbol-light .path5 {
+  &:before {
+    content: $ic-logo-symbol-light-path5;  
+    margin-left: -1em;  
+    color: rgb(0, 122, 255);
+  }
+}
+.ic-logo-symbol-light .path6 {
+  &:before {
+    content: $ic-logo-symbol-light-path6;  
+    margin-left: -1em;  
+    color: rgb(0, 122, 255);
+  }
+}
+.ic-logo-symbol-dark .path1 {
+  &:before {
+    content: $ic-logo-symbol-dark-path1;  
+    color: rgb(0, 122, 255);
+  }
+}
+.ic-logo-symbol-dark .path2 {
+  &:before {
+    content: $ic-logo-symbol-dark-path2;  
+    margin-left: -1em;  
+    color: rgb(255, 255, 255);
+  }
+}
+.ic-logo-symbol-dark .path3 {
+  &:before {
+    content: $ic-logo-symbol-dark-path3;  
+    margin-left: -1em;  
+    color: rgb(0, 122, 255);
+  }
+}
+.ic-logo-symbol-dark .path4 {
+  &:before {
+    content: $ic-logo-symbol-dark-path4;  
+    margin-left: -1em;  
+    color: rgb(0, 122, 255);
+  }
+}
+.ic-logo-symbol-dark .path5 {
+  &:before {
+    content: $ic-logo-symbol-dark-path5;  
+    margin-left: -1em;  
+    color: rgb(0, 122, 255);
+  }
+}
+.ic-logo-symbol-dark .path6 {
+  &:before {
+    content: $ic-logo-symbol-dark-path6;  
+    margin-left: -1em;  
+    color: rgb(0, 122, 255);
+  }
+}
 .ic-security {
   &:before {
     content: $ic-security; 
