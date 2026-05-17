@@ -1,0 +1,35 @@
+@use "../abstract/mixins" as *;
+
+.nmx-meta-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nmx-spacing-sm);
+
+  &__item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: var(--nmx-font-size-xs);
+    margin-bottom: var(--nmx-spacing-xs);
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    &-label {
+      color: var(--nmx-color-on-surface-variant);
+      font-family: var(--nmx-font-mono), serif;
+    }
+
+    &-value {
+      color: var(--nmx-meta-text, var(--nmx-color-on-surface));
+      font-family: var(--nmx-font-mono), serif;
+
+      &--muted {
+        --nmx-meta-text: var(--nmx-color-on-surface-variant);
+      }
+
+      @include semantic-variants("nmx-meta", false, true);
+    }
+  }
+}

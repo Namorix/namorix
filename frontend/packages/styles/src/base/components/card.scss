@@ -1,7 +1,7 @@
 .nmx-card {
   background: var(--nmx-color-surface-low);
   border-radius: var(--nmx-radius-md);
-  padding: var(--nmx-spacing-xl);
+  padding: var(--nmx-spacing-3xl);
 }
 
 .nmx-card__content {
@@ -9,10 +9,10 @@
 }
 
 .nmx-card__header {
-  margin-bottom: var(--nmx-spacing-3xl);
+  margin-bottom: var(--nmx-spacing-4xl);
 
   &-title {
-    margin: 0 0 var(--nmx-spacing-md) 0;
+    margin: 0 0 var(--nmx-spacing-lg) 0;
     color: var(--nmx-color-on-surface);
     font-size: clamp(var(--nmx-font-size-2xl), 2.2vw, var(--nmx-font-size-3xl));
     font-weight: var(--nmx-font-weight-semibold);
@@ -21,7 +21,6 @@
 
   &-description {
     color: var(--nmx-color-on-surface-variant);
-    margin-top: var(--nmx-spacing-sm);
     font-size: var(--nmx-font-size-sm);
   }
 }

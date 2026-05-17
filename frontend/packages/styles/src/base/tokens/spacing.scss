@@ -1,0 +1,22 @@
+:root {
+  /* Radius */
+  --nmx-radius-sm: 4px;
+  --nmx-radius-md: 8px;
+  --nmx-radius-lg: 16px;
+  --nmx-radius-full: 9999px;
+
+  /* Spacing */
+  --nmx-spacing-unit: 4px;
+  --nmx-spacing-xs: calc(var(--nmx-spacing-unit) * 1); /* 4px */
+  --nmx-spacing-sm: calc(var(--nmx-spacing-unit) * 2); /* 8px */
+  --nmx-spacing-md: calc(var(--nmx-spacing-unit) * 3); /* 12px */
+  --nmx-spacing-lg: calc(var(--nmx-spacing-unit) * 4); /* 16px */
+  --nmx-spacing-xl: calc(var(--nmx-spacing-unit) * 5); /* 20px */
+  --nmx-spacing-2xl: calc(var(--nmx-spacing-unit) * 6); /* 24px */
+  --nmx-spacing-3xl: calc(var(--nmx-spacing-unit) * 8); /* 32px */
+  --nmx-spacing-4xl: calc(var(--nmx-spacing-unit) * 10); /* 40px */
+  --nmx-spacing-5xl: calc(var(--nmx-spacing-unit) * 12); /* 48px */
+  --nmx-spacing-6xl: calc(var(--nmx-spacing-unit) * 16); /* 64px */
+  --nmx-spacing-7xl: calc(var(--nmx-spacing-unit) * 20); /* 80px */
+  --nmx-spacing-8xl: calc(var(--nmx-spacing-unit) * 24); /* 96px */
+}

@@ -1,0 +1,9 @@
+.nmx-icon-svg {
+  display: inline-flex;
+  width: var(--nmx-icon-size, 24px);
+  height: var(--nmx-icon-size, 24px);
+  background-image: var(--nmx-icon-src);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}

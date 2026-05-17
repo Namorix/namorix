@@ -1,35 +1,35 @@
 .nmx-inline-alert {
   &--error {
-    --nmx-inline-alert-bg: var(--nmx-color-red-500);
-    --nmx-inline-alert-text: var(--nmx-color-red-500);
+    --nmx-icon-box-bg: var(--nmx-color-red-500);
+    --nmx-icon-box-text: var(--nmx-color-red-500);
   }
 
   &--warning {
-    --nmx-inline-alert-bg: var(--nmx-color-yellow-500);
-    --nmx-inline-alert-text: var(--nmx-color-yellow-500);
+    --nmx-icon-box-bg: var(--nmx-color-amber-500);
+    --nmx-icon-box-text: var(--nmx-color-amber-500);
   }
 
   &--success {
-    --nmx-inline-alert-bg: var(--nmx-color-green-700);
-    --nmx-inline-alert-text: var(--nmx-color-green-700);
+    --nmx-icon-box-bg: var(--nmx-color-green-500);
+    --nmx-icon-box-text: var(--nmx-color-green-500);
   }
 
   &--info {
-    --nmx-inline-alert-bg: var(--nmx-color-blue-500);
-    --nmx-inline-alert-text: var(--nmx-color-blue-500);
+    --nmx-icon-box-bg: var(--nmx-color-blue-500);
+    --nmx-icon-box-text: var(--nmx-color-blue-500);
   }
 }
 
 .nmx-inline-alert {
-  margin: 0 0 var(--nmx-spacing-md);
-  padding: var(--nmx-spacing-md);
+  margin: 0 0 var(--nmx-spacing-sm);
+  padding: var(--nmx-spacing-lg) var(--nmx-spacing-2xl);
   font-size: var(--nmx-font-size-sm);
   font-weight: var(--nmx-font-weight-medium);
   background-color: color-mix(
     in oklab,
-    var(--nmx-inline-alert-bg) 14%,
+    var(--nmx-icon-box-bg) 14%,
     transparent
   );
   border-radius: var(--nmx-radius-md);
-  color: var(--nmx-inline-alert-text);
+  color: var(--nmx-icon-box-text);
 }

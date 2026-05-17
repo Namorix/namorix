@@ -1,2 +1,18 @@
+@use "../../abstract/mixins" as *;
+
 .nmx-icon-box {
+  display: inline-flex;
+  margin: 0 0 var(--nmx-spacing-md);
+  padding: var(--nmx-spacing-md);
+  font-size: var(--nmx-font-size-sm);
+  font-weight: var(--nmx-font-weight-medium);
+  background-color: color-mix(
+    in oklab,
+    var(--nmx-icon-box-bg) 14%,
+    transparent
+  );
+  border-radius: var(--nmx-radius-md);
+  color: var(--nmx-icon-box-text);
+
+  @include semantic-variants("nmx-icon-box");
 }

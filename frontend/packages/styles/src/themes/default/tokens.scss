@@ -3,11 +3,11 @@
   --nmx-color-bg: #f0f2f5;
   --nmx-wallpaper: var(--nmx-color-bg);
 
-  --nmx-color-surface: #f7f8fa;        /* Main page/shell background behind cards and forms */
+  --nmx-color-surface: #f7f8fa; /* Main page/shell background behind cards and forms */
   --nmx-color-surface-lowest: #eceef1; /* Input fields, textareas, select (default fill) */
-  --nmx-color-surface-low: #ffffff;    /* Card/panel body (form card, setting card, modal body) */
-  --nmx-color-surface-mid: #e4e7eb;    /* Highlighted block (selected card, intro strip, active tab bg) */
-  --nmx-color-surface-high: #d8dce2;   /* Hover state for cards/chips/buttons on light surfaces */
+  --nmx-color-surface-low: #ffffff; /* Card/panel body (form card, setting card, modal body) */
+  --nmx-color-surface-mid: #e4e7eb; /* Highlighted block (selected card, intro strip, active tab bg) */
+  --nmx-color-surface-high: #d8dce2; /* Hover state for cards/chips/buttons on light surfaces */
   --nmx-color-surface-highest: #c8cdd6; /* Strong emphasis (active chip, focused tile, key CTA container) */
 
   --nmx-color-on-surface: #111827;
@@ -17,13 +17,8 @@
   --nmx-color-on-primary: #ffffff;
 
   /* Semantic */
-  --nmx-color-danger: #dc2626;
-  --nmx-color-success: #16a34a;
-  --nmx-color-warning: #d97706;
-
-  /* Colors */
-  --nmx-color-red-500: #dc2626;
-  --nmx-color-green-700: #16a34a;
-  --nmx-color-yellow-500: #d97706;
-  --nmx-color-blue-500: #2563eb;
+  --nmx-color-error: var(--nmx-color-red-600);
+  --nmx-color-success: var(--nmx-color-green-600);
+  --nmx-color-warning: var(--nmx-color-amber-600);
+  --nmx-color-info: var(--nmx-color-blue-600);
 }

@@ -1,0 +1,42 @@
+:root {
+  --nmx-font-sans: Inter, system-ui, sans-serif;
+  --nmx-font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --nmx-font-logo: Rajdhani, sans-serif;
+  --nmx-font-chip: "DM Sans", sans-serif;
+
+  /* Font sizes */
+  --nmx-font-size-xs: 0.75rem;
+  --nmx-font-size-sm: 0.875rem;
+  --nmx-font-size-md: 1rem;
+  --nmx-font-size-lg: 1.125rem;
+  --nmx-font-size-xl: 1.25rem;
+  --nmx-font-size-2xl: 1.5rem;
+  --nmx-font-size-3xl: 1.875rem;
+  --nmx-font-size-4xl: 2.25rem;
+  --nmx-font-size-5xl: 2.5rem;
+  --nmx-font-size-6xl: 3rem;
+  --nmx-font-size-7xl: 3.5rem;
+  --nmx-font-size-8xl: 4rem;
+  --nmx-font-size-9xl: 4.5rem;
+  --nmx-font-size-10xl: 5rem;
+
+  /* Font weight */
+  --nmx-font-weight-regular: 400;
+  --nmx-font-weight-medium: 500;
+  --nmx-font-weight-semibold: 600;
+  --nmx-font-weight-bold: 700;
+  --nmx-font-weight-extrabold: 800;
+
+  /* Letter spacing */
+  --nmx-letter-spacing-tight: -0.02em;
+  --nmx-letter-spacing-normal: 0;
+  --nmx-letter-spacing-wide: 0.04em;
+  --nmx-letter-spacing-wider: 0.08em;
+  --nmx-letter-spacing-label: 0.18em;
+
+  /* Line height */
+  --nmx-line-height-base: 1.25;
+  --nmx-line-height-normal: 1.5;
+  --nmx-line-height-relaxed: 1.75;
+  --nmx-line-height-loose: 2;
+}

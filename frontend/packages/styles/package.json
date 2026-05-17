@@ -1,6 +1,6 @@
 {
   "name": "@namorix/styles",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "license": "GPL-3.0-only",
   "type": "module",
   "main": "src/index.scss",
@@ -10,13 +10,24 @@
   },
   "exports": {
     ".": {
+      "sass": "./src/index.scss",
       "style": "./src/index.scss"
     },
     "./base": {
-      "sass": "./src/base/index.scss"
+      "sass": "./src/base/index.scss",
+      "style": "./src/base/index.scss"
     },
     "./variables": {
-      "sass": "./src/base/variables.scss"
+      "sass": "./src/base/abstract/variables.scss",
+      "style": "./src/base/abstract/variables.scss"
+    },
+    "./mixins": {
+      "sass": "./src/base/abstract/mixins.scss",
+      "style": "./src/base/abstract/mixins.scss"
+    },
+    "./shell": {
+      "sass": "./src/shell.scss",
+      "style": "./src/shell.scss"
     }
   },
   "devDependencies": {

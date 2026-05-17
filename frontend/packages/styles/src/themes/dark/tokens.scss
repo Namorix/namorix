@@ -3,27 +3,22 @@
   --nmx-color-bg: #111111;
   --nmx-wallpaper: var(--nmx-color-bg);
 
-  --nmx-color-surface: #1a1a1a;         /* Main page/shell background behind cards and forms */
-  --nmx-color-surface-lowest: #151515;  /* Input fields, textareas, select (default fill) */
-  --nmx-color-surface-low: #202020;     /* Card/panel body (form card, setting card, modal body) */
-  --nmx-color-surface-mid: #2a2a2a;     /* Highlighted block (selected card, intro strip, active tab bg) */
-  --nmx-color-surface-high: #343434;    /* Hover state for cards/chips/buttons on dark surfaces */
+  --nmx-color-surface: #1a1a1a; /* Main page/shell background behind cards and forms */
+  --nmx-color-surface-lowest: #151515; /* Input fields, textareas, select (default fill) */
+  --nmx-color-surface-low: #202020; /* Card/panel body (form card, setting card, modal body) */
+  --nmx-color-surface-mid: #2a2a2a; /* Highlighted block (selected card, intro strip, active tab bg) */
+  --nmx-color-surface-high: #343434; /* Hover state for cards/chips/buttons on dark surfaces */
   --nmx-color-surface-highest: #404040; /*Strong emphasis (active chip, focused tile, key CTA container) */
 
   --nmx-color-on-surface: #e2e8f0;
   --nmx-color-on-surface-variant: #4c535c;
 
-  --nmx-color-primary: #2563eb;
+  --nmx-color-primary: var(--nmx-color-blue-500);
   --nmx-color-on-primary: #ffffff;
 
   /* Semantic */
-  --nmx-color-danger: #ef4444;
-  --nmx-color-success: #22c55e;
-  --nmx-color-warning: #f59e0b;
-
-  /* Colors */
-  --nmx-color-red-500: #ef4444;
-  --nmx-color-green-700: #22c55e;
-  --nmx-color-yellow-500: #f59e0b;
-  --nmx-color-blue-500: #2563eb;
+  --nmx-color-error: var(--nmx-color-red-500);
+  --nmx-color-success: var(--nmx-color-green-500);
+  --nmx-color-warning: var(--nmx-color-amber-500);
+  --nmx-color-info: var(--nmx-color-blue-500);
 }

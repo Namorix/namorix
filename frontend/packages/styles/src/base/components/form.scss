@@ -1,13 +1,13 @@
 .nmx-form {
   display: flex;
   flex-direction: column;
-  gap: var(--nmx-spacing-lg);
+  gap: var(--nmx-spacing-2xl);
 }
 
 .nmx-form-field {
   display: flex;
   flex-direction: column;
-  gap: var(--nmx-spacing-sm);
+  gap: var(--nmx-spacing-lg);
 }
 
 .nmx-form-field__label {
@@ -17,7 +17,6 @@
   letter-spacing: var(--nmx-letter-spacing-label);
   text-transform: uppercase;
   color: var(--nmx-color-on-surface);
-  margin-bottom: var(--nmx-spacing-sm);
 }
 
 .nmx-form-field--required {
@@ -41,7 +40,7 @@
   box-sizing: border-box;
   width: 100%;
   border-radius: var(--nmx-radius-md);
-  padding: var(--nmx-spacing-md) var(--nmx-spacing-xl);
+  padding: var(--nmx-spacing-lg) var(--nmx-spacing-2xl);
   font-size: var(--nmx-font-size-sm);
   line-height: var(--nmx-line-height-normal);
   color: var(--nmx-color-on-surface);
@@ -87,6 +86,6 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--nmx-spacing-md);
-  margin-top: var(--nmx-spacing-lg);
+  gap: var(--nmx-spacing-lg);
+  margin-top: var(--nmx-spacing-xl);
 }

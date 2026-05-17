@@ -1,3 +1,5 @@
+@use "maps" as *;
+
 @mixin no-user-select {
   -webkit-user-select: none;
   user-select: none;
@@ -9,7 +11,16 @@
   white-space: nowrap;
 }
 
-@mixin scrollbar($width: 4px, $thumb-radius: 4px, $track-color: transparent, $thumb-color: color-mix(in oklab, var(--nmx-color-on-surface-variant) 50%, transparent)) {
+@mixin scrollbar(
+  $width: 4px,
+  $thumb-radius: 4px,
+  $track-color: transparent,
+  $thumb-color: color-mix(
+      in oklab,
+      var(--nmx-color-on-surface-variant) 50%,
+      transparent
+    )
+) {
   scrollbar-gutter: stable;
 
   &::-webkit-scrollbar {
@@ -53,4 +64,17 @@
 @mixin backdrop-filter($value) {
   -webkit-backdrop-filter: $value;
   backdrop-filter: $value;
+}
+
+@mixin semantic-variants($prefix, $use-bg: true, $use-text: true) {
+  @each $name, $color in $nmx-semantic-colors {
+    &--#{$name} {
+      @if $use-bg {
+        --#{$prefix}-bg: #{$color};
+      }
+      @if $use-text {
+        --#{$prefix}-text: #{$color};
+      }
+    }
+  }
 }

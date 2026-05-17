@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240" fill="none">
+  <metadata id="Namorix-Metadata-Block">
+    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#">
+      <cc:Work rdf:about="">
+        <dc:title>Namorix Asset - namorix-logo-symbol-dark.svg</dc:title>
+        <dc:date>2026</dc:date>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Nguyen Danh Nam</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>Nguyen Danh Nam</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <cc:license rdf:resource="https://creativecommons.org/licenses/by-nc-nd/4.0/"/>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path id="nmx-i" d="M72 86C72 79.9249 67.0751 75 61 75C54.9249 75 50 79.9249 50 86V154C50 160.075 54.9249 165 61 165C67.0751 165 72 160.075 72 154V86Z" fill="#007AFF"/>
+  <path id="nmx-glyph-fixed-1" d="M183.891 96.6655C188.187 92.3697 188.187 85.4049 183.891 81.1091C179.595 76.8134 172.63 76.8134 168.335 81.1091L106.109 143.335C101.813 147.63 101.813 154.595 106.109 158.891C110.405 163.187 117.37 163.187 121.666 158.891L183.891 96.6655Z" fill="#FFFFFF"/>
+  <path id="nmx-glyph-no-1" d="M127.322 102.322C130.837 98.8076 130.837 93.1091 127.322 89.5944C123.808 86.0797 118.109 86.0797 114.594 89.5944C111.08 93.1091 111.08 98.8076 114.594 102.322C118.109 105.837 123.808 105.837 127.322 102.322Z" fill="#007AFF"/>
+  <path id="nmx-glyph-no-2" d="M143.586 118.586C147.101 115.071 147.101 109.373 143.586 105.858C140.071 102.343 134.373 102.343 130.858 105.858C127.343 109.373 127.343 115.071 130.858 118.586C134.373 122.101 140.071 122.101 143.586 118.586Z" fill="#007AFF"/>
+  <path id="nmx-glyph-no-3" d="M159.849 134.849C163.364 131.335 163.364 125.636 159.849 122.121C156.334 118.607 150.636 118.607 147.121 122.121C143.607 125.636 143.607 131.335 147.121 134.849C150.636 138.364 156.334 138.364 159.849 134.849Z" fill="#007AFF"/>
+  <path id="nmx-glyph-no-4" d="M176.113 151.113C179.628 147.598 179.628 141.899 176.113 138.385C172.598 134.87 166.9 134.87 163.385 138.385C159.87 141.899 159.87 147.598 163.385 151.113C166.9 154.627 172.598 154.627 176.113 151.113Z" fill="#007AFF"/>
+</svg>

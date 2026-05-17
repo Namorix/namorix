@@ -1,3 +1,11 @@
+:root {
+  --nmx-toggle-width: 2.5rem;
+  --nmx-toggle-height: 1.35rem;
+  --nmx-toggle-thumb-inset: 1px;
+  --nmx-toggle-thumb-size: calc(var(--nmx-toggle-height) - 4px);
+  --nmx-toggle-thumb-translate-x: 1.15rem;
+}
+
 .nmx-toggle {
   display: inline-flex;
   align-items: center;
@@ -11,7 +19,7 @@
   width: 0;
   pointer-events: none;
 
-  &:checked+.nmx-toggle-track {
+  &:checked + .nmx-toggle-track {
     background: var(--nmx-color-primary);
 
     &::after {
@@ -20,11 +28,11 @@
     }
   }
 
-  &:focus-visible+.nmx-toggle-track {
+  &:focus-visible + .nmx-toggle-track {
     outline: 0;
   }
 
-  &.disabled+.nmx-toggle-track {
+  &.disabled + .nmx-toggle-track {
     opacity: 0.5;
     cursor: not-allowed;
   }
@@ -40,7 +48,9 @@
   user-select: none;
   border: var(--nmx-toggle-thumb-inset) solid transparent;
   background: var(--nmx-color-surface-mid);
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
 
   &:hover {
     background: var(--nmx-color-surface-high);
@@ -55,7 +65,9 @@
     height: var(--nmx-toggle-thumb-size);
     border-radius: var(--nmx-radius-full);
     background: var(--nmx-color-on-surface);
-    transition: transform 0.2s ease, background 0.2s ease;
+    transition:
+      transform 0.2s ease,
+      background 0.2s ease;
   }
 }
 
