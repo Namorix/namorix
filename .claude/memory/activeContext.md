@@ -16,6 +16,15 @@ M3 — Desktop Shell UI ✅ + Addon System (contract, registry, Log Viewer) ✅
 
 ## Recent Changes (2026-05-17)
 
+### Shell SCSS migration + component refactor (WindowFrame, Launcher, AuthView)
+- **@namorix/styles (0.6.0 → 0.7.0)**: Shell component SCSS moved from frontend (auth, desktop SCSS renamed into shell/components/). New shell component SCSS — taskbar.scss, window.scss. New elevation tokens (elevation.scss). New app-logs icon. Icomoon rebuilt (removed unused glyphs). Theme CSS rebuilt.
+- **@namorix/core (0.10.3 → 0.10.4)**: New NmxAddonIconType = NmxIconSvgSymbol (type refinement for manifest.icon). ThemeProvider import path fix.
+- **@namorix/ui (0.6.0 → 0.6.1)**: NmxIconSvg refinement, type tweaks.
+- **frontend (0.10.5 → 0.10.6)**: WindowFrame split — WindowFrameView, useAddonMount, useWindowDrag, useWindowResize, WindowFrame.types. Launcher split — LauncherView, useLauncherSearch, Launcher.types. AuthPage renamed to AuthView. New barrel exports — controllers/, hooks/, stores/, all component sub-dirs. Login/Register minor fixes. SCSS files deleted from frontend (moved to styles package). main.scss moved from src/styles/ → src/.
+- **README.md**: AuthPage → AuthView in directory structure and dependencies table.
+
+## Recent Changes (2026-05-17)
+
 ### Shell refactor: DesktopArea/Taskbar modular, NmxMetaList, abstract/ restructure
 - **@namorix/styles (0.5.0 → 0.6.0)**: New abstract/ (maps, palette), shell/ entry, icons/, tokens/ modules. New meta-list.scss, icon-svg.scss components. New exports: ./mixins, ./shell. Icomoon rebuilt with new glyphs. All component SCSS + theme tokens updated. Deleted empty placeholder files.
 - **@namorix/ui (0.5.0 → 0.6.0)**: New NmxMetaList composite (label+value rows). New NmxIconSvg primitive. NmxIconFont new symbols, NmxCardHeader refinements, new type/utils helpers.

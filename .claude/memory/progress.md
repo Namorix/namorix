@@ -123,10 +123,10 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.10.5 | M3 (DesktopArea/Taskbar refactor, NmxMetaList integration, SCSS restructure) |
-| @namorix/core | 0.10.3 | M3 (cx moved to @namorix/ui) |
-| @namorix/styles | 0.6.0 | M3 (abstract/ restructure, shell/ tokens/ icons/ modules, meta-list, icon-svg, new icons) |
-| @namorix/ui | 0.6.0 | M3 (NmxMetaList composite, NmxIconSvg primitive) |
+| frontend | 0.10.6 | M3 (WindowFrame/Launcher/AuthView split, barrel exports, shell SCSS migration) |
+| @namorix/core | 0.10.4 | M3 (Addon icon type refinement, ThemeProvider fix) |
+| @namorix/styles | 0.7.0 | M3 (Shell component SCSS — taskbar/window, elevation tokens, new icon) |
+| @namorix/ui | 0.6.1 | M3 (NmxIconSvg cleanup, type tweaks) |
 | backend | 0.19.1 | M3 (SetThemeSchema, ThemeManifest cssPath, AuthController refactor) |
 
 ## Version Rules
@@ -159,6 +159,14 @@
 | @namorix/core | 0.10.0 | New theme module: types.ts (ThemeManifest), loader.ts (restoreTheme, loadTheme), registry.ts (getBuiltInThemes, getAllThemes), barrel export. New providers module: ThemeProvider.tsx (ThemeContext, useTheme hook, switchTheme). New http.getJson method. New constants (NMX_THEME_CSS_ID, NMX_THEME_STORAGE_KEY). New API routes (ApiThemeRoutes, ThemeRoutes, ApiUserRoutes). |
 | frontend | 0.10.0 | Theme integration: Root component with ThemeProvider wrap, restoreTheme() on app start, getAllThemes() load. Login theme sync — fetch user themeId from `/api/user/theme` → localStorage. |
 | backend | 0.18.0 | New ThemeManifest model. User.ThemeId field. AppDbContext: ThemeManifests + AddonManifests DbSet + unique indexes. New UserService (GetThemeAsync, SetThemeAsync). New UserController (GET/PUT /api/user/theme). |
+
+### 2026-05-17 (Shell SCSS migration, component refactor: WindowFrame/Launcher/AuthView split)
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/styles | 0.7.0 | NEW: shell/components/ — taskbar.scss, window.scss. NEW: tokens/elevation.scss. NEW: icons/app-logs.svg. Moved: auth.scss, desktop.scss từ frontend vào shell/components/. Icon: icomoon rebuilt (removed unused glyphs). Updated: shell/index.scss, tokens/icons.scss, theme tokens, theme CSS rebuilt. |
+| @namorix/core | 0.10.4 | NEW: addon/types.ts — NmxAddonIconType (= NmxIconSvgSymbol), icon field type refinement. Fix: ThemeProvider import path. |
+| @namorix/ui | 0.6.1 | Fix: NmxIconSvg cleanup (removed dead code), type tweaks. |
+| frontend | 0.10.6 | NEW: WindowFrame — split into WindowFrameView, useAddonMount, useWindowDrag, useWindowResize, WindowFrame.types, barrel. NEW: Launcher — split into LauncherView, useLauncherSearch, Launcher.types, barrel. NEW: barrel exports — controllers/index.ts, hooks/index.ts, stores/index.ts, DesktopArea/index.ts, Taskbar/index.ts, WindowManager/index.ts, Launcher/index.ts, WindowFrame/index.ts. Refactor: AuthPage → AuthView rename. Fix: Login, Register minor. Chore: SCSS files deleted from frontend (moved to styles package). Chore: main.scss moved src/styles/ → src/. |
 
 ### 2026-05-16 (Shell refactor: DesktopArea/Taskbar modular, NmxMetaList, abstract/ restructure)
 | Package | Version | Changes |

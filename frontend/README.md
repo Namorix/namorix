@@ -13,9 +13,9 @@ frontend/
 │   │   ├── auth.controller.ts    # login, register, logout — API calls
 │   │   └── health.controller.ts  # health check
 │   ├── components/
-│   │   ├── Auth/
-│   │   │   ├── AuthPage.tsx      # Two-column layout (hero + form panel)
-│   │   │   └── AuthPage.scss
+│   │   ├── AuthView/
+│   │   │   ├── AuthView.tsx      # Two-column layout (hero + form panel)
+│   │   │   └── AuthView.scss
 │   │   ├── Taskbar/              # Clock, start button, window buttons
 │   │   ├── DesktopArea/          # App icon shortcuts
 │   │   ├── WindowFrame/          # Draggable, resizable window chrome
@@ -60,7 +60,7 @@ pnpm preview      # Preview production build
 
 | Package | Purpose |
 |---------|---------|
-| `@namorix/core` | Auth guards, http client, ApiError, i18n, ValidationRunner, constants |
+| `@namorix/core` | AuthView guards, http client, ApiError, i18n, ValidationRunner, constants |
 | `@namorix/styles` | SCSS design tokens, reset, fonts |
 | `@namorix/ui` | NmxButton, NmxForm, NmxInlineAlert, NmxToggle, NmxCard, NmxIcon, NmxMetaList |
 | `react-router-dom` | Client-side routing with guard pattern |
