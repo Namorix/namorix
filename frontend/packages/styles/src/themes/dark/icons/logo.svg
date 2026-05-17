@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="240"
+   height="240"
+   viewBox="0 0 240 240"
+   fill="none"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname=".svg"
+   inkscape:version="1.4.3 (fcd0343856, 2026-01-01)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="1.6395833"
+     inkscape:cx="81.728081"
+     inkscape:cy="141.80432"
+     inkscape:window-width="1920"
+     inkscape:window-height="995"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1" />
+  <metadata
+     id="Namorix-Metadata-Block">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:date>2026</dc:date>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Nguyen Danh Nam</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>Nguyen Danh Nam</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <cc:license
+           rdf:resource="https://creativecommons.org/licenses/by-nc-nd/4.0/" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path
+     id="nmx-i"
+     d="M 39.627706,60.858853 C 39.627706,50.291574 31.061132,41.725 20.493853,41.725 9.926574,41.725 1.36,50.291574 1.36,60.858853 V 179.14085 c 0,10.56711 8.566574,19.13386 19.133853,19.13386 10.567279,0 19.133853,-8.56675 19.133853,-19.13386 z"
+     fill="#007aff"
+     style="stroke-width:1.73944" />
+  <path
+     id="nmx-glyph-fixed-1"
+     d="m 234.25552,79.410863 c 7.47264,-7.472291 7.47264,-19.587151 0,-27.059443 -7.47264,-7.472117 -19.58785,-7.472117 -27.05875,0 L 98.958306,160.58971 c -7.472639,7.4709 -7.472639,19.58611 0,27.05875 7.472644,7.47264 19.587844,7.47264 27.060484,0 z"
+     fill="#1c1c1e"
+     style="stroke-width:1.73944;fill:#ffffff;fill-opacity:1" />
+  <path
+     id="nmx-glyph-no-1"
+     d="m 135.85707,89.250012 c 6.11414,-6.113092 6.11414,-16.025297 0,-22.138911 -6.11239,-6.113614 -16.02547,-6.113614 -22.13961,0 -6.11239,6.113614 -6.11239,16.025819 0,22.138911 6.11414,6.114136 16.02722,6.114136 22.13961,0 z"
+     fill="#007aff"
+     style="stroke-width:1.73944" />
+  <path
+     id="nmx-glyph-no-2"
+     d="m 164.14734,117.54028 c 6.11414,-6.11413 6.11414,-16.02547 0,-22.139603 -6.11413,-6.114136 -16.02547,-6.114136 -22.1396,0 -6.11414,6.114133 -6.11414,16.025473 0,22.139603 6.11413,6.11414 16.02547,6.11414 22.1396,0 z"
+     fill="#007aff"
+     style="stroke-width:1.73944" />
+  <path
+     id="nmx-glyph-no-3"
+     d="m 192.43588,145.82882 c 6.11413,-6.1124 6.11413,-16.02548 0,-22.13961 -6.11414,-6.1124 -16.02548,-6.1124 -22.13961,0 -6.1124,6.11413 -6.1124,16.02721 0,22.13961 6.11413,6.11413 16.02547,6.11413 22.13961,0 z"
+     fill="#007aff"
+     style="stroke-width:1.73944" />
+  <path
+     id="nmx-glyph-no-4"
+     d="m 220.72615,174.11909 c 6.11413,-6.11414 6.11413,-16.02721 0,-22.13961 -6.11414,-6.11414 -16.02547,-6.11414 -22.13961,0 -6.11414,6.1124 -6.11414,16.02547 0,22.13961 6.11414,6.11239 16.02547,6.11239 22.13961,0 z"
+     fill="#007aff"
+     style="stroke-width:1.73944" />
+</svg>

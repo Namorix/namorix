@@ -1,0 +1,18 @@
+:root {
+  // sm — tooltip, badge, chip nhỏ
+  --nmx-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.06);
+
+  // md — card, dropdown, launcher panel
+  --nmx-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+
+  // lg — dialog, modal, floating window
+  --nmx-shadow-lg:
+    0 8px 24px rgba(0, 0, 0, 0.14), 0 2px 6px rgba(0, 0, 0, 0.08);
+
+  // xl — context menu nổi hẳn lên
+  --nmx-shadow-xl:
+    0 16px 40px rgba(0, 0, 0, 0.18), 0 4px 10px rgba(0, 0, 0, 0.1);
+
+  // inset — pressed state, input focus inner
+  --nmx-shadow-inset: inset 0 1px 3px rgba(0, 0, 0, 0.12);
+}

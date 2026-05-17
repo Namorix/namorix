@@ -1,10 +1,10 @@
-.nmx-auth-page {
+.nmx-auth-view {
   position: absolute;
   height: 100%;
   width: 100%;
 }
 
-.nmx-auth-page__secondary-link {
+.nmx-auth-view__secondary-link {
   font-weight: var(--nmx-font-weight-bold);
   color: var(--nmx-color-on-surface);
   cursor: pointer;
@@ -15,7 +15,7 @@
   }
 }
 
-.nmx-auth-page__card__footer {
+.nmx-auth-view__card__footer {
   display: flex;
   align-items: center;
   justify-content: center;

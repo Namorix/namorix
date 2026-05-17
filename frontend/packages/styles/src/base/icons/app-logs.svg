@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="240"
+   height="240"
+   viewBox="0 0 240 240"
+   fill="none"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="namorix-logs.svg"
+   inkscape:version="1.4.3 (fcd0343856, 2026-01-01)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <defs
+     id="defs1">
+    <linearGradient
+       id="linearGradient25"
+       inkscape:collect="always">
+      <stop
+         style="stop-color:#f59e0b;stop-opacity:1;"
+         offset="0"
+         id="stop25" />
+      <stop
+         style="stop-color:#ef4444;stop-opacity:1;"
+         offset="1"
+         id="stop26" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient25"
+       id="linearGradient26"
+       x1="16.105961"
+       y1="7.2184377"
+       x2="222.81886"
+       y2="302.43506"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="1.1593605"
+     inkscape:cx="-31.914146"
+     inkscape:cy="93.586077"
+     inkscape:window-width="1920"
+     inkscape:window-height="995"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1" />
+  <metadata
+     id="Namorix-Metadata-Block">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:title>Namorix Asset</dc:title>
+        <dc:date>2026</dc:date>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Nguyen Danh Nam</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>Nguyen Danh Nam</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:description>Official brand asset for the Namorix Ecosystem. Created by Nguyen Danh Nam.</dc:description>
+        <cc:license
+           rdf:resource="https://creativecommons.org/licenses/by-nc-nd/4.0/" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path
+     id="nmx-bg"
+     d="M 186,0 H 54 C 24.1766,0 0,24.1766 0,54 v 132 c 0,29.823 24.1766,54 54,54 h 132 c 29.823,0 54,-24.177 54,-54 V 54 C 240,24.1766 215.823,0 186,0 Z"
+     fill="#1C1C1E"
+     style="mix-blend-mode:normal;fill:url(#linearGradient26);fill-opacity:1" />
+  <path
+     id="nmx-i"
+     d="M72 86C72 79.9249 67.0751 75 61 75C54.9249 75 50 79.9249 50 86V154C50 160.075 54.9249 165 61 165C67.0751 165 72 160.075 72 154V86Z"
+     fill="#007AFF"
+     style="fill:#ffe066;fill-opacity:1" />
+  <rect
+     id="nmx-glyph-fixed-1"
+     x="123"
+     y="85"
+     width="62"
+     height="10"
+     rx="5"
+     fill="#FFFFFF" />
+  <rect
+     id="nmx-glyph-fixed-2"
+     x="123"
+     y="105"
+     width="62"
+     height="10"
+     rx="5"
+     fill="#FFFFFF" />
+  <rect
+     id="nmx-glyph-fixed-3"
+     x="105"
+     y="125"
+     width="80"
+     height="10"
+     rx="5"
+     fill="#FFFFFF" />
+  <rect
+     id="nmx-glyph-fixed-4"
+     x="105"
+     y="145"
+     width="80"
+     height="10"
+     rx="5"
+     fill="#FFFFFF" />
+</svg>

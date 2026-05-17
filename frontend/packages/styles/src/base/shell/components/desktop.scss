@@ -1,7 +1,8 @@
-@use "@namorix/styles/mixins" as *;
+@use "../../abstract/mixins" as *;
 
 .nmx-desktop-area {
-  position: fixed;
+  position: relative;
+  overflow: hidden;
   top: 0;
   left: 0;
   right: 0;
@@ -20,7 +21,7 @@
     align-items: flex-start;
   }
 
-  &__icon {
+  &__item {
     all: unset;
     display: flex;
     flex-direction: column;
@@ -28,6 +29,7 @@
     gap: var(--nmx-spacing-xs);
     width: 80px;
     padding: var(--nmx-spacing-xs);
+    margin-bottom: var(--nmx-spacing-sm);
     border-radius: var(--nmx-radius-sm);
     cursor: pointer;
     text-align: center;
@@ -37,13 +39,14 @@
     }
   }
 
-  &__icon-img {
-    font-size: 36px;
-    line-height: 1;
+  &__icon {
+    font-size: var(--nmx-font-size-3xl);
+    line-height: var(--nmx-line-height-base);
+    margin-bottom: var(--nmx-spacing-xs);
   }
 
   &__icon-label {
-    font-size: var(--nmx-font-size-xs);
+    font-size: var(--nmx-font-size-sm);
     color: var(--nmx-color-on-surface);
     max-width: 100%;
 

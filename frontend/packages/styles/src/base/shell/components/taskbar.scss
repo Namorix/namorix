@@ -1,0 +1,97 @@
+@use "../../abstract/mixins" as *;
+
+.nmx-taskbar {
+  --nmx-taskbar-inner-height: calc(
+    var(--nmx-taskbar-height) - var(--nmx-spacing-md)
+  );
+
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+  justify-content: center;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--nmx-taskbar-height);
+  background: var(--nmx-color-surface-low);
+  padding: 0 var(--nmx-spacing-md);
+  box-shadow: var(--nmx-shadow-md);
+  box-sizing: border-box;
+  z-index: 9999;
+
+  @include no-user-select;
+
+  &__inner {
+    display: flex;
+    flex-direction: row;
+    height: var(--nmx-taskbar-height);
+  }
+
+  &__start-btn,
+  &__app-btn {
+    background: transparent;
+    color: var(--nmx-color-on-surface);
+    display: flex;
+    cursor: pointer;
+    outline: none;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: var(--nmx-taskbar-height);
+    font-size: var(--nmx-font-size-3xl);
+
+    &:hover {
+      background: var(--nmx-color-surface-high);
+    }
+  }
+
+  &__apps {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    gap: var(--nmx-spacing-sm);
+    padding: 0 var(--nmx-spacing-sm);
+    overflow-x: auto;
+
+    @include scrollbar-none;
+  }
+
+  &__app-btn {
+    position: relative;
+
+    &--active {
+      background: color-mix(
+        in oklab,
+        var(--nmx-color-surface-high) 60%,
+        transparent
+      );
+    }
+
+    &:after {
+      content: "";
+      position: absolute;
+      background: var(--nmx-color-on-surface-variant);
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      z-index: 1;
+    }
+  }
+
+  &__tray {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 var(--nmx-spacing-sm);
+  }
+
+  &__clock {
+    color: var(--nmx-color-on-surface);
+    font-size: var(--nmx-font-size-xs);
+  }
+}

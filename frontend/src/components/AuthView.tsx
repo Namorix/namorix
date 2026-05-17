@@ -1,5 +1,4 @@
 import React from "react"
-import "./AuthPage.scss"
 
 interface AuthPageProps {
   // Hero section
@@ -10,7 +9,7 @@ interface AuthPageProps {
   children?: React.ReactNode
 }
 
-export const AuthPage: React.FC<AuthPageProps> = ({
+export const AuthView: React.FC<AuthPageProps> = ({
   heroTitle = "",
   heroDescription = "",
   children,
@@ -21,7 +20,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
     .filter(Boolean)
 
   return (
-    <div className="nmx-auth-page">
+    <div className="nmx-auth-view">
       <div className="nmx-split-panel">
         <section className="nmx-split-panel__hero" aria-hidden="true">
           {heroLines.length > 0 && (
