@@ -16,6 +16,11 @@ M3 — Desktop Shell UI ✅ + Addon System (contract, registry, Log Viewer) ✅
 
 ## Recent Changes (2026-05-17)
 
+### Taskbar/WindowFrame refactor, WindowManager flatten, blocked SCSS migration
+- **@namorix/styles (0.7.0 → 0.7.1)**: Icomoon rebuilt with new glyphs (fonts.scss +21 lines, variables.scss +3, ttf/woff/svg updated). Blocked.scss moved from frontend into shell/components/. Window.scss refined.
+- **@namorix/ui (0.6.1 → 0.6.2)**: NmxIconFont.types.ts — 3 new icon symbols matching icomoon glyphs.
+- **frontend (0.10.6 → 0.10.7)**: Taskbar refactored (Taskbar, TaskbarAppButton, TaskbarView — ~178 lines total). WindowFrame resize/drag overhaul (useWindowResize +127 lines, useWindowDrag +48 lines, WindowFrameView -83 lines). New WindowTitleBar and WindowResizeHandles sub-components. WindowManager flattened from subdirectory to single file. Window.store refactored (+68 lines). Blocked.tsx unused import removed. Desktop.tsx wired to new components.
+
 ### Shell SCSS migration + component refactor (WindowFrame, Launcher, AuthView)
 - **@namorix/styles (0.6.0 → 0.7.0)**: Shell component SCSS moved from frontend (auth, desktop SCSS renamed into shell/components/). New shell component SCSS — taskbar.scss, window.scss. New elevation tokens (elevation.scss). New app-logs icon. Icomoon rebuilt (removed unused glyphs). Theme CSS rebuilt.
 - **@namorix/core (0.10.3 → 0.10.4)**: New NmxAddonIconType = NmxIconSvgSymbol (type refinement for manifest.icon). ThemeProvider import path fix.

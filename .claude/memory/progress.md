@@ -123,10 +123,10 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.10.6 | M3 (WindowFrame/Launcher/AuthView split, barrel exports, shell SCSS migration) |
+| frontend | 0.10.7 | M3 (Taskbar/WindowFrame refactor, WindowManager flatten, blocked SCSS migration) |
 | @namorix/core | 0.10.4 | M3 (Addon icon type refinement, ThemeProvider fix) |
-| @namorix/styles | 0.7.0 | M3 (Shell component SCSS — taskbar/window, elevation tokens, new icon) |
-| @namorix/ui | 0.6.1 | M3 (NmxIconSvg cleanup, type tweaks) |
+| @namorix/styles | 0.7.1 | M3 (Icomoon new glyphs, blocked.scss moved, window.scss refinements) |
+| @namorix/ui | 0.6.2 | M3 (New icon symbols) |
 | backend | 0.19.1 | M3 (SetThemeSchema, ThemeManifest cssPath, AuthController refactor) |
 
 ## Version Rules
@@ -159,6 +159,13 @@
 | @namorix/core | 0.10.0 | New theme module: types.ts (ThemeManifest), loader.ts (restoreTheme, loadTheme), registry.ts (getBuiltInThemes, getAllThemes), barrel export. New providers module: ThemeProvider.tsx (ThemeContext, useTheme hook, switchTheme). New http.getJson method. New constants (NMX_THEME_CSS_ID, NMX_THEME_STORAGE_KEY). New API routes (ApiThemeRoutes, ThemeRoutes, ApiUserRoutes). |
 | frontend | 0.10.0 | Theme integration: Root component with ThemeProvider wrap, restoreTheme() on app start, getAllThemes() load. Login theme sync — fetch user themeId from `/api/user/theme` → localStorage. |
 | backend | 0.18.0 | New ThemeManifest model. User.ThemeId field. AppDbContext: ThemeManifests + AddonManifests DbSet + unique indexes. New UserService (GetThemeAsync, SetThemeAsync). New UserController (GET/PUT /api/user/theme). |
+
+### 2026-05-17 (Taskbar/WindowFrame refactor, WindowManager flatten, blocked SCSS migration)
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/styles | 0.7.1 | NEW: icomoon — new glyphs (fonts.scss, variables.scss). Moved: Blocked.scss từ frontend vào shell/components/blocked.scss. Updated: window.scss (27 lines), index.scss, shell/components/index.scss. |
+| @namorix/ui | 0.6.2 | Updated: NmxIconFont.types.ts — +3 new icon symbols for new icomoon glyphs. |
+| frontend | 0.10.7 | Refactor: Taskbar — Taskbar, TaskbarAppButton, TaskbarView (178 total lines). Refactor: WindowFrame — resize/drag logic overhaul (useWindowResize +127 lines, useWindowDrag +48 lines). Refactor: WindowFrameView — simplified (-83 lines). NEW: WindowTitleBar, WindowResizeHandles sub-components. NEW: WindowManager flattened (subdirectory → single file). Updated: window.store.ts (+68 lines), windowing types (+2). Updated: Desktop.tsx. Fix: Blocked.tsx removed unused import. |
 
 ### 2026-05-17 (Shell SCSS migration, component refactor: WindowFrame/Launcher/AuthView split)
 | Package | Version | Changes |
