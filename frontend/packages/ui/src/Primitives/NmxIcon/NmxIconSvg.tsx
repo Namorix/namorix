@@ -5,12 +5,10 @@ import { cx } from "../../utils"
 
 interface NmxIconSvgProps extends WithBaseProps {
   symbol?: NmxIconSvgSymbol
-  size?: number
 }
 
 export const NmxIconSvg: React.FC<NmxIconSvgProps> = ({
   symbol,
-  size = 24,
   className,
   shouldRender = true,
 }) => {
@@ -24,7 +22,6 @@ export const NmxIconSvg: React.FC<NmxIconSvgProps> = ({
       style={
         {
           "--nmx-icon-src": `var(--nmx-icon-${symbol})`,
-          "--nmx-icon-size": `${size}px`,
         } as React.CSSProperties
       }
       aria-hidden="true"
