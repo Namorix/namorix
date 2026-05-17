@@ -5,7 +5,6 @@ import {
   HttpErrorCodes,
   MiddlewareErrorCodes,
 } from "@namorix/core"
-import "./Blocked.scss"
 import {
   NmxCard,
   NmxCardHeader,

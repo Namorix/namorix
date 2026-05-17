@@ -1,4 +1,4 @@
-import React from "react"
+import { memo } from "react"
 import { cx, NmxIconSvg } from "@namorix/ui"
 import type { TaskbarApp } from "./Taskbar.types"
 
@@ -8,19 +8,19 @@ interface TaskbarAppButtonProps {
   onAppDoubleClick: (id: string) => void
 }
 
-export const TaskbarAppButton: React.FC<TaskbarAppButtonProps> = ({
-  app,
-  onAppClick,
-  onAppDoubleClick,
-}) => (
-  <button
-    className={cx("nmx-taskbar__app-btn", {
-      "nmx-taskbar__app-btn--active": app.isActive,
-    })}
-    type="button"
-    onMouseDown={() => onAppClick(app.id)}
-    onDoubleClick={() => onAppDoubleClick(app.id)}
-  >
-    {app.icon ? <NmxIconSvg symbol={app.icon} /> : app.title}
-  </button>
+export const TaskbarAppButton = memo<TaskbarAppButtonProps>(
+  ({ app, onAppClick, onAppDoubleClick }) => (
+    <button
+      className={cx("nmx-taskbar__app-btn", {
+        "nmx-taskbar__app-btn--active": app.isActive,
+      })}
+      type="button"
+      onMouseDown={() => onAppClick(app.id)}
+      onDoubleClick={() => onAppDoubleClick(app.id)}
+    >
+      {app.icon ? <NmxIconSvg symbol={app.icon} /> : app.title}
+    </button>
+  ),
 )
+
+TaskbarAppButton.displayName = "TaskbarAppButton"

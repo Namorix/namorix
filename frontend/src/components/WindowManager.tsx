@@ -1,6 +1,6 @@
 import React, { memo } from "react"
-import { useWindowsStore } from "../../stores"
-import { WindowFrame } from "../WindowFrame"
+import { useWindowsStore } from "../stores"
+import { WindowFrame } from "./WindowFrame"
 import { useShallow } from "zustand/react/shallow"
 
 const MemoWindowFrame = memo(WindowFrame)

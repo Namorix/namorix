@@ -13,6 +13,8 @@ export interface WindowState {
   height: number
   minimized: boolean
   maximized: boolean
+  preMaximizeX?: number
+  preMaximizeY?: number
   focused: boolean
   zIndex: number
 }

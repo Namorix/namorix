@@ -54,7 +54,10 @@ const windowsStore: StateCreator<WindowsState> = (setState, getState) => ({
     }
 
     setState((state) => ({
-      windows: [...state.windows, win],
+      windows: [
+        ...state.windows.map((win) => ({ ...win, focused: false })),
+        win,
+      ],
       activeId: id,
       nextZIndex: state.nextZIndex + 1,
     }))
@@ -68,11 +71,14 @@ const windowsStore: StateCreator<WindowsState> = (setState, getState) => ({
 
       const topWindow =
         remaining.length > 0
-          ? remaining.sort((a, b) => b.zIndex - a.zIndex)[0]
+          ? remaining.toSorted((a, b) => b.zIndex - a.zIndex)[0]
           : null
 
       return {
-        windows: remaining,
+        windows: remaining.map((win) => ({
+          ...win,
+          focused: win.id === topWindow?.id,
+        })),
         activeId:
           state.activeId === id ? (topWindow?.id ?? null) : state.activeId,
       }
@@ -87,10 +93,12 @@ const windowsStore: StateCreator<WindowsState> = (setState, getState) => ({
       }
 
       return {
-        windows: updateWindow(state.windows, id, {
-          minimized: false,
-          zIndex: state.nextZIndex,
-        }),
+        windows: state.windows.map((win) => ({
+          ...win,
+          focused: win.id === id,
+          minimized: win.id === id ? false : win.minimized,
+          zIndex: win.id === id ? state.nextZIndex : win.zIndex,
+        })),
         activeId: id,
         nextZIndex: state.nextZIndex + 1,
       }
@@ -98,19 +106,53 @@ const windowsStore: StateCreator<WindowsState> = (setState, getState) => ({
   },
 
   minimizeWindow: (id) =>
-    setState((state) => ({
-      windows: updateWindow(state.windows, id, { minimized: true }),
-      activeId: state.activeId === id ? null : state.activeId,
-    })),
+    setState((state) => {
+      const remaining = state.windows.filter(
+        (win) => !win.minimized && win.id !== id,
+      )
+
+      const topWindow =
+        remaining.length > 0
+          ? remaining.toSorted((a, b) => b.zIndex - a.zIndex)[0]
+          : null
+
+      return {
+        windows: state.windows.map((win) => ({
+          ...win,
+          minimized: win.id === id ? true : win.minimized,
+          focused: win.id === topWindow?.id,
+        })),
+        activeId:
+          state.activeId === id ? (topWindow?.id ?? null) : state.activeId,
+      }
+    }),
 
   maximizeWindow: (id) =>
     setState((state) => ({
-      windows: updateWindow(state.windows, id, { maximized: true }),
+      windows: state.windows.map((win) =>
+        win.id === id
+          ? {
+              ...win,
+              maximized: true,
+              preMaximizeX: win.x,
+              preMaximizeY: win.y,
+            }
+          : win,
+      ),
     })),
 
   restoreWindow: (id) =>
     setState((state) => ({
-      windows: updateWindow(state.windows, id, { maximized: false }),
+      windows: state.windows.map((win) =>
+        win.id === id
+          ? {
+              ...win,
+              maximized: false,
+              x: win.preMaximizeX ?? win.x,
+              y: win.preMaximizeY ?? win.y,
+            }
+          : win,
+      ),
     })),
 
   moveWindow: (id, x, y) =>
