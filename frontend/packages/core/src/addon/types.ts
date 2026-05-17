@@ -1,8 +1,12 @@
+import { NmxIconSvgSymbol } from "@namorix/ui"
+
+export type NmxAddonIconType = NmxIconSvgSymbol
+
 export interface NmxAddonManifest {
   id: string
   displayName: string
   description?: string
-  icon?: string
+  icon?: NmxAddonIconType
 }
 
 export interface AddonContext {

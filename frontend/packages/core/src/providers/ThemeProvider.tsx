@@ -1,6 +1,6 @@
 import type { ThemeManifest } from "../theme"
 import React, { createContext, useContext, useState } from "react"
-import { loadTheme } from "../theme/loader"
+import { loadTheme } from "../theme"
 import { NMX_THEME_CSS_PATH_KEY } from "../constants"
 
 export interface ThemeContextValue {
@@ -48,6 +48,8 @@ export const ThemeProvider = ({
   )
 }
 
+// TODO last check
+// eslint-disable-next-line react-refresh/only-export-components
 export function useTheme() {
   const context = useContext(ThemeContext)
   if (!context) {
