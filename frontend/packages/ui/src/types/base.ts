@@ -14,6 +14,10 @@ export interface WithSemanticColor {
   semantic?: NmxSemanticColor
 }
 
+export interface WithMuted {
+  muted?: boolean
+}
+
 export interface WithVariant<T extends string = NmxButtonVariant> {
   variant?: T
 }

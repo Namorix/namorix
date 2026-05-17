@@ -2,14 +2,18 @@ import React from "react"
 import { cx } from "../../utils"
 import type { WithBaseProps } from "../../types"
 
-interface NmxCardHeaderProps extends WithBaseProps {
+export interface NmxCardHeaderProps extends WithBaseProps {
   title?: string
   description?: string
+  titleClassName?: string
+  descriptionClassName?: string
 }
 
 export const NmxCardHeader: React.FC<NmxCardHeaderProps> = ({
   title,
   description,
+  titleClassName,
+  descriptionClassName,
   shouldRender = true,
   className,
   ...rest
@@ -20,9 +24,11 @@ export const NmxCardHeader: React.FC<NmxCardHeaderProps> = ({
 
   return (
     <div {...rest} className={cx("nmx-card__header", className)}>
-      <h2 className="nmx-card__header-title">{title}</h2>
+      <h2 className={cx("nmx-card__header-title", titleClassName)}>{title}</h2>
       {description && (
-        <p className="nmx-card__header-description">{description}</p>
+        <p className={cx("nmx-card__header-description", descriptionClassName)}>
+          {description}
+        </p>
       )}
     </div>
   )

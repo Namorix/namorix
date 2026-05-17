@@ -19,3 +19,7 @@ export function cxSemantic(prefix: string, semantic?: NmxSemanticColor) {
 export function cxVariant(prefix: string, variant?: NmxButtonVariant) {
   return !variant ? "" : `${prefix}--${variant}`
 }
+
+export function cxMuted(prefix: string, muted?: boolean) {
+  return !muted ? "" : `${prefix}--muted`
+}

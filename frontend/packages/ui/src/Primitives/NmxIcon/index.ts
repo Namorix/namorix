@@ -1,3 +1,5 @@
 export * from "./NmxIconFont"
 export * from "./NmxIconFont.types"
 export * from "./NmxIconBox"
+export * from "./NmxIconSvg"
+export * from "./NmxIconSvg.types"
