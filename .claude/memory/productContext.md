@@ -19,8 +19,8 @@
 
 ### Design Language
 
-- Browser-based desktop aesthetic
-- Dark/light theme support via Settings app
+- Browser-based desktop aesthetic with dark/light theme support
+- **Material Design 3 Tonal Elevation** — hierarchy thể hiện qua surface tone stack, không dùng border hay box-shadow
 - Consistent window chrome (title bar, close/minimize/maximize)
 - Taskbar shows running windows and system tray
 

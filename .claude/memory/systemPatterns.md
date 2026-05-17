@@ -214,7 +214,7 @@ type EventMap = {
 
 | Type | Đặc điểm | Ví dụ |
 |------|----------|-------|
-| **Primitive** | size, variant, rounded riêng — độc lập | NmxButton, NmxIcon, NmxToggle |
+| **Primitive** | size, variant, rounded riêng — độc lập | NmxButton, NmxForm, NmxIcon, NmxInlineAlert, NmxToggle |
 | **Composite** | Cha quyết → con CSS cascade | NmxCard → NmxCardHeader/Body/Footer |
 | **Layout** | Chỉ gap/align/justify | NmxStack, NmxGrid (future) |
 
@@ -236,6 +236,22 @@ interface NmxPrimitiveProps {
 - Component không chứa margin — layout cha lo bằng `gap`
 - Sub-component không có `size` prop — kích thước inherit từ cha
 - `shouldRender` thay cho conditional ternary bên ngoài
+- **Surface tone stack phân tách component, không dùng border** — 2 surface tone kề nhau tạo ranh giới tự nhiên
+
+**Tonal Elevation (Material Design 3):**
+
+Surface tone stack là cơ chế duy nhất để thể hiện hierarchy. Không dùng border phân tách element, không dùng box-shadow cho elevation.
+
+| Tone | Usage |
+|------|-------|
+| `--nmx-color-surface-lowest` | Inputs, textareas |
+| `--nmx-color-surface-low` | Cards, panels |
+| `--nmx-color-surface` | Main shell background |
+| `--nmx-color-surface-mid` | Highlighted blocks, active tab bg |
+| `--nmx-color-surface-high` | Hover states |
+| `--nmx-color-surface-highest` | Strong emphasis, active chip |
+
+Shadow (`box-shadow`) chỉ dùng cho overlay thật sự: modal, dropdown, tooltip. Component tĩnh không dùng shadow để tạo depth.
 
 ## Event Flow
 

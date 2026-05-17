@@ -5,12 +5,21 @@
 M3 — Desktop Shell UI ✅ + Addon System (contract, registry, Log Viewer) ✅
 
 - Desktop shell: Taskbar, DesktopArea, WindowManager, Launcher ✅
+- DesktopArea + Taskbar refactored into modular sub-components (DesktopIcon, DesktopAreaView, TaskbarAppButton, TaskbarView) ✅
+- New useTaskbarClock hook for live clock ✅
 - Addon contract dùng chung cho system + external: AddonEntry, NmxAddonManifest, AddonContext
 - Internal addon (built-in) và external addon (Docker) — cùng contract, khác cách load + permission
 - Frontend: `addons/registry.ts` (registerAddon, resolveAddon, listAddons), `*.addon.ts`, bootstrap qua `addons/index.ts`
 - LogViewer addon: LogViewer.tsx + LogViewer.scss + LogViewer.addon.tsx (useEffect+registry mount)
 - Backend addon metadata deferred — chỉ cần khi M4 external addon
 - WindowFrame mount addon vào content area qua ref + AddonEntry lifecycle
+
+## Recent Changes (2026-05-17)
+
+### Shell refactor: DesktopArea/Taskbar modular, NmxMetaList, abstract/ restructure
+- **@namorix/styles (0.5.0 → 0.6.0)**: New abstract/ (maps, palette), shell/ entry, icons/, tokens/ modules. New meta-list.scss, icon-svg.scss components. New exports: ./mixins, ./shell. Icomoon rebuilt with new glyphs. All component SCSS + theme tokens updated. Deleted empty placeholder files.
+- **@namorix/ui (0.5.0 → 0.6.0)**: New NmxMetaList composite (label+value rows). New NmxIconSvg primitive. NmxIconFont new symbols, NmxCardHeader refinements, new type/utils helpers.
+- **frontend (0.10.4 → 0.10.5)**: DesktopArea split (DesktopIcon + DesktopAreaView). Taskbar split (TaskbarAppButton + TaskbarView + useTaskbarClock). Blocked dùng NmxMetaList. WindowFrame SCSS + window.store cleanup.
 
 ## Recent Changes (2026-05-16)
 

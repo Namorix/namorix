@@ -114,6 +114,7 @@ frontend/packages/
 6. **Package boundaries enforced** — no cross-package imports outside allowed list
 7. **HttpOnly cookies** — auth tokens not readable by JS; isAuthenticated must use API call
 8. **CSRF double-submit** — non-HttpOnly CSRF cookie + X-CSRF-Token header, enabled via CSRF_DISABLE env
+9. **Tonal Elevation (MD3)** — hierarchy qua surface tone stack (`--nmx-color-surface-*`), không dùng `border` hay `box-shadow` để phân tách/tạo depth cho element tĩnh. Shadow chỉ dùng cho overlay (modal, dropdown, tooltip).
 
 ## Database Schema (EF Core / SQLite)
 

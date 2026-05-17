@@ -123,10 +123,10 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.10.4 | M3 (NmxIcon integration, page prop refactoring, CSS rebuild) |
+| frontend | 0.10.5 | M3 (DesktopArea/Taskbar refactor, NmxMetaList integration, SCSS restructure) |
 | @namorix/core | 0.10.3 | M3 (cx moved to @namorix/ui) |
-| @namorix/styles | 0.5.0 | M3 (icomoon SCSS, icon component styles, typography, utilities) |
-| @namorix/ui | 0.5.0 | M3 (NmxIconFont, NmxIconBox, shared types/utils, primitive refactor) |
+| @namorix/styles | 0.6.0 | M3 (abstract/ restructure, shell/ tokens/ icons/ modules, meta-list, icon-svg, new icons) |
+| @namorix/ui | 0.6.0 | M3 (NmxMetaList composite, NmxIconSvg primitive) |
 | backend | 0.19.1 | M3 (SetThemeSchema, ThemeManifest cssPath, AuthController refactor) |
 
 ## Version Rules
@@ -159,6 +159,13 @@
 | @namorix/core | 0.10.0 | New theme module: types.ts (ThemeManifest), loader.ts (restoreTheme, loadTheme), registry.ts (getBuiltInThemes, getAllThemes), barrel export. New providers module: ThemeProvider.tsx (ThemeContext, useTheme hook, switchTheme). New http.getJson method. New constants (NMX_THEME_CSS_ID, NMX_THEME_STORAGE_KEY). New API routes (ApiThemeRoutes, ThemeRoutes, ApiUserRoutes). |
 | frontend | 0.10.0 | Theme integration: Root component with ThemeProvider wrap, restoreTheme() on app start, getAllThemes() load. Login theme sync — fetch user themeId from `/api/user/theme` → localStorage. |
 | backend | 0.18.0 | New ThemeManifest model. User.ThemeId field. AppDbContext: ThemeManifests + AddonManifests DbSet + unique indexes. New UserService (GetThemeAsync, SetThemeAsync). New UserController (GET/PUT /api/user/theme). |
+
+### 2026-05-16 (Shell refactor: DesktopArea/Taskbar modular, NmxMetaList, abstract/ restructure)
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/styles | 0.6.0 | NEW: abstract/ (maps.scss, palette.scss) — variables/mixins moved to abstract/. NEW: shell/ + shell.scss entry, tokens/ directory, icons/ directory. NEW: components/meta-list.scss (NmxMetaList), components/icon/icon-svg.scss (NmxIconSvg). NEW: package.json exports — ./mixins, ./shell. Updated: icomoon — new icon glyphs (ttf/woff/svg rebuilt). Updated: all component SCSS (button, card, form, inline-alert, toggle, icon-box), theme tokens (default + dark). Deleted: base/icon-font.scss, base/tokens.scss, base/typography.scss, base/utilities.scss (empty placeholders). |
+| @namorix/ui | 0.6.0 | NEW: Components/NmxMetaList/ — NmxMetaList (parent), NmxMetaItem (child, label+value+valueColor). NEW: Primitives/NmxIcon/NmxIconSvg — SVG icon variant (NmxIconSvgSymbol const+type). Updated: NmxIconFont.types — new icon symbols. Updated: NmxCardHeader — API refinements. Updated: types/base.ts, utils/cx.ts — new helpers. |
+| frontend | 0.10.5 | NEW: DesktopArea — split DesktopIcon + DesktopAreaView + types. NEW: Taskbar — split TaskbarAppButton + TaskbarView + types; new useTaskbarClock hook. Updated: Blocked — dùng NmxMetaList thay raw HTML. Updated: WindowFrame — SCSS cleanup, window.store — refactored. Chore: remove tokens.scss, theme CSS rebuilt. |
 
 ### 2026-05-16 (NmxIconFont, NmxIconBox, icon SCSS, shared types/utils)
 | Package | Version | Changes |

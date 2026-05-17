@@ -259,7 +259,7 @@ packages/ui/src/
 
 | Type | Tự quyết | Ví dụ |
 |------|----------|-------|
-| **Primitive** | size, variant, rounded riêng | NmxButton, NmxIcon, NmxToggle |
+| **Primitive** | size, variant, rounded riêng | NmxButton, NmxForm, NmxIcon, NmxInlineAlert, NmxToggle |
 | **Composite** | Cha quyết → con CSS cascade | NmxCard → NmxCardHeader/Body/Footer |
 | **Layout** | Chỉ gap/align/justify | NmxStack, NmxGrid (future) |
 
@@ -330,6 +330,18 @@ const MyComponent = () => (
 - Sub-component không có `size` prop — font-size, padding inherit từ cha
 - Component không chứa margin — layout cha lo bằng `gap`
 - `shouldRender` thay cho conditional ternary bên ngoài
+
+## Tonal Elevation (Material Design 3)
+- **Surface tone stack** thay cho border/shadow để phân tách element
+  - `--nmx-color-surface-lowest` — inputs, textareas
+  - `--nmx-color-surface-low` — cards, panels
+  - `--nmx-color-surface` — main shell background
+  - `--nmx-color-surface-mid` — highlighted blocks, active tab bg
+  - `--nmx-color-surface-high` — hover states
+  - `--nmx-color-surface-highest` — strong emphasis, active chip
+- **Không dùng `border`** để phân tách — dùng 2 surface tone kề nhau tạo ranh giới tự nhiên
+- **Không dùng `box-shadow`** cho elevation — chỉ dùng cho overlay thật sự (modal, dropdown, tooltip)
+- `--nmx-{component}-shadow` chỉ dùng ở overlay components, không dùng để tạo depth cho element tĩnh
 
 ---
 
@@ -464,9 +476,17 @@ frontend/packages/
 │   ├── package.json
 │   └── src/
 │       ├── index.ts
-│       ├── types.ts            # SizeType, VariantType, RoundedType (shared)
-│       ├── utils/              # cx helpers (cxRounded, cxSize)
-│       ├── Components/
+│       ├── types/              # Shared types (base.ts, primitives.ts)
+│       │   ├── index.ts
+│       │   ├── base.ts
+│       │   └── primitives.ts
+│       ├── utils/              # cx helpers (cx, cxSize, cxSemantic, cxVariant)
+│       │   ├── index.ts
+│       │   ├── cx.ts
+│       │   ├── cx-size.ts
+│       │   ├── cx-semantic.ts
+│       │   └── cx-variant.ts
+│       ├── Components/         # Composite: cha quyết → con CSS cascade
 │       │   ├── index.ts
 │       │   └── NmxCard/
 │       │       ├── NmxCard.tsx
@@ -475,17 +495,24 @@ frontend/packages/
 │       │       ├── NmxCardBody.tsx
 │       │       ├── NmxCardFooter.tsx
 │       │       └── index.ts
-│       └── Primitives/
-│           ├── index.ts
-│           ├── NmxButton.tsx
-│           ├── NmxForm/
-│           │   ├── NmxForm.tsx
-│           │   ├── NmxFormActions.tsx
-│           │   ├── NmxFormField.tsx
-│           │   ├── NmxFormInput.tsx
-│           │   └── index.ts
-│           ├── NmxInlineAlert.tsx
-│           └── NmxToggle.tsx
+│       ├── Primitives/         # Độc lập, tự quyết size/variant/rounded
+│       │   ├── index.ts
+│       │   ├── NmxButton.tsx
+│       │   ├── NmxForm/
+│       │   │   ├── NmxForm.tsx
+│       │   │   ├── NmxFormActions.tsx
+│       │   │   ├── NmxFormField.tsx
+│       │   │   ├── NmxFormInput.tsx
+│       │   │   └── index.ts
+│       │   ├── NmxIcon/
+│       │   │   ├── NmxIconFont.tsx
+│       │   │   ├── NmxIconFont.types.ts
+│       │   │   ├── NmxIconBox.tsx
+│       │   │   └── index.ts
+│       │   ├── NmxInlineAlert.tsx
+│       │   └── NmxToggle.tsx
+│       └── Layouts/            # (future) Chỉ gap/align/justify
+│           └── ...
 
 backend/
 ├── Makefile
