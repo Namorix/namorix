@@ -1,11 +1,13 @@
 import React from "react"
-import { useLauncherStore, useWindowsStore } from "../../stores"
+import { useLauncherStore } from "../../stores"
 import { useShallow } from "zustand/react/shallow"
 import { useLauncherSearch } from "./useLauncherSearch"
 import { LauncherView } from "./LauncherView"
+import type { NmxIconSvgSymbol } from "@namorix/ui"
+import { useOpenWindow } from "../WindowFrame/useOpenWindow"
 
 export const Launcher: React.FC = () => {
-  const openWindow = useWindowsStore((state) => state.openWindow)
+  const openWindow = useOpenWindow()
   const { isOpen, close } = useLauncherStore(
     useShallow((state) => ({ isOpen: state.isOpen, close: state.close })),
   )
@@ -16,7 +18,11 @@ export const Launcher: React.FC = () => {
     return null
   }
 
-  const handleOpenApp = (id: string, label: string, icon?: React.ReactNode) => {
+  const handleOpenApp = (
+    id: string,
+    label: string,
+    icon?: NmxIconSvgSymbol,
+  ) => {
     openWindow(id, label, icon)
     close()
   }

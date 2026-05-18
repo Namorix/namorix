@@ -6,6 +6,7 @@ import { useWindowResize } from "./useWindowResize"
 import { useAddonMount } from "./useAddonMount"
 import { WindowFrameView } from "./WindowFrameView"
 import { useShallow } from "zustand/react/shallow"
+import { useWindowGeometryStore } from "../../stores/windowGeometry.store"
 
 export const WindowFrame: React.FC<WindowFrameProps> = ({ win }) => {
   const {
@@ -14,7 +15,6 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ win }) => {
     minimizeWindow,
     maximizeWindow,
     restoreWindow,
-    moveWindow,
   } = useWindowsStore(
     useShallow((state) => ({
       focusWindow: state.focusWindow,
@@ -22,9 +22,21 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ win }) => {
       minimizeWindow: state.minimizeWindow,
       maximizeWindow: state.maximizeWindow,
       restoreWindow: state.restoreWindow,
-      moveWindow: state.moveWindow,
     })),
   )
+
+  const geo = useWindowGeometryStore(
+    (state) => state.geometry.find((g) => g.id === win.id) ?? null,
+  )
+
+  const { removeGeometry, savePreMaximize, moveWindow } =
+    useWindowGeometryStore(
+      useShallow((state) => ({
+        removeGeometry: state.removeGeometry,
+        savePreMaximize: state.savePreMaximize,
+        moveWindow: state.moveWindow,
+      })),
+    )
 
   const frameRef = useRef<HTMLDivElement>(null)
 
@@ -38,30 +50,38 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ win }) => {
     }
 
     const rect = frameRef.current.getBoundingClientRect()
-    moveWindow(win.id, rect.left, rect.top)
+    savePreMaximize(win.id, rect.left, rect.top)
     maximizeWindow(win.id)
-  }, [win.id, frameRef, moveWindow, maximizeWindow])
+  }, [win.id, frameRef, savePreMaximize, maximizeWindow])
 
   const handleFocus = useCallback(
     () => focusWindow(win.id),
     [focusWindow, win.id],
   )
-  const handleClose = useCallback(
-    () => closeWindow(win.id),
-    [closeWindow, win.id],
-  )
+  const handleClose = useCallback(() => {
+    closeWindow(win.id)
+    removeGeometry(win.id)
+  }, [closeWindow, removeGeometry, win.id])
   const handleMinimize = useCallback(
     () => minimizeWindow(win.id),
     [minimizeWindow, win.id],
   )
-  const handleRestore = useCallback(
-    () => restoreWindow(win.id),
-    [restoreWindow, win.id],
-  )
+  const handleRestore = useCallback(() => {
+    const pre = useWindowGeometryStore.getState().getPreMaximize(win.id)
+    if (pre) {
+      moveWindow(win.id, pre.x, pre.y)
+    }
+    restoreWindow(win.id)
+  }, [restoreWindow, moveWindow, win.id])
+
+  if (!geo) {
+    return null
+  }
 
   return (
     <WindowFrameView
       win={win}
+      geo={geo}
       mountRef={mountRef}
       frameRef={frameRef}
       onFocus={handleFocus}

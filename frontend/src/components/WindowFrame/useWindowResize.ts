@@ -1,6 +1,6 @@
-import { useWindowsStore } from "../../stores"
 import React, { useCallback, useRef } from "react"
 import { useShallow } from "zustand/react/shallow"
+import { useWindowGeometryStore } from "../../stores/windowGeometry.store"
 
 const CURSOR_MAP: Record<string, string> = {
   n: "n-resize",
@@ -47,7 +47,7 @@ export const useWindowResize = (
   winId: string,
   frameRef: React.RefObject<HTMLDivElement | null>,
 ) => {
-  const { moveWindow, resizeWindow } = useWindowsStore(
+  const { moveWindow, resizeWindow } = useWindowGeometryStore(
     useShallow((state) => ({
       moveWindow: state.moveWindow,
       resizeWindow: state.resizeWindow,

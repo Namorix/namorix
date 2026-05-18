@@ -1,17 +1,13 @@
 import { useWindowsStore } from "../../stores"
 import React, { useCallback, useRef } from "react"
-import { useShallow } from "zustand/react/shallow"
+import { useWindowGeometryStore } from "../../stores/windowGeometry.store"
 
 export const useWindowDrag = (
   winId: string,
   frameRef: React.RefObject<HTMLDivElement | null>,
 ) => {
-  const { focusWindow, moveWindow } = useWindowsStore(
-    useShallow((state) => ({
-      focusWindow: state.focusWindow,
-      moveWindow: state.moveWindow,
-    })),
-  )
+  const focusWindow = useWindowsStore((state) => state.focusWindow)
+  const moveWindow = useWindowGeometryStore((state) => state.moveWindow)
 
   const dragRef = useRef<{
     startX: number

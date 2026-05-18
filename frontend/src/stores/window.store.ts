@@ -13,21 +13,9 @@ interface WindowsState {
   minimizeWindow: (id: WindowId) => void
   maximizeWindow: (id: WindowId) => void
   restoreWindow: (id: WindowId) => void
-  moveWindow: (id: WindowId, x: number, y: number) => void
-  resizeWindow: (id: WindowId, width: number, height: number) => void
 }
 
 let _idCounter = 0
-
-const updateWindow = (
-  windows: WindowState[],
-  id: WindowId,
-  patch: Partial<WindowState>,
-) => {
-  return windows.map((window) =>
-    window.id === id ? { ...window, ...patch } : window,
-  )
-}
 
 const windowsStore: StateCreator<WindowsState> = (setState, getState) => ({
   windows: [],
@@ -36,17 +24,13 @@ const windowsStore: StateCreator<WindowsState> = (setState, getState) => ({
 
   openWindow(app: string, title: string, icon?: NmxAddonIconType): WindowId {
     const id = `win-${Date.now()}-${++_idCounter}`
-    const { nextZIndex, windows } = getState()
+    const { nextZIndex } = getState()
 
     const win: WindowState = {
       id,
       app,
       icon,
       title,
-      x: 50 + windows.length * 30,
-      y: 50 + windows.length * 30,
-      width: 800,
-      height: 500,
       minimized: false,
       maximized: false,
       focused: false,
@@ -87,6 +71,10 @@ const windowsStore: StateCreator<WindowsState> = (setState, getState) => ({
 
   focusWindow(id) {
     setState((state) => {
+      if (state.activeId === id) {
+        return state
+      }
+
       const exists = state.windows.some((window) => window.id === id)
       if (!exists) {
         return state
@@ -134,8 +122,6 @@ const windowsStore: StateCreator<WindowsState> = (setState, getState) => ({
           ? {
               ...win,
               maximized: true,
-              preMaximizeX: win.x,
-              preMaximizeY: win.y,
             }
           : win,
       ),
@@ -148,21 +134,9 @@ const windowsStore: StateCreator<WindowsState> = (setState, getState) => ({
           ? {
               ...win,
               maximized: false,
-              x: win.preMaximizeX ?? win.x,
-              y: win.preMaximizeY ?? win.y,
             }
           : win,
       ),
-    })),
-
-  moveWindow: (id, x, y) =>
-    setState((state) => ({
-      windows: updateWindow(state.windows, id, { x, y }),
-    })),
-
-  resizeWindow: (id, width, height) =>
-    setState((state) => ({
-      windows: updateWindow(state.windows, id, { width, height }),
     })),
 })
 

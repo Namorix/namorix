@@ -7,14 +7,18 @@ export interface WindowState {
   app: string
   title: string
   icon?: NmxAddonIconType
+  minimized: boolean
+  maximized: boolean
+  focused: boolean
+  zIndex: number
+}
+
+export interface WindowGeometry {
+  id: WindowId
   x: number
   y: number
   width: number
   height: number
-  minimized: boolean
-  maximized: boolean
   preMaximizeX?: number
   preMaximizeY?: number
-  focused: boolean
-  zIndex: number
 }

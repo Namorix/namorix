@@ -1,5 +1,6 @@
 import React from "react"
 import type { NmxAddonIconType } from "@namorix/core"
+import type { NmxIconSvgSymbol } from "@namorix/ui"
 
 export interface LauncherAddonItem {
   id: string
@@ -12,6 +13,6 @@ export interface LauncherViewProps {
   query: string
   onQueryChange: (query: string) => void
   onClearQuery: () => void
-  onOpenApp: (id: string, label: string, icon?: React.ReactNode) => void
+  onOpenApp: (id: string, label: string, icon?: NmxIconSvgSymbol) => void
   searchRef: React.RefObject<HTMLInputElement | null>
 }

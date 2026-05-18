@@ -6,6 +6,7 @@ import { WindowTitleBar } from "./WindowTitleBar"
 
 export const WindowFrameView: React.FC<WindowFrameViewProps> = ({
   win,
+  geo,
   mountRef,
   frameRef,
   onFocus,
@@ -23,9 +24,9 @@ export const WindowFrameView: React.FC<WindowFrameViewProps> = ({
       "nmx-window-frame--focused": win.focused,
     })}
     style={{
-      transform: win.maximized ? "none" : `translate(${win.x}px, ${win.y}px`,
-      width: win.maximized ? "100%" : win.width,
-      height: win.maximized ? "100%" : win.height,
+      transform: win.maximized ? "none" : `translate(${geo.x}px, ${geo.y}px`,
+      width: win.maximized ? "100%" : geo.width,
+      height: win.maximized ? "100%" : geo.height,
       zIndex: win.zIndex,
       display: win.minimized ? "none" : undefined,
     }}

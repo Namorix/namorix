@@ -1,11 +1,13 @@
 import type { WindowState } from "../../types"
 import React from "react"
+import type { WindowGeometry } from "../../types/windowing"
 
 export interface WindowFrameProps {
   win: WindowState
 }
 
 export interface WindowFrameViewProps extends WindowFrameProps {
+  geo: WindowGeometry
   frameRef: React.RefObject<HTMLDivElement | null>
   mountRef: React.RefObject<HTMLDivElement | null>
   onFocus: () => void
