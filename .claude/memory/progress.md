@@ -123,7 +123,7 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.11.0 | M3 (WindowFrame animation system, drag constraints, window size tokens) |
+| frontend | 0.11.1 | M3 (Shared types refactoring: AddonItem, OnOpenApp, addonToItems, rectToOrigin) |
 | @namorix/core | 0.10.5 | M3 (Addon manifest defaultWidth, defaultHeight, preferFullSize) |
 | @namorix/styles | 0.8.0 | M3 (Window animation keyframes, window size tokens, app-settings icon) |
 | @namorix/ui | 0.6.3 | M3 (APP_SETTINGS icon symbol) |
@@ -146,6 +146,11 @@
 | backend | Bug fixes, C# config tweaks | New endpoint, new service, auth feature |
 
 ## Version History
+
+### 2026-05-18 (Shared types refactoring: AddonItem, OnOpenApp, addonToItems, rectToOrigin)
+| Package | Version | Changes |
+|---------|---------|---------|
+| frontend | 0.11.1 | NEW: shared types — AddonItem, OnOpenApp (types/addon-item.ts), rectToOrigin utility (types/windowing.ts). NEW: addonToItems mapper (addons/index.ts). REFACTOR: DesktopArea + Launcher dùng AddonItem thay DesktopIconData/LauncherAddonItem riêng. DELETED: DesktopArea.types.tsx, Launcher.types.ts. RENAMED: useTaskbarRectStore.ts → taskbarRect.store.ts. |
 
 ### 2026-05-18 (WindowFrame animation system, size management, Settings addon scaffold)
 | Package | Version | Changes |
