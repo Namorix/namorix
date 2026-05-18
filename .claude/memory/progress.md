@@ -123,7 +123,7 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.10.7 | M3 (Taskbar/WindowFrame refactor, WindowManager flatten, blocked SCSS migration) |
+| frontend | 0.10.8 | M3 (WindowFrame bug fixes, store refactor, geometry store, useOpenWindow) |
 | @namorix/core | 0.10.4 | M3 (Addon icon type refinement, ThemeProvider fix) |
 | @namorix/styles | 0.7.1 | M3 (Icomoon new glyphs, blocked.scss moved, window.scss refinements) |
 | @namorix/ui | 0.6.2 | M3 (New icon symbols) |
@@ -159,6 +159,11 @@
 | @namorix/core | 0.10.0 | New theme module: types.ts (ThemeManifest), loader.ts (restoreTheme, loadTheme), registry.ts (getBuiltInThemes, getAllThemes), barrel export. New providers module: ThemeProvider.tsx (ThemeContext, useTheme hook, switchTheme). New http.getJson method. New constants (NMX_THEME_CSS_ID, NMX_THEME_STORAGE_KEY). New API routes (ApiThemeRoutes, ThemeRoutes, ApiUserRoutes). |
 | frontend | 0.10.0 | Theme integration: Root component with ThemeProvider wrap, restoreTheme() on app start, getAllThemes() load. Login theme sync — fetch user themeId from `/api/user/theme` → localStorage. |
 | backend | 0.18.0 | New ThemeManifest model. User.ThemeId field. AppDbContext: ThemeManifests + AddonManifests DbSet + unique indexes. New UserService (GetThemeAsync, SetThemeAsync). New UserController (GET/PUT /api/user/theme). |
+
+### 2026-05-17 (WindowFrame bug fixes, store refactor, geometry store, useOpenWindow)
+| Package | Version | Changes |
+|---------|---------|---------|
+| frontend | 0.10.8 | Fix: WindowFrame — resize/drag bug fixes, frame types refinement (+44 lines). Refactor: window.store — simplified (-36 lines), windowing types expanded (+12). NEW: useOpenWindow hook, windowGeometry.store. Updated: DesktopArea, Launcher/types. Updated: index.html (meta tags). |
 
 ### 2026-05-17 (Taskbar/WindowFrame refactor, WindowManager flatten, blocked SCSS migration)
 | Package | Version | Changes |

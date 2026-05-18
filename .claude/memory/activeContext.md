@@ -16,6 +16,11 @@ M3 — Desktop Shell UI ✅ + Addon System (contract, registry, Log Viewer) ✅
 
 ## Recent Changes (2026-05-17)
 
+## Recent Changes (2026-05-17)
+
+### WindowFrame bug fixes, store refactor, geometry store
+- **frontend (0.10.7 → 0.10.8)**: WindowFrame bug fixes — resize/drag logic refined (+44 lines), frame types updated. Window store simplified (-36 lines), windowing types expanded (+12). New `useOpenWindow` hook extracted from WindowFrame. New `windowGeometry.store.ts` (separated from window store). DesktopArea + Launcher tweaks. index.html meta tags updated.
+
 ### Taskbar/WindowFrame refactor, WindowManager flatten, blocked SCSS migration
 - **@namorix/styles (0.7.0 → 0.7.1)**: Icomoon rebuilt with new glyphs (fonts.scss +21 lines, variables.scss +3, ttf/woff/svg updated). Blocked.scss moved from frontend into shell/components/. Window.scss refined.
 - **@namorix/ui (0.6.1 → 0.6.2)**: NmxIconFont.types.ts — 3 new icon symbols matching icomoon glyphs.
