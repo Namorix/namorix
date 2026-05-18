@@ -31,3 +31,10 @@ export interface WindowGeometry {
   preMaximizeHeight?: number
   originRect?: WindowRectType
 }
+
+export const rectToOrigin = (rect: DOMRect): WindowRectType => ({
+  x: rect.x,
+  y: rect.y,
+  width: rect.width,
+  height: rect.height,
+})

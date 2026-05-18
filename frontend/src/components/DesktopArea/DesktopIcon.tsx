@@ -1,19 +1,13 @@
-import type { DesktopIconData } from "./DesktopArea.types"
 import React, { useRef } from "react"
 import { NmxIconSvg } from "@namorix/ui"
+import type { AddonItem, OnOpenApp } from "../../types"
 
 interface DesktopIconProps {
-  icon: DesktopIconData
-  onOpen: (
-    id: string,
-    rect?: DOMRect,
-    defaultWidth?: number,
-    defaultHeight?: number,
-    preferFullSize?: boolean,
-  ) => void
+  addon: AddonItem
+  onOpen: OnOpenApp
 }
 
-export const DesktopIcon: React.FC<DesktopIconProps> = ({ icon, onOpen }) => {
+export const DesktopIcon: React.FC<DesktopIconProps> = ({ addon, onOpen }) => {
   const btnRef = useRef<HTMLButtonElement>(null)
 
   return (
@@ -24,16 +18,18 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({ icon, onOpen }) => {
       onDoubleClick={() => {
         const rect = btnRef.current?.getBoundingClientRect()
         onOpen(
-          icon.id,
+          addon.id,
+          addon.displayName,
+          addon.icon,
           rect,
-          icon.defaultWidth,
-          icon.defaultHeight,
-          icon.preferFullSize,
+          addon.defaultWidth,
+          addon.defaultHeight,
+          addon.preferFullSize,
         )
       }}
     >
-      <NmxIconSvg symbol={icon.icon} className="nmx-desktop-area__icon" />
-      <span className="nmx-desktop-area__icon-label">{icon.label}</span>
+      <NmxIconSvg symbol={addon.icon} className="nmx-desktop-area__icon" />
+      <span className="nmx-desktop-area__icon-label">{addon.displayName}</span>
     </button>
   )
 }

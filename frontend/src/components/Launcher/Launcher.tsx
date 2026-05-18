@@ -3,9 +3,9 @@ import { useLauncherStore } from "../../stores"
 import { useShallow } from "zustand/react/shallow"
 import { useLauncherSearch } from "./useLauncherSearch"
 import { LauncherView } from "./LauncherView"
-import type { NmxIconSvgSymbol } from "@namorix/ui"
 import { useOpenWindow } from "../WindowFrame/useOpenWindow"
-import type { WindowRectType } from "../../types/windowing"
+import { rectToOrigin, type WindowRectType } from "../../types/windowing"
+import type { OnOpenApp } from "../../types"
 
 export const Launcher: React.FC = () => {
   const openWindow = useOpenWindow()
@@ -19,22 +19,22 @@ export const Launcher: React.FC = () => {
     return null
   }
 
-  const handleOpenApp = (
-    id: string,
-    label: string,
-    icon?: NmxIconSvgSymbol,
-    rect?: DOMRect,
-    defaultWidth?: number,
-    defaultHeight?: number,
-    preferFullSize?: boolean,
+  const handleOpenApp: OnOpenApp = (
+    id,
+    displayName,
+    icon,
+    rect,
+    defaultWidth,
+    defaultHeight,
+    preferFullSize,
   ) => {
     const originRect: WindowRectType | undefined = rect
-      ? { x: rect.x, y: rect.y, width: rect.width, height: rect.height }
+      ? rectToOrigin(rect)
       : undefined
 
     openWindow(
       id,
-      label,
+      displayName,
       icon,
       originRect,
       defaultWidth,

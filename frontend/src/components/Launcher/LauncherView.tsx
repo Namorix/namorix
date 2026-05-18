@@ -1,6 +1,15 @@
 import React from "react"
-import type { LauncherViewProps } from "./Launcher.types"
 import { NmxIconFont, NmxIconFontSymbol, NmxIconSvg } from "@namorix/ui"
+import type { AddonItem, OnOpenApp } from "../../types"
+
+interface LauncherViewProps {
+  items: AddonItem[]
+  query: string
+  onQueryChange: (query: string) => void
+  onClearQuery: () => void
+  onOpenApp: OnOpenApp
+  searchRef: React.RefObject<HTMLInputElement | null>
+}
 
 export const LauncherView: React.FC<
   LauncherViewProps & { onClose: () => void }

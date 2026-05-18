@@ -2,12 +2,13 @@ import { memo } from "react"
 import { NmxIconSvg, NmxIconSvgSymbol } from "@namorix/ui"
 import type { TaskbarApp } from "./Taskbar.types"
 import { TaskbarAppButton } from "./TaskbarAppButton"
+import type { WindowId } from "../../types"
 
 interface TaskViewProps {
   apps: TaskbarApp[]
   time: string
   onStartClick: () => void
-  onAppClick: (id: string) => void
+  onAppClick: (id: WindowId) => void
 }
 
 export const TaskbarView = memo<TaskViewProps>(

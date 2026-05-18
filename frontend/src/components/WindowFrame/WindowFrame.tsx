@@ -1,5 +1,5 @@
 import React, { useCallback, useRef } from "react"
-import { useWindowsStore } from "../../stores"
+import { useTaskbarRectStore, useWindowsStore } from "../../stores"
 import type { WindowFrameProps } from "./WindowFrame.types"
 import { useWindowDrag } from "./useWindowDrag"
 import { useWindowResize } from "./useWindowResize"
@@ -7,7 +7,6 @@ import { useAddonMount } from "./useAddonMount"
 import { WindowFrameView } from "./WindowFrameView"
 import { useShallow } from "zustand/react/shallow"
 import { useWindowGeometryStore } from "../../stores/windowGeometry.store"
-import { useTaskbarRectStore } from "./useTaskbarRectStore"
 
 export const WindowFrame: React.FC<WindowFrameProps> = ({ win }) => {
   const {
@@ -56,6 +55,7 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ win }) => {
       closeWindow(win.id)
       removeGeometry(win.id)
     } else if (animState === "maximizing") {
+      console.log("Anim maximizing")
       maximizeWindow(win.id)
       setAnimState(win.id, "idle")
     } else if (animState === "unmaximizing") {
@@ -75,10 +75,16 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ win }) => {
     win.id,
     closeWindow,
     removeGeometry,
+    maximizeWindow,
+    restoreWindow,
+    moveWindow,
     minimizeWindow,
   ])
 
   const handleMaximize = useCallback(() => {
+    const currentAnim = useWindowsStore.getState().animStates[win.id]
+    console.log("handleMaximize", currentAnim)
+
     if (!frameRef.current) {
       return null
     }
@@ -102,6 +108,9 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ win }) => {
   }, [setAnimState, win.id])
 
   const handleRestore = useCallback(() => {
+    const currentAnim = useWindowsStore.getState().animStates[win.id]
+    console.log("handleRestore", currentAnim)
+
     setAnimState(win.id, "unmaximizing")
   }, [setAnimState, win.id])
 

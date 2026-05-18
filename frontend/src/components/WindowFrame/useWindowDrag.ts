@@ -40,14 +40,44 @@ export const useWindowDrag = (
         return
       }
 
-      const rect = frameRef.current.getBoundingClientRect()
+      const isMaximized =
+        useWindowsStore.getState().windows.find((win) => win.id === winId)
+          ?.maximized ?? false
 
-      dragRef.current = {
-        startX: e.clientX,
-        startY: e.clientY,
-        winX: rect.left,
-        winY: rect.top,
-        winWidth: rect.width,
+      if (isMaximized) {
+        const pre = useWindowGeometryStore.getState().getPreMaximize(winId)
+
+        if (!pre) {
+          return
+        }
+
+        const ratioX = e.clientX / window.innerWidth
+
+        useWindowsStore.getState().restoreWindow(winId)
+        moveWindow(winId, pre.x, pre.y)
+
+        const targetX = e.clientX - pre.width * ratioX
+        const targetY = e.clientY - 8
+
+        dragRef.current = {
+          startX: e.clientX,
+          startY: e.clientY,
+          winX: targetX,
+          winY: targetY,
+          winWidth: pre.width,
+        }
+
+        frameRef.current.style.transform = `translate(${targetX}px, ${targetY}px)`
+      } else {
+        const rect = frameRef.current.getBoundingClientRect()
+
+        dragRef.current = {
+          startX: e.clientX,
+          startY: e.clientY,
+          winX: rect.left,
+          winY: rect.top,
+          winWidth: rect.width,
+        }
       }
 
       document.body.style.userSelect = "none"

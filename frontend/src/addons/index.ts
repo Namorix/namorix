@@ -1,4 +1,15 @@
 export * from "./registry"
 
+import type { AddonModule } from "@namorix/core"
+import type { AddonItem } from "../types"
 import "./LogViewer/LogViewer.addon"
 import "./Settings/Settings.addon"
+
+export const addonToItems = (addon: AddonModule): AddonItem => ({
+  id: addon.manifest.id,
+  displayName: addon.manifest.displayName,
+  icon: addon.manifest.icon,
+  defaultWidth: addon.manifest.defaultWidth,
+  defaultHeight: addon.manifest.defaultHeight,
+  preferFullSize: addon.manifest.preferFullSize,
+})

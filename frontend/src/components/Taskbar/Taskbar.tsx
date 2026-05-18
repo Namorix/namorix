@@ -31,6 +31,7 @@ export const Taskbar: React.FC = () => {
 
   const handleAppClick = useCallback(
     (id: string) => {
+      const { windows, activeId } = useWindowsStore.getState()
       const win = windows.find((w) => w.id === id)
 
       if (win?.minimized) {
@@ -41,7 +42,7 @@ export const Taskbar: React.FC = () => {
         focusWindow(id)
       }
     },
-    [activeId, focusWindow, minimizeWindow, windows],
+    [focusWindow, minimizeWindow],
   )
 
   return (

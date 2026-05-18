@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import type { LauncherAddonItem } from "./Launcher.types"
-import { listAddons } from "../../addons"
+import { addonToItems, listAddons } from "../../addons"
+import type { AddonItem } from "../../types"
 
 export const useLauncherSearch = (isOpen: boolean) => {
   const [query, setQuery] = useState("")
@@ -10,15 +10,8 @@ export const useLauncherSearch = (isOpen: boolean) => {
     searchRef.current?.focus()
   }, [isOpen])
 
-  const items = useMemo<LauncherAddonItem[]>(() => {
-    const all: LauncherAddonItem[] = listAddons().map((addon) => ({
-      id: addon.manifest.id,
-      displayName: addon.manifest.displayName,
-      icon: addon.manifest.icon,
-      defaultWidth: addon.manifest.defaultWidth,
-      defaultHeight: addon.manifest.defaultHeight,
-      preferFullSize: addon.manifest.preferFullSize,
-    }))
+  const items = useMemo<AddonItem[]>(() => {
+    const all: AddonItem[] = listAddons().map(addonToItems)
 
     if (!query.trim()) {
       return all

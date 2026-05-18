@@ -1,12 +1,13 @@
 import { memo, useEffect, useRef } from "react"
 import { cx, NmxIconSvg } from "@namorix/ui"
 import type { TaskbarApp } from "./Taskbar.types"
-import { useTaskbarRectStore } from "../WindowFrame/useTaskbarRectStore"
 import { useShallow } from "zustand/react/shallow"
+import type { WindowId } from "../../types"
+import { useTaskbarRectStore } from "../../stores"
 
 interface TaskbarAppButtonProps {
   app: TaskbarApp
-  onAppClick: (id: string) => void
+  onAppClick: (id: WindowId) => void
 }
 
 export const TaskbarAppButton = memo<TaskbarAppButtonProps>(

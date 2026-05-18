@@ -31,7 +31,15 @@ export const WindowTitleBar = memo(
     <div
       className="nmx-window-frame__titlebar"
       onMouseDown={onTitleBarMouseDown}
-      onDoubleClick={() => (maximized ? onRestore() : onMaximize())}
+      onDoubleClick={(e) => {
+        e.stopPropagation()
+        console.log("Maximized: ", maximized)
+        if (maximized) {
+          onRestore()
+        } else {
+          onMaximize()
+        }
+      }}
     >
       {icon && (
         <NmxIconSvg symbol={icon} className="nmx-window-frame__app-icon" />
