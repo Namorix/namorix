@@ -7,6 +7,9 @@ export interface NmxAddonManifest {
   displayName: string
   description?: string
   icon?: NmxAddonIconType
+  defaultWidth?: number
+  defaultHeight?: number
+  preferFullSize?: boolean
 }
 
 export interface AddonContext {
