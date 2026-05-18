@@ -8,8 +8,13 @@
 
 .nmx-launcher {
   position: fixed;
-  bottom: calc(var(--nmx-taskbar-height) + var(--nmx-spacing-md));
-  left: var(--nmx-spacing-md);
+  bottom: 0;
+  left: 0;
+  transform: translate(
+    var(--nmx-spacing-md),
+    calc((-1 * (var(--nmx-taskbar-height) + var(--nmx-spacing-md))))
+  );
+  will-change: transform;
   min-width: var(--nmx-task-launcher-min-width);
   max-width: var(--nmx-task-launcher-max-width);
   width: 100%;
@@ -27,12 +32,8 @@
   @keyframes nmx-launcher-in {
     from {
       opacity: 0;
-      transform: translateY(8px) scale(0.98);
-    }
-
-    to {
-      opacity: 1;
-      transform: translateY(0) scale(1);
+      translate: 0 8px;
+      scale: 0.98;
     }
   }
 

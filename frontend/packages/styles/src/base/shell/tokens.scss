@@ -5,4 +5,18 @@
   --nmx-task-launcher-max-width: 480px;
 
   --nmx-window-frame-edge-size: 4px;
+
+  --nmx-window-open-animation-ms: 220ms;
+  --nmx-window-close-animation-ms: 160ms;
+  --nmx-window-minimize-animation-ms: 180ms;
+  --nmx-window-maximize-animation-ms: 160ms;
+  --nmx-window-unmaximize-animation-ms: 120ms;
+
+  --nmx-window-drag-min-visible: 150px;
+
+  --nmx-window-default-width: 800px;
+  --nmx-window-default-height: 500px;
+  --nmx-window-min-width: 400px;
+  --nmx-window-min-height: 300px;
+  --nmx-window-margin: 20px;
 }
