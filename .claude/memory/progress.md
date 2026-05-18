@@ -123,10 +123,10 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.10.8 | M3 (WindowFrame bug fixes, store refactor, geometry store, useOpenWindow) |
-| @namorix/core | 0.10.4 | M3 (Addon icon type refinement, ThemeProvider fix) |
-| @namorix/styles | 0.7.1 | M3 (Icomoon new glyphs, blocked.scss moved, window.scss refinements) |
-| @namorix/ui | 0.6.2 | M3 (New icon symbols) |
+| frontend | 0.11.0 | M3 (WindowFrame animation system, drag constraints, window size tokens) |
+| @namorix/core | 0.10.5 | M3 (Addon manifest defaultWidth, defaultHeight, preferFullSize) |
+| @namorix/styles | 0.8.0 | M3 (Window animation keyframes, window size tokens, app-settings icon) |
+| @namorix/ui | 0.6.3 | M3 (APP_SETTINGS icon symbol) |
 | backend | 0.19.1 | M3 (SetThemeSchema, ThemeManifest cssPath, AuthController refactor) |
 
 ## Version Rules
@@ -146,6 +146,14 @@
 | backend | Bug fixes, C# config tweaks | New endpoint, new service, auth feature |
 
 ## Version History
+
+### 2026-05-18 (WindowFrame animation system, size management, Settings addon scaffold)
+| Package | Version | Changes |
+|---------|---------|---------|
+| frontend | 0.11.0 | NEW: WindowFrame full animation system — open (scale+fade from icon), close (scale+fade to center), minimize (scale+fade to taskbar), maximize (scale+translate to viewport), unmaximize (reverse). NEW: window size management via CSS tokens (--nmx-window-default-*, --nmx-window-min-*, --nmx-window-margin), cascade/random positioning. NEW: drag constraints via CSS token (--nmx-window-drag-min-visible). NEW: useTaskbarRectStore (Zustand), defocusAll on background click. NEW: Settings addon scaffold. Updated: AnimState driven through window store, Launcher translate optimization, Taskbar minimize from toggle button. Refactor: DesktopArea + Launcher pass addon manifest size fields. |
+| @namorix/core | 0.10.5 | NEW: NmxAddonManifest — defaultWidth, defaultHeight, preferFullSize optional fields. |
+| @namorix/styles | 0.8.0 | NEW: maximize/unmaximize @keyframes (window-maximize, window-unmaximize). NEW: 5 CSS tokens (--nmx-window-default-width, --nmx-window-default-height, --nmx-window-min-width, --nmx-window-min-height, --nmx-window-margin). NEW: --nmx-window-drag-min-visible token. NEW: app-settings.svg icon. Updated: Launcher animation (translate individual property), desktop.scss minor. Token: --nmx-window-maximize-animation-ms, --nmx-window-unmaximize-animation-ms. |
+| @namorix/ui | 0.6.3 | NEW: NmxIconSvgSymbol.APP_SETTINGS. |
 
 ### 2026-05-15 (Addon system: contract, registry, LogViewer addon)
 | Package | Version | Changes |
