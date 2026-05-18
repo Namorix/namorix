@@ -1,25 +1,24 @@
 import { useCallback, useState } from "react"
-import type { NmxInlineAlertVariant } from "@namorix/ui/Primitives"
+import type { NmxSemanticColor } from "@namorix/ui"
 import type { TFunction } from "@namorix/core"
 import { ApiError, formatApiError } from "@namorix/core"
 
 export function useAuthForm() {
   const [busy, setBusy] = useState(false)
-  const [alertVariant, setAlertVariant] =
-    useState<NmxInlineAlertVariant>("info")
+  const [alertVariant, setAlertSemantic] = useState<NmxSemanticColor>("info")
   const [alertMessage, setAlertMessage] = useState<string | null>()
 
   const setAlert = useCallback(
     (
-      variant: NmxInlineAlertVariant,
+      semantic: NmxSemanticColor,
       message: string | null,
       busy: boolean = false,
     ) => {
-      setAlertVariant(variant)
+      setAlertSemantic(semantic)
       setAlertMessage(message)
       setBusy(busy)
     },
-    [setAlertVariant, setAlertMessage, setBusy],
+    [setAlertSemantic, setAlertMessage, setBusy],
   )
 
   const handlerError = useCallback(

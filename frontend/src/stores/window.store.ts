@@ -1,6 +1,7 @@
 import { create, type StateCreator } from "zustand"
 import type { WindowId, WindowState } from "../types"
 import type { NmxAddonIconType } from "@namorix/core"
+import type { AnimState } from "../components/WindowFrame/WindowFrame.types"
 
 interface WindowsState {
   windows: WindowState[]
@@ -13,6 +14,10 @@ interface WindowsState {
   minimizeWindow: (id: WindowId) => void
   maximizeWindow: (id: WindowId) => void
   restoreWindow: (id: WindowId) => void
+  defocusAll: () => void
+
+  animStates: Record<string, AnimState>
+  setAnimState: (id: string, state: AnimState) => void
 }
 
 let _idCounter = 0
@@ -21,6 +26,13 @@ const windowsStore: StateCreator<WindowsState> = (setState, getState) => ({
   windows: [],
   activeId: null,
   nextZIndex: 1,
+
+  animStates: {},
+
+  setAnimState: (id: string, state: AnimState) =>
+    setState((prev) => ({
+      animStates: { ...prev.animStates, [id]: state },
+    })),
 
   openWindow(app: string, title: string, icon?: NmxAddonIconType): WindowId {
     const id = `win-${Date.now()}-${++_idCounter}`
@@ -33,7 +45,7 @@ const windowsStore: StateCreator<WindowsState> = (setState, getState) => ({
       title,
       minimized: false,
       maximized: false,
-      focused: false,
+      focused: true,
       zIndex: nextZIndex,
     }
 
@@ -80,6 +92,8 @@ const windowsStore: StateCreator<WindowsState> = (setState, getState) => ({
         return state
       }
 
+      const wasMinimize = state.windows.find((win) => win.id === id)?.minimized
+
       return {
         windows: state.windows.map((win) => ({
           ...win,
@@ -89,6 +103,9 @@ const windowsStore: StateCreator<WindowsState> = (setState, getState) => ({
         })),
         activeId: id,
         nextZIndex: state.nextZIndex + 1,
+        animStates: wasMinimize
+          ? { ...state.animStates, [id]: "restoring" as AnimState }
+          : state.animStates,
       }
     })
   },
@@ -112,6 +129,7 @@ const windowsStore: StateCreator<WindowsState> = (setState, getState) => ({
         })),
         activeId:
           state.activeId === id ? (topWindow?.id ?? null) : state.activeId,
+        animStates: { ...state.animStates, [id]: "minimizing" as AnimState },
       }
     }),
 
@@ -137,6 +155,12 @@ const windowsStore: StateCreator<WindowsState> = (setState, getState) => ({
             }
           : win,
       ),
+    })),
+
+  defocusAll: () =>
+    setState((state) => ({
+      windows: state.windows.map((win) => ({ ...win, focused: false })),
+      activeId: null,
     })),
 })
 

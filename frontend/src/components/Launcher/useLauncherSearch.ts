@@ -15,6 +15,9 @@ export const useLauncherSearch = (isOpen: boolean) => {
       id: addon.manifest.id,
       displayName: addon.manifest.displayName,
       icon: addon.manifest.icon,
+      defaultWidth: addon.manifest.defaultWidth,
+      defaultHeight: addon.manifest.defaultHeight,
+      preferFullSize: addon.manifest.preferFullSize,
     }))
 
     if (!query.trim()) {

@@ -5,6 +5,7 @@ import { useLauncherSearch } from "./useLauncherSearch"
 import { LauncherView } from "./LauncherView"
 import type { NmxIconSvgSymbol } from "@namorix/ui"
 import { useOpenWindow } from "../WindowFrame/useOpenWindow"
+import type { WindowRectType } from "../../types/windowing"
 
 export const Launcher: React.FC = () => {
   const openWindow = useOpenWindow()
@@ -22,8 +23,24 @@ export const Launcher: React.FC = () => {
     id: string,
     label: string,
     icon?: NmxIconSvgSymbol,
+    rect?: DOMRect,
+    defaultWidth?: number,
+    defaultHeight?: number,
+    preferFullSize?: boolean,
   ) => {
-    openWindow(id, label, icon)
+    const originRect: WindowRectType | undefined = rect
+      ? { x: rect.x, y: rect.y, width: rect.width, height: rect.height }
+      : undefined
+
+    openWindow(
+      id,
+      label,
+      icon,
+      originRect,
+      defaultWidth,
+      defaultHeight,
+      preferFullSize,
+    )
     close()
   }
 

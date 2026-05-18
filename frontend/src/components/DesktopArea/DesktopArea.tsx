@@ -11,19 +11,35 @@ export const DesktopArea: React.FC = () => {
     id: addon.manifest.id,
     icon: addon.manifest.icon,
     label: addon.manifest.displayName,
+    defaultWidth: addon.manifest.defaultWidth,
+    defaultHeight: addon.manifest.defaultHeight,
+    preferFullSize: addon.manifest.preferFullSize,
   }))
 
   return (
     <DesktopAreaView
       icons={icons}
-      onIconOpen={(id) => {
+      onIconOpen={(id, rect, defaultWidth, defaultHeight, preferFullSize) => {
         const icon = icons.find((ic) => ic.id === id)
 
-        if (!icon) {
+        if (!icon || !rect) {
           return
         }
 
-        openWindow(id, icon.label, icon.icon)
+        openWindow(
+          id,
+          icon.label,
+          icon.icon,
+          {
+            x: rect.x,
+            y: rect.y,
+            width: rect.width,
+            height: rect.height,
+          },
+          defaultWidth,
+          defaultHeight,
+          preferFullSize,
+        )
       }}
     />
   )

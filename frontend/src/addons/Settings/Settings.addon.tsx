@@ -1,17 +1,14 @@
 import type { AddonEntry, NmxAddonManifest } from "@namorix/core"
 import { registerAddon } from "../"
 import { createRoot, type Root } from "react-dom/client"
-import { LogViewer } from "./LogViewer"
 import { NmxIconSvgSymbol } from "@namorix/ui"
+import { Settings } from "./Settings"
 
 const manifest: NmxAddonManifest = {
-  id: "log-viewer",
-  displayName: "Logs",
-  description: "Log system",
-  icon: NmxIconSvgSymbol.APP_LOGS,
-  defaultWidth: 100,
-  defaultHeight: 100,
-  preferFullSize: true,
+  id: "settings",
+  displayName: "Settings",
+  description: "Setting system",
+  icon: NmxIconSvgSymbol.APP_SETTINGS,
 }
 
 let root: Root | null = null
@@ -20,7 +17,7 @@ const entry: AddonEntry = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   mount(container, _context) {
     root = createRoot(container)
-    root.render(<LogViewer />)
+    root.render(<Settings />)
   },
 
   unmount() {

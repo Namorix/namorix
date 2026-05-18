@@ -50,9 +50,18 @@ export const LauncherView: React.FC<
               key={item.id}
               className="nmx-launcher__item"
               type="button"
-              onMouseDown={() =>
-                onOpenApp(item.id, item.displayName, item.icon)
-              }
+              onMouseDown={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect()
+                onOpenApp(
+                  item.id,
+                  item.displayName,
+                  item.icon,
+                  rect,
+                  item.defaultWidth,
+                  item.defaultHeight,
+                  item.preferFullSize,
+                )
+              }}
             >
               <NmxIconSvg symbol={item.icon} className="nmx-launcher__icon" />
               <span className="nmx-launcher__label">{item.displayName}</span>

@@ -8,15 +8,12 @@ import { useShallow } from "zustand/react/shallow"
 export const Taskbar: React.FC = () => {
   const windows = useWindowsStore((state) => state.windows)
   const activeId = useWindowsStore((state) => state.activeId)
-  const { focusWindow, minimizeWindow, maximizeWindow, restoreWindow } =
-    useWindowsStore(
-      useShallow((state) => ({
-        focusWindow: state.focusWindow,
-        minimizeWindow: state.minimizeWindow,
-        maximizeWindow: state.maximizeWindow,
-        restoreWindow: state.restoreWindow,
-      })),
-    )
+  const { focusWindow, minimizeWindow } = useWindowsStore(
+    useShallow((state) => ({
+      focusWindow: state.focusWindow,
+      minimizeWindow: state.minimizeWindow,
+    })),
+  )
   const toggleLauncher = useLauncherStore((state) => state.toggle)
   const time = useTaskbarClock()
 
@@ -34,25 +31,17 @@ export const Taskbar: React.FC = () => {
 
   const handleAppClick = useCallback(
     (id: string) => {
-      if (id === activeId) {
+      const win = windows.find((w) => w.id === id)
+
+      if (win?.minimized) {
+        focusWindow(id)
+      } else if (id === activeId) {
         minimizeWindow(id)
       } else {
         focusWindow(id)
       }
     },
-    [activeId, focusWindow, minimizeWindow],
-  )
-
-  const handleAppDoubleCLick = useCallback(
-    (id: string) => {
-      const win = windows.find((w) => w.id === id)
-      if (win?.maximized) {
-        restoreWindow(id)
-      } else {
-        maximizeWindow(id)
-      }
-    },
-    [windows, maximizeWindow, restoreWindow],
+    [activeId, focusWindow, minimizeWindow, windows],
   )
 
   return (
@@ -61,7 +50,6 @@ export const Taskbar: React.FC = () => {
       time={time}
       onStartClick={toggleLauncher}
       onAppClick={handleAppClick}
-      onAppDoubleClick={handleAppDoubleCLick}
     />
   )
 }

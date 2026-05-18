@@ -6,6 +6,9 @@ export interface LauncherAddonItem {
   id: string
   displayName: string
   icon?: NmxAddonIconType
+  defaultWidth?: number
+  defaultHeight?: number
+  preferFullSize?: boolean
 }
 
 export interface LauncherViewProps {
@@ -13,6 +16,14 @@ export interface LauncherViewProps {
   query: string
   onQueryChange: (query: string) => void
   onClearQuery: () => void
-  onOpenApp: (id: string, label: string, icon?: NmxIconSvgSymbol) => void
+  onOpenApp: (
+    id: string,
+    label: string,
+    icon?: NmxIconSvgSymbol,
+    rect?: DOMRect,
+    defaultWidth?: number,
+    defaultHeight?: number,
+    preferFullSize?: boolean,
+  ) => void
   searchRef: React.RefObject<HTMLInputElement | null>
 }

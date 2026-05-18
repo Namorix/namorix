@@ -8,11 +8,10 @@ interface TaskViewProps {
   time: string
   onStartClick: () => void
   onAppClick: (id: string) => void
-  onAppDoubleClick: (id: string) => void
 }
 
 export const TaskbarView = memo<TaskViewProps>(
-  ({ apps, time, onStartClick, onAppClick, onAppDoubleClick }) => {
+  ({ apps, time, onStartClick, onAppClick }) => {
     return (
       <div className="nmx-taskbar">
         <div className="nmx-taskbar__inner">
@@ -30,7 +29,6 @@ export const TaskbarView = memo<TaskViewProps>(
                 key={app.id}
                 app={app}
                 onAppClick={onAppClick}
-                onAppDoubleClick={onAppDoubleClick}
               />
             ))}
           </div>

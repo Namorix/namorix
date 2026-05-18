@@ -4,7 +4,13 @@ import { DesktopIcon } from "./DesktopIcon"
 
 interface DesktopAreaViewProps {
   icons: DesktopIconData[]
-  onIconOpen: (id: string) => void
+  onIconOpen: (
+    id: string,
+    rect?: DOMRect,
+    defaultWidth?: number,
+    defaultHeight?: number,
+    preferFullSize?: boolean,
+  ) => void
 }
 
 export const DesktopAreaView: React.FC<DesktopAreaViewProps> = ({

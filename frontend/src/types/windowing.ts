@@ -1,6 +1,12 @@
 import type { NmxAddonIconType } from "@namorix/core"
 
 export type WindowId = string
+export type WindowRectType = {
+  x: number
+  y: number
+  width: number
+  height: number
+}
 
 export interface WindowState {
   id: WindowId
@@ -21,4 +27,7 @@ export interface WindowGeometry {
   height: number
   preMaximizeX?: number
   preMaximizeY?: number
+  preMaximizeWidth?: number
+  preMaximizeHeight?: number
+  originRect?: WindowRectType
 }
