@@ -4,6 +4,8 @@ import type { AddonModule } from "@namorix/core"
 import type { AddonItem } from "../types"
 import "./LogViewer/LogViewer.addon"
 import "./Settings/Settings.addon"
+import "./SystemMonitor/SystemMonitor.addon"
+import "./NetworkTraffic/NetworkTraffic.addon"
 
 export const addonToItems = (addon: AddonModule): AddonItem => ({
   id: addon.manifest.id,
