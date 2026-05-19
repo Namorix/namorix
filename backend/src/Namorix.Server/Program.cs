@@ -120,7 +120,7 @@ app.UseSecurityHeaders();
 app.UseAuth();
 app.UseTrustedProxy();
 app.UseRouting();
-app.UseTrafficMonitor();
+await app.UseTrafficMonitorAsync();
 app.UseNotFoundHandler();
 app.UseRateLimiter();
 app.UseCsrfProtection();

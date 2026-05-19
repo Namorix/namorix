@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Namorix.Adapters.Services;
+using Namorix.Core.Attributes;
 using Namorix.Core.Constants;
 using Namorix.Core.Responses;
 using Namorix.Core.Validation;
@@ -8,6 +9,7 @@ using Namorix.Server.Middleware;
 
 namespace Namorix.Server.Controllers;
 
+[TrafficMonitor]
 [ApiController]
 [RequireAuth]
 [Route("api/user")]

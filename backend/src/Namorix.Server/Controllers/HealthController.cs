@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Namorix.Core.Attributes;
 using Namorix.Core.Responses;
 
 namespace Namorix.Server.Controllers;
 
+[TrafficMonitor]
 [ApiController]
 [Route("api/health")]
 [DisableRateLimiting]

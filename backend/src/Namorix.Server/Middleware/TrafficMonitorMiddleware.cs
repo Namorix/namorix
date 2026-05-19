@@ -1,3 +1,6 @@
+using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Security.Claims;
 using Namorix.Adapters.Persistence;
 using Namorix.Core.Infrastructure;
 using Namorix.Core.Models;
@@ -6,57 +9,56 @@ namespace Namorix.Server.Middleware;
 
 public class TrafficMonitorMiddleware(RequestDelegate requestDelegate)
 {
-    private static readonly HashSet<(string Method, string Path)> Registry = [];
-    private static readonly object Lock = new();
-    private static bool _loaded;
+    private static readonly ConcurrentDictionary<(string, string), int> Registry = [];
+    private static readonly ConcurrentDictionary<string, long> IpCache = [];
 
     public async Task InvokeAsync(HttpContext httpContext, AppDbContext appDbContext)
     {
-        if (!_loaded)
-        {
-            lock (Lock)
-            {
-                if (!_loaded)
-                {
-                    var endpoints = appDbContext.TrafficEndpoints
-                        .Where(e => e.IsEnabled)
-                        .Select(e => new { e.Method, e.Path })
-                        .ToList();
-
-                    foreach (var e in endpoints)
-                        Registry.Add((e.Method, e.Path));
-                    _loaded = true;
-                }
-            }
-        }
-
-        var start = DateTime.UtcNow;
+        var originalBody = httpContext.Response.Body;
+        var countingStream = new CountingStream(originalBody);
+        httpContext.Response.Body = countingStream;
+            
+        var stopwatch = Stopwatch.StartNew();
         await requestDelegate(httpContext);
-        var durationMs = (DateTime.UtcNow - start).TotalMilliseconds;
+        stopwatch.Stop();
         
-        if (!Registry.Contains((httpContext.Request.Method, httpContext.Request.Path.Value!)))
+        if (!Registry.TryGetValue((httpContext.Request.Method, httpContext.Request.Path.Value!), out var endpointId))
             return;
 
-        var log = new TrafficLog()
+        var ip = httpContext.Connection.RemoteIpAddress?.ToString();
+        var trafficAddressId = string.IsNullOrEmpty(ip) ? null : (long?)IpCache.GetOrAdd(ip, _ =>
         {
-            EndpointId = 0,
+            var existing = appDbContext.TrafficAddresses.FirstOrDefault(a => a.Ip == ip);
+            if (existing != null)
+                return existing.Id;
+
+            var addr = new TrafficAddress { Ip = ip };
+            appDbContext.TrafficAddresses.Add(addr);
+            appDbContext.SaveChanges();
+            return addr.Id;
+        });
+        
+        var userId =
+            httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value is { } v && int.TryParse(v, out var uid)
+                ? uid
+                : (int?)null;
+        
+        var log = new TrafficLog
+        {
+            EndpointId = endpointId,
             StatusCode = httpContext.Response.StatusCode,
-            DurationMs = (long)durationMs,
-            ResponseSizeBytes = httpContext.Response.Headers.ContentLength ?? 0,
-            TrafficAddressId = null,
-            UserId = null
+            DurationMs = stopwatch.ElapsedMilliseconds,
+            ResponseSizeBytes = countingStream.BytesWritten, // TODO: wrap Response.Body with CountingStream to measure actual size
+            TrafficAddressId = trafficAddressId,
+            UserId = userId
         };
 
         TrafficBuffer.Logs.Writer.TryWrite(log);
     }
 
-    public static void AddToRegistry(string method, string path)
-    {
-        lock (Lock) Registry.Add((method, path));
-    }
+    public static void AddToRegistry(int endpointId, string method, string path) =>
+        Registry[(method, path)] = endpointId;
 
-    public static void RemoveFromRegistry(string method, string path)
-    {
-        lock (Lock) Registry.Remove((method, path));
-    }
+    public static void RemoveFromRegistry(string method, string path) =>
+        Registry.TryRemove((method, path), out _);
 }

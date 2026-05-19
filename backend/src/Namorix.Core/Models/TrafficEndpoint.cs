@@ -13,7 +13,7 @@ public class TrafficEndpoint
     public string Path { get; init; } = string.Empty;
 
     [MaxLength(200)]
-    public string? Label { get; init; }
+    public string? Label { get; set; }
     
     [MaxLength(100)]
     public string? AddonId { get; init; }

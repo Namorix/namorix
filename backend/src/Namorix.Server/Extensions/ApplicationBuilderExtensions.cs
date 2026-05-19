@@ -1,3 +1,10 @@
+using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.EntityFrameworkCore;
+using Namorix.Adapters.Persistence;
+using Namorix.Core.Attributes;
+using Namorix.Core.Models;
 using Namorix.Server.Middleware;
 
 namespace Namorix.Server.Extensions;
@@ -36,8 +43,79 @@ public static class ApplicationBuilderExtensions
          applicationBuilder.UseMiddleware<NotFoundMiddleware>();
      }
 
-     public static void UseTrafficMonitor(this IApplicationBuilder applicationBuilder)
+     public static async Task UseTrafficMonitorAsync(this IApplicationBuilder applicationBuilder)
      {
+         using var scope = applicationBuilder.ApplicationServices.CreateScope();
+         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+         var existing = (await db.TrafficEndpoints.ToListAsync())
+             .ToDictionary(e => (e.Method, e.Path));
+
+         var controllerTypes = typeof(Program).Assembly.GetTypes()
+             .Where(t => t.IsAssignableTo(typeof(ControllerBase)) &&
+                         (t.GetCustomAttribute<TrafficMonitorAttribute>() != null ||
+                          t.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly)
+                              .Any(m => m.GetCustomAttribute<TrafficMonitorAttribute>() != null)));
+
+         foreach (var controller in controllerTypes)
+         {
+             var controllerAttr = controller.GetCustomAttribute<TrafficMonitorAttribute>();
+             var basePath = controller.GetCustomAttribute<RouteAttribute>()?.Template?.Trim('/') ?? "";
+
+             foreach (var method in controller.GetMethods(
+                          BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly))
+             {
+                 var methodAttr = method.GetCustomAttribute<TrafficMonitorAttribute>();
+                 var httpAttr = method.GetCustomAttributes()
+                     .OfType<HttpMethodAttribute>()
+                     .FirstOrDefault();
+                 
+                 if (httpAttr == null)
+                     continue;
+
+                 var httpMethod = httpAttr switch
+                 {
+                     HttpGetAttribute => "GET",
+                     HttpPostAttribute => "POST",
+                     HttpPutAttribute => "PUT",
+                     HttpDeleteAttribute => "DELETE",
+                     HttpPatchAttribute => "PATCH",
+                     _ => null
+                 };
+                 
+                 if (httpMethod == null)
+                     continue;
+
+                 var fullPath = "/" + string.Join("/", new [] { basePath, httpAttr.Template }
+                     .Where(s => !string.IsNullOrEmpty(s)));
+
+                 var label = methodAttr?.Label ?? controllerAttr?.Label;
+
+                 if (existing.TryGetValue((httpMethod, fullPath), out var ep))
+                 {
+                     ep.Label = label;
+                 }
+                 else
+                 {
+                     db.TrafficEndpoints.Add(new TrafficEndpoint
+                     {
+                         Method = httpMethod,
+                         Path = fullPath,
+                         Label = label
+                     });
+                 }
+             }
+         }
+
+         await db.SaveChangesAsync();
+
+         foreach (var ep in await db.TrafficEndpoints
+                      .Where(e => e.IsEnabled)
+                      .ToListAsync())
+         {
+             TrafficMonitorMiddleware.AddToRegistry(ep.Id, ep.Method, ep.Path);
+         }
+
          applicationBuilder.UseMiddleware<TrafficMonitorMiddleware>();
      }
 }

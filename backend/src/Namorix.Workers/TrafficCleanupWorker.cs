@@ -6,7 +6,7 @@ using Namorix.Adapters.Persistence;
 
 namespace Namorix.Workers;
 
-public class TrafficCleanupWorker(IServiceProvider serviceProvider,
+public class TrafficCleanupWorker(IServiceScopeFactory scopeFactory,
     ILogger<TrafficCleanupWorker> logger): BackgroundService
 {
     // TODO update delete traffic address
@@ -31,7 +31,7 @@ public class TrafficCleanupWorker(IServiceProvider serviceProvider,
     {
         try
         {
-            using var scope = serviceProvider.CreateScope();
+            using var scope = scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var cutoff = DateTime.UtcNow.AddDays(-30);
             var count = await db.TrafficLogs
@@ -39,7 +39,7 @@ public class TrafficCleanupWorker(IServiceProvider serviceProvider,
                 .ExecuteDeleteAsync(stoppingToken);
             
             if (count > 0)
-                logger.LogInformation("Cleanup {Count} traffic logs order than 30 days", count);
+                logger.LogInformation("Cleanup {Count} traffic logs older than 30 days", count);
         }
         catch (OperationCanceledException)
         {

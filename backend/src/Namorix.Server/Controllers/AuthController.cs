@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Namorix.Adapters.Services;
+using Namorix.Core.Attributes;
 using Namorix.Core.Config;
 using Namorix.Core.Constants;
 using Namorix.Core.Exceptions;
@@ -11,6 +12,7 @@ using Namorix.Core.Validation.Schemas;
 
 namespace Namorix.Server.Controllers;
 
+[TrafficMonitor]
 [ApiController]
 [Route("api/auth")]
 public class AuthController(AuthService authService, SettingsService settingsService,
