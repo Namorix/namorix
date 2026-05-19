@@ -32,9 +32,13 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic Phase 1 ✅
 - **@namorix/ui (0.6.3 → 0.6.4)**: Thêm `APP_SYSTEM_MONITOR`, `APP_NETWORK_TRAFFIC` icon symbols.
 - **frontend**: New addons — NetworkTraffic, SystemMonitor. Config module `config/windowDefaults.ts` cache CSS tokens. WindowFrame tách 6 hook. Fix drag restore (threshold-based), double-click restore dưới cursor, icon MAXIMIZE/RESTORE swap, min resize từ CSS token.
 
+### 2026-05-20 — NetworkTraffic Backend Phase 1.5 (fixes)
+
+- **backend (0.20.0 → 0.20.1)**: FIX: middleware từ HashSet → ConcurrentDictionary<(string,string),int> có EndpointId, Stopwatch đo duration, CountingStream đo Response.Body BytesWritten, IP→TrafficAddressId cache, ConcurrentDictionary cho Registry. FIX: CleanupWorker IServiceScopeFactory, Label init→set, typo + return/continue. NEW: UseTrafficMonitorAsync async scan [TrafficMonitor] controller, gắn attribute vào 8 controller. MODIFIED: Program.cs await UseTrafficMonitorAsync.
+
 ### 2026-05-19 — NetworkTraffic Backend Phase 1
 
-- **backend (0.19.1 → 0.20.0)**: Network traffic monitoring system — 3 models (TrafficEndpoint, TrafficAddress, TrafficLog), TrafficBuffer (Channel bouned 50K DropOldest), TrafficMonitorService (CRUD + stats), TrafficMonitorMiddleware (static HashSet + Channel), TrafficMonitorController (6 admin endpoints), TrafficFlushWorker (batch 100/5s), TrafficCleanupWorker (30d retention), DI + pipeline. Migration regenerated.
+- **backend (0.19.1 → 0.20.0)**: Network traffic monitoring system — 3 models (TrafficEndpoint, TrafficAddress, TrafficLog), TrafficBuffer (Channel bounded 50K DropOldest), TrafficMonitorService (CRUD + stats), TrafficMonitorMiddleware (static HashSet + Channel), TrafficMonitorController (6 admin endpoints), TrafficFlushWorker (batch 100/5s), TrafficCleanupWorker (30d retention), DI + pipeline. Migration regenerated.
 
 ### 2026-05-18
 

@@ -93,15 +93,18 @@ All fields are numeric except Method and Path — efficient for SQLite storage a
 
 ```
 App start
-  → First request loads all enabled endpoints into static HashSet
-  → Subsequent requests hit RAM only
+  → UseTrafficMonitorAsync() quét controller assembly:
+      → Đọc [TrafficMonitor], [Route], [HttpGet]/[HttpPost]/etc
+      → Upsert vào TrafficEndpoints
+      → Load Dictionary<(Method, Path), EndpointId> vào static cache
+  → Middleware không có lazy load — startup đã load đủ
 
 Request comes in
   → Record startTime = DateTime.UtcNow
   → await next(context)  // Run downstream pipeline
-  → durationMs = (DateTime.UtcNow - startTime).TotalMilliseconds
-  → Check (Method, Path) in static HashSet (O(1), no DB)
-  → If matched: write TrafficLog to Channel (non-blocking, ~1μs)
+  → durationMs = (DateTime.UtcNow - start).TotalMilliseconds
+  → Lookup (Method, Path) trong static Dictionary (O(1), no DB)
+  → If matched: write TrafficLog với EndpointId vào Channel (non-blocking, ~1μs)
   → If not matched: skip (no log)
 ```
 
@@ -153,39 +156,35 @@ public class TrafficFlushWorker(IServiceScopeFactory scopeFactory) : BackgroundS
 }
 ```
 
-In-memory cache via `static HashSet<(string Method, string Path)>` with double-check locking (lazy load on first request). Cache invalidated by `TrafficMonitorService` when admin registers/removes endpoints — service calls `TrafficMonitorMiddleware.AddToRegistry()` / `RemoveFromRegistry()` static methods.
+In-memory cache là `static Dictionary<(string Method, string Path), int EndpointId>` — load bởi `UseTrafficMonitorAsync()` lúc startup. Cache invalidated bằng static methods.
 
 ```csharp
 public class TrafficMonitorMiddleware(RequestDelegate next)
 {
-    private static readonly HashSet<(string Method, string Path)> _registry = [];
-    private static readonly Lock _lock = new();
-    private static bool _loaded;
+    private static readonly Dictionary<(string, string), int> _registry = [];
+    private static readonly object _lock = new();
 
-    public async Task InvokeAsync(HttpContext context, AppDbContext db)
+    public async Task InvokeAsync(HttpContext context)
     {
-        if (!_loaded)
+        var start = DateTime.UtcNow;
+        await next(context);
+        var durationMs = (DateTime.UtcNow - start).TotalMilliseconds;
+
+        if (!_registry.TryGetValue((context.Request.Method, context.Request.Path.Value!), out var endpointId))
+            return;
+
+        TrafficBuffer.Logs.Writer.TryWrite(new TrafficLog
         {
-            lock (_lock)
-            {
-                if (!_loaded)
-                {
-                    var endpoints = db.TrafficEndpoints
-                        .Where(e => e.IsEnabled)
-                        .Select(e => new { e.Method, e.Path })
-                        .ToList();
-                    foreach (var e in endpoints)
-                        _registry.Add((e.Method, e.Path));
-                    _loaded = true;
-                }
-            }
-        }
-        // ... record timing, call next, check registry, log
+            EndpointId = endpointId,
+            StatusCode = context.Response.StatusCode,
+            DurationMs = (long)durationMs,
+            ResponseSizeBytes = context.Response.Headers.ContentLength ?? 0,
+        });
     }
 
-    public static void AddToRegistry(string method, string path)
+    public static void AddToRegistry(int endpointId, string method, string path)
     {
-        lock (_lock) _registry.Add((method, path));
+        lock (_lock) _registry[(method, path)] = endpointId;
     }
 
     public static void RemoveFromRegistry(string method, string path)
@@ -195,7 +194,11 @@ public class TrafficMonitorMiddleware(RequestDelegate next)
 }
 ```
 
+Middleware không có lazy load — `UseTrafficMonitorAsync()` chịu trách nhiệm load registry vào RAM trước request đầu tiên.
+
 Middleware placed AFTER `UseAuth()` so `HttpContext.User` is populated.
+
+**TrafficAddress trong Phase 1:** Middleware không resolve IP → `TrafficAddressId`. Log sẽ có `TrafficAddressId = null`. Phase 2 (gRPC) mới có logic upsert `TrafficAddress` + cache. Nếu cần ghi IP ở Phase 1, có thể mở rộng `TrafficFlushWorker` để upsert trước khi batch insert.
 
 **Auto-registration via `[TrafficMonitor]` attribute:**
 
@@ -208,7 +211,7 @@ public class TrafficMonitorAttribute : Attribute
 }
 ```
 
-Controllers được gắn `[TrafficMonitor]` hoặc `[TrafficMonitor(Label = "Login")]` sẽ được auto-scan lúc app start (trong `UseTrafficMonitor()`). Attribute trên class = tất cả actions của controller đó được register. Attribute trên method = chỉ action đó.
+Controllers gắn `[TrafficMonitor]` được auto-scan trong `UseTrafficMonitorAsync()` (async extension method, gọi `await` từ Program.cs). Attribute trên class = tất cả actions. Attribute trên method = chỉ action đó.
 
 ```csharp
 // Ví dụ sử dụng
@@ -218,24 +221,54 @@ Controllers được gắn `[TrafficMonitor]` hoặc `[TrafficMonitor(Label = "L
 public class AuthController(...) : ControllerBase { }
 ```
 
-Scan logic (trong `ApplicationBuilderExtensions` hoặc helper riêng) — lấy tất cả `ControllerBase` types từ assembly, đọc `[Route]` + `[HttpGet]`/`[HttpPost]`/etc để extract method + path, upsert vào `TrafficEndpoints`. Chạy một lần lúc startup, đồng thời load vào static HashSet cho middleware.
+Scan logic trong `ApplicationBuilderExtensions`:
+1. Load toàn bộ `TrafficEndpoints` vào `Dictionary<(Method, Path), TrafficEndpoint>` (tránh N+1)
+2. Quét controller types có `[TrafficMonitor]`
+3. Parse `[Route]` + `[HttpGet]`/`[HttpPost]`/etc → extract method + path
+4. Upsert thật: nếu chưa có → insert, nếu có rồi → update Label
+5. `SaveChangesAsync`
+6. Load toàn bộ enabled endpoints + gọi `TrafficMonitorMiddleware.AddToRegistry()`
 
 **Design decision — opt-in via attribute:** Endpoints must have `[TrafficMonitor]` to be logged. No manual register needed on deploy.
 
-**Retention:** Auto-cleanup logs older than 30 days via `TrafficCleanupWorker` (same `IServiceScopeFactory` pattern as `TokenCleanupWorker`):
+**Retention:** Auto-cleanup logs older than 30 days via `TrafficCleanupWorker` (dùng `IServiceScopeFactory` để tránh leak từ root provider):
 
 ```csharp
-public class TrafficCleanupWorker(IServiceScopeFactory scopeFactory) : BackgroundService
+public class TrafficCleanupWorker(IServiceScopeFactory scopeFactory,
+    ILogger<TrafficCleanupWorker> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken ct)
     {
-        while (!ct.IsCancellationRequested)
+        logger.LogInformation("Traffic cleanup worker starting");
+        await Cleanup(ct); // chạy ngay lần đầu
+
+        using var timer = new PeriodicTimer(TimeSpan.FromDays(1));
+        try
+        {
+            while (await timer.WaitForNextTickAsync(ct))
+                await Cleanup(ct);
+        }
+        catch (OperationCanceledException)
+        {
+            logger.LogInformation("Traffic cleanup worker stopping");
+        }
+    }
+
+    private async Task Cleanup(CancellationToken ct)
+    {
+        try
         {
             using var scope = scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var cutoff = DateTime.UtcNow.AddDays(-30);
-            await db.TrafficLogs.Where(l => l.Timestamp < cutoff).ExecuteDeleteAsync(ct);
-            await Task.Delay(TimeSpan.FromDays(1), ct);
+            var count = await db.TrafficLogs.Where(l => l.Timestamp < cutoff).ExecuteDeleteAsync(ct);
+            if (count > 0)
+                logger.LogInformation("Cleaned {Count} traffic logs older than 30 days", count);
+        }
+        catch (OperationCanceledException) { throw; }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to clean traffic logs");
         }
     }
 }
@@ -299,23 +332,33 @@ DELETE /api/traffic/logs?before=                  — ClearLogs()
 ### Phase 1 — Core Local Monitoring
 
 1. **Models** — `TrafficEndpoint.cs` + `TrafficAddress.cs` + `TrafficLog.cs`
-3. **AppDbContext** — add `DbSet`s + unique indexes
-4. **Migration** — `dotnet ef migrations add AddNetworkTraffic`
-5. **Infrastructure** — `TrafficBuffer.cs`
-6. **Service** — `TrafficMonitorService.cs`
-7. **Middleware** — `TrafficMonitorMiddleware.cs`
-8. **Controller** — `TrafficMonitorController.cs`
-9. **Workers** — `TrafficFlushWorker.cs` + `TrafficCleanupWorker.cs`
-10. **DI + Pipeline** — `Program.cs` + `ApplicationBuilderExtensions.cs`
+2. **AppDbContext** — add `DbSet`s + unique indexes
+3. **Migration** — `dotnet ef migrations add AddNetworkTraffic`
+4. **Infrastructure** — `TrafficBuffer.cs`
+5. **Service** — `TrafficMonitorService.cs`
+6. **Middleware** — `TrafficMonitorMiddleware.cs`
+7. **Controller** — `TrafficMonitorController.cs`
+8. **Workers** — `TrafficFlushWorker.cs` + `TrafficCleanupWorker.cs`
+9. **DI + Pipeline** — `Program.cs` + `ApplicationBuilderExtensions.cs`
+
+### Phase 1.5 — Review Fixes
+
+- Middleware: `HashSet<(string,string)>` → `Dictionary<(string,string), int>` (cần EndpointId để ghi log)
+- Middleware: bỏ lazy load sync DB call (startup đã load registry)
+- CleanupWorker: `IServiceProvider` → `IServiceScopeFactory` (tránh leak từ root provider)
+- CleanupWorker: chạy cleanup ngay lần đầu (PeriodicTimer)
+- TrafficAddress: Phase 1 để `null`, Phase 2 (gRPC) mới resolve
 
 ### Phase 2 — Attribute + gRPC (cuối plan)
 
-10. **Attribute** — `TrafficMonitorAttribute.cs` + scan on startup
-11. **Proto** — `traffic.proto`
-12. **TrafficClientWorker** + **TrafficClientExtensions** (addon side)
-13. **TrafficGrpcService** (core side)
-14. **NuGet** — `Grpc.AspNetCore`, `Google.Protobuf`, `Grpc.Tools`
-15. **DI** — `AddGrpc()` + `MapGrpcService<>()`
+10. **Attribute** — `TrafficMonitorAttribute.cs` + scan in `UseTrafficMonitorAsync()` (async, upsert thật, dictionary tránh N+1)
+11. **Middleware fix** — đổi `HashSet` → `Dictionary<(Method, Path), EndpointId>`, bỏ lazy load
+12. **TrafficCleanupWorker fix** — đổi `IServiceProvider` → `IServiceScopeFactory`, chạy cleanup ngay lần đầu
+13. **Proto** — `traffic.proto`
+14. **TrafficClientWorker** + **TrafficClientExtensions** (addon side)
+15. **TrafficGrpcService** (core side)
+16. **NuGet** — `Grpc.AspNetCore`, `Google.Protobuf`, `Grpc.Tools`
+17. **DI** — `AddGrpc()` + `MapGrpcService<>()`
 
 ## Verification
 
@@ -408,6 +451,8 @@ builder.Services.AddNamorixTraffic(options =>
 
 app.UseTrafficMonitor();
 ```
+
+Với core, `Program.cs` gọi `await app.UseTrafficMonitorAsync()` thay vì `app.UseTrafficMonitor()` vì scan là async.
 
 ### Files to Modify
 

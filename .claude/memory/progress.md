@@ -128,7 +128,7 @@
 | @namorix/core | 0.10.5 | M3 (Addon manifest defaultWidth, defaultHeight, preferFullSize) |
 | @namorix/styles | 0.9.0 | M3 (New icons: network-traffic, system-monitor; SCSS tweaks) |
 | @namorix/ui | 0.6.4 | M3 (APP_SYSTEM_MONITOR, APP_NETWORK_TRAFFIC icon symbols) |
-| backend | 0.20.0 | M3 (NetworkTraffic backend Phase 1) |
+| backend | 0.20.1 | M3 (NetworkTraffic backend Phase 1 + fixes) |
 
 ## Version Rules
 
@@ -147,6 +147,12 @@
 | backend | Bug fixes, C# config tweaks | New endpoint, new service, auth feature |
 
 ## Version History
+
+### 2026-05-20 (NetworkTraffic backend Phase 1.5 — fixes)
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| backend | 0.20.1 | FIX: middleware HashSet→ConcurrentDictionary<(string,string),int> (EndpointId lookup). NEW: CountingStream (wrap Response.Body, BytesWritten). NEW: IP→TrafficAddressId caching (ConcurrentDictionary<string,long>). FIX: CleanupWorker IServiceProvider→IServiceScopeFactory. FIX: Stopwatch thay DateTime.UtcNow. FIX: traffic scan Filter method-level attributes. FIX: Label init→set. FIX: typo + return→continue. MODIFIED: gắn [TrafficMonitor] vào 8 controller. NEW: UseTrafficMonitorAsync auto-scan startup. MODIFIED: Program.cs await. |
 
 ### 2026-05-19 (NetworkTraffic backend Phase 1)
 

@@ -91,7 +91,7 @@ cd frontend && pnpm test            # Run tests
 
 1. **M1** — Static shell UI + mock auth ✅
 2. **M2** — Full auth backend ✅
-3. **M3** — System Addons (Built-in) ✅ (Desktop shell UI, addon contract + registry, Log Viewer, theme system; File Manager, Terminal, Settings 🔜)
+3. **M3** — System Addons (Built-in) ✅ (Desktop shell UI, addon contract + registry, Log Viewer, NetworkTraffic, theme system; File Manager, Terminal, Settings 🔜)
 4. **M4** — External addon system (Docker lifecycle, addon manager UI)
 5. **M5** — `@namorix/core` publish npm + addon integration guide
 
