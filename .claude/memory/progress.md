@@ -90,7 +90,7 @@
 **Status:** Desktop Shell UI ✅ + Addon System 🔜
 
 - [x] Desktop shell UI (taskbar, launcher, desktop area)
-- [x] Zustand stores (windows, launcher)
+- [x] Zustand stores (windows, launcher, geometry, taskbarRect)
 - [x] WindowManager + WindowFrame (drag, resize, minimize, maximize)
 - [x] Addon contract trong `@namorix/core` (AddonEntry, NmxAddonManifest, AddonContext)
 - [x] Frontend addon registry (registerAddon, resolveAddon, listAddons)
@@ -98,6 +98,7 @@
 - [x] Launcher + DesktopArea dùng listAddons() từ registry
 - [x] Internal addon: Log Viewer (LogViewer component + mount/unmount lifecycle)
 - [x] Theme system: types (`@namorix/core`), theme loader/registry (frontend), backend theme repository API
+- [x] **Zustand → Redux migration** (4 stores → 3 slices, normalized state, memoized selectors, 10 component files rewritten)
 - [ ] Internal addon: File Manager
 - [ ] Internal addon: Terminal
 - [ ] Internal addon: Settings (includes theme picker UI)
@@ -123,10 +124,10 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.11.1 | M3 (Shared types refactoring: AddonItem, OnOpenApp, addonToItems, rectToOrigin) |
+| frontend | 0.12.0 | M3 (Redux rewrite, NetworkTraffic + SystemMonitor addons) |
 | @namorix/core | 0.10.5 | M3 (Addon manifest defaultWidth, defaultHeight, preferFullSize) |
-| @namorix/styles | 0.8.0 | M3 (Window animation keyframes, window size tokens, app-settings icon) |
-| @namorix/ui | 0.6.3 | M3 (APP_SETTINGS icon symbol) |
+| @namorix/styles | 0.9.0 | M3 (New icons: network-traffic, system-monitor; SCSS tweaks) |
+| @namorix/ui | 0.6.4 | M3 (APP_SYSTEM_MONITOR, APP_NETWORK_TRAFFIC icon symbols) |
 | backend | 0.19.1 | M3 (SetThemeSchema, ThemeManifest cssPath, AuthController refactor) |
 
 ## Version Rules
@@ -146,6 +147,14 @@
 | backend | Bug fixes, C# config tweaks | New endpoint, new service, auth feature |
 
 ## Version History
+
+### 2026-05-19 (State management rewrite: Zustand → Redux Toolkit, new addons)
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| frontend | 0.12.0 | REWRITE: Zustand → Redux Toolkit. 4 stores → 3 slices (windowsSlice, launcherSlice, taskbarSlice). Normalized state (byId+order). Gộp window+geometry+animation vào windowsSlice. Memoized selectors (createSelector). useAppSelector mặc định shallowEqual. Taskbar optimized — không re-render khi drag/resize. Xóa 5 files stores/*.store.ts cũ. NEW: NetworkTraffic addon (2 files). NEW: SystemMonitor addon (2 files). |
+| @namorix/styles | 0.9.0 | NEW: app-network-traffic.svg, app-system-monitor.svg icons. NEW: --nmx-icon-app-system-monitor, --nmx-icon-app-network-traffic tokens. UPDATED: launcher.scss (padding, font-size, border-radius), taskbar.scss (font-size, __start-btn class). FIX: index.scss @forward themes/default. |
+| @namorix/ui | 0.6.4 | NEW: NmxIconSvgSymbol.APP_SYSTEM_MONITOR, NmxIconSvgSymbol.APP_NETWORK_TRAFFIC. |
 
 ### 2026-05-18 (Shared types refactoring: AddonItem, OnOpenApp, addonToItems, rectToOrigin)
 | Package | Version | Changes |

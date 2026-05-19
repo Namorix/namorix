@@ -14,7 +14,25 @@ M3 — Desktop Shell UI ✅ + Addon System (contract, registry, Log Viewer) ✅
 - Backend addon metadata deferred — chỉ cần khi M4 external addon
 - WindowFrame mount addon vào content area qua ref + AddonEntry lifecycle
 
-## Recent Changes (2026-05-18)
+### ✅ State Management Rewrite — COMPLETE (2026-05-19)
+
+- Rewrite từ Zustand → Redux Toolkit: 4 store → 3 slice, 10 component files
+- State normalized: `byId: Record<Id, WindowData>` + `order: Id[]`
+- Gộp window + geometry + animation vào `windowsSlice`
+- Memoized selectors với `createSelector`, `useAppSelector` mặc định `shallowEqual`
+- Taskbar buttons không re-render khi drag/resize nhờ selector tối ưu
+- Xóa 5 file Zustand store cũ (`stores/`)
+
+## Recent Changes
+
+### 2026-05-19 — State Management Rewrite (Zustand → Redux Toolkit)
+
+- **frontend (0.11.1 → 0.12.0)**: Zustand → Redux Toolkit rewrite. 4 stores → 3 slices (`windowsSlice`, `launcherSlice`, `taskbarSlice`). Normalized state (`byId` + `order`). Gộp window + geometry + animation vào `windowsSlice`. Memoized selectors với `createSelector`. `useAppSelector` mặc định `shallowEqual`. Taskbar tối ưu — không re-render khi drag/resize. Xóa 5 file `stores/*.store.ts` cũ.
+- **@namorix/styles (0.8.0 → 0.9.0)**: Thêm `app-network-traffic.svg`, `app-system-monitor.svg` icons + token. Launcher/taskbar SCSS tweak. Theme entry đổi.
+- **@namorix/ui (0.6.3 → 0.6.4)**: Thêm `APP_SYSTEM_MONITOR`, `APP_NETWORK_TRAFFIC` icon symbols.
+- **frontend**: New addons — NetworkTraffic, SystemMonitor.
+
+### 2026-05-18
 
 ### Shared types refactoring: AddonItem, OnOpenApp, addonToItems, rectToOrigin
 - **frontend (0.11.0 → 0.11.1)**: NEW shared types — `AddonItem`, `OnOpenApp` (types/addon-item.ts), `rectToOrigin` utility (types/windowing.ts). NEW `addonToItems` mapper (addons/index.ts). REFACTOR: DesktopArea + Launcher dùng `AddonItem` thay `DesktopIconData`/`LauncherAddonItem` riêng, xoá DesktopArea.types.tsx, Launcher.types.ts. RENAMED: useTaskbarRectStore.ts → taskbarRect.store.ts.
@@ -104,7 +122,6 @@ Cả 3 attribute filter (`RequireAuthAttribute`, `RequireAdminAttribute`, `Requi
 1. M3 — Internal addon: File Manager
 2. M3 — Internal addon: Terminal (xterm.js)
 3. M3 — Internal addon: Settings
-4. M3 — Zustand stores (auth, addons, desktop)
-5. M4 — SignalR + backend addon metadata
-6. Write Vitest tests for auth.service
-7. Add Vietnamese translations (vi.json is empty)
+4. M4 — SignalR + backend addon metadata
+5. Write Vitest tests for auth.service
+6. Add Vietnamese translations (vi.json is empty)
