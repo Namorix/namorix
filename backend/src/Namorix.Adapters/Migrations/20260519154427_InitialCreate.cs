@@ -74,6 +74,19 @@ namespace Namorix.Adapters.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "TrafficAddresses",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Ip = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TrafficAddresses", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -89,6 +102,29 @@ namespace Namorix.Adapters.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TrafficEndpoints",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Method = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
+                    Path = table.Column<string>(type: "TEXT", maxLength: 500, nullable: false),
+                    Label = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
+                    AddonId = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    IsEnabled = table.Column<bool>(type: "INTEGER", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TrafficEndpoints", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TrafficEndpoints_AddonManifests_AddonId",
+                        column: x => x.AddonId,
+                        principalTable: "AddonManifests",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -145,6 +181,36 @@ namespace Namorix.Adapters.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "TrafficLogs",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    EndpointId = table.Column<int>(type: "INTEGER", nullable: false),
+                    StatusCode = table.Column<int>(type: "INTEGER", nullable: false),
+                    DurationMs = table.Column<long>(type: "INTEGER", nullable: false),
+                    ResponseSizeBytes = table.Column<long>(type: "INTEGER", nullable: false),
+                    TrafficAddressId = table.Column<long>(type: "INTEGER", nullable: true),
+                    UserId = table.Column<int>(type: "INTEGER", nullable: true),
+                    Timestamp = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TrafficLogs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TrafficLogs_TrafficAddresses_TrafficAddressId",
+                        column: x => x.TrafficAddressId,
+                        principalTable: "TrafficAddresses",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_TrafficLogs_TrafficEndpoints_EndpointId",
+                        column: x => x.EndpointId,
+                        principalTable: "TrafficEndpoints",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AddonManifests_Id",
                 table: "AddonManifests",
@@ -169,6 +235,33 @@ namespace Namorix.Adapters.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_TrafficAddresses_Ip",
+                table: "TrafficAddresses",
+                column: "Ip",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TrafficEndpoints_AddonId",
+                table: "TrafficEndpoints",
+                column: "AddonId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TrafficEndpoints_Method_Path",
+                table: "TrafficEndpoints",
+                columns: new[] { "Method", "Path" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TrafficLogs_EndpointId",
+                table: "TrafficLogs",
+                column: "EndpointId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TrafficLogs_TrafficAddressId",
+                table: "TrafficLogs",
+                column: "TrafficAddressId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserPermissions_PermissionId",
                 table: "UserPermissions",
                 column: "PermissionId");
@@ -183,9 +276,6 @@ namespace Namorix.Adapters.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "AddonManifests");
-
-            migrationBuilder.DropTable(
                 name: "RefreshTokens");
 
             migrationBuilder.DropTable(
@@ -195,13 +285,25 @@ namespace Namorix.Adapters.Migrations
                 name: "ThemeManifests");
 
             migrationBuilder.DropTable(
+                name: "TrafficLogs");
+
+            migrationBuilder.DropTable(
                 name: "UserPermissions");
+
+            migrationBuilder.DropTable(
+                name: "TrafficAddresses");
+
+            migrationBuilder.DropTable(
+                name: "TrafficEndpoints");
 
             migrationBuilder.DropTable(
                 name: "Permissions");
 
             migrationBuilder.DropTable(
                 name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "AddonManifests");
         }
     }
 }

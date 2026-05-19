@@ -15,6 +15,12 @@ using Namorix.Workers;
 
 var builder = WebApplication.CreateBuilder(args);
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
+}
+
 builder.WebHost.UseKestrel(options =>
 {
     options.Limits.MaxRequestBodySize = 10240; // 10KB
@@ -37,6 +43,9 @@ builder.Services.AddScoped<PermissionService>();
 builder.Services.AddScoped<ThemeService>();
 builder.Services.AddMemoryCache();
 builder.Services.AddHostedService<TokenCleanupWorker>();
+builder.Services.AddScoped<TrafficMonitorService>();
+builder.Services.AddHostedService<TrafficFlushWorker>();
+builder.Services.AddHostedService<TrafficCleanupWorker>();
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -67,6 +76,14 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.AddCors();
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+
 var memoryCache = app.Services.GetRequiredService<IMemoryCache>();
 var appConfig = app.Services.GetRequiredService<IOptions<AppConfig>>().Value;
 var configOrigins = appConfig.AllowedOrigins
@@ -103,6 +120,7 @@ app.UseSecurityHeaders();
 app.UseAuth();
 app.UseTrustedProxy();
 app.UseRouting();
+app.UseTrafficMonitor();
 app.UseNotFoundHandler();
 app.UseRateLimiter();
 app.UseCsrfProtection();

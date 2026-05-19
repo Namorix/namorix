@@ -11,7 +11,7 @@ using Namorix.Adapters.Persistence;
 namespace Namorix.Adapters.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260516024723_InitialCreate")]
+    [Migration("20260519154427_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -187,6 +187,101 @@ namespace Namorix.Adapters.Migrations
                     b.ToTable("ThemeManifests");
                 });
 
+            modelBuilder.Entity("Namorix.Core.Models.TrafficAddress", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Ip")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Ip")
+                        .IsUnique();
+
+                    b.ToTable("TrafficAddresses");
+                });
+
+            modelBuilder.Entity("Namorix.Core.Models.TrafficEndpoint", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("AddonId")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Label")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AddonId");
+
+                    b.HasIndex("Method", "Path")
+                        .IsUnique();
+
+                    b.ToTable("TrafficEndpoints");
+                });
+
+            modelBuilder.Entity("Namorix.Core.Models.TrafficLog", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("DurationMs")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("EndpointId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("ResponseSizeBytes")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("StatusCode")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long?>("TrafficAddressId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EndpointId");
+
+                    b.HasIndex("TrafficAddressId");
+
+                    b.ToTable("TrafficLogs");
+                });
+
             modelBuilder.Entity("Namorix.Core.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -257,6 +352,32 @@ namespace Namorix.Adapters.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Namorix.Core.Models.TrafficEndpoint", b =>
+                {
+                    b.HasOne("Namorix.Core.Models.AddonManifest", "Addon")
+                        .WithMany()
+                        .HasForeignKey("AddonId");
+
+                    b.Navigation("Addon");
+                });
+
+            modelBuilder.Entity("Namorix.Core.Models.TrafficLog", b =>
+                {
+                    b.HasOne("Namorix.Core.Models.TrafficEndpoint", "Endpoint")
+                        .WithMany()
+                        .HasForeignKey("EndpointId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Namorix.Core.Models.TrafficAddress", "TrafficAddress")
+                        .WithMany("TrafficLogs")
+                        .HasForeignKey("TrafficAddressId");
+
+                    b.Navigation("Endpoint");
+
+                    b.Navigation("TrafficAddress");
+                });
+
             modelBuilder.Entity("Namorix.Core.Models.UserPermission", b =>
                 {
                     b.HasOne("Namorix.Core.Models.Permission", "Permission")
@@ -279,6 +400,11 @@ namespace Namorix.Adapters.Migrations
             modelBuilder.Entity("Namorix.Core.Models.Permission", b =>
                 {
                     b.Navigation("UserPermissions");
+                });
+
+            modelBuilder.Entity("Namorix.Core.Models.TrafficAddress", b =>
+                {
+                    b.Navigation("TrafficLogs");
                 });
 
             modelBuilder.Entity("Namorix.Core.Models.User", b =>

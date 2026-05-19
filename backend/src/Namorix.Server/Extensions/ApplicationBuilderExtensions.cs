@@ -35,4 +35,9 @@ public static class ApplicationBuilderExtensions
      {
          applicationBuilder.UseMiddleware<NotFoundMiddleware>();
      }
+
+     public static void UseTrafficMonitor(this IApplicationBuilder applicationBuilder)
+     {
+         applicationBuilder.UseMiddleware<TrafficMonitorMiddleware>();
+     }
 }
