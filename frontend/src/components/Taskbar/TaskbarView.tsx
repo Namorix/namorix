@@ -1,18 +1,17 @@
 import { memo } from "react"
 import { NmxIconSvg, NmxIconSvgSymbol } from "@namorix/ui"
-import type { TaskbarApp } from "./Taskbar.types"
 import { TaskbarAppButton } from "./TaskbarAppButton"
-import type { WindowId } from "../../types"
+import type { WindowId } from "../../store"
 
 interface TaskViewProps {
-  apps: TaskbarApp[]
+  order: WindowId[]
   time: string
   onStartClick: () => void
   onAppClick: (id: WindowId) => void
 }
 
 export const TaskbarView = memo<TaskViewProps>(
-  ({ apps, time, onStartClick, onAppClick }) => {
+  ({ order, time, onStartClick, onAppClick }) => {
     return (
       <div className="nmx-taskbar">
         <div className="nmx-taskbar__inner">
@@ -25,12 +24,8 @@ export const TaskbarView = memo<TaskViewProps>(
           </button>
 
           <div className="nmx-taskbar__apps">
-            {apps.map((app) => (
-              <TaskbarAppButton
-                key={app.id}
-                app={app}
-                onAppClick={onAppClick}
-              />
+            {order.map((id) => (
+              <TaskbarAppButton key={id} winId={id} onAppClick={onAppClick} />
             ))}
           </div>
 

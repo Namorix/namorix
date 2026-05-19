@@ -1,5 +1,5 @@
-import type { WindowId } from "./windowing"
 import type { NmxAddonIconType } from "@namorix/core"
+import type { WindowId } from "../store"
 
 export interface AddonItem {
   id: WindowId

@@ -1,7 +1,7 @@
 {
   "name": "@namorix/frontend",
   "private": true,
-  "version": "0.11.1",
+  "version": "0.12.0",
   "license": "GPL-3.0-only",
   "type": "module",
   "scripts": {
@@ -20,11 +20,12 @@
     "react-dom": "19.2.6",
     "react-i18next": "17.0.8",
     "react-router-dom": "7.15.1",
-    "zustand": "5.0.13"
+    "@reduxjs/toolkit": "2.12.0",
+    "react-redux": "9.3.0"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "@types/node": "25.8.0",
+    "@types/node": "25.9.0",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "6.0.2",

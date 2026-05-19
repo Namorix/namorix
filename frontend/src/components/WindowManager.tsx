@@ -1,17 +1,16 @@
 import React, { memo } from "react"
-import { useWindowsStore } from "../stores"
 import { WindowFrame } from "./WindowFrame"
-import { useShallow } from "zustand/react/shallow"
+import { selectorWindowOrder, useAppSelector } from "../store"
 
 const MemoWindowFrame = memo(WindowFrame)
 
 export const WindowManager: React.FC = () => {
-  const windows = useWindowsStore(useShallow((state) => state.windows))
+  const order = useAppSelector(selectorWindowOrder)
 
   return (
     <>
-      {windows.map((win) => (
-        <MemoWindowFrame key={win.id} win={win} />
+      {order.map((id) => (
+        <MemoWindowFrame key={id} winId={id} />
       ))}
     </>
   )

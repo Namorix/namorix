@@ -4,7 +4,8 @@ import {
   resizeWindow,
   useAppDispatch,
   type WindowId,
-} from "../../store"
+} from "../../../store"
+import { getWindowDefaults } from "../../../config"
 
 const CURSOR_MAP: Record<string, string> = {
   n: "n-resize",
@@ -31,8 +32,10 @@ const calcBounds = (
   let width = winWidth
   let height = winHeight
 
-  if (edge.includes("e")) width = Math.max(200, winWidth + dx)
-  if (edge.includes("s")) height = Math.max(200, winHeight + dy)
+  const { minWidth, minHeight } = getWindowDefaults()
+
+  if (edge.includes("e")) width = Math.max(minWidth, winWidth + dx)
+  if (edge.includes("s")) height = Math.max(minHeight, winHeight + dy)
 
   if (edge.includes("w")) {
     x = winX + dx

@@ -8,8 +8,8 @@ import {
   store,
   useAppDispatch,
   type WindowRect,
-} from "../../store"
-import { getWindowDefaults } from "../../config"
+} from "../../../store"
+import { getWindowDefaults } from "../../../config"
 
 const clamp = (min: number, val: number, max: number) =>
   Math.max(min, Math.min(val, max))

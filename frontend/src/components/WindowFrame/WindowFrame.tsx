@@ -1,174 +1,56 @@
-import React, { useCallback, useRef } from "react"
-import { useTaskbarRectStore, useWindowsStore } from "../../stores"
+import React, { useRef } from "react"
 import type { WindowFrameProps } from "./WindowFrame.types"
-import { useWindowDrag } from "./useWindowDrag"
-import { useWindowResize } from "./useWindowResize"
-import { useAddonMount } from "./useAddonMount"
 import { WindowFrameView } from "./WindowFrameView"
-import { useShallow } from "zustand/react/shallow"
-import { useWindowGeometryStore } from "../../stores/windowGeometry.store"
+import {
+  selectorAppRect,
+  selectorById,
+  selectorZIndex,
+  useAppSelector,
+} from "../../store"
+import {
+  useAddonMount,
+  useWindowAnimVars,
+  useWindowDrag,
+  useWindowHandlers,
+  useWindowOrigins,
+  useWindowResize,
+} from "./hooks"
 
-export const WindowFrame: React.FC<WindowFrameProps> = ({ win }) => {
-  const {
-    focusWindow,
-    closeWindow,
-    minimizeWindow,
-    maximizeWindow,
-    restoreWindow,
-  } = useWindowsStore(
-    useShallow((state) => ({
-      focusWindow: state.focusWindow,
-      closeWindow: state.closeWindow,
-      minimizeWindow: state.minimizeWindow,
-      maximizeWindow: state.maximizeWindow,
-      restoreWindow: state.restoreWindow,
-    })),
-  )
-
-  const animState = useWindowsStore(
-    (state) => state.animStates[win.id] ?? "opening",
-  )
-  const setAnimState = useWindowsStore((state) => state.setAnimState)
-
-  const geo = useWindowGeometryStore(
-    (state) => state.geometry.find((g) => g.id === win.id) ?? null,
-  )
-
-  const { removeGeometry, savePreMaximize, moveWindow } =
-    useWindowGeometryStore(
-      useShallow((state) => ({
-        removeGeometry: state.removeGeometry,
-        savePreMaximize: state.savePreMaximize,
-        moveWindow: state.moveWindow,
-      })),
-    )
+export const WindowFrame: React.FC<WindowFrameProps> = ({ winId }) => {
+  const win = useAppSelector(selectorById(winId))
+  const zIndex = useAppSelector(selectorZIndex(winId))
+  const taskbarRect = useAppSelector(selectorAppRect(winId))
+  const { openOrigin, minimizeOrigin } = useWindowOrigins(win, taskbarRect)
+  const { maximizeVars, unmaximizeVars } = useWindowAnimVars(win)
 
   const frameRef = useRef<HTMLDivElement>(null)
-  const { onTitleBarMouseDown } = useWindowDrag(win.id, frameRef)
-  const { onResizeStart } = useWindowResize(win.id, frameRef)
-  const { mountRef } = useAddonMount(win.id)
+  const { onTitleBarMouseDown } = useWindowDrag(winId, frameRef)
+  const { onResizeStart } = useWindowResize(winId, frameRef)
+  const { mountRef } = useAddonMount(winId)
+  const handlers = useWindowHandlers(winId, win, frameRef)
 
-  const handleAnimationEnd = useCallback(() => {
-    if (animState === "opening" || animState === "restoring") {
-      setAnimState(win.id, "idle")
-    } else if (animState === "closing") {
-      closeWindow(win.id)
-      removeGeometry(win.id)
-    } else if (animState === "maximizing") {
-      console.log("Anim maximizing")
-      maximizeWindow(win.id)
-      setAnimState(win.id, "idle")
-    } else if (animState === "unmaximizing") {
-      const pre = useWindowGeometryStore.getState().getPreMaximize(win.id)
-      if (pre) {
-        moveWindow(win.id, pre.x, pre.y)
-      }
-      restoreWindow(win.id)
-      setAnimState(win.id, "idle")
-    } else {
-      minimizeWindow(win.id)
-      setAnimState(win.id, "idle")
-    }
-  }, [
-    animState,
-    setAnimState,
-    win.id,
-    closeWindow,
-    removeGeometry,
-    maximizeWindow,
-    restoreWindow,
-    moveWindow,
-    minimizeWindow,
-  ])
-
-  const handleMaximize = useCallback(() => {
-    const currentAnim = useWindowsStore.getState().animStates[win.id]
-    console.log("handleMaximize", currentAnim)
-
-    if (!frameRef.current) {
-      return null
-    }
-
-    const rect = frameRef.current.getBoundingClientRect()
-    savePreMaximize(win.id, rect.left, rect.top, rect.width, rect.height)
-    setAnimState(win.id, "maximizing")
-  }, [savePreMaximize, win.id, setAnimState])
-
-  const handleFocus = useCallback(
-    () => focusWindow(win.id),
-    [focusWindow, win.id],
-  )
-
-  const handleClose = useCallback(() => {
-    setAnimState(win.id, "closing")
-  }, [setAnimState, win.id])
-
-  const handleMinimize = useCallback(() => {
-    setAnimState(win.id, "minimizing")
-  }, [setAnimState, win.id])
-
-  const handleRestore = useCallback(() => {
-    const currentAnim = useWindowsStore.getState().animStates[win.id]
-    console.log("handleRestore", currentAnim)
-
-    setAnimState(win.id, "unmaximizing")
-  }, [setAnimState, win.id])
-
-  if (!geo) {
+  if (!win) {
     return null
   }
-
-  const taskbarRect = useTaskbarRectStore.getState().getRect(win.id)
-
-  const openOrigin = geo.originRect
-    ? `${geo.originRect.x + geo.originRect.width / 2}px ${geo.originRect.y + geo.originRect.height / 2}px`
-    : "center center"
-
-  const minimizeOrigin = taskbarRect
-    ? `${taskbarRect.x + taskbarRect.width / 2}px ${taskbarRect.y + taskbarRect.height / 2}px`
-    : "center bottom"
-
-  const maximizeVars =
-    animState === "maximizing"
-      ? ({
-          "--nmx-scale-x": window.innerWidth / geo.width,
-          "--nmx-scale-y": window.innerHeight / geo.height,
-          "--nmx-translate-x": `${window.innerWidth / 2 - (geo.x + geo.width / 2)}px`,
-          "--nmx-translate-y": `${window.innerHeight / 2 - (geo.y + geo.height) / 2}px`,
-        } as React.CSSProperties)
-      : undefined
-
-  const pre = useWindowGeometryStore.getState().getPreMaximize(win.id)
-
-  const unmaximizeVars =
-    animState === "unmaximizing" && pre
-      ? ({
-          "--nmx-scale-x": pre.width / window.innerWidth,
-          "--nmx-scale-y": pre.height / window.innerHeight,
-          "--nmx-translate-x": `${pre.x + pre.width / 2 - window.innerWidth / 2}px`,
-          "--nmx-translate-y": `${pre.y + pre.height / 2 - window.innerHeight / 2}px`,
-        } as React.CSSProperties)
-      : undefined
 
   return (
     <WindowFrameView
       win={win}
-      geo={geo}
-      animState={animState}
+      zIndex={zIndex}
       openOrigin={openOrigin}
       minimizeOrigin={minimizeOrigin}
       maximizeVars={maximizeVars}
       unmaximizeVars={unmaximizeVars}
       mountRef={mountRef}
       frameRef={frameRef}
-      onFocus={handleFocus}
-      onClose={handleClose}
-      onMinimize={handleMinimize}
-      onMaximize={handleMaximize}
-      onRestore={handleRestore}
+      onFocus={handlers.onFocus}
+      onClose={handlers.onClose}
+      onMinimize={handlers.onMinimize}
+      onMaximize={handlers.onMaximize}
+      onRestore={handlers.onRestore}
       onTitleBarMouseDown={onTitleBarMouseDown}
       onResizeStart={onResizeStart}
-      onAnimationEnd={handleAnimationEnd}
+      onAnimationEnd={handlers.onAnimationEnd}
     />
   )
 }

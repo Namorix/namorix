@@ -1,10 +1,5 @@
-import type { NmxAddonIconType } from "@namorix/core"
-import type { WindowId } from "../../types"
+import type { WindowId } from "../../store"
 
 export interface TaskbarApp {
   id: WindowId
-  icon?: NmxAddonIconType
-  title: string
-  isActive: boolean
-  isMaximized: boolean
 }

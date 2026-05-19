@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react"
-import { resolveAddon } from "../../addons"
+import { resolveAddon } from "../../../addons"
 import type { AddonContext } from "@namorix/core"
-import type { WindowId } from "../../store"
+import type { WindowId } from "../../../store"
 
 export const useAddonMount = (appId: WindowId) => {
   const mountRef = useRef<HTMLDivElement>(null)

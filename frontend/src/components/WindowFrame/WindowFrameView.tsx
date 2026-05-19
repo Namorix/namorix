@@ -6,8 +6,7 @@ import { WindowTitleBar } from "./WindowTitleBar"
 
 export const WindowFrameView: React.FC<WindowFrameViewProps> = ({
   win,
-  geo,
-  animState,
+  zIndex,
   openOrigin,
   minimizeOrigin,
   maximizeVars,
@@ -24,11 +23,11 @@ export const WindowFrameView: React.FC<WindowFrameViewProps> = ({
   onAnimationEnd,
 }) => {
   const transformOrigin =
-    animState === "opening"
+    win?.animState === "opening"
       ? openOrigin
-      : animState === "minimizing" || animState === "restoring"
+      : win.animState === "minimizing" || win.animState === "restoring"
         ? minimizeOrigin
-        : `${geo.x + geo.width / 2}px ${geo.y + geo.height / 2}px`
+        : `${win.x + win.width / 2}px ${win.y + win.height / 2}px`
 
   return (
     <div
@@ -37,18 +36,18 @@ export const WindowFrameView: React.FC<WindowFrameViewProps> = ({
         "nmx-window-frame--maximized": win.maximized,
         "nmx-window-frame--focused": win.focused,
         "nmx-window-frame--opening":
-          animState === "opening" || animState === "restoring",
-        "nmx-window-frame--closing": animState === "closing",
-        "nmx-window-frame--minimizing": animState === "minimizing",
-        "nmx-window-frame--maximizing": animState === "maximizing",
-        "nmx-window-frame--unmaximizing": animState === "unmaximizing",
+          win.animState === "opening" || win.animState === "restoring",
+        "nmx-window-frame--closing": win.animState === "closing",
+        "nmx-window-frame--minimizing": win.animState === "minimizing",
+        "nmx-window-frame--maximizing": win.animState === "maximizing",
+        "nmx-window-frame--unmaximizing": win.animState === "unmaximizing",
       })}
       style={{
-        transform: win.maximized ? "none" : `translate(${geo.x}px, ${geo.y}px)`,
-        width: win.maximized ? "100%" : geo.width,
-        height: win.maximized ? "100%" : geo.height,
-        zIndex: win.zIndex,
-        display: win.minimized && animState === "idle" ? "none" : undefined,
+        transform: win.maximized ? "none" : `translate(${win.x}px, ${win.y}px)`,
+        width: win.maximized ? "100%" : win.width,
+        height: win.maximized ? "100%" : win.height,
+        zIndex,
+        display: win.minimized && win.animState === "idle" ? "none" : undefined,
         transformOrigin,
         ...maximizeVars,
         ...unmaximizeVars,

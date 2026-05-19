@@ -1,25 +1,15 @@
-import type { WindowState } from "../../types"
 import React from "react"
-import type { WindowGeometry } from "../../types/windowing"
-
-export type AnimState =
-  | "opening"
-  | "idle"
-  | "closing"
-  | "minimizing"
-  | "restoring"
-  | "maximizing"
-  | "unmaximizing"
+import type { WindowData, WindowId } from "../../store"
 
 export interface WindowFrameProps {
-  win: WindowState
+  winId: WindowId
 }
 
-export interface WindowFrameViewProps extends WindowFrameProps {
-  geo: WindowGeometry
-  animState: AnimState
-  openOrigin: string
-  minimizeOrigin: string
+export interface WindowFrameViewProps {
+  win: WindowData
+  zIndex: number
+  openOrigin?: string
+  minimizeOrigin?: string
   maximizeVars?: React.CSSProperties
   unmaximizeVars?: React.CSSProperties
   frameRef: React.RefObject<HTMLDivElement | null>

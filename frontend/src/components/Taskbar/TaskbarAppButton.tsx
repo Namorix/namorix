@@ -1,40 +1,70 @@
 import { memo, useEffect, useRef } from "react"
 import { cx, NmxIconSvg } from "@namorix/ui"
-import type { TaskbarApp } from "./Taskbar.types"
-import { useShallow } from "zustand/react/shallow"
-import type { WindowId } from "../../types"
-import { useTaskbarRectStore } from "../../stores"
+import {
+  removeAppRect,
+  selectorTaskbarButtonData,
+  setAppRect,
+  useAppDispatch,
+  useAppSelector,
+  type WindowId,
+} from "../../store"
 
 interface TaskbarAppButtonProps {
-  app: TaskbarApp
+  winId: WindowId
   onAppClick: (id: WindowId) => void
 }
 
 export const TaskbarAppButton = memo<TaskbarAppButtonProps>(
-  ({ app, onAppClick }) => {
+  ({ winId, onAppClick }) => {
+    const dispatch = useAppDispatch()
     const btnRef = useRef<HTMLButtonElement>(null)
-    const { register, unregister } = useTaskbarRectStore(
-      useShallow((state) => ({
-        register: state.register,
-        unregister: state.unregister,
-      })),
-    )
+    const data = useAppSelector(selectorTaskbarButtonData(winId))
 
     useEffect(() => {
-      register(app.id, () => btnRef.current?.getBoundingClientRect() ?? null)
-      return () => unregister(app.id)
-    }, [app.id, register, unregister])
+      const el = btnRef.current
+      if (!el) {
+        return
+      }
+
+      const updateRect = () => {
+        const dom = el.getBoundingClientRect()
+        dispatch(
+          setAppRect({
+            id: winId,
+            rect: {
+              x: dom.x,
+              y: dom.y,
+              width: dom.width,
+              height: dom.height,
+            },
+          }),
+        )
+      }
+
+      updateRect()
+      const observer = new ResizeObserver(updateRect)
+      observer.observe(el)
+
+      return () => {
+        observer.disconnect()
+        dispatch(removeAppRect(winId))
+      }
+    }, [winId, dispatch])
+
+    if (!data) {
+      return null
+    }
 
     return (
       <button
         ref={btnRef}
         className={cx("nmx-taskbar__app-btn", {
-          "nmx-taskbar__app-btn--active": app.isActive,
+          "nmx-taskbar__app-btn--active": data.isActive,
         })}
         type="button"
-        onMouseDown={() => onAppClick(app.id)}
+        onMouseDown={() => onAppClick(data.id)}
       >
-        {app.icon ? <NmxIconSvg symbol={app.icon} /> : app.title}
+        {data.icon ? <NmxIconSvg symbol={data.icon} /> : data.title}
       </button>
     )
   },

@@ -6,8 +6,8 @@ import {
   store,
   useAppDispatch,
   type WindowId,
-} from "../../store"
-import { getWindowDefaults } from "../../config"
+} from "../../../store"
+import { getWindowDefaults } from "../../../config"
 
 const clamp = (x: number, y: number, winWidth: number) => {
   const dragMinVisible = getWindowDefaults().dragMinVisible
@@ -80,7 +80,11 @@ export const useWindowDrag = (
           dispatch(restoreWindow(winId))
 
           const ratioX = downEv.clientX / window.innerWidth
-          const targetX = ev.clientX - pre.width * ratioX
+          const rawX = ev.clientX - pre.width * ratioX
+          const targetX = Math.max(
+            0,
+            Math.min(rawX, window.innerWidth - pre.width),
+          )
           const targetY = ev.clientY - titleBarCursorOffset
 
           dispatch(moveWindow({ id: winId, x: targetX, y: targetY }))

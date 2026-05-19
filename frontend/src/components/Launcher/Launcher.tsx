@@ -1,23 +1,28 @@
 import React from "react"
-import { useLauncherStore } from "../../stores"
-import { useShallow } from "zustand/react/shallow"
 import { useLauncherSearch } from "./useLauncherSearch"
 import { LauncherView } from "./LauncherView"
-import { useOpenWindow } from "../WindowFrame/useOpenWindow"
-import { rectToOrigin, type WindowRectType } from "../../types/windowing"
-import type { OnOpenApp } from "../../types"
+import { useOpenWindow } from "../WindowFrame"
+import { rectToOrigin, type OnOpenApp } from "../../types"
+import {
+  closeLauncher,
+  selectorLauncherIsOpen,
+  useAppDispatch,
+  useAppSelector,
+  type WindowRect,
+} from "../../store"
 
 export const Launcher: React.FC = () => {
+  const dispatch = useAppDispatch()
   const openWindow = useOpenWindow()
-  const { isOpen, close } = useLauncherStore(
-    useShallow((state) => ({ isOpen: state.isOpen, close: state.close })),
-  )
+  const isOpen = useAppSelector(selectorLauncherIsOpen)
 
   const { query, setQuery, items, searchRef } = useLauncherSearch(isOpen)
 
   if (!isOpen) {
     return null
   }
+
+  const close = () => dispatch(closeLauncher())
 
   const handleOpenApp: OnOpenApp = (
     id,
@@ -28,7 +33,7 @@ export const Launcher: React.FC = () => {
     defaultHeight,
     preferFullSize,
   ) => {
-    const originRect: WindowRectType | undefined = rect
+    const originRect: WindowRect | undefined = rect
       ? rectToOrigin(rect)
       : undefined
 

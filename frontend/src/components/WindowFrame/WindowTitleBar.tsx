@@ -13,7 +13,7 @@ interface WindowTitleBarProps {
   onTitleBarMouseDown: React.MouseEventHandler<HTMLDivElement>
   onMinimize: () => void
   onMaximize: () => void
-  onRestore: () => void
+  onRestore: (clientX?: number, clientY?: number) => void
   onClose: () => void
 }
 
@@ -33,9 +33,8 @@ export const WindowTitleBar = memo(
       onMouseDown={onTitleBarMouseDown}
       onDoubleClick={(e) => {
         e.stopPropagation()
-        console.log("Maximized: ", maximized)
         if (maximized) {
-          onRestore()
+          onRestore(e.clientX, e.clientY)
         } else {
           onMaximize()
         }
@@ -70,7 +69,7 @@ export const WindowTitleBar = memo(
         >
           <NmxIconFont
             symbol={
-              maximized ? NmxIconFontSymbol.MAXIMIZE : NmxIconFontSymbol.RESTORE
+              maximized ? NmxIconFontSymbol.RESTORE : NmxIconFontSymbol.MAXIMIZE
             }
             className="nmx-window-frame__btn-icon"
           />
