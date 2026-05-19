@@ -1,6 +1,10 @@
 import React, { useCallback, useRef } from "react"
-import { useShallow } from "zustand/react/shallow"
-import { useWindowGeometryStore } from "../../stores/windowGeometry.store"
+import {
+  moveWindow,
+  resizeWindow,
+  useAppDispatch,
+  type WindowId,
+} from "../../store"
 
 const CURSOR_MAP: Record<string, string> = {
   n: "n-resize",
@@ -44,15 +48,10 @@ const calcBounds = (
 }
 
 export const useWindowResize = (
-  winId: string,
+  winId: WindowId,
   frameRef: React.RefObject<HTMLDivElement | null>,
 ) => {
-  const { moveWindow, resizeWindow } = useWindowGeometryStore(
-    useShallow((state) => ({
-      moveWindow: state.moveWindow,
-      resizeWindow: state.resizeWindow,
-    })),
-  )
+  const dispatch = useAppDispatch()
 
   const resizingRef = useRef<{
     edge: string
@@ -127,8 +126,8 @@ export const useWindowResize = (
             winHeight,
           )
 
-          moveWindow(winId, x, y)
-          resizeWindow(winId, width, height)
+          dispatch(moveWindow({ id: winId, x, y }))
+          dispatch(resizeWindow({ id: winId, width, height }))
         }
 
         resizingRef.current = null
@@ -142,7 +141,7 @@ export const useWindowResize = (
       document.addEventListener("mousemove", onMove)
       document.addEventListener("mouseup", onUp)
     },
-    [winId, moveWindow, resizeWindow, frameRef],
+    [frameRef, dispatch, winId],
   )
 
   return { onResizeStart }
