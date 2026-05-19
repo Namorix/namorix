@@ -12,11 +12,21 @@
   --nmx-window-maximize-animation-ms: 160ms;
   --nmx-window-unmaximize-animation-ms: 120ms;
 
-  --nmx-window-drag-min-visible: 150px;
+  // ─── Window Sizing ───────────────────────────────────────
+  --nmx-window-default-width: 800px; // Default width when opening a new window
+  --nmx-window-default-height: 500px; // Default height when opening a new window
+  --nmx-window-min-width: 400px; // Minimum resizable width
+  --nmx-window-min-height: 300px; // Minimum resizable height
 
-  --nmx-window-default-width: 800px;
-  --nmx-window-default-height: 500px;
-  --nmx-window-min-width: 400px;
-  --nmx-window-min-height: 300px;
-  --nmx-window-margin: 20px;
+  // ─── Window Dragging ─────────────────────────────────────
+  --nmx-window-drag-min-visible: 150px; // Min px of window that must remain visible when dragged to edge
+  --nmx-window-drag-threshold: 30px; // Pixels mouse must move before a drag begins (prevents accidental drags on click)
+  --nmx-window-titlebar-cursor-offset: 8px; // Cursor offset from titlebar top edge during drag
+
+  // ─── Window Layout ────────────────────────────────────────
+  --nmx-window-margin: 20px; // Safe margin from screen edges
+
+  // ─── Window Cascade ───────────────────────────────────────
+  --nmx-window-cascade-step: 24px; // Offset step between cascaded windows
+  --nmx-window-cascade-max-offset: 200px; // Max total cascade offset before resetting
 }

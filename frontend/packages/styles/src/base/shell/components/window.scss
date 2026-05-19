@@ -76,8 +76,8 @@
     align-items: center;
     justify-content: center;
     border-radius: var(--nmx-radius-sm);
-    cursor: pointer;
     color: var(--nmx-color-on-surface-variant);
+    cursor: pointer;
     transition:
       background 120ms,
       color 120ms;
@@ -99,6 +99,10 @@
     &--minimize:hover {
       background: var(--nmx-color-surface-high);
     }
+  }
+
+  &--focused &__btn {
+    color: var(--nmx-color-on-surface);
   }
 
   &__content {

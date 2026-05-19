@@ -28,14 +28,18 @@
     align-items: center;
     gap: var(--nmx-spacing-xs);
     width: 80px;
-    padding: var(--nmx-spacing-xs);
+    padding: var(--nmx-spacing-md) var(--nmx-spacing-lg);
     margin-bottom: var(--nmx-spacing-sm);
-    border-radius: var(--nmx-radius-sm);
+    border-radius: var(--nmx-radius-md);
     cursor: pointer;
     text-align: center;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.08);
+      background: color-mix(
+        in oklab,
+        var(--nmx-color-surface-high) 60%,
+        transparent
+      );
     }
   }
 
