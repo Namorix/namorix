@@ -109,13 +109,14 @@
     flex-direction: column;
     align-items: center;
     gap: var(--nmx-spacing-xs);
-    padding: var(--nmx-spacing-sm) var(--nmx-spacing-xs);
+    padding: var(--nmx-spacing-md) var(--nmx-spacing-sm);
     border-radius: var(--nmx-radius-sm);
     cursor: pointer;
     transition: background 120ms;
 
     &:hover {
       background: var(--nmx-color-surface-mid);
+      border-radius: var(--nmx-radius-md);
     }
 
     &:active {
@@ -127,7 +128,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: var(--nmx-font-size-3xl);
+    font-size: var(--nmx-font-size-5xl);
     margin-bottom: var(--nmx-spacing-xs);
   }
 
