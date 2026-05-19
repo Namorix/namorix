@@ -6,7 +6,7 @@
    fill="none"
    version="1.1"
    id="svg1"
-   sodipodi:docname="namorix-settings.svg"
+   sodipodi:docname="app-settings.svg"
    inkscape:version="1.4.3 (fcd0343856, 2026-01-01)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -50,11 +50,11 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="1.1593605"
-     inkscape:cx="136.28203"
+     inkscape:cx="136.7133"
      inkscape:cy="163.45218"
-     inkscape:window-width="960"
+     inkscape:window-width="1033"
      inkscape:window-height="995"
-     inkscape:window-x="2880"
+     inkscape:window-x="515"
      inkscape:window-y="0"
      inkscape:window-maximized="0"
      inkscape:current-layer="svg1" />
@@ -86,23 +86,22 @@
      d="M186 0H54C24.1766 0 0 24.1766 0 54V186C0 215.823 24.1766 240 54 240H186C215.823 240 240 215.823 240 186V54C240 24.1766 215.823 0 186 0Z"
      fill="#1C1C1E"
      style="fill-opacity:1;fill:url(#linearGradient2)" />
-  <path
-     id="nmx-i"
-     d="M72 86C72 79.9249 67.0751 75 61 75C54.9249 75 50 79.9249 50 86V154C50 160.075 54.9249 165 61 165C67.0751 165 72 160.075 72 154V86Z"
-     fill="#007AFF"
-     style="fill:#8e8e93;fill-opacity:1" />
-  <path
-     id="nmx-glyph-fixed-1"
-     d="M111.25 109.163V130.8C111.25 138.75 111.25 138.75 118.75 143.813L139.375 155.738C142.487 157.538 147.55 157.538 150.625 155.738L171.25 143.813C178.75 138.75 178.75 138.75 178.75 130.838V109.163C178.75 101.25 178.75 101.25 171.25 96.1879L150.625 84.2629C147.55 82.4629 142.487 82.4629 139.375 84.2629L118.75 96.1879C111.25 101.25 111.25 101.25 111.25 109.163Z"
-     stroke="#FFFFFF"
-     stroke-width="10"
-     stroke-linecap="round"
-     stroke-linejoin="round" />
-  <path
-     id="nmx-glyph-fixed-2"
-     d="M145 131.25C151.213 131.25 156.25 126.213 156.25 120C156.25 113.787 151.213 108.75 145 108.75C138.787 108.75 133.75 113.787 133.75 120C133.75 126.213 138.787 131.25 145 131.25Z"
-     stroke="#FFFFFF"
-     stroke-width="10"
-     stroke-linecap="round"
-     stroke-linejoin="round" />
+  <g
+     id="g1"
+     transform="matrix(1.6766826,0,0,1.5333786,-123.11885,-64.006122)">
+    <path
+       id="nmx-glyph-fixed-1"
+       d="M 111.25,109.163 V 130.8 c 0,7.95 0,7.95 7.5,13.013 l 20.625,11.925 c 3.112,1.8 8.175,1.8 11.25,0 l 20.625,-11.925 c 7.5,-5.063 7.5,-5.063 7.5,-12.975 v -21.675 c 0,-7.913 0,-7.913 -7.5,-12.9751 l -20.625,-11.925 c -3.075,-1.8 -8.138,-1.8 -11.25,0 l -20.625,11.925 c -7.5,5.0621 -7.5,5.0621 -7.5,12.9751 z"
+       stroke="#ffffff"
+       stroke-width="10"
+       stroke-linecap="round"
+       stroke-linejoin="round" />
+    <path
+       id="nmx-glyph-fixed-2"
+       d="m 145,131.25 c 6.213,0 11.25,-5.037 11.25,-11.25 0,-6.213 -5.037,-11.25 -11.25,-11.25 -6.213,0 -11.25,5.037 -11.25,11.25 0,6.213 5.037,11.25 11.25,11.25 z"
+       stroke="#ffffff"
+       stroke-width="10"
+       stroke-linecap="round"
+       stroke-linejoin="round" />
+  </g>
 </svg>

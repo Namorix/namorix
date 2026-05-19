@@ -57,14 +57,10 @@
      id="nmx-bg"
      d="M 186,0 H 54 C 24.1766,0 0,24.1766 0,54 v 132 c 0,29.823 24.1766,54 54,54 h 132 c 29.823,0 54,-24.177 54,-54 V 54 C 240,24.1766 215.823,0 186,0 Z"
      fill="#1C1C1E"
-     style="mix-blend-mode:normal;fill:url(#linearGradient26);fill-opacity:1" /><path
-     id="nmx-i"
-     d="M72 86C72 79.9249 67.0751 75 61 75C54.9249 75 50 79.9249 50 86V154C50 160.075 54.9249 165 61 165C67.0751 165 72 160.075 72 154V86Z"
-     fill="#007AFF"
-     style="fill:#a5b4fc;fill-opacity:1" /><g
+     style="mix-blend-mode:normal;fill:url(#linearGradient26);fill-opacity:1" /><g
      style="display:inline;fill:none;stroke:#ffffff;stroke-opacity:1"
      id="g6"
-     transform="matrix(3.7240465,0,0,3.7240465,100.31144,75.311442)"><path
+     transform="matrix(6.0465116,0,0,6.0465116,47.441861,47.441861)"><path
        d="m 9.6,20 h 4.8 c 4,0 5.6,-1.6 5.6,-5.6 V 9.6 C 20,5.6 18.4,4 14.4,4 H 9.6 C 5.6,4 4,5.6 4,9.6 v 4.8 c 0,4 1.6,5.6 5.6,5.6 z"
        stroke="#292d32"
        stroke-width="1.5"
