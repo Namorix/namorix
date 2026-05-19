@@ -87,7 +87,7 @@
 - [ ] Vitest tests for auth.service (no test files exist yet)
 
 ### M3 — System Addons (Built-in)
-**Status:** Desktop Shell UI ✅ + Addon System 🔜
+**Status:** Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic Phase 1 ✅
 
 - [x] Desktop shell UI (taskbar, launcher, desktop area)
 - [x] Zustand stores (windows, launcher, geometry, taskbarRect)
@@ -99,7 +99,7 @@
 - [x] Internal addon: Log Viewer (LogViewer component + mount/unmount lifecycle)
 - [x] Theme system: types (`@namorix/core`), theme loader/registry (frontend), backend theme repository API
 - [x] **Zustand → Redux migration** (4 stores → 3 slices, normalized state, memoized selectors, 10 component files rewritten)
-- [ ] Internal addon: File Manager
+- [x] **NetworkTraffic backend Phase 1** — models, middleware, service, controller, workers, DI
 - [ ] Internal addon: Terminal
 - [ ] Internal addon: Settings (includes theme picker UI)
 
@@ -128,7 +128,7 @@
 | @namorix/core | 0.10.5 | M3 (Addon manifest defaultWidth, defaultHeight, preferFullSize) |
 | @namorix/styles | 0.9.0 | M3 (New icons: network-traffic, system-monitor; SCSS tweaks) |
 | @namorix/ui | 0.6.4 | M3 (APP_SYSTEM_MONITOR, APP_NETWORK_TRAFFIC icon symbols) |
-| backend | 0.19.1 | M3 (SetThemeSchema, ThemeManifest cssPath, AuthController refactor) |
+| backend | 0.20.0 | M3 (NetworkTraffic backend Phase 1) |
 
 ## Version Rules
 
@@ -147,6 +147,12 @@
 | backend | Bug fixes, C# config tweaks | New endpoint, new service, auth feature |
 
 ## Version History
+
+### 2026-05-19 (NetworkTraffic backend Phase 1)
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| backend | 0.20.0 | NEW: TrafficEndpoint, TrafficAddress, TrafficLog models. NEW: TrafficBuffer (Channel<TrafficLog> bounded 50K, DropOldest). NEW: TrafficMonitorService (CRUD, logs, stats). NEW: TrafficMonitorMiddleware (static HashSet + Channel). NEW: TrafficMonitorController (6 admin endpoints). NEW: TrafficFlushWorker (batch 100/5s). NEW: TrafficCleanupWorker (30d retention). MODIFIED: AppDbContext (3 DbSets + indexes), Program.cs (DI), ApplicationBuilderExtensions (UseTrafficMonitor). Migration regenerated. |
 
 ### 2026-05-19 (State management rewrite: Zustand → Redux Toolkit, new addons)
 
