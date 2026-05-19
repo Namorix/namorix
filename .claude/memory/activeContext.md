@@ -28,9 +28,9 @@ M3 — Desktop Shell UI ✅ + Addon System (contract, registry, Log Viewer) ✅
 ### 2026-05-19 — State Management Rewrite (Zustand → Redux Toolkit)
 
 - **frontend (0.11.1 → 0.12.0)**: Zustand → Redux Toolkit rewrite. 4 stores → 3 slices (`windowsSlice`, `launcherSlice`, `taskbarSlice`). Normalized state (`byId` + `order`). Gộp window + geometry + animation vào `windowsSlice`. Memoized selectors với `createSelector`. `useAppSelector` mặc định `shallowEqual`. Taskbar tối ưu — không re-render khi drag/resize. Xóa 5 file `stores/*.store.ts` cũ.
-- **@namorix/styles (0.8.0 → 0.9.0)**: Thêm `app-network-traffic.svg`, `app-system-monitor.svg` icons + token. Launcher/taskbar SCSS tweak. Theme entry đổi.
+- **@namorix/styles (0.8.0 → 0.9.0)**: Thêm `app-network-traffic.svg`, `app-system-monitor.svg` icons + token. Thêm `--nmx-window-drag-threshold`, `--nmx-window-titlebar-cursor-offset`, `--nmx-window-cascade-step`, `--nmx-window-cascade-max-offset` tokens. Launcher/taskbar/desktop SCSS tweaks. Theme entry fix.
 - **@namorix/ui (0.6.3 → 0.6.4)**: Thêm `APP_SYSTEM_MONITOR`, `APP_NETWORK_TRAFFIC` icon symbols.
-- **frontend**: New addons — NetworkTraffic, SystemMonitor.
+- **frontend**: New addons — NetworkTraffic, SystemMonitor. Config module `config/windowDefaults.ts` cache CSS tokens. WindowFrame tách 6 hook. Fix drag restore (threshold-based), double-click restore dưới cursor, icon MAXIMIZE/RESTORE swap, min resize từ CSS token.
 
 ### 2026-05-18
 

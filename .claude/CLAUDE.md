@@ -209,7 +209,7 @@ import { getSession } from "@namorix/core/auth"
 ```typescript
 // ✅ Correct — named export
 const WindowTitleBar: React.FC<WindowTitleBarProps> = ({ windowId, title, onClose }) => {
-  const { focusWindow } = useWindowsStore()
+  const dispatch = useAppDispatch()
   // ...
 }
 
@@ -223,11 +223,14 @@ export default function WindowTitleBar() {}
 
 ## Hooks Naming
 - Pattern: `use{Resource}` or `use{Action}`
-- Examples: `useAuthStore`, `useWindowsStore`, `useAddonsStore`
+- Examples: `useAppDispatch`, `useAppSelector`, `useWindowDrag`
 
-## Store (Zustand) Pattern
-- File: `{name}.store.ts`
-- Export hook: `const use{Name}Store = create<{Name}State>()((set, get) => ({...}))`
+## Store (Redux Toolkit) Pattern
+- Slice file: `store/slices/{name}Slice.ts`
+- Selector file: `store/selectors/{name}Selectors.ts`
+- State normalized: `byId: Record<Id, Data>` + `order: Id[]` (O(1) lookup, minimal re-render)
+- Actions via `useAppDispatch()` + action creators (stable references)
+- `useAppSelector` defaults to `shallowEqual` for render optimization
 
 ---
 

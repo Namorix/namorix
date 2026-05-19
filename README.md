@@ -78,9 +78,20 @@ namorix/
 │       │   ├── WindowFrame/     # Draggable, resizable window chrome
 │       │   ├── WindowManager/   # Renders all open windows
 │       │   └── Launcher/        # Start menu with system app list
-│       ├── stores/
-│       │   ├── window.store.ts  # Zustand — windows lifecycle, z-index
-│       │   └── launcher.store.ts# Zustand — start menu toggle
+│       ├── store/
+│       │   ├── index.ts             # configureStore, RootState, AppDispatch
+│       │   ├── hooks.ts             # useAppDispatch, useAppSelector
+│       │   ├── types.ts             # WindowId, AnimState, WindowRect, WindowData
+│       │   ├── slices/
+│       │   │   ├── windowsSlice.ts  # Window lifecycle + geometry + animation
+│       │   │   ├── launcherSlice.ts # Launcher open/close
+│       │   │   └── taskbarSlice.ts  # Taskbar button rects
+│       │   └── selectors/
+│       │       ├── windowSelectors.ts
+│       │       ├── launcherSelectors.ts
+│       │       └── taskbarSelectors.ts
+│       ├── config/
+│       │   └── windowDefaults.ts    # CSS token cache (read from --nmx-*)
 │       ├── types/
 │       │   ├── windowing.ts     # WindowId, WindowState interfaces
 │       │   └── index.ts
@@ -196,6 +207,6 @@ Addon có 3 mode tích hợp:
 
 1. **M1** — Static shell UI + mock auth page ✅
 2. **M2** — Full auth backend (login/register/logout/refresh/session, decorators, i18n, validation) ✅
-3. **M3** — System Addons (Built-in): addon contract + registry, Log Viewer, theme system (hot swap CSS, localStorage+DB), File Manager, Terminal, Settings 🔜
+3. **M3** — System Addons (Built-in): Redux state management, addon contract + registry, Log Viewer, NetworkTraffic, SystemMonitor, theme system (hot swap CSS, localStorage+DB), File Manager, Terminal, Settings 🔜
 4. **M4** — External addon system (Docker lifecycle, addon manager)
 5. **M5** — @namorix/core publish npm + addon integration guide

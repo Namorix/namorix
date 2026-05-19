@@ -152,8 +152,8 @@
 
 | Package | Version | Changes |
 |---------|---------|---------|
-| frontend | 0.12.0 | REWRITE: Zustand → Redux Toolkit. 4 stores → 3 slices (windowsSlice, launcherSlice, taskbarSlice). Normalized state (byId+order). Gộp window+geometry+animation vào windowsSlice. Memoized selectors (createSelector). useAppSelector mặc định shallowEqual. Taskbar optimized — không re-render khi drag/resize. Xóa 5 files stores/*.store.ts cũ. NEW: NetworkTraffic addon (2 files). NEW: SystemMonitor addon (2 files). |
-| @namorix/styles | 0.9.0 | NEW: app-network-traffic.svg, app-system-monitor.svg icons. NEW: --nmx-icon-app-system-monitor, --nmx-icon-app-network-traffic tokens. UPDATED: launcher.scss (padding, font-size, border-radius), taskbar.scss (font-size, __start-btn class). FIX: index.scss @forward themes/default. |
+| frontend | 0.12.0 | REWRITE: Zustand → Redux Toolkit. 4 stores → 3 slices (windowsSlice, launcherSlice, taskbarSlice). Normalized state (byId+order). Gộp window+geometry+animation vào windowsSlice. Memoized selectors (createSelector). useAppSelector mặc định shallowEqual. Taskbar optimized — không re-render khi drag/resize. Xóa 5 files stores/*.store.ts cũ. NEW: config/windowDefaults.ts (CSS token cache). NEW: NetworkTraffic, SystemMonitor addons. REFACTOR: WindowFrame tách thành 6 hook riêng (useWindowDrag, useWindowResize, useWindowAnimVars, useWindowOrigins, useWindowHandlers, useAddonMount). FIX: drag restore chỉ khi kéo > threshold, double-click restore đặt cửa sổ dưới cursor, icon MAXIMIZE/RESTORE swap, min resize từ CSS token. |
+| @namorix/styles | 0.9.0 | NEW: app-network-traffic.svg, app-system-monitor.svg icons. NEW: --nmx-icon-app-system-monitor, --nmx-icon-app-network-traffic tokens. NEW: --nmx-window-drag-threshold, --nmx-window-titlebar-cursor-offset, --nmx-window-cascade-step, --nmx-window-cascade-max-offset tokens. UPDATED: launcher.scss, taskbar.scss, desktop.scss, tokens.scss. FIX: index.scss @forward themes/default. |
 | @namorix/ui | 0.6.4 | NEW: NmxIconSvgSymbol.APP_SYSTEM_MONITOR, NmxIconSvgSymbol.APP_NETWORK_TRAFFIC. |
 
 ### 2026-05-18 (Shared types refactoring: AddonItem, OnOpenApp, addonToItems, rectToOrigin)
