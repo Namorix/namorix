@@ -1,170 +1,95 @@
-# Reusable UI Components Plan
+# Reusable UI Components — COMPLETED ✅
 
 ## Context
 
 Từ mẫu LogViewer UI, xác định 5 component có thể tách thành `@namorix/ui` primitives để dùng lại cho NetworkTraffic, LogViewer, và các addon/data-view khác sau này.
 
-## Components
-
-### 1. NmxBadge — Severity/Status Badge
-
-**Loại:** Primitive (single file)
-
-**Props:**
-```typescript
-interface NmxBadgeProps extends WithBaseProps, WithSemanticColor {
-  // Kế thừa semantic: "primary" | "error" | "warning" | "success" | "info"
-  // Dùng cxSemantic("nmx-badge", semantic)
-}
-```
-
-**CSS:** `nmx-badge` — inline-flex, pill shape (`--nmx-radius-full`), font-size xs, letter-spacing wide, font-weight medium, font-sans. Dùng `semantic-variants` mixin từ SCSS.
-
-**Dùng lại:** log level badge, HTTP status, endpoint status, trạng thái bất kỳ.
+**Thời gian:** 2026-05-20
+**Packages:** @namorix/styles 0.9.0→0.10.0, @namorix/ui 0.6.4→0.7.0, frontend 0.12.0→0.12.1
 
 ---
 
-### 2. NmxChip — Toggleable Filter Chip
+## Components — All Implemented ✅
 
-**Loại:** Primitive (single file)
+### 1. NmxBadge — Severity/Status Badge ✅
+- **File:** `ui/src/Primitives/NmxBadge.tsx`
+- **SCSS:** `styles/src/base/components/badge.scss`
+- **Props:** `WithBaseProps + WithSemanticColor`, default semantic `"info"`
+- **Deviation:** dùng `--nmx-radius-md` (không phải `--nmx-radius-full` như plan gốc), padding bằng spacing tokens, semantic variants dùng color-mix
 
-**Props:**
-```typescript
-interface NmxChipProps extends WithBaseProps, WithSemanticColor {
-  active?: boolean           // toggle state
-  onClick?: () => void       // click handler
-}
-```
+### 2. NmxChip — Toggleable Filter Chip ✅
+- **File:** `ui/src/Primitives/NmxChip.tsx`
+- **SCSS:** `styles/src/base/components/chip.scss`
+- **Props:** `active?: boolean, onClick?: () => void, WithSemanticColor`, kèm `role="button"` + keyboard handler
+- **Deviation:** không có fixed height — dùng padding `--nmx-spacing-sm` / `--nmx-spacing-md`, hover opacity `0.6`
 
-**CSS:** `nmx-chip` — height 24px, `--nmx-radius-full` pill, font-size xs, font-weight medium, border. Active state dùng semantic color. Off state dùng `opacity: .35` (giống mẫu).
+### 3. NmxPulseDot — Animated Status Dot ✅
+- **File:** `ui/src/Primitives/NmxPulseDot.tsx`
+- **SCSS:** `styles/src/base/components/pulse-dot.scss`
+- **Props:** `status?: "live" | "stopped" | "error"` (default `"stopped"`)
+- **Deviation:** dùng `inline-flex` thay `inline-block`, kích thước từ `--nmx-spacing-unit`, `border-radius: var(--nmx-radius-half)` (token mới)
 
-**Dùng lại:** severity filter, status filter, tag filter trong bất kỳ data view nào.
+### 4. NmxPagination — Pagination Controls ✅
+- **File:** `ui/src/Primitives/NmxPagination.tsx`
+- **SCSS:** `styles/src/base/components/pagination.scss`
+- **Props:** `page, totalPages, totalItems, pageSize, onPageChange`
+- **Icons:** Dùng `NmxIconFontSymbol.ARROW_PREV` / `ARROW_NEXT` (symbols mới)
+- **Deviation:** không có fixed height — border-radius `--nmx-radius-sm`, border 0
 
----
-
-### 3. NmxPulseDot — Animated Status Dot
-
-**Loại:** Primitive (single file)
-
-**Props:**
-```typescript
-interface NmxPulseDotProps extends WithBaseProps {
-  status?: "live" | "stopped" | "error"
-}
-```
-
-**CSS:** `nmx-pulse-dot` — 6px circle, border-radius 50%, inline-block. `@keyframes nmx-pulse` (opacity 1 ↔ 0.3).
-
-**Dùng lại:** live indicator, connection status, realtime monitoring.
-
----
-
-### 4. NmxPagination — Pagination Controls
-
-**Loại:** Primitive (single file)
-
-**Props:**
-```typescript
-interface NmxPaginationProps extends WithBaseProps {
-  page: number
-  totalPages: number
-  totalItems: number
-  pageSize: number
-  onPageChange: (page: number) => void
-  disabled?: boolean
-}
-```
-
-**CSS:** `nmx-pagination` — flex container, height 26px button, border-radius 5px, font-size xs.
-
-**Dùng lại:** tất cả data table có phân trang (logs, traffic, user list...).
-
----
-
-### 5. NmxDataTable — Structured Data Table (Composite)
-
-**Loại:** Composite (multi-file)
-
-**Sub-components:**
-- `NmxDataTable` — root container (scrollable)
-- `NmxDataTable.Head` — header area
-- `NmxDataTable.Body` — scrollable body
-- `NmxDataTable.Row` — data row (grid layout)
-- `NmxDataTable.Cell` — cell
-
-**Props:**
-```typescript
-// Root — nhận columns string = CSS grid-template-columns value
-interface NmxDataTableProps extends WithBaseProps {
-  columns: string   // VD: "160px 100px minmax(0, 1fr)"
-}
-```
-
-**Cơ chế layout:** Root set `--nmx-dt-columns` từ `columns` prop, Head & Row dùng `grid-template-columns: var(--nmx-dt-columns)`.
-
-**Usage pattern:**
+### 5. NmxDataTable — Structured Data Table ✅
+- **Files:** 3 files in `ui/src/Components/NmxDataTable/` (NmxDataTable.tsx, NmxDataTable.type.ts, index.ts)
+- **SCSS:** `styles/src/base/components/data-table.scss`
+- **Props:** data-driven API: `columns: NmxDataTableColumn<T>[]` (header + renderCell + grow), `rows: T[]`, `fallbackConditions`, `clickableRows`, `getRowClass`, `onRowClick`
+- **Major deviation from plan gốc:** Không dùng children-based (Head/Body/Row/Cell sub-components). Thay bằng **data-driven API** tham khảo từ Lit implementation: `buildGridTemplateColumns()` chuyển `grow` → `minmax(0, Xfr)`, CSS `subgrid` cho rows, fallback state pattern.
+- **Usage:**
 ```tsx
-<NmxDataTable columns="160px 100px minmax(0, 1fr)">
-  <NmxDataTable.Head>
-    <NmxDataTable.Row>
-      <NmxDataTable.Cell>Time</NmxDataTable.Cell>
-      <NmxDataTable.Cell>Severity</NmxDataTable.Cell>
-      <NmxDataTable.Cell>Message</NmxDataTable.Cell>
-    </NmxDataTable.Row>
-  </NmxDataTable.Head>
-  <NmxDataTable.Body>
-    {logs.map(log => (
-      <NmxDataTable.Row key={log.id} onClick={() => selectLog(log)}>
-        <NmxDataTable.Cell>{log.timestamp}</NmxDataTable.Cell>
-        <NmxDataTable.Cell><NmxBadge semantic="info">{log.level}</NmxBadge></NmxDataTable.Cell>
-        <NmxDataTable.Cell>{log.message}</NmxDataTable.Cell>
-      </NmxDataTable.Row>
-    ))}
-  </NmxDataTable.Body>
-</NmxDataTable>
+<NmxDataTable
+  columns={[
+    { header: "Time", renderCell: (r) => r.timestamp, grow: 0 },
+    { header: "Severity", renderCell: (r) => <NmxBadge>{r.level}</NmxBadge>, grow: 0 },
+    { header: "Message", renderCell: (r) => r.message, grow: 1 },
+  ]}
+  rows={logs}
+  fallbackConditions={[{ condition: logs.length === 0, content: "No logs" }]}
+  onRowClick={(log) => selectLog(log)}
+/>
 ```
-
-**Dùng lại:** LogViewer, NetworkTraffic logs & endpoint list, bảng dữ liệu bất kỳ.
 
 ---
 
-## Files to Create
+## Additional Changes Made Alongside
 
-| # | Component | Files |
-|---|-----------|-------|
-| 1 | NmxBadge | `ui/src/Primitives/NmxBadge.tsx` + `styles/src/base/components/badge.scss` |
-| 2 | NmxChip | `ui/src/Primitives/NmxChip.tsx` + `styles/src/base/components/chip.scss` |
-| 3 | NmxPulseDot | `ui/src/Primitives/NmxPulseDot.tsx` + `styles/src/base/components/pulse-dot.scss` |
-| 4 | NmxPagination | `ui/src/Primitives/NmxPagination.tsx` + `styles/src/base/components/pagination.scss` |
-| 5 | NmxDataTable | 6 files: `Components/NmxDataTable/{NmxDataTable.tsx, Head, Body, Row, Cell, index.ts}` + `components/data-table.scss` |
+| Change | Reason |
+|--------|--------|
+| WindowFrame addon mount bug fix | `useAddonMount(winId)` → `useAddonMount(win?.app)` vì `resolveAddon` cần addon manifest ID |
+| Settings addon expanded (+212 lines) | Từ scaffold → full implementation |
+| New `addon.scss` component | Addon-related styles |
+| New `--nmx-radius-half: 50%` token | Cho NmxPulseDot circle |
+| New `ARROW_PREV`/`ARROW_NEXT` icon symbols | Cho NmxPagination |
+| Icomoon rebuild + theme assets rebuild | Đồng bộ icon font |
+| Version bumps | styles 0.10.0, ui 0.7.0, frontend 0.12.1 |
 
-## Files to Modify
+## Files Created
+- `ui/src/Primitives/NmxBadge.tsx`
+- `ui/src/Primitives/NmxChip.tsx`
+- `ui/src/Primitives/NmxPulseDot.tsx`
+- `ui/src/Primitives/NmxPagination.tsx`
+- `ui/src/Components/NmxDataTable/` (3 files)
+- `styles/src/base/components/badge.scss`
+- `styles/src/base/components/chip.scss`
+- `styles/src/base/components/pulse-dot.scss`
+- `styles/src/base/components/pagination.scss`
+- `styles/src/base/components/data-table.scss`
+- `styles/src/base/components/addon.scss`
 
-| # | File | Change |
-|---|------|--------|
-| 1 | `ui/src/Primitives/index.ts` | Add exports for Badge, Chip, PulseDot, Pagination |
-| 2 | `ui/src/Components/index.ts` | Add `export * from "./NmxDataTable"` |
-| 3 | `styles/src/base/components/index.scss` | Add 5 `@forward` entries |
-
-## Implementation Order
-
-1. **NmxBadge** — đơn giản nhất, pattern reference
-2. **NmxChip** — kế thừa pattern + active state
-3. **NmxPulseDot** — component nhỏ nhất, CSS animation
-4. **NmxPagination** — có logic page tính toán
-5. **NmxDataTable** — composite, phức tạp nhất
-
-## SCSS Conventions
-
-- Dùng `semantic-variants` mixin cho variant màu
-- Class: `nmx-badge`, `nmx-chip`, `nmx-pulse-dot`, `nmx-pagination`, `nmx-data-table`
-- Element: `nmx-data-table__head/__body/__row/__cell`
-- Component-scoped CSS vars: `--nmx-badge-*`, `--nmx-chip-*`, `--nmx-dt-*`
-
-## Verification
-
-1. `cd frontend && pnpm build` — build thành công
-2. NmxDataTable scroll đúng, rows hover
-3. NmxPagination prev/next disabled ở đầu/cuối
-4. NmxChip toggle active state
-5. NmxPulseDot animate khi status="live"
+## Files Modified
+- `ui/src/Primitives/index.ts` — exports for 4 primitives
+- `ui/src/Components/index.ts` — export NmxDataTable
+- `ui/src/Primitives/NmxIcon/NmxIconFont.types.ts` — ARROW_PREV, ARROW_NEXT
+- `styles/src/base/components/index.scss` — 6 @forward entries
+- `styles/src/base/tokens/spacing.scss` — --nmx-radius-half
+- `frontend/src/components/WindowFrame/WindowFrame.tsx` — addon mount fix
+- `frontend/src/addons/Settings/Settings.tsx` — expanded
+- `frontend/packages/ui/package.json` — version 0.7.0
+- `frontend/packages/styles/package.json` — version 0.10.0
+- `frontend/package.json` — version 0.12.1

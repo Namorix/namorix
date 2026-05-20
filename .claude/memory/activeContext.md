@@ -32,6 +32,12 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic Phase 1 ✅
 - **@namorix/ui (0.6.3 → 0.6.4)**: Thêm `APP_SYSTEM_MONITOR`, `APP_NETWORK_TRAFFIC` icon symbols.
 - **frontend**: New addons — NetworkTraffic, SystemMonitor. Config module `config/windowDefaults.ts` cache CSS tokens. WindowFrame tách 6 hook. Fix drag restore (threshold-based), double-click restore dưới cursor, icon MAXIMIZE/RESTORE swap, min resize từ CSS token.
 
+### 2026-05-20 — NmxRail + NetworkTraffic UI + NmxHostContext
+
+- **@namorix/styles (0.10.0 → 0.11.0)**: NEW animation tokens (duration + easing). NEW `_rail.scss` layout component (`--nmx-rail-width`, `--nmx-rail-collapse-width`). NEW icomoon glyphs (STATS, NODES, LIST, MENU, MENU_FOLD). Updated forwards + theme CSS.
+- **@namorix/ui (0.7.0 → 0.8.0)**: NEW NmxRail component suite (NmxRail, NmxRailList, NmxRailItem, NmxRailContent, NmxRailContext, types). NEW hooks/NmxHostContext.ts — `NmxHostContext` + `useIsWindowed` (check if component runs inside shell). NEW NmxIconFontSymbol — STATS, NODES, LOGS, MENU, MENU_FOLD. DELETED NmxDataTable old sub-components (Head, Body, Row, Cell).
+- **frontend (0.12.1 → 0.13.0)**: NEW NetworkTraffic full UI — NmxRail sidebar + 4 tabs (Overview, Endpoints, Logs, Threats) + OverviewTab. NEW NmxHostContext Provider wrapping App in Root.tsx. i18n translations for addon tabs.
+
 ### 2026-05-20 — Reusable UI components + Settings addon + WindowFrame mount fix
 
 - **@namorix/styles (0.9.0 → 0.10.0)**: NEW 6 component SCSS (badge, chip, pulse-dot, pagination, data-table, addon). NEW `--nmx-radius-half` token. UPDATED icomoon glyphs, theme CSS rebuilt.

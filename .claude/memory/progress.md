@@ -124,11 +124,11 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.12.1 | M3 (Settings addon, WindowFrame mount fix, reusable UI components) |
+| frontend | 0.13.0 | M3 (NmxRail, NetworkTraffic UI, NmxHostContext, i18n) |
 | @namorix/core | 0.10.5 | M3 (Addon manifest defaultWidth, defaultHeight, preferFullSize) |
-| @namorix/styles | 0.10.0 | M3 (New component SCSS: badge, chip, pulse-dot, pagination, data-table, addon) |
-| @namorix/ui | 0.7.0 | M3 (NmxBadge, NmxChip, NmxPulseDot, NmxPagination, NmxDataTable) |
-| backend | 0.20.1 | M3 (NetworkTraffic backend Phase 1 + fixes) |
+| @namorix/styles | 0.11.0 | M3 (NmxRail SCSS, animation tokens, icomoon glyphs) |
+| @namorix/ui | 0.8.0 | M3 (NmxRail suite, NmxHostContext hook, new icon symbols) |
+| backend | 0.20.2 | M3 (launchSettings.json) |
 
 ## Version Rules
 
@@ -147,6 +147,15 @@
 | backend | Bug fixes, C# config tweaks | New endpoint, new service, auth feature |
 
 ## Version History
+
+### 2026-05-20 (NmxRail + NetworkTraffic UI + NmxHostContext)
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/styles | 0.11.0 | NEW: animation tokens file (duration + easing), _rail.scss layout component NEW: --nmx-rail-width, --nmx-rail-collapse-width tokens. NEW: icomoon glyphs (STATS, NODES, LIST, MENU, MENU_FOLD). MODIFIED: layouts/index.scss, tokens/index.scss. UPDATED: icomoon variables, fonts, theme CSS rebuilt. |
+| @namorix/ui | 0.8.0 | NEW: NmxRail component suite (NmxRail, NmxRailList, NmxRailItem, NmxRailContent, NmxRailContext, types). NEW: hooks/NmxHostContext.ts — NmxHostContext + useIsWindowed. NEW: NmxIconFontSymbol — STATS, NODES, LOGS, MENU, MENU_FOLD. DELETED: NmxDataTable old sub-components (Head, Body, Row, Cell). |
+| frontend | 0.13.0 | NEW: NetworkTraffic full UI with NmxRail sidebar + 1 OverviewTab. NEW: NmxHostContext Provider wrap in Root.tsx. MODIFIED: i18n/en.json — new addon translations. UPDATED: theme CSS rebuilt. |
+| backend | 0.20.2 | PATCH: launchSettings.json |
 
 ### 2026-05-20 (Reusable UI components + Settings addon + WindowFrame mount fix)
 
