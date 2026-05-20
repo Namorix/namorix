@@ -5,3 +5,11 @@ $nmx-semantic-colors: (
   "success": var(--nmx-color-success),
   "info": var(--nmx-color-info),
 );
+
+$nmx-spacings: (
+  "xs": var(--nmx-spacing-xs),
+  "sm": var(--nmx-spacing-sm),
+  "md": var(--nmx-spacing-md),
+  "lg": var(--nmx-spacing-lg),
+  "xl": var(--nmx-spacing-xl),
+);

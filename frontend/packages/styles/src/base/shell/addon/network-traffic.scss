@@ -1,0 +1,10 @@
+@use "../../abstract/mixins" as *;
+
+.nmx-addon-network-traffic {
+  --nmx-rail-width: 170px;
+
+  &__content {
+    padding: var(--nmx-spacing-md);
+    @include scrollbar();
+  }
+}

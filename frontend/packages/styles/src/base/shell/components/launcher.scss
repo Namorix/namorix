@@ -1,4 +1,5 @@
 @use "../../../index" as *;
+@use "../../abstract/mixins" as *;
 
 .nmx-launcher-overlay {
   position: fixed;
@@ -99,8 +100,8 @@
     gap: var(--nmx-spacing-sm);
     overflow-y: auto;
     max-height: 320px;
-    scrollbar-width: thin;
-    scrollbar-color: var(--nmx-color-surface-high) transparent;
+
+    @include scrollbar();
   }
 
   &__item {

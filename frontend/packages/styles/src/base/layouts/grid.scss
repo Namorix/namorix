@@ -1,0 +1,12 @@
+@use "../abstract/mixins" as *;
+
+.nmx-grid {
+  display: grid;
+  gap: var(--nmx-grid-spacing);
+  grid-template-columns: var(
+    --nmx-grid-cols,
+    repeat(auto-fit, minmax(160px, 1fr))
+  );
+
+  @include spacings("nmx-grid");
+}

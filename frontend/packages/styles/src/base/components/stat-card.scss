@@ -1,0 +1,55 @@
+.nmx-stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nmx-spacing-xs);
+  padding: var(--nmx-spacing-md);
+  background: var(--nmx-color-surface-low);
+  border-radius: var(--nmx-radius-md);
+
+  &__header {
+    font-size: var(--nmx-font-size-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--nmx-letter-spacing-wide);
+    color: var(--nmx-color-on-surface-variant);
+  }
+
+  &__main {
+    display: flex;
+    align-items: baseline;
+    gap: var(--nmx-spacing-xs);
+  }
+
+  &__value {
+    font-family: var(--nmx-font-mono), monospace;
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--nmx-stat-card-accent, var(--nmx-color-on-surface));
+  }
+
+  &__unit {
+    font-size: var(--nmx-font-size-sm);
+    color: var(--nmx-color-on-surface-variant);
+  }
+
+  &__spark {
+    display: block;
+    width: 100%;
+    height: 32px;
+  }
+
+  &__trend {
+    font-size: var(--nmx-font-size-xs);
+
+    &--up {
+      color: var(--nmx-color-success);
+    }
+
+    &--down {
+      color: var(--nmx-color-error);
+    }
+
+    &--neutral {
+      color: var(--nmx-color-on-surface-variant);
+    }
+  }
+}

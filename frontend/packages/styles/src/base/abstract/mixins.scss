@@ -21,8 +21,6 @@
       transparent
     )
 ) {
-  scrollbar-gutter: stable;
-
   &::-webkit-scrollbar {
     width: $width;
     height: $width;
@@ -75,6 +73,14 @@
       @if $use-text {
         --#{$prefix}-text: #{$color};
       }
+    }
+  }
+}
+
+@mixin spacings($prefix) {
+  @each $name, $spacing in $nmx-spacings {
+    &--#{$name} {
+      --#{$prefix}-spacing: #{$spacing};
     }
   }
 }

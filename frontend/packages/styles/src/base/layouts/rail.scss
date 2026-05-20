@@ -24,7 +24,8 @@
   &-content {
     flex: 1;
     min-width: 0;
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   @include no-user-select;
