@@ -66,5 +66,14 @@
       "success": "Account created successfully. Taking you to login..."
     }
   },
-  "addon": {}
+  "addon": {
+    "network-traffic": {
+      "tabs": {
+        "overview": "Overview",
+        "endpoints": "Endpoints",
+        "logs": "Logs",
+        "threats": "Threats"
+      }
+    }
+  }
 }
