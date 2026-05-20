@@ -1,6 +1,7 @@
 export const API_BASE = "/api"
 export const API_AUTH_BASE = API_BASE + "/auth"
 export const API_USER_BASE = API_BASE + "/user"
+export const API_TRAFFIC_BASE = API_BASE + "/traffic"
 
 export const ApiAuthRoutes = {
   status: API_AUTH_BASE + "/status",
@@ -22,6 +23,14 @@ export const ApiMiddlewareRoutes = {
 
 export const ApiThemeRoutes = {
   themes: API_BASE + "/themes",
+}
+
+export const ApiTrafficRoutes = {
+  base: API_TRAFFIC_BASE,
+  endpoints: API_TRAFFIC_BASE + "/endpoints",
+  endpoint: (id: number) => `${API_TRAFFIC_BASE}/endpoints/${id}`,
+  logs: API_TRAFFIC_BASE + "/logs",
+  stats: API_TRAFFIC_BASE + "/stats",
 }
 
 export const ThemeRoutes = {

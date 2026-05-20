@@ -10,7 +10,7 @@ import {
 import { ApiAuthRoutes } from "../apiRoutes"
 
 class RequestBuilder {
-  private readonly _url: string
+  private _url: string
   private _options: RequestInit = { credentials: "include" }
   private _headers: Record<string, string> = {}
   private _retried = false
@@ -63,6 +63,20 @@ class RequestBuilder {
 
   header(key: string | (string & {}), value: string) {
     this._headers[key] = value
+    return this
+  }
+
+  query(params: Record<string, string | number | boolean | undefined | null>) {
+    const searchParams = new URLSearchParams()
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined && value !== null && value !== "") {
+        searchParams.set(key, String(value))
+      }
+    }
+    const qs = searchParams.toString()
+    if (qs) {
+      this._url += `?${qs}`
+    }
     return this
   }
 
