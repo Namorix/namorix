@@ -1,5 +1,1 @@
 export * from "./NmxDataTable"
-export * from "./NmxDataTableHead"
-export * from "./NmxDataTableBody"
-export * from "./NmxDataTableRow"
-export * from "./NmxDataTableCell"

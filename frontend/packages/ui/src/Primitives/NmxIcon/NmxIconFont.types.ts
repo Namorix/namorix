@@ -7,6 +7,11 @@ export const NmxIconFontSymbol = {
   RESTORE: "ic-restore",
   ARROW_PREV: "ic-arrow-prev",
   ARROW_NEXT: "ic-arrow-next",
+  MENU: "ic-menu",
+  MENU_FOLD: "ic-menu-fold",
+  LOGS: "ic-logs",
+  NODES: "ic-nodes",
+  STATS: "ic-stats",
 } as const
 
 export type NmxIconFontSymbol =

@@ -1,0 +1,62 @@
+import type { WithBaseProps } from "../../types"
+import React, { useCallback, useMemo, useState } from "react"
+import { cx } from "../../utils"
+import { NmxRailContext, type NmxRailContextValue } from "./NmxRailContext"
+import { useIsWindowed } from "../../context/NmxHostContext"
+
+export interface NmxRailLayoutProps extends WithBaseProps {
+  collapsed?: boolean
+  defaultCollapsed?: boolean
+  onCollapsedChange?: (collapsed: boolean) => void
+  collapseOnActiveClick?: boolean
+}
+
+export const NmxRail: React.FC<NmxRailLayoutProps> = ({
+  collapsed,
+  defaultCollapsed = false,
+  onCollapsedChange,
+  collapseOnActiveClick = true,
+  shouldRender = true,
+  className,
+  children,
+  ...rest
+}) => {
+  const [internalCollapsed, setInternalCollapsed] = useState(defaultCollapsed)
+  const isCollapsed = collapsed ?? internalCollapsed
+
+  const toggleCollapsed = useCallback(() => {
+    const next = !isCollapsed
+    setInternalCollapsed(next)
+    onCollapsedChange?.(next)
+  }, [isCollapsed, onCollapsedChange])
+
+  const isWindowed = useIsWindowed()
+
+  const context = useMemo<NmxRailContextValue>(
+    () => ({
+      collapsed: isCollapsed,
+      collapseOnActiveClick,
+      toggleCollapsed,
+    }),
+    [collapseOnActiveClick, isCollapsed, toggleCollapsed],
+  )
+
+  if (!shouldRender) {
+    return null
+  }
+
+  return (
+    <NmxRailContext.Provider value={context}>
+      <div
+        {...rest}
+        className={cx(
+          "nmx-rail",
+          { "nmx-rail--collapsed": isCollapsed },
+          className,
+        )}
+      >
+        {children}
+      </div>
+    </NmxRailContext.Provider>
+  )
+}
