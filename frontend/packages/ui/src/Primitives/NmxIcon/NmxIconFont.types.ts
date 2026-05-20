@@ -5,6 +5,8 @@ export const NmxIconFontSymbol = {
   MINIMIZE: "ic-minimize",
   MAXIMIZE: "ic-maximize",
   RESTORE: "ic-restore",
+  ARROW_PREV: "ic-arrow-prev",
+  ARROW_NEXT: "ic-arrow-next",
 } as const
 
 export type NmxIconFontSymbol =
