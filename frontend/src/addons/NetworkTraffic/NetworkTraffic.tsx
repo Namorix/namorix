@@ -5,7 +5,7 @@ import {
   NmxRailContent,
   NmxRail,
 } from "@namorix/ui"
-import { NetworkTrafficOverviewTab } from "./NetworkTrafficOverviewTab"
+import { NetworkTrafficOverview } from "./NetworkTrafficOverview"
 import { useTranslation } from "react-i18next"
 
 type Tab = "overview" | "endpoints" | "logs" | "threats"
@@ -14,22 +14,22 @@ const TABS: Array<{ key: Tab; icon: NmxIconFontSymbol; label: string }> = [
   {
     key: "overview",
     icon: NmxIconFontSymbol.STATS,
-    label: "addon.network-traffic.tabs.overview",
+    label: "addon.networkTraffic.tabs.overview",
   },
   {
     key: "endpoints",
     icon: NmxIconFontSymbol.NODES,
-    label: "addon.network-traffic.tabs.endpoints",
+    label: "addon.networkTraffic.tabs.endpoints",
   },
   {
     key: "logs",
     icon: NmxIconFontSymbol.LOGS,
-    label: "addon.network-traffic.tabs.logs",
+    label: "addon.networkTraffic.tabs.logs",
   },
   {
     key: "threats",
     icon: NmxIconFontSymbol.SECURITY,
-    label: "addon.network-traffic.tabs.threats",
+    label: "addon.networkTraffic.tabs.threats",
   },
 ]
 export const NetworkTraffic: React.FC = () => {
@@ -46,8 +46,8 @@ export const NetworkTraffic: React.FC = () => {
           activeKey={activeTab}
           onActiveTabChange={(key) => setActiveTab(key as Tab)}
         />
-        <NmxRailContent>
-          {activeTab === "overview" && <NetworkTrafficOverviewTab />}
+        <NmxRailContent className="nmx-addon-network-traffic__content">
+          {activeTab === "overview" && <NetworkTrafficOverview />}
         </NmxRailContent>
       </NmxRail>
     </div>

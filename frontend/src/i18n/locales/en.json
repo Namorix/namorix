@@ -67,12 +67,22 @@
     }
   },
   "addon": {
-    "network-traffic": {
+    "networkTraffic": {
       "tabs": {
         "overview": "Overview",
         "endpoints": "Endpoints",
         "logs": "Logs",
         "threats": "Threats"
+      },
+      "overview": {
+        "stats": {
+          "totalRequests": "Total Requests",
+          "errorRate": "Error Rate",
+          "avgLatency": "Avg Latency",
+          "avgLatencyUnit": "ms",
+          "avgSize": "Avg Size",
+          "avgSizeUnit": "KB"
+        }
       }
     }
   }

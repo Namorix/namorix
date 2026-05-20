@@ -51,7 +51,7 @@ export const Blocked: React.FC<BlockedProps> = ({ code }) => {
   return (
     <div className="nmx-blocked-page">
       <NmxCard className="nmx-blocked-page__card">
-        <NmxIconBox className="nmx-blocked-page__icon-box">
+        <NmxIconBox className="nmx-blocked-page__icon-box" semantic="error">
           <NmxIconFont
             symbol={NmxIconFontSymbol.SECURITY}
             className="nmx-blocked-page__icon-font"
