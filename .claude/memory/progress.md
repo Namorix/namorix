@@ -124,10 +124,10 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.13.0 | M3 (NmxRail, NetworkTraffic UI, NmxHostContext, i18n) |
-| @namorix/core | 0.10.5 | M3 (Addon manifest defaultWidth, defaultHeight, preferFullSize) |
-| @namorix/styles | 0.11.0 | M3 (NmxRail SCSS, animation tokens, icomoon glyphs) |
-| @namorix/ui | 0.8.0 | M3 (NmxRail suite, NmxHostContext hook, new icon symbols) |
+| frontend | 0.13.1 | M3 (NmxStatCard, NmxGrid, traffic controller, polling hook, i18n) |
+| @namorix/core | 0.11.0 | M3 (ApiTrafficRoutes, http.query() method) |
+| @namorix/styles | 0.12.0 | M3 (stat-card SCSS, grid layout SCSS, shell addon SCSS, spacings mixin) |
+| @namorix/ui | 0.9.0 | M3 (NmxStatCard, NmxGrid layout, canvas.ts, cxSpacing, NmxSpacing type) |
 | backend | 0.20.2 | M3 (launchSettings.json) |
 
 ## Version Rules
@@ -147,6 +147,15 @@
 | backend | Bug fixes, C# config tweaks | New endpoint, new service, auth feature |
 
 ## Version History
+
+### 2026-05-20 (NmxStatCard, NmxGrid, canvas sparkline, traffic controller + polling)
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.11.0 | NEW: ApiTrafficRoutes (base, endpoints, logs, stats). NEW: http.query() method on RequestBuilder. |
+| @namorix/styles | 0.12.0 | NEW: stat-card.scss component (nmx-stat-card with BEM elements). NEW: grid.scss layout (nmx-grid with auto-fit). NEW: shell/addon/ SCSS (network-traffic.scss, addon content override). NEW: spacings mixin for gap modifier classes. MODIFIED: maps.scss, mixins.scss, components/index.scss, layouts/index.scss, rail.scss. REBUILT: theme CSS. |
+| @namorix/ui | 0.9.0 | NEW: NmxStatCard primitive (value, label, unit, trend, sparkData + canvas sparkline). NEW: NmxGrid layout (cols, minColWidth, gap with semantic props). NEW: canvas.ts — drawSparkline utility (HiDPI, ResizeObserver, gradient fill). NEW: cxSpacing helper. NEW: NmxSpacing type. MODIFIED: Primitives/index.ts, utils/index.ts, index.ts barrel, types/primitives.ts. |
+| frontend | 0.13.1 | NEW: traffic.controller.ts (getStats, TrafficStats/TrafficLog/TrafficEndpoint types). NEW: useTrafficStatsPolling hook (30s polling, rolling 20pt history). NEW: NetworkTrafficOverviewTab → NetworkTrafficOverview with NmxStatCard + NmxGrid stats row. MODIFIED: i18n/en.json — network traffic overview labels. |
 
 ### 2026-05-20 (NmxRail + NetworkTraffic UI + NmxHostContext)
 

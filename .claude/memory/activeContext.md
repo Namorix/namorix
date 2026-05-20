@@ -25,6 +25,13 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic Phase 1 ✅
 
 ## Recent Changes
 
+### 2026-05-20 — NmxStatCard, NmxGrid, canvas sparkline, traffic controller + polling
+
+- **@namorix/core (0.10.5 → 0.11.0)**: NEW `ApiTrafficRoutes` (base, endpoints, logs, stats). NEW `http.query(params)` method for clean URLSearchParams handling.
+- **@namorix/styles (0.11.0 → 0.12.0)**: NEW stat-card.scss (nmx-stat-card, BEM). NEW grid.scss layout (nmx-grid, auto-fit + minmax). NEW shell/addon/ SCSS (network-traffic content override). NEW spacings mixin for gap modifier classes. Theme CSS rebuilt.
+- **@namorix/ui (0.8.0 → 0.9.0)**: NEW NmxStatCard primitive (value, label, unit, trend, sparkData + canvas sparkline with HiDPI/ResizeObserver/gradient). NEW NmxGrid layout (cols="auto"|number, minColWidth, gap props). NEW canvas.ts — drawSparkline utility. NEW cxSpacing + NmxSpacing type.
+- **frontend (0.13.0 → 0.13.1)**: NEW traffic.controller.ts (getStats + 4 DTO types). NEW useTrafficStatsPolling hook (30s polling, rolling 20-point history). NEW NetworkTrafficOverview with NmxStatCard + NmxGrid stats row + sparkline. i18n labels for overview stats.
+
 ### 2026-05-19 — State Management Rewrite (Zustand → Redux Toolkit)
 
 - **frontend (0.11.1 → 0.12.0)**: Zustand → Redux Toolkit rewrite. 4 stores → 3 slices (`windowsSlice`, `launcherSlice`, `taskbarSlice`). Normalized state (`byId` + `order`). Gộp window + geometry + animation vào `windowsSlice`. Memoized selectors với `createSelector`. `useAppSelector` mặc định `shallowEqual`. Taskbar tối ưu — không re-render khi drag/resize. Xóa 5 file `stores/*.store.ts` cũ.
@@ -108,17 +115,13 @@ Các service method (PermissionService, SettingsService) không có try/catch ch
 ### Auth Filter Attribute — Inconsistent Pattern ✅ (Resolved)
 Cả 3 attribute filter (`RequireAuthAttribute`, `RequireAdminAttribute`, `RequirePermissionAttribute`) đã thống nhất dùng `ActionFilterAttribute` + async `OnActionExecutionAsync`.
 
-## Pending Fixes (TODO tomorrow)
+## Pending Fixes
 
 ### CSS URL resolution inconsistency
 - `restoreTheme()` ghép URL từ `ThemeRoutes.themes.replace("{id}", ...)`
 - `switchTheme()` dùng `manifest.css` trực tiếp — sau refresh load sai URL
 - **Fix:** Option A — thêm `NMX_THEME_CSS_URL_KEY`, lưu URL thật, restore ưu tiên URL này, fallback ghép từ ID
 - **Files:** `constants.ts`, `loader.ts` (thêm `saveThemePreference`), `ThemeProvider.tsx` (lưu URL khi switch), `auth.controller.ts` (lưu URL khi login sync)
-
-### ThemeManifest types drift
-- TS `ThemeManifest` thiếu `IsBuiltIn` field so với C# model — `getAllThemes()` gộp built-in + external, không phân biệt được
-- **Fix:** Thêm `isBuiltIn: boolean` vào TS interface
 
 ### SetThemeRequest thiếu validation
 - `UserController.cs:45-47` — `SetThemeRequest.ThemeId` thiếu `[Required]`, `[MaxLength]`
@@ -129,13 +132,10 @@ Cả 3 attribute filter (`RequireAuthAttribute`, `RequireAdminAttribute`, `Requi
 - `auth.controller.ts:20-27` — Nếu GET `/api/user/theme` fail, error propagate ra caller dù login đã OK
 - **Fix:** Tách try/catch riêng cho theme fetch, không block login
 
-### `/api/themes` không có handler
-- `ThemeController.cs` đã uncomment + implement, `ThemeService` register DI
-- **Fix:** Đã implement ✅
-
-### Thiếu `public/themes/registry.json`
-- `ThemeRoutes.builtin` = `/themes/registry.json` — file chưa được tạo
-- **Fix:** Tạo thư mục `frontend/public/themes/` + file registry JSON
+### ✅ Resolved
+- ThemeManifest types drift — `isBuiltIn: boolean` đã có ✅
+- `/api/themes` handler — đã implement ✅
+- `public/themes/registry.json` — đã tạo ✅
 
 ## Next Steps
 
