@@ -1,4 +1,5 @@
 export * from "./Components"
+export * from "./Layouts"
 export * from "./Primitives"
 export * from "./types"
 export * from "./utils"

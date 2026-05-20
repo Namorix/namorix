@@ -1,4 +1,9 @@
-import type { NmxButtonVariant, NmxCxInput, NmxSemanticColor } from "../types"
+import type {
+  NmxButtonVariant,
+  NmxCxInput,
+  NmxSemanticColor,
+  NmxSpacing,
+} from "../types"
 
 export function cx(...classes: NmxCxInput[]): string {
   return classes
@@ -22,4 +27,8 @@ export function cxVariant(prefix: string, variant?: NmxButtonVariant) {
 
 export function cxMuted(prefix: string, muted?: boolean) {
   return !muted ? "" : `${prefix}--muted`
+}
+
+export function cxSpacing(prefix: string, spacing?: NmxSpacing) {
+  return !spacing ? "" : `${prefix}--${spacing}`
 }

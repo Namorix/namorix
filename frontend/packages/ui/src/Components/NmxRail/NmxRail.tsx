@@ -2,7 +2,6 @@ import type { WithBaseProps } from "../../types"
 import React, { useCallback, useMemo, useState } from "react"
 import { cx } from "../../utils"
 import { NmxRailContext, type NmxRailContextValue } from "./NmxRailContext"
-import { useIsWindowed } from "../../context/NmxHostContext"
 
 export interface NmxRailLayoutProps extends WithBaseProps {
   collapsed?: boolean
@@ -29,8 +28,6 @@ export const NmxRail: React.FC<NmxRailLayoutProps> = ({
     setInternalCollapsed(next)
     onCollapsedChange?.(next)
   }, [isCollapsed, onCollapsedChange])
-
-  const isWindowed = useIsWindowed()
 
   const context = useMemo<NmxRailContextValue>(
     () => ({
