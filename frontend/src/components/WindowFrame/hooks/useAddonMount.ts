@@ -8,7 +8,7 @@ export const useAddonMount = (appId: WindowId) => {
 
   useEffect(() => {
     const addon = resolveAddon(appId)
-    if (!addon) {
+    if (!addon || !mountRef.current) {
       return
     }
 
@@ -18,8 +18,25 @@ export const useAddonMount = (appId: WindowId) => {
       theme: "dark",
     }
 
-    if (mountRef.current) {
-      addon.entry.mount(mountRef.current, context)
+    addon.entry.mount(mountRef.current, context)
+
+    if (import.meta.env.DEV) {
+      setTimeout(() => {
+        const children = mountRef.current?.children
+
+        if (!children || children.length === 0) {
+          return
+        }
+
+        if (children.length === 1) {
+          const root = children[0]
+          if (root && !root.classList.contains("nmx-addon-root")) {
+            console.warn(
+              `[AddonMount] Addon "${appId}" root element is missing class "nmx-addon-root".`,
+            )
+          }
+        }
+      }, 0)
     }
 
     return () => {

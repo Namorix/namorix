@@ -68,7 +68,7 @@ export const WindowFrameView: React.FC<WindowFrameViewProps> = ({
         onClose={onClose}
       />
 
-      <div className="nmx-window-frame__content">
+      <div className="nmx-window-frame__body">
         <div ref={mountRef} className="nmx-window-frame__mount"></div>
         <WindowResizeHandles onResizeStart={onResizeStart} />
       </div>

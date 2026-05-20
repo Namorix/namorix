@@ -84,7 +84,7 @@ export const useWindowHandlers = (
   }, [dispatch, frameRef, winId])
 
   const onRestore = useCallback(
-    (clientX: number, clientY: number) => {
+    (clientX?: number, clientY?: number) => {
       const pre = win?.preMaximize
       if (!pre) {
         return
