@@ -1,0 +1,39 @@
+@use "../abstract/mixins" as *;
+
+.nmx-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--nmx-spacing-sm);
+  padding: var(--nmx-spacing-sm) var(--nmx-spacing-md);
+  border-radius: var(--nmx-radius-full);
+  font-size: var(--nmx-font-size-xs);
+  font-weight: var(--nmx-font-weight-medium);
+  font-family: var(--nmx-font-sans), serif;
+  letter-spacing: var(--nmx-letter-spacing-normal);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+
+  @include no-user-select;
+
+  background: color-mix(
+    in oklab,
+    var(--nmx-chip-bg, var(--nmx-color-primary)) 34%,
+    transparent
+  );
+  color: var(--nmx-chip-text, var(--nmx-color-on-surface));
+
+  &--active {
+    opacity: 1;
+  }
+
+  &:not(&--active) {
+    opacity: 0.35;
+  }
+
+  &:hover:not(&--active) {
+    opacity: 0.6;
+  }
+
+  @include semantic-variants("nmx-chip", true, true);
+}

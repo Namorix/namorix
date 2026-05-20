@@ -1,0 +1,23 @@
+@use "../abstract/mixins" as *;
+
+.nmx-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--nmx-spacing-sm) var(--nmx-spacing-md);
+  border-radius: var(--nmx-radius-md);
+  font-size: var(--nmx-font-size-xs);
+  font-weight: var(--nmx-font-weight-medium);
+  letter-spacing: var(--nmx-letter-spacing-wide);
+  font-family: var(--nmx-font-sans), serif;
+  line-height: var(--nmx-line-height-normal);
+  white-space: nowrap;
+
+  background: color-mix(
+    in oklab,
+    var(--nmx-badge-bg, var(--nmx-color-primary)) 14%,
+    transparent
+  );
+  color: var(--nmx-badge-text, var(--nmx-color-on-surface));
+
+  @include semantic-variants("nmx-badge", true, true);
+}

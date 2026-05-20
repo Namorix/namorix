@@ -1,0 +1,42 @@
+.nmx-pagination {
+  display: flex;
+  align-items: center;
+  gap: var(--nmx-spacing-sm);
+  font-family: var(--nmx-font-sans), serif;
+
+  &__count {
+    font-size: var(--nmx-font-size-xs);
+    color: var(--nmx-color-on-surface-variant);
+    margin-right: auto;
+  }
+
+  &__info {
+    font-size: var(--nmx-font-size-xs);
+    color: var(--nmx-color-on-surface-variant);
+    padding: 0 var(--nmx-spacing-sm);
+  }
+
+  &__btn {
+    padding: var(--nmx-spacing-xs) var(--nmx-spacing-sm);
+    font-size: var(--nmx-font-size-xs);
+    font-family: inherit;
+    border-radius: var(--nmx-radius-sm);
+    background: transparent;
+    color: var(--nmx-color-on-surface);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+    border: 0;
+
+    &:hover:not(:disabled) {
+      background: var(--nmx-color-surface-low);
+    }
+
+    &:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+  }
+}

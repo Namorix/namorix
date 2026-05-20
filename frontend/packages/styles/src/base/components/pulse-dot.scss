@@ -1,0 +1,30 @@
+@keyframes nmx-pulse-anim {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.nmx-pulse-dot {
+  display: inline-flex;
+  width: calc(var(--nmx-spacing-unit) * 1.5);
+  height: calc(var(--nmx-spacing-unit) * 1.5);
+  border-radius: var(--nmx-radius-half);
+  background: var(--nmx-pulse-color, var(--nmx-color-on-surface-variant));
+
+  &--live {
+    background: var(--nmx-color-success);
+    animation: nmx-pulse-anim 1.4s infinite;
+  }
+
+  &--error {
+    background: var(--nmx-color-error);
+  }
+
+  &--stopped {
+    background: var(--nmx-color-on-surface-variant);
+  }
+}
