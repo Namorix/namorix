@@ -4,7 +4,7 @@
 
 @font-face {
   font-family: "icomoon";
-  src: url("/public/fonts/icomoon/fonts/icomoon.ttf?t4g5l3") format("truetype"), url("/public/fonts/icomoon/fonts/icomoon.woff?t4g5l3") format("woff"), url("/public/fonts/icomoon/fonts/icomoon.svg?t4g5l3#icomoon") format("svg");
+  src: url("/public/fonts/icomoon/fonts/icomoon.ttf?7htxuv") format("truetype"), url("/public/fonts/icomoon/fonts/icomoon.woff?7htxuv") format("woff"), url("/public/fonts/icomoon/fonts/icomoon.svg?7htxuv#icomoon") format("svg");
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -21,6 +21,21 @@
   /* Better Font Rendering =========== */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+.ic-logs:before {
+  content: "\e90a";
+}
+.ic-nodes:before {
+  content: "\e90b";
+}
+.ic-stats:before {
+  content: "\e90c";
+}
+.ic-menu:before {
+  content: "\e909";
+}
+.ic-menu-fold:before {
+  content: "\e908";
 }
 .ic-arrow-next:before {
   content: "\e906";
@@ -134,6 +149,117 @@ body {
   .nmx-split-panel__card {
     width: min(100%, 30rem);
   }
+}
+.nmx-rail {
+  --nmx-rail-current-width: var(--nmx-rail-width);
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+}
+.nmx-rail--collapsed {
+  --nmx-rail-current-width: var(--nmx-rail-collapse-width);
+}
+.nmx-rail-list {
+  display: flex;
+  flex-direction: column;
+  width: var(--nmx-rail-current-width);
+  height: 100%;
+  background: var(--nmx-color-surface-low);
+  box-shadow: var(--nmx-shadow-md);
+  transition: width var(--nmx-duration-normal) var(--nmx-easing-standard);
+}
+.nmx-rail-content {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+}
+.nmx-rail {
+  -webkit-user-select: none;
+  user-select: none;
+}
+.nmx-rail-list__items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nmx-spacing-sm);
+  padding: var(--nmx-spacing-sm);
+}
+.nmx-rail-item {
+  display: flex;
+  align-items: center;
+  gap: var(--nmx-spacing-xs);
+  border-radius: var(--nmx-radius-md);
+  cursor: pointer;
+  background: transparent;
+  font-family: var(--nmx-font-sans), serif;
+  font-size: var(--nmx-font-size-sm);
+  text-align: left;
+  white-space: nowrap;
+  width: 100%;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.nmx-rail-item__toggle {
+  padding-bottom: var(--nmx-spacing-md);
+}
+.nmx-rail-item__toggle .nmx-rail-item__label {
+  color: var(--nmx-color-on-surface);
+  font-size: var(--nmx-font-size-md);
+  font-weight: var(--nmx-font-weight-bold);
+}
+.nmx-rail-item__toggle .nmx-rail-item__btn {
+  color: var(--nmx-color-on-surface);
+}
+.nmx-rail-item__btn {
+  color: var(--nmx-color-on-surface-variant);
+  display: flex;
+  justify-content: center;
+  background: 0;
+  border: 0;
+  outline: 0;
+  padding: var(--nmx-spacing-md);
+  margin: 0;
+  cursor: pointer;
+}
+.nmx-rail-item:hover {
+  background: var(--nmx-color-surface-mid);
+}
+.nmx-rail-item--active {
+  background: var(--nmx-color-surface-high);
+}
+.nmx-rail-item--active .nmx-rail-item__label {
+  color: var(--nmx-color-primary);
+  font-weight: var(--nmx-font-weight-bold);
+}
+.nmx-rail-item--active .nmx-rail-item__btn {
+  color: var(--nmx-color-on-surface);
+}
+.nmx-rail-item__label {
+  opacity: 1;
+  color: var(--nmx-color-on-surface-variant);
+  transition: opacity var(--nmx-duration-normal) var(--nmx-easing-standard);
+}
+.nmx-rail--collapsed .nmx-rail-item__label {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+.nmx-rail-item__icon {
+  flex-shrink: 0;
+  font-size: var(--nmx-font-size-md);
+}
+.nmx-rail-item__toggle {
+  color: var(--nmx-color-on-surface);
+  cursor: auto;
+}
+.nmx-rail-item__toggle:hover {
+  background: transparent;
+}
+.nmx-rail-item__toggle .nmx-rail-item__btn {
+  cursor: pointer;
+  border-radius: var(--nmx-radius-md);
+}
+.nmx-rail-item__toggle .nmx-rail-item__btn:hover {
+  background: var(--nmx-color-surface-high);
 }
 .nmx-addon-root {
   display: flex;
@@ -723,6 +849,42 @@ body {
   color: var(--nmx-color-on-surface);
 }
 :root {
+  --nmx-duration-instant: 0ms;
+  --nmx-duration-fast: 100ms;
+  --nmx-duration-normal: 200ms;
+  --nmx-duration-slow: 300ms;
+  --nmx-duration-slower: 500ms;
+  --nmx-easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --nmx-easing-enter: cubic-bezier(0, 0, 0.2, 1);
+  --nmx-easing-exit: cubic-bezier(0.4, 0, 1, 1);
+  --nmx-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+}
+:root {
+  --nmx-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.06);
+  --nmx-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+  --nmx-shadow-lg:
+    0 8px 24px rgba(0, 0, 0, 0.14), 0 2px 6px rgba(0, 0, 0, 0.08);
+  --nmx-shadow-xl:
+    0 16px 40px rgba(0, 0, 0, 0.18), 0 4px 10px rgba(0, 0, 0, 0.1);
+  --nmx-shadow-inset: inset 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+:root {
+  --nmx-icon-logo: url("data:image/svg+xml,%3c?xml%20version='1.0'%20encoding='UTF-8'%20standalone='no'?%3e%3csvg%20width='240'%20height='240'%20viewBox='0%200%20240%20240'%20fill='none'%20version='1.1'%20id='svg1'%20sodipodi:docname='logo.svg'%20inkscape:version='1.4.3%20(fcd0343856,%202026-01-01)'%20xmlns:inkscape='http://www.inkscape.org/namespaces/inkscape'%20xmlns:sodipodi='http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd'%20xmlns='http://www.w3.org/2000/svg'%20xmlns:svg='http://www.w3.org/2000/svg'%20xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns%23'%20xmlns:cc='http://creativecommons.org/ns%23'%20xmlns:dc='http://purl.org/dc/elements/1.1/'%3e%3cdefs%20id='defs1'%20/%3e%3csodipodi:namedview%20id='namedview1'%20pagecolor='%23ffffff'%20bordercolor='%23000000'%20borderopacity='0.25'%20inkscape:showpageshadow='2'%20inkscape:pageopacity='0.0'%20inkscape:pagecheckerboard='0'%20inkscape:deskcolor='%23d1d1d1'%20inkscape:zoom='1.6395833'%20inkscape:cx='81.728081'%20inkscape:cy='141.80432'%20inkscape:window-width='1920'%20inkscape:window-height='995'%20inkscape:window-x='0'%20inkscape:window-y='0'%20inkscape:window-maximized='1'%20inkscape:current-layer='svg1'%20/%3e%3cmetadata%20id='Namorix-Metadata-Block'%3e%3crdf:RDF%3e%3ccc:Work%20rdf:about=''%3e%3cdc:date%3e2026%3c/dc:date%3e%3cdc:creator%3e%3ccc:Agent%3e%3cdc:title%3eNguyen%20Danh%20Nam%3c/dc:title%3e%3c/cc:Agent%3e%3c/dc:creator%3e%3cdc:rights%3e%3ccc:Agent%3e%3cdc:title%3eNguyen%20Danh%20Nam%3c/dc:title%3e%3c/cc:Agent%3e%3c/dc:rights%3e%3ccc:license%20rdf:resource='https://creativecommons.org/licenses/by-nc-nd/4.0/'%20/%3e%3c/cc:Work%3e%3c/rdf:RDF%3e%3c/metadata%3e%3cg%20id='g1'%20transform='matrix(1.7394412,0,0,1.7394412,-85.61206,-88.73309)'%3e%3cpath%20id='nmx-i'%20d='M%2072,86%20C%2072,79.9249%2067.0751,75%2061,75%2054.9249,75%2050,79.9249%2050,86%20v%2068%20c%200,6.075%204.9249,11%2011,11%206.0751,0%2011,-4.925%2011,-11%20z'%20fill='%23007aff'%20/%3e%3cpath%20id='nmx-glyph-fixed-1'%20d='m%20183.891,96.6655%20c%204.296,-4.2958%204.296,-11.2606%200,-15.5564%20-4.296,-4.2957%20-11.261,-4.2957%20-15.556,0%20l%20-62.226,62.2259%20c%20-4.296,4.295%20-4.296,11.26%200,15.556%204.296,4.296%2011.261,4.296%2015.557,0%20z'%20fill='%231c1c1e'%20/%3e%3cpath%20id='nmx-glyph-no-1'%20d='m%20127.322,102.322%20c%203.515,-3.5144%203.515,-9.2129%200,-12.7276%20-3.514,-3.5147%20-9.213,-3.5147%20-12.728,0%20-3.514,3.5147%20-3.514,9.2132%200,12.7276%203.515,3.515%209.214,3.515%2012.728,0%20z'%20fill='%23007aff'%20/%3e%3cpath%20id='nmx-glyph-no-2'%20d='m%20143.586,118.586%20c%203.515,-3.515%203.515,-9.213%200,-12.728%20-3.515,-3.515%20-9.213,-3.515%20-12.728,0%20-3.515,3.515%20-3.515,9.213%200,12.728%203.515,3.515%209.213,3.515%2012.728,0%20z'%20fill='%23007aff'%20/%3e%3cpath%20id='nmx-glyph-no-3'%20d='m%20159.849,134.849%20c%203.515,-3.514%203.515,-9.213%200,-12.728%20-3.515,-3.514%20-9.213,-3.514%20-12.728,0%20-3.514,3.515%20-3.514,9.214%200,12.728%203.515,3.515%209.213,3.515%2012.728,0%20z'%20fill='%23007aff'%20/%3e%3cpath%20id='nmx-glyph-no-4'%20d='m%20176.113,151.113%20c%203.515,-3.515%203.515,-9.214%200,-12.728%20-3.515,-3.515%20-9.213,-3.515%20-12.728,0%20-3.515,3.514%20-3.515,9.213%200,12.728%203.515,3.514%209.213,3.514%2012.728,0%20z'%20fill='%23007aff'%20/%3e%3c/g%3e%3c/svg%3e");
+  --nmx-icon-app-logs: url("data:image/svg+xml,%3c?xml%20version='1.0'%20encoding='UTF-8'%20standalone='no'?%3e%3csvg%20width='240'%20height='240'%20viewBox='0%200%20240%20240'%20fill='none'%20version='1.1'%20id='svg1'%20sodipodi:docname='app-logs.svg'%20inkscape:version='1.4.3%20(fcd0343856,%202026-01-01)'%20xmlns:inkscape='http://www.inkscape.org/namespaces/inkscape'%20xmlns:sodipodi='http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd'%20xmlns:xlink='http://www.w3.org/1999/xlink'%20xmlns='http://www.w3.org/2000/svg'%20xmlns:svg='http://www.w3.org/2000/svg'%20xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns%23'%20xmlns:cc='http://creativecommons.org/ns%23'%20xmlns:dc='http://purl.org/dc/elements/1.1/'%3e%3cdefs%20id='defs1'%3e%3clinearGradient%20id='linearGradient25'%20inkscape:collect='always'%3e%3cstop%20style='stop-color:%23f59e0b;stop-opacity:1;'%20offset='0'%20id='stop25'%20/%3e%3cstop%20style='stop-color:%23ef4444;stop-opacity:1;'%20offset='1'%20id='stop26'%20/%3e%3c/linearGradient%3e%3clinearGradient%20inkscape:collect='always'%20xlink:href='%23linearGradient25'%20id='linearGradient26'%20x1='16.105961'%20y1='7.2184377'%20x2='222.81886'%20y2='302.43506'%20gradientUnits='userSpaceOnUse'%20/%3e%3c/defs%3e%3csodipodi:namedview%20id='namedview1'%20pagecolor='%23ffffff'%20bordercolor='%23000000'%20borderopacity='0.25'%20inkscape:showpageshadow='2'%20inkscape:pageopacity='0.0'%20inkscape:pagecheckerboard='0'%20inkscape:deskcolor='%23d1d1d1'%20inkscape:zoom='1.1593605'%20inkscape:cx='113.85587'%20inkscape:cy='153.53292'%20inkscape:window-width='1335'%20inkscape:window-height='880'%20inkscape:window-x='194'%20inkscape:window-y='41'%20inkscape:window-maximized='0'%20inkscape:current-layer='svg1'%20/%3e%3cmetadata%20id='Namorix-Metadata-Block'%3e%3crdf:RDF%3e%3ccc:Work%20rdf:about=''%3e%3cdc:title%3eNamorix%20Asset%3c/dc:title%3e%3cdc:date%3e2026%3c/dc:date%3e%3cdc:creator%3e%3ccc:Agent%3e%3cdc:title%3eNguyen%20Danh%20Nam%3c/dc:title%3e%3c/cc:Agent%3e%3c/dc:creator%3e%3cdc:rights%3e%3ccc:Agent%3e%3cdc:title%3eNguyen%20Danh%20Nam%3c/dc:title%3e%3c/cc:Agent%3e%3c/dc:rights%3e%3cdc:description%3eOfficial%20brand%20asset%20for%20the%20Namorix%20Ecosystem.%20Created%20by%20Nguyen%20Danh%20Nam.%3c/dc:description%3e%3ccc:license%20rdf:resource='https://creativecommons.org/licenses/by-nc-nd/4.0/'%20/%3e%3c/cc:Work%3e%3c/rdf:RDF%3e%3c/metadata%3e%3cpath%20id='nmx-bg'%20d='M%20186,0%20H%2054%20C%2024.1766,0%200,24.1766%200,54%20v%20132%20c%200,29.823%2024.1766,54%2054,54%20h%20132%20c%2029.823,0%2054,-24.177%2054,-54%20V%2054%20C%20240,24.1766%20215.823,0%20186,0%20Z'%20fill='%231C1C1E'%20style='mix-blend-mode:normal;fill:url(%23linearGradient26);fill-opacity:1'%20/%3e%3cg%20id='g1'%20transform='matrix(1.375,0,0,1.5714285,-79.375,-68.57142)'%3e%3crect%20id='nmx-glyph-fixed-1'%20x='123'%20y='85'%20width='62'%20height='10'%20rx='5'%20fill='%23ffffff'%20/%3e%3crect%20id='nmx-glyph-fixed-2'%20x='123'%20y='105'%20width='62'%20height='10'%20rx='5'%20fill='%23ffffff'%20/%3e%3crect%20id='nmx-glyph-fixed-3'%20x='105'%20y='125'%20width='80'%20height='10'%20rx='5'%20fill='%23ffffff'%20/%3e%3crect%20id='nmx-glyph-fixed-4'%20x='105'%20y='145'%20width='80'%20height='10'%20rx='5'%20fill='%23ffffff'%20/%3e%3c/g%3e%3c/svg%3e");
+  --nmx-icon-app-settings: url("data:image/svg+xml,%3c?xml%20version='1.0'%20encoding='UTF-8'%20standalone='no'?%3e%3csvg%20width='240'%20height='240'%20viewBox='0%200%20240%20240'%20fill='none'%20version='1.1'%20id='svg1'%20sodipodi:docname='app-settings.svg'%20inkscape:version='1.4.3%20(fcd0343856,%202026-01-01)'%20xmlns:inkscape='http://www.inkscape.org/namespaces/inkscape'%20xmlns:sodipodi='http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd'%20xmlns:xlink='http://www.w3.org/1999/xlink'%20xmlns='http://www.w3.org/2000/svg'%20xmlns:svg='http://www.w3.org/2000/svg'%20xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns%23'%20xmlns:cc='http://creativecommons.org/ns%23'%20xmlns:dc='http://purl.org/dc/elements/1.1/'%3e%3cdefs%20id='defs1'%3e%3clinearGradient%20id='linearGradient1'%20inkscape:collect='always'%3e%3cstop%20style='stop-color:%236d6d72;stop-opacity:1;'%20offset='0'%20id='stop1'%20/%3e%3cstop%20style='stop-color:%2348484a;stop-opacity:1;'%20offset='1'%20id='stop2'%20/%3e%3c/linearGradient%3e%3clinearGradient%20inkscape:collect='always'%20xlink:href='%23linearGradient1'%20id='linearGradient2'%20x1='32.231758'%20y1='15.055914'%20x2='202.38034'%20y2='217.8311'%20gradientUnits='userSpaceOnUse'%20/%3e%3c/defs%3e%3csodipodi:namedview%20id='namedview1'%20pagecolor='%23ffffff'%20bordercolor='%23000000'%20borderopacity='0.25'%20inkscape:showpageshadow='2'%20inkscape:pageopacity='0.0'%20inkscape:pagecheckerboard='0'%20inkscape:deskcolor='%23d1d1d1'%20inkscape:zoom='1.1593605'%20inkscape:cx='136.7133'%20inkscape:cy='163.45218'%20inkscape:window-width='1033'%20inkscape:window-height='995'%20inkscape:window-x='515'%20inkscape:window-y='0'%20inkscape:window-maximized='0'%20inkscape:current-layer='svg1'%20/%3e%3cmetadata%20id='Namorix-Metadata-Block'%3e%3crdf:RDF%3e%3ccc:Work%20rdf:about=''%3e%3cdc:title%3eNamorix%20Asset%3c/dc:title%3e%3cdc:date%3e2026%3c/dc:date%3e%3cdc:creator%3e%3ccc:Agent%3e%3cdc:title%3eNguyen%20Danh%20Nam%3c/dc:title%3e%3c/cc:Agent%3e%3c/dc:creator%3e%3cdc:rights%3e%3ccc:Agent%3e%3cdc:title%3eNguyen%20Danh%20Nam%3c/dc:title%3e%3c/cc:Agent%3e%3c/dc:rights%3e%3cdc:description%3eOfficial%20brand%20asset%20for%20the%20Namorix%20Ecosystem.%20Created%20by%20Nguyen%20Danh%20Nam.%3c/dc:description%3e%3ccc:license%20rdf:resource='https://creativecommons.org/licenses/by-nc-nd/4.0/'%20/%3e%3c/cc:Work%3e%3c/rdf:RDF%3e%3c/metadata%3e%3cpath%20id='nmx-bg'%20d='M186%200H54C24.1766%200%200%2024.1766%200%2054V186C0%20215.823%2024.1766%20240%2054%20240H186C215.823%20240%20240%20215.823%20240%20186V54C240%2024.1766%20215.823%200%20186%200Z'%20fill='%231C1C1E'%20style='fill-opacity:1;fill:url(%23linearGradient2)'%20/%3e%3cg%20id='g1'%20transform='matrix(1.6766826,0,0,1.5333786,-123.11885,-64.006122)'%3e%3cpath%20id='nmx-glyph-fixed-1'%20d='M%20111.25,109.163%20V%20130.8%20c%200,7.95%200,7.95%207.5,13.013%20l%2020.625,11.925%20c%203.112,1.8%208.175,1.8%2011.25,0%20l%2020.625,-11.925%20c%207.5,-5.063%207.5,-5.063%207.5,-12.975%20v%20-21.675%20c%200,-7.913%200,-7.913%20-7.5,-12.9751%20l%20-20.625,-11.925%20c%20-3.075,-1.8%20-8.138,-1.8%20-11.25,0%20l%20-20.625,11.925%20c%20-7.5,5.0621%20-7.5,5.0621%20-7.5,12.9751%20z'%20stroke='%23ffffff'%20stroke-width='10'%20stroke-linecap='round'%20stroke-linejoin='round'%20/%3e%3cpath%20id='nmx-glyph-fixed-2'%20d='m%20145,131.25%20c%206.213,0%2011.25,-5.037%2011.25,-11.25%200,-6.213%20-5.037,-11.25%20-11.25,-11.25%20-6.213,0%20-11.25,5.037%20-11.25,11.25%200,6.213%205.037,11.25%2011.25,11.25%20z'%20stroke='%23ffffff'%20stroke-width='10'%20stroke-linecap='round'%20stroke-linejoin='round'%20/%3e%3c/g%3e%3c/svg%3e");
+  --nmx-icon-app-system-monitor: url("/app-system-monitor.css");
+  --nmx-icon-app-network-traffic: url("/app-network-traffic.css");
+}
+:root {
+  --nmx-split-panel-min-width: 480px;
+  --nmx-split-panel-max-width: 640px;
+}
+:root {
+  /* Color mix */
+  --nmx-color-mix-lighten: white;
+  --nmx-color-mix-darken: black;
+}
+:root {
   /* Radius */
   --nmx-radius-sm: 4px;
   --nmx-radius-md: 8px;
@@ -743,10 +905,8 @@ body {
   --nmx-spacing-6xl: calc(var(--nmx-spacing-unit) * 16); /* 64px */
   --nmx-spacing-7xl: calc(var(--nmx-spacing-unit) * 20); /* 80px */
   --nmx-spacing-8xl: calc(var(--nmx-spacing-unit) * 24); /* 96px */
-}
-:root {
-  --nmx-split-panel-min-width: 480px;
-  --nmx-split-panel-max-width: 640px;
+  --nmx-rail-width: 240px;
+  --nmx-rail-collapse-width: 56px;
 }
 :root {
   --nmx-font-sans: Inter, system-ui, sans-serif;
@@ -785,27 +945,6 @@ body {
   --nmx-line-height-normal: 1.5;
   --nmx-line-height-relaxed: 1.75;
   --nmx-line-height-loose: 2;
-}
-:root {
-  /* Color mix */
-  --nmx-color-mix-lighten: white;
-  --nmx-color-mix-darken: black;
-}
-:root {
-  --nmx-icon-logo: url("data:image/svg+xml,%3c?xml%20version='1.0'%20encoding='UTF-8'%20standalone='no'?%3e%3csvg%20width='240'%20height='240'%20viewBox='0%200%20240%20240'%20fill='none'%20version='1.1'%20id='svg1'%20sodipodi:docname='logo.svg'%20inkscape:version='1.4.3%20(fcd0343856,%202026-01-01)'%20xmlns:inkscape='http://www.inkscape.org/namespaces/inkscape'%20xmlns:sodipodi='http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd'%20xmlns='http://www.w3.org/2000/svg'%20xmlns:svg='http://www.w3.org/2000/svg'%20xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns%23'%20xmlns:cc='http://creativecommons.org/ns%23'%20xmlns:dc='http://purl.org/dc/elements/1.1/'%3e%3cdefs%20id='defs1'%20/%3e%3csodipodi:namedview%20id='namedview1'%20pagecolor='%23ffffff'%20bordercolor='%23000000'%20borderopacity='0.25'%20inkscape:showpageshadow='2'%20inkscape:pageopacity='0.0'%20inkscape:pagecheckerboard='0'%20inkscape:deskcolor='%23d1d1d1'%20inkscape:zoom='1.6395833'%20inkscape:cx='81.728081'%20inkscape:cy='141.80432'%20inkscape:window-width='1920'%20inkscape:window-height='995'%20inkscape:window-x='0'%20inkscape:window-y='0'%20inkscape:window-maximized='1'%20inkscape:current-layer='svg1'%20/%3e%3cmetadata%20id='Namorix-Metadata-Block'%3e%3crdf:RDF%3e%3ccc:Work%20rdf:about=''%3e%3cdc:date%3e2026%3c/dc:date%3e%3cdc:creator%3e%3ccc:Agent%3e%3cdc:title%3eNguyen%20Danh%20Nam%3c/dc:title%3e%3c/cc:Agent%3e%3c/dc:creator%3e%3cdc:rights%3e%3ccc:Agent%3e%3cdc:title%3eNguyen%20Danh%20Nam%3c/dc:title%3e%3c/cc:Agent%3e%3c/dc:rights%3e%3ccc:license%20rdf:resource='https://creativecommons.org/licenses/by-nc-nd/4.0/'%20/%3e%3c/cc:Work%3e%3c/rdf:RDF%3e%3c/metadata%3e%3cg%20id='g1'%20transform='matrix(1.7394412,0,0,1.7394412,-85.61206,-88.73309)'%3e%3cpath%20id='nmx-i'%20d='M%2072,86%20C%2072,79.9249%2067.0751,75%2061,75%2054.9249,75%2050,79.9249%2050,86%20v%2068%20c%200,6.075%204.9249,11%2011,11%206.0751,0%2011,-4.925%2011,-11%20z'%20fill='%23007aff'%20/%3e%3cpath%20id='nmx-glyph-fixed-1'%20d='m%20183.891,96.6655%20c%204.296,-4.2958%204.296,-11.2606%200,-15.5564%20-4.296,-4.2957%20-11.261,-4.2957%20-15.556,0%20l%20-62.226,62.2259%20c%20-4.296,4.295%20-4.296,11.26%200,15.556%204.296,4.296%2011.261,4.296%2015.557,0%20z'%20fill='%231c1c1e'%20/%3e%3cpath%20id='nmx-glyph-no-1'%20d='m%20127.322,102.322%20c%203.515,-3.5144%203.515,-9.2129%200,-12.7276%20-3.514,-3.5147%20-9.213,-3.5147%20-12.728,0%20-3.514,3.5147%20-3.514,9.2132%200,12.7276%203.515,3.515%209.214,3.515%2012.728,0%20z'%20fill='%23007aff'%20/%3e%3cpath%20id='nmx-glyph-no-2'%20d='m%20143.586,118.586%20c%203.515,-3.515%203.515,-9.213%200,-12.728%20-3.515,-3.515%20-9.213,-3.515%20-12.728,0%20-3.515,3.515%20-3.515,9.213%200,12.728%203.515,3.515%209.213,3.515%2012.728,0%20z'%20fill='%23007aff'%20/%3e%3cpath%20id='nmx-glyph-no-3'%20d='m%20159.849,134.849%20c%203.515,-3.514%203.515,-9.213%200,-12.728%20-3.515,-3.514%20-9.213,-3.514%20-12.728,0%20-3.514,3.515%20-3.514,9.214%200,12.728%203.515,3.515%209.213,3.515%2012.728,0%20z'%20fill='%23007aff'%20/%3e%3cpath%20id='nmx-glyph-no-4'%20d='m%20176.113,151.113%20c%203.515,-3.515%203.515,-9.214%200,-12.728%20-3.515,-3.515%20-9.213,-3.515%20-12.728,0%20-3.515,3.514%20-3.515,9.213%200,12.728%203.515,3.514%209.213,3.514%2012.728,0%20z'%20fill='%23007aff'%20/%3e%3c/g%3e%3c/svg%3e");
-  --nmx-icon-app-logs: url("data:image/svg+xml,%3c?xml%20version='1.0'%20encoding='UTF-8'%20standalone='no'?%3e%3csvg%20width='240'%20height='240'%20viewBox='0%200%20240%20240'%20fill='none'%20version='1.1'%20id='svg1'%20sodipodi:docname='app-logs.svg'%20inkscape:version='1.4.3%20(fcd0343856,%202026-01-01)'%20xmlns:inkscape='http://www.inkscape.org/namespaces/inkscape'%20xmlns:sodipodi='http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd'%20xmlns:xlink='http://www.w3.org/1999/xlink'%20xmlns='http://www.w3.org/2000/svg'%20xmlns:svg='http://www.w3.org/2000/svg'%20xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns%23'%20xmlns:cc='http://creativecommons.org/ns%23'%20xmlns:dc='http://purl.org/dc/elements/1.1/'%3e%3cdefs%20id='defs1'%3e%3clinearGradient%20id='linearGradient25'%20inkscape:collect='always'%3e%3cstop%20style='stop-color:%23f59e0b;stop-opacity:1;'%20offset='0'%20id='stop25'%20/%3e%3cstop%20style='stop-color:%23ef4444;stop-opacity:1;'%20offset='1'%20id='stop26'%20/%3e%3c/linearGradient%3e%3clinearGradient%20inkscape:collect='always'%20xlink:href='%23linearGradient25'%20id='linearGradient26'%20x1='16.105961'%20y1='7.2184377'%20x2='222.81886'%20y2='302.43506'%20gradientUnits='userSpaceOnUse'%20/%3e%3c/defs%3e%3csodipodi:namedview%20id='namedview1'%20pagecolor='%23ffffff'%20bordercolor='%23000000'%20borderopacity='0.25'%20inkscape:showpageshadow='2'%20inkscape:pageopacity='0.0'%20inkscape:pagecheckerboard='0'%20inkscape:deskcolor='%23d1d1d1'%20inkscape:zoom='1.1593605'%20inkscape:cx='113.85587'%20inkscape:cy='153.53292'%20inkscape:window-width='1335'%20inkscape:window-height='880'%20inkscape:window-x='194'%20inkscape:window-y='41'%20inkscape:window-maximized='0'%20inkscape:current-layer='svg1'%20/%3e%3cmetadata%20id='Namorix-Metadata-Block'%3e%3crdf:RDF%3e%3ccc:Work%20rdf:about=''%3e%3cdc:title%3eNamorix%20Asset%3c/dc:title%3e%3cdc:date%3e2026%3c/dc:date%3e%3cdc:creator%3e%3ccc:Agent%3e%3cdc:title%3eNguyen%20Danh%20Nam%3c/dc:title%3e%3c/cc:Agent%3e%3c/dc:creator%3e%3cdc:rights%3e%3ccc:Agent%3e%3cdc:title%3eNguyen%20Danh%20Nam%3c/dc:title%3e%3c/cc:Agent%3e%3c/dc:rights%3e%3cdc:description%3eOfficial%20brand%20asset%20for%20the%20Namorix%20Ecosystem.%20Created%20by%20Nguyen%20Danh%20Nam.%3c/dc:description%3e%3ccc:license%20rdf:resource='https://creativecommons.org/licenses/by-nc-nd/4.0/'%20/%3e%3c/cc:Work%3e%3c/rdf:RDF%3e%3c/metadata%3e%3cpath%20id='nmx-bg'%20d='M%20186,0%20H%2054%20C%2024.1766,0%200,24.1766%200,54%20v%20132%20c%200,29.823%2024.1766,54%2054,54%20h%20132%20c%2029.823,0%2054,-24.177%2054,-54%20V%2054%20C%20240,24.1766%20215.823,0%20186,0%20Z'%20fill='%231C1C1E'%20style='mix-blend-mode:normal;fill:url(%23linearGradient26);fill-opacity:1'%20/%3e%3cg%20id='g1'%20transform='matrix(1.375,0,0,1.5714285,-79.375,-68.57142)'%3e%3crect%20id='nmx-glyph-fixed-1'%20x='123'%20y='85'%20width='62'%20height='10'%20rx='5'%20fill='%23ffffff'%20/%3e%3crect%20id='nmx-glyph-fixed-2'%20x='123'%20y='105'%20width='62'%20height='10'%20rx='5'%20fill='%23ffffff'%20/%3e%3crect%20id='nmx-glyph-fixed-3'%20x='105'%20y='125'%20width='80'%20height='10'%20rx='5'%20fill='%23ffffff'%20/%3e%3crect%20id='nmx-glyph-fixed-4'%20x='105'%20y='145'%20width='80'%20height='10'%20rx='5'%20fill='%23ffffff'%20/%3e%3c/g%3e%3c/svg%3e");
-  --nmx-icon-app-settings: url("data:image/svg+xml,%3c?xml%20version='1.0'%20encoding='UTF-8'%20standalone='no'?%3e%3csvg%20width='240'%20height='240'%20viewBox='0%200%20240%20240'%20fill='none'%20version='1.1'%20id='svg1'%20sodipodi:docname='app-settings.svg'%20inkscape:version='1.4.3%20(fcd0343856,%202026-01-01)'%20xmlns:inkscape='http://www.inkscape.org/namespaces/inkscape'%20xmlns:sodipodi='http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd'%20xmlns:xlink='http://www.w3.org/1999/xlink'%20xmlns='http://www.w3.org/2000/svg'%20xmlns:svg='http://www.w3.org/2000/svg'%20xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns%23'%20xmlns:cc='http://creativecommons.org/ns%23'%20xmlns:dc='http://purl.org/dc/elements/1.1/'%3e%3cdefs%20id='defs1'%3e%3clinearGradient%20id='linearGradient1'%20inkscape:collect='always'%3e%3cstop%20style='stop-color:%236d6d72;stop-opacity:1;'%20offset='0'%20id='stop1'%20/%3e%3cstop%20style='stop-color:%2348484a;stop-opacity:1;'%20offset='1'%20id='stop2'%20/%3e%3c/linearGradient%3e%3clinearGradient%20inkscape:collect='always'%20xlink:href='%23linearGradient1'%20id='linearGradient2'%20x1='32.231758'%20y1='15.055914'%20x2='202.38034'%20y2='217.8311'%20gradientUnits='userSpaceOnUse'%20/%3e%3c/defs%3e%3csodipodi:namedview%20id='namedview1'%20pagecolor='%23ffffff'%20bordercolor='%23000000'%20borderopacity='0.25'%20inkscape:showpageshadow='2'%20inkscape:pageopacity='0.0'%20inkscape:pagecheckerboard='0'%20inkscape:deskcolor='%23d1d1d1'%20inkscape:zoom='1.1593605'%20inkscape:cx='136.7133'%20inkscape:cy='163.45218'%20inkscape:window-width='1033'%20inkscape:window-height='995'%20inkscape:window-x='515'%20inkscape:window-y='0'%20inkscape:window-maximized='0'%20inkscape:current-layer='svg1'%20/%3e%3cmetadata%20id='Namorix-Metadata-Block'%3e%3crdf:RDF%3e%3ccc:Work%20rdf:about=''%3e%3cdc:title%3eNamorix%20Asset%3c/dc:title%3e%3cdc:date%3e2026%3c/dc:date%3e%3cdc:creator%3e%3ccc:Agent%3e%3cdc:title%3eNguyen%20Danh%20Nam%3c/dc:title%3e%3c/cc:Agent%3e%3c/dc:creator%3e%3cdc:rights%3e%3ccc:Agent%3e%3cdc:title%3eNguyen%20Danh%20Nam%3c/dc:title%3e%3c/cc:Agent%3e%3c/dc:rights%3e%3cdc:description%3eOfficial%20brand%20asset%20for%20the%20Namorix%20Ecosystem.%20Created%20by%20Nguyen%20Danh%20Nam.%3c/dc:description%3e%3ccc:license%20rdf:resource='https://creativecommons.org/licenses/by-nc-nd/4.0/'%20/%3e%3c/cc:Work%3e%3c/rdf:RDF%3e%3c/metadata%3e%3cpath%20id='nmx-bg'%20d='M186%200H54C24.1766%200%200%2024.1766%200%2054V186C0%20215.823%2024.1766%20240%2054%20240H186C215.823%20240%20240%20215.823%20240%20186V54C240%2024.1766%20215.823%200%20186%200Z'%20fill='%231C1C1E'%20style='fill-opacity:1;fill:url(%23linearGradient2)'%20/%3e%3cg%20id='g1'%20transform='matrix(1.6766826,0,0,1.5333786,-123.11885,-64.006122)'%3e%3cpath%20id='nmx-glyph-fixed-1'%20d='M%20111.25,109.163%20V%20130.8%20c%200,7.95%200,7.95%207.5,13.013%20l%2020.625,11.925%20c%203.112,1.8%208.175,1.8%2011.25,0%20l%2020.625,-11.925%20c%207.5,-5.063%207.5,-5.063%207.5,-12.975%20v%20-21.675%20c%200,-7.913%200,-7.913%20-7.5,-12.9751%20l%20-20.625,-11.925%20c%20-3.075,-1.8%20-8.138,-1.8%20-11.25,0%20l%20-20.625,11.925%20c%20-7.5,5.0621%20-7.5,5.0621%20-7.5,12.9751%20z'%20stroke='%23ffffff'%20stroke-width='10'%20stroke-linecap='round'%20stroke-linejoin='round'%20/%3e%3cpath%20id='nmx-glyph-fixed-2'%20d='m%20145,131.25%20c%206.213,0%2011.25,-5.037%2011.25,-11.25%200,-6.213%20-5.037,-11.25%20-11.25,-11.25%20-6.213,0%20-11.25,5.037%20-11.25,11.25%200,6.213%205.037,11.25%2011.25,11.25%20z'%20stroke='%23ffffff'%20stroke-width='10'%20stroke-linecap='round'%20stroke-linejoin='round'%20/%3e%3c/g%3e%3c/svg%3e");
-  --nmx-icon-app-system-monitor: url("/app-system-monitor.css");
-  --nmx-icon-app-network-traffic: url("/app-network-traffic.css");
-}
-:root {
-  --nmx-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.06);
-  --nmx-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-  --nmx-shadow-lg:
-    0 8px 24px rgba(0, 0, 0, 0.14), 0 2px 6px rgba(0, 0, 0, 0.08);
-  --nmx-shadow-xl:
-    0 16px 40px rgba(0, 0, 0, 0.18), 0 4px 10px rgba(0, 0, 0, 0.1);
-  --nmx-shadow-inset: inset 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 :root {
   /* Core colors */

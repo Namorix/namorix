@@ -1,0 +1,132 @@
+@use "../abstract/mixins" as *;
+
+.nmx-rail {
+  --nmx-rail-current-width: var(--nmx-rail-width);
+
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+
+  &--collapsed {
+    --nmx-rail-current-width: var(--nmx-rail-collapse-width);
+  }
+
+  &-list {
+    display: flex;
+    flex-direction: column;
+    width: var(--nmx-rail-current-width);
+    height: 100%;
+    background: var(--nmx-color-surface-low);
+    box-shadow: var(--nmx-shadow-md);
+    transition: width var(--nmx-duration-normal) var(--nmx-easing-standard);
+  }
+
+  &-content {
+    flex: 1;
+    min-width: 0;
+    overflow: auto;
+  }
+
+  @include no-user-select;
+}
+
+.nmx-rail-list__items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nmx-spacing-sm);
+  padding: var(--nmx-spacing-sm);
+}
+
+.nmx-rail-item {
+  display: flex;
+  align-items: center;
+  gap: var(--nmx-spacing-xs);
+  border-radius: var(--nmx-radius-md);
+  cursor: pointer;
+  background: transparent;
+  font-family: var(--nmx-font-sans), serif;
+  font-size: var(--nmx-font-size-sm);
+  text-align: left;
+  white-space: nowrap;
+  width: 100%;
+
+  @include no-user-select;
+
+  &__toggle {
+    padding-bottom: var(--nmx-spacing-md);
+
+    & .nmx-rail-item__label {
+      color: var(--nmx-color-on-surface);
+      font-size: var(--nmx-font-size-md);
+      font-weight: var(--nmx-font-weight-bold);
+    }
+
+    & .nmx-rail-item__btn {
+      color: var(--nmx-color-on-surface);
+    }
+  }
+
+  &__btn {
+    color: var(--nmx-color-on-surface-variant);
+    display: flex;
+    justify-content: center;
+    background: 0;
+    border: 0;
+    outline: 0;
+    padding: var(--nmx-spacing-md);
+    margin: 0;
+    cursor: pointer;
+  }
+
+  &:hover {
+    background: var(--nmx-color-surface-mid);
+  }
+
+  &--active {
+    background: var(--nmx-color-surface-high);
+  }
+
+  &--active &__label {
+    color: var(--nmx-color-primary);
+    font-weight: var(--nmx-font-weight-bold);
+  }
+
+  &--active &__btn {
+    color: var(--nmx-color-on-surface);
+  }
+
+  &__label {
+    opacity: 1;
+    color: var(--nmx-color-on-surface-variant);
+    transition: opacity var(--nmx-duration-normal) var(--nmx-easing-standard);
+
+    .nmx-rail--collapsed & {
+      opacity: 0;
+      width: 0;
+      overflow: hidden;
+    }
+  }
+
+  &__icon {
+    flex-shrink: 0;
+    font-size: var(--nmx-font-size-md);
+  }
+
+  &__toggle {
+    color: var(--nmx-color-on-surface);
+    cursor: auto;
+
+    &:hover {
+      background: transparent;
+    }
+
+    .nmx-rail-item__btn {
+      cursor: pointer;
+      border-radius: var(--nmx-radius-md);
+
+      &:hover {
+        background: var(--nmx-color-surface-high);
+      }
+    }
+  }
+}
