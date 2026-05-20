@@ -124,10 +124,10 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.12.0 | M3 (Redux rewrite, NetworkTraffic + SystemMonitor addons) |
+| frontend | 0.12.1 | M3 (Settings addon, WindowFrame mount fix, reusable UI components) |
 | @namorix/core | 0.10.5 | M3 (Addon manifest defaultWidth, defaultHeight, preferFullSize) |
-| @namorix/styles | 0.9.0 | M3 (New icons: network-traffic, system-monitor; SCSS tweaks) |
-| @namorix/ui | 0.6.4 | M3 (APP_SYSTEM_MONITOR, APP_NETWORK_TRAFFIC icon symbols) |
+| @namorix/styles | 0.10.0 | M3 (New component SCSS: badge, chip, pulse-dot, pagination, data-table, addon) |
+| @namorix/ui | 0.7.0 | M3 (NmxBadge, NmxChip, NmxPulseDot, NmxPagination, NmxDataTable) |
 | backend | 0.20.1 | M3 (NetworkTraffic backend Phase 1 + fixes) |
 
 ## Version Rules
@@ -147,6 +147,14 @@
 | backend | Bug fixes, C# config tweaks | New endpoint, new service, auth feature |
 
 ## Version History
+
+### 2026-05-20 (Reusable UI components + Settings addon + WindowFrame mount fix)
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/styles | 0.10.0 | NEW: 6 component SCSS (badge, chip, pulse-dot, pagination, data-table, addon). NEW: --nmx-radius-half token. MODIFIED: index.scss — 6 new @forward entries. UPDATED: icomoon glyphs, theme CSS rebuilt, window.scss. |
+| @namorix/ui | 0.7.0 | NEW: NmxBadge (severity/status badge), NmxChip (toggleable filter chip), NmxPulseDot (animated status dot), NmxPagination (pagination controls), NmxDataTable (data-driven grid table with columns+rows API, subgrid, fallback states, clickable rows). NEW: NmxIconFontSymbol.ARROW_PREV, ARROW_NEXT. |
+| frontend | 0.12.1 | FIX: WindowFrame addon mount — use win.app (addon ID) thay winId (Redux window ID). NEW: Settings addon — content implementation (+212 lines). MODIFIED: useAddonMount, useWindowHandlers, WindowFrameView. UPDATED: vite.config.ts proxy target. |
 
 ### 2026-05-20 (NetworkTraffic backend Phase 1.5 — fixes)
 

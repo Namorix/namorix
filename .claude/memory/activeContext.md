@@ -32,6 +32,12 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic Phase 1 ✅
 - **@namorix/ui (0.6.3 → 0.6.4)**: Thêm `APP_SYSTEM_MONITOR`, `APP_NETWORK_TRAFFIC` icon symbols.
 - **frontend**: New addons — NetworkTraffic, SystemMonitor. Config module `config/windowDefaults.ts` cache CSS tokens. WindowFrame tách 6 hook. Fix drag restore (threshold-based), double-click restore dưới cursor, icon MAXIMIZE/RESTORE swap, min resize từ CSS token.
 
+### 2026-05-20 — Reusable UI components + Settings addon + WindowFrame mount fix
+
+- **@namorix/styles (0.9.0 → 0.10.0)**: NEW 6 component SCSS (badge, chip, pulse-dot, pagination, data-table, addon). NEW `--nmx-radius-half` token. UPDATED icomoon glyphs, theme CSS rebuilt.
+- **@namorix/ui (0.6.4 → 0.7.0)**: NEW NmxBadge (severity badge), NmxChip (toggleable filter chip), NmxPulseDot (animated status dot), NmxPagination (prev/next + count), NmxDataTable (data-driven grid with columns/rows/subgrid/fallback/clickable). NEW `ARROW_PREV`, `ARROW_NEXT` icon symbols.
+- **frontend (0.12.0 → 0.12.1)**: FIX WindowFrame addon mount — pass `win.app` (addon ID) instead of `winId` (Redux window ID) to `useAddonMount`. Settings addon expanded (+212 lines). Updated vite proxy target.
+
 ### 2026-05-20 — NetworkTraffic Backend Phase 1.5 (fixes)
 
 - **backend (0.20.0 → 0.20.1)**: FIX: middleware từ HashSet → ConcurrentDictionary<(string,string),int> có EndpointId, Stopwatch đo duration, CountingStream đo Response.Body BytesWritten, IP→TrafficAddressId cache, ConcurrentDictionary cho Registry. FIX: CleanupWorker IServiceScopeFactory, Label init→set, typo + return/continue. NEW: UseTrafficMonitorAsync async scan [TrafficMonitor] controller, gắn attribute vào 8 controller. MODIFIED: Program.cs await UseTrafficMonitorAsync.
