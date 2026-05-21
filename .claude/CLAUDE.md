@@ -582,3 +582,13 @@ If only major/minor known: set `PATCH = 0` (e.g. legacy `v0.8` → `0.8.0`)
 ## Giao Tiếp Bằng Tiếng Việt
 Luôn giao tiếp với người dùng bằng tiếng Việt. Tất cả phản hồi, giải thích, câu hỏi đều dùng tiếng Việt.
 
+## Confirm Completion Before Moving On
+
+IF người dùng chưa nói "Xong" / "Ok" / "Done":
+- Chỉ xử lý đúng vấn đề đang bàn, không gợi ý thêm.
+
+IF người dùng nói "Xong" / "Ok" / "Done":
+- Phải dùng tool đọc lại toàn bộ file liên quan — không dựa vào memory.
+- Chỉ sau khi đọc xong mới được báo cáo trạng thái hoặc suggest bước tiếp.
+- Không được claim còn lỗi nếu chưa thật sự đọc file bằng tool.
+- Nếu không có tool access → nói rõ "chưa đọc được file, bạn paste lên đi".

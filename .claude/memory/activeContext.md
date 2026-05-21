@@ -25,6 +25,12 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic Phase 1 ✅
 
 ## Recent Changes
 
+### 2026-05-21 — SignalR backend (Hubs, topic broadcasting, typed records)
+
+- **backend (0.20.2 → 0.21.0)**: NEW SignalR infrastructure — NmxHub (auth check + traffic subscribe/unsubscribe), SignalRTrafficNotifier (broadcast `traffic:new-logs` to group), SignalRSystemNotifier (broadcast `system:config-changed` to all), typed records (TrafficLogsFlushed, ConfigChanged, ThemeChanged), constants (SignalGroups, SignalEvents). MODIFIED: Program.cs (AddSignalR + MapHub + DI), AuthMiddleware (ClaimTypes.NameIdentifier for SignalR user mapping), CsrfMiddleware (skip /hubs), SettingsService (ISystemNotifier broadcast), TrafficFlushWorker (ITrafficNotifier after flush), UserController (user:theme-changed per user).
+- **frontend (0.14.0 → 0.14.1)**: FIX NetworkTraffic.tsx — removed unused `useState` import.
+- **@namorix/styles (0.12.0 → 0.12.1)**: SCSS cleanup (rail, network-traffic, theme CSS).
+
 ### 2026-05-21 — cache module (useTabCache, Show), NetworkTraffic refactor
 
 - **@namorix/core (0.12.0 → 0.13.0)**: NEW `cache/` module — `useTabCache()` hook (lazy mount + CSS hide + idle unmount via useReducer pattern), `Show` component (conditional render wrapper using `hidden` attribute). Exported from barrel.

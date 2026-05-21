@@ -18,7 +18,7 @@ Browser-based desktop shell, self-hosted.
 | Database | SQLite + EF Core |
 | Auth | JWT (access + refresh) with HttpOnly cookies |
 | Terminal | xterm.js |
-| Realtime | SignalR (planned) |
+| Realtime | SignalR |
 | Server-to-server | gRPC (planned) |
 | Docker | Docker.DotNet.Enhanced (planned) |
 

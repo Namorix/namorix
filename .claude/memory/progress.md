@@ -124,11 +124,11 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.14.0 | M3 (useTabCache, Show component, NetworkTraffic cache refactor) |
+| frontend | 0.14.1 | M3 (SignalR cleanup, NetworkTraffic import cleanup, SCSS tweaks) |
 | @namorix/core | 0.13.0 | M3 (cache module: useTabCache hook, Show component) |
-| @namorix/styles | 0.12.0 | M3 (stat-card SCSS, grid layout SCSS, shell addon SCSS, spacings mixin) |
+| @namorix/styles | 0.12.1 | M3 (rail SCSS, network-traffic SCSS cleanup) |
 | @namorix/ui | 0.9.0 | M3 (NmxStatCard, NmxGrid layout, canvas.ts, cxSpacing, NmxSpacing type) |
-| backend | 0.20.2 | M3 (launchSettings.json) |
+| backend | 0.21.0 | M3 (SignalR realtime: NmxHub, notifiers, topic broadcasting) |
 
 ## Version Rules
 
@@ -147,6 +147,14 @@
 | backend | Bug fixes, C# config tweaks | New endpoint, new service, auth feature |
 
 ## Version History
+
+### 2026-05-21 (SignalR backend: Hubs, notifiers, topic broadcasting)
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| backend | 0.21.0 | NEW: `Hubs/NmxHub.cs` — auth check, SubscribeTraffic/UnsubscribeTraffic. NEW: `Hubs/SignalRTrafficNotifier.cs` — ITrafficNotifier implement, broadcast to "traffic" group. NEW: `Hubs/SignalRSystemNotifier.cs` — ISystemNotifier implement, broadcast system:config-changed. NEW: `Core/Infrastructure/ITrafficNotifier.cs` + `ISystemNotifier.cs` — interfaces. NEW: `Core/Infrastructure/SignalREvents.cs` — typed records (TrafficLogsFlushed, ConfigChanged, ThemeChanged). NEW: `Core/Constants/SignalR.cs` — SignalGroups + SignalEvents constants. MODIFIED: `Program.cs` — AddSignalR, MapHub, DI for both notifiers. MODIFIED: `AuthMiddleware.cs` — added ClaimTypes.NameIdentifier (SignalR user mapping). MODIFIED: `CsrfMiddleware.cs` — skip /hubs path. MODIFIED: `SettingsService.cs` — inject ISystemNotifier, broadcast on SetRegisterEnabled. MODIFIED: `TrafficFlushWorker.cs` — resolve ITrafficNotifier from scope, notify after flush. MODIFIED: `UserController.cs` — inject IHubContext, broadcast user:theme-changed per user. MODIFIED: `TrafficMonitorController.cs` — removed `[TrafficMonitor]`. |
+| frontend | 0.14.1 | FIX: NetworkTraffic.tsx — removed unused `useState` import. |
+| @namorix/styles | 0.12.1 | MODIFIED: rail.scss, network-traffic.scss, index.scss, theme CSS — cleanup. |
 
 ### 2026-05-21 (cache module: useTabCache, Show component, NetworkTraffic refactor)
 
