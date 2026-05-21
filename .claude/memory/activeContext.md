@@ -25,6 +25,14 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic Phase 2 (SignalR
 
 ## Recent Changes
 
+### 2026-05-21 — Sparkline fix, auth cache, backend SignalR refinements
+
+- **@namorix/core (0.14.0 → 0.14.1)**: MODIFIED `auth/auth.service.ts` — cache `getAuthStatus()` result, tránh request trùng lặp.
+- **@namorix/ui (0.9.0 → 0.9.1)**: FIX `canvas.ts` — sparkline 1-data-point x coordinate NaN (dùng `plot.length` thay `data.length`). FIX `NmxStatCard.tsx` — sparkline color resolve từ `semantic` prop, không qua CSS variable. MODIFIED `cx.ts` — utility updates.
+- **@namorix/styles (0.12.1 → 0.12.2)**: MODIFIED `auth.scss` — minor fix.
+- **backend (0.22.0 → 0.22.1)**: NEW `NmxHubFilter` — IHubFilter centralized error handling. MODIFIED `Program.cs` — AddFilter, EnableDetailedErrors, rate limiter policy partition skips `/hubs`. Minor cleanup.
+- **frontend (0.15.0 → 0.15.1)**: FIX `auth.controller.ts` — stopConnection on logout. FIX `Login.tsx`, `Register.tsx`, `main.tsx` — page refinements. DELETED `traffic.controller.ts` (dead code, replaced by SignalR). MODIFIED `NetworkTrafficOverview.tsx` — signalr event-driven stats.
+
 ### 2026-05-21 — SignalR frontend integration (core signalr module, event-driven traffic, middleware fixes)
 
 - **@namorix/core (0.13.0 → 0.14.0)**: NEW `signalr/` module — `signalr.service.ts` (connection singleton with `@microsoft/signalr`), `useSignalR` hook (connection lifecycle tied to Desktop mount/unmount), `useSignalREvent` hook (typed event subscription), `useSignalRGroup` hook (group subscribe/unsubscribe with `onreconnected` handler), `constants.ts` (SignalRGroups, SignalREvent, typed payload records), `utils.ts` (capitalize, groupMethod).
@@ -110,6 +118,13 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic Phase 2 (SignalR
 
 ### Fingerprint Validation Strategy ✅ (Resolved — Strict)
 Đã là **Strict mode**: fingerprint mismatch → `RevokeAllUserTokens`. Không cần xét IP. Code ở `RefreshToken()` lines 165-171 đã kiểm tra fingerprint !== stored fingerprint và revoke ngay.
+
+### MessagePack Protocol — Deferred (JSON đủ dùng hiện tại)
+
+- SignalR default protocol là JSON, đủ cho payload hiện tại (4 int/double fields + 1-2 strings per event)
+- MessagePack giảm kích thước wire transfer ~30-50% nhưng chỉ có lợi khi payload lớn (50+ records/event)
+- **Khi nào bật:** Khi SignalR bắt đầu push batch data (>20 records/event) hoặc có metrics với nhiều float arrays
+- **Kích hoạt:** `.AddMessagePackProtocol()` trong `AddSignalR()`, thêm `@messagepack` trên frontend
 
 ### Token Refresh Strategy
 - Auto-refresh on 401 handled in `RequestBuilder.json()` (HTTP client level, transparent to callers)

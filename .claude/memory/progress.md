@@ -124,11 +124,11 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.15.0 | M3 (SignalR realtime integration: useSignalR, event-driven polling) |
-| @namorix/core | 0.14.0 | M3 (signalr module: service, hooks, constants, group management) |
-| @namorix/styles | 0.12.1 | M3 (SCSS fixes: stat-card, rail, theme rebuild) |
-| @namorix/ui | 0.9.0 | M3 (NmxStatCard, NmxGrid layout, canvas.ts, cxSpacing, NmxSpacing type) |
-| backend | 0.22.0 | M3 (SignalR frontend integration, CountingStream fix, path constants) |
+| frontend | 0.15.1 | M3 (auth page refinements, sparkline fix, dead code cleanup) |
+| @namorix/core | 0.14.1 | M3 (auth.service.ts getAuthStatus cache) |
+| @namorix/styles | 0.12.2 | M3 (auth.scss minor) |
+| @namorix/ui | 0.9.1 | M3 (sparkline 1-data-point fix, semantic color, cx fix) |
+| backend | 0.22.1 | M3 (NmxHubFilter, rate limiter policy partition, minor fixes) |
 
 ## Version Rules
 
@@ -163,6 +163,16 @@
 | @namorix/core | 0.14.0 | NEW: `signalr/` module — `signalr.service.ts` (connection singleton, start/stop/state), `useSignalR.ts` (connection lifecycle hook), `useSignalREvent.ts` (typed event subscription hook), `useSignalRGroup.ts` (group subscribe/unsubscribe with reconnect), `constants.ts` (SignalRGroups, SignalREvent, typed payloads), `utils.ts` (capitalize, groupMethod). MODIFIED: `apiRoutes.ts` — added `HUB_MAIN`. MODIFIED: `index.ts` — barrel export. |
 | frontend | 0.15.0 | NEW: `vite.config.ts` — `/hubs` proxy with WebSocket support. NEW: `package.json` — `@microsoft/signalr` dependency. NEW: `Desktop.tsx` — `useSignalR(true)` on mount. NEW: `auth.controller.ts` — `stopConnection()` on logout. NEW: `useTrafficGroup.ts` — SignalR traffic group subscription. MODIFIED: `useTrafficStatsPolling.ts` — replaced 5s REST polling with event-driven `traffic:new-logs`. |
 | backend | 0.22.0 | NEW: `Core/Constants/SignalR.cs` — `SignalRPaths` (HubPrefix, HubMain). MODIFIED: `ITrafficNotifier.cs` — removed `int count` param from `NotifyFlushAsync`. MODIFIED: `SignalREvents.cs` — `TrafficLogsFlushed` changed from `int Count` to full stats record. MODIFIED: `SignalRTrafficNotifier.cs` — inject `TrafficMonitorService`, push aggregate stats. MODIFIED: `TrafficMonitorMiddleware.cs` — skip `/hubs` (fix sync write crash). MODIFIED: `CsrfMiddleware.cs` — use `SignalRPaths.HubPrefix`. MODIFIED: `Program.cs` — use `SignalRPaths.HubMain`. MODIFIED: `TrafficFlushWorker.cs` — `NotifyFlushAsync()` no param. |
+
+### 2026-05-21 (SignalR refinements: hub filter, rate limit partition, sparkline fix, auth cache)
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| backend | 0.22.1 | NEW: `Hubs/NmxHubFilter.cs` — IHubFilter for centralized error handling. MODIFIED: `Program.cs` — AddFilter, EnableDetailedErrors, rate limiter policy partition (skip `/hubs`). MODIFIED: `NmxHub.cs` — hub tweaks. MODIFIED: `TrafficFlushWorker.cs`, `SignalRTrafficNotifier.cs` — cleanup. |
+| @namorix/core | 0.14.1 | MODIFIED: `auth/auth.service.ts` — added cache for `getAuthStatus()`. |
+| @namorix/ui | 0.9.1 | FIX: `canvas.ts` — sparkline 1-data-point NaN x coordinate. FIX: `NmxStatCard.tsx` — semantic color resolves from prop, not CSS variable. MODIFIED: `cx.ts` — utility updates. |
+| @namorix/styles | 0.12.2 | MODIFIED: `auth.scss` — minor fix. |
+| frontend | 0.15.1 | FIX: `auth.controller.ts` — stopConnection on logout. FIX: `Login.tsx`, `Register.tsx` — page refinements. FIX: `main.tsx` — updates. DELETED: `traffic.controller.ts` (dead code, replaced by SignalR). MODIFIED: `NetworkTrafficOverview.tsx` — signalr event-driven stats. |
 
 ### 2026-05-21 (cache module: useTabCache, Show component, NetworkTraffic refactor)
 
