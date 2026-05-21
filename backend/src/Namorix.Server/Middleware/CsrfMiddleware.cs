@@ -17,7 +17,7 @@ public class CsrfMiddleware(RequestDelegate requestDelegate, IOptions<AppConfig>
             return;
         }
 
-        if (httpContext.Request.Path.StartsWithSegments("/hubs"))
+        if (httpContext.Request.Path.StartsWithSegments(SignalRPath.HubPrefix))
         {
             await requestDelegate(httpContext);
             return;

@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Security.Claims;
 using Namorix.Adapters.Persistence;
+using Namorix.Core.Constants;
 using Namorix.Core.Infrastructure;
 using Namorix.Core.Models;
 
@@ -14,6 +15,12 @@ public class TrafficMonitorMiddleware(RequestDelegate requestDelegate)
 
     public async Task InvokeAsync(HttpContext httpContext, AppDbContext appDbContext)
     {
+        if (httpContext.Request.Path.StartsWithSegments(SignalRPath.HubPrefix))
+        {
+            await requestDelegate(httpContext);
+            return;
+        }
+        
         var originalBody = httpContext.Response.Body;
         var countingStream = new CountingStream(originalBody);
         httpContext.Response.Body = countingStream;

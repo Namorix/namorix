@@ -42,7 +42,7 @@ public class UserController : ControllerBase
 
         await userService.SetThemeAsync(userId.Value, request.ThemeId);
         await hubContext.Clients.User(userId.Value.ToString())
-            .SendAsync(SignalEvents.UserThemeChanged, new ThemeChanged(request.ThemeId));
+            .SendAsync(SignalREvents.UserThemeChanged, new ThemeChanged(request.ThemeId));
         return Ok(ApiResponse.Ok());
     }
 

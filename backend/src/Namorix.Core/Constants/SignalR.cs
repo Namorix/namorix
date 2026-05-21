@@ -1,11 +1,17 @@
 namespace Namorix.Core.Constants;
 
-public static class SignalGroups
+public static class SignalRPath
+{
+    public const string HubPrefix = "/hubs";
+    public const string HubMain = "/hubs/main";
+}
+
+public static class SignalRGroups
 {
     public const string Traffic = "traffic";
 }
 
-public static class SignalEvents
+public static class SignalREvents
 {
     public const string TrafficNewLogs = "traffic:new-logs";
     public const string SystemConfigChanged = "system:config-changed";

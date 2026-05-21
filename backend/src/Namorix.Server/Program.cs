@@ -130,5 +130,5 @@ app.UseNotFoundHandler();
 app.UseRateLimiter();
 app.UseCsrfProtection();
 app.MapControllers();
-app.MapHub<NmxHub>("/hubs/main");
+app.MapHub<NmxHub>(SignalRPath.HubMain);
 app.Run();

@@ -7,5 +7,5 @@ namespace Namorix.Server.Hubs;
 public class SignalRSystemNotifier(IHubContext<NmxHub> hubContext): ISystemNotifier
 {
     public Task NotifyConfigChangedAsync(string key) =>
-        hubContext.Clients.All.SendAsync(SignalEvents.SystemConfigChanged, new ConfigChanged(key));
+        hubContext.Clients.All.SendAsync(SignalREvents.SystemConfigChanged, new ConfigChanged(key));
 }

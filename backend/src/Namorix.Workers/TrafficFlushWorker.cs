@@ -37,7 +37,7 @@ public class TrafficFlushWorker(IServiceScopeFactory scopeFactory,
                 db.TrafficLogs.AddRange(batch);
                 await db.SaveChangesAsync(stoppingToken);
                 var notifier = scope.ServiceProvider.GetRequiredService<ITrafficNotifier>();
-                await notifier.NotifyFlushAsync(batch.Count);
+                await notifier.NotifyFlushAsync();
                 batch.Clear();
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)

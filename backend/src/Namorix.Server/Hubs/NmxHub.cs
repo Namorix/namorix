@@ -18,11 +18,11 @@ public class NmxHub: Hub
 
     public async Task SubscribeTraffic()
     {
-        await Groups.AddToGroupAsync(Context.ConnectionId, SignalGroups.Traffic);
+        await Groups.AddToGroupAsync(Context.ConnectionId, SignalRGroups.Traffic);
     }
 
     public async Task UnsubscribeTraffic()
     {
-        await Groups.RemoveFromGroupAsync(Context.ConnectionId, SignalGroups.Traffic);
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, SignalRGroups.Traffic);
     }
 }

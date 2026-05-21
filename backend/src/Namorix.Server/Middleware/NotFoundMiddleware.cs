@@ -9,8 +9,7 @@ public class NotFoundMiddleware(RequestDelegate requestDelegate)
     {
         await requestDelegate(httpContext);
 
-        if (httpContext.Response.StatusCode == StatusCodes.Status404NotFound &&
-            !httpContext.Response.HasStarted)
+        if (httpContext.Response is { StatusCode: StatusCodes.Status404NotFound, HasStarted: false })
         {
             httpContext.Response.ContentType = System.Net.Mime.MediaTypeNames.Application.Json;
             await httpContext.Response.WriteAsJsonAsync(
