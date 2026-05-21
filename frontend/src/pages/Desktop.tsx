@@ -8,7 +8,11 @@ export const Desktop: React.FC = () => {
   useEffect(() => {
     const onMouseDown = (e: MouseEvent) => {
       const target = e.target as HTMLElement
-      if (!target.closest(".nmx-window-frame")) {
+
+      if (
+        !target.closest(".nmx-window-frame") &&
+        !target.closest(".nmx-taskbar__app-btn")
+      ) {
         dispatch(defocusAll())
       }
     }
