@@ -124,8 +124,8 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.13.1 | M3 (NmxStatCard, NmxGrid, traffic controller, polling hook, i18n) |
-| @namorix/core | 0.11.0 | M3 (ApiTrafficRoutes, http.query() method) |
+| frontend | 0.13.2 | M3 (defineAddon factory, addon context, defocus fix) |
+| @namorix/core | 0.12.0 | M3 (defineAddon factory, AddonContextProvider, useAddonContext hook) |
 | @namorix/styles | 0.12.0 | M3 (stat-card SCSS, grid layout SCSS, shell addon SCSS, spacings mixin) |
 | @namorix/ui | 0.9.0 | M3 (NmxStatCard, NmxGrid layout, canvas.ts, cxSpacing, NmxSpacing type) |
 | backend | 0.20.2 | M3 (launchSettings.json) |
@@ -147,6 +147,13 @@
 | backend | Bug fixes, C# config tweaks | New endpoint, new service, auth feature |
 
 ## Version History
+
+### 2026-05-21 (defineAddon factory, addon context, Desktop defocus fix)
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.12.0 | NEW: `factory.tsx` — `defineAddon()` factory (createRoot + mount + unmount boilerplate). NEW: `context.tsx` — `AddonContextProvider`, `useAddonContext()` hook. MODIFIED: `index.ts` barrel — exports factory + context. DELETED: `NmxAddonBase.ts` (replaced by defineAddon). |
+| frontend | 0.13.2 | FIX: Desktop.tsx defocus handler — exclude `.nmx-taskbar__app-btn` để cho phép minimize toggle. REFACTOR: 4 addon files (LogViewer, NetworkTraffic, Settings, SystemMonitor) → dùng `defineAddon()`. |
 
 ### 2026-05-20 (NmxStatCard, NmxGrid, canvas sparkline, traffic controller + polling)
 

@@ -25,6 +25,11 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic Phase 1 ✅
 
 ## Recent Changes
 
+### 2026-05-21 — defineAddon factory, addon context, Desktop defocus fix
+
+- **@namorix/core (0.11.0 → 0.12.0)**: NEW `factory.tsx` — `defineAddon()` factory (tự động createRoot/mount/unmount). NEW `context.tsx` — `AddonContextProvider` wrapper + `useAddonContext()` hook cho addon đọc context từ shell. DELETED `NmxAddonBase.ts`.
+- **frontend (0.13.1 → 0.13.2)**: FIX Desktop.tsx — global mousedown defocus exclude `.nmx-taskbar__app-btn`. REFACTOR LogViewer, NetworkTraffic, Settings, SystemMonitor → dùng `defineAddon()`.
+
 ### 2026-05-20 — NmxStatCard, NmxGrid, canvas sparkline, traffic controller + polling
 
 - **@namorix/core (0.10.5 → 0.11.0)**: NEW `ApiTrafficRoutes` (base, endpoints, logs, stats). NEW `http.query(params)` method for clean URLSearchParams handling.
