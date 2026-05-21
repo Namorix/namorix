@@ -886,17 +886,24 @@ body {
 .nmx-data-table--ellipsis-disabled {
   text-overflow: clip;
 }
-.nmx-data-table__cell--fallback-content {
+.nmx-data-table__row-fallback-content {
   grid-column: 1/-1;
   text-align: center;
   font-style: italic;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   color: var(--nmx-color-on-surface-variant);
 }
-.nmx-data-table__cell--fallback-content--error {
+.nmx-data-table__row-fallback-content--error {
   color: var(--nmx-color-error);
 }
-.nmx-data-table__cell--fallback-content--loading {
+.nmx-data-table__row-fallback-content--loading {
   color: var(--nmx-color-on-surface);
+}
+.nmx-data-table__row-fallback-content--empty {
+  color: var(--nmx-color-warning);
 }
 .nmx-stat-card {
   display: flex;

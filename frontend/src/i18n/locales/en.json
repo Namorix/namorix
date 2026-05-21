@@ -89,7 +89,12 @@
         "method": "Method",
         "path": "Path",
         "label": "Label",
-        "enabled": "Enabled"
+        "enabled": "Enabled",
+        "fallbacks": {
+          "error": "Connection failed. Please try again",
+          "loading": "Loading network endpoints...",
+          "empty": "No network endpoints detected"
+        }
       }
     }
   }

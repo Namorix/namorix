@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { trafficController, type TrafficEndpoint } from "./traffic.controller"
-import type { NmxDataTableColumn } from "../../../packages/ui/src/Components/NmxDataTable/NmxDataTable.type"
+import type {
+  NmxDataTableColumn,
+  NmxDataTableFallback,
+} from "../../../packages/ui/src/Components/NmxDataTable/NmxDataTable.type"
 import { NmxBadge, NmxDataTable, type NmxSemanticColor } from "@namorix/ui"
 import { type HttpMethod, HttpMethods } from "@namorix/core"
 
@@ -19,12 +22,14 @@ export const NetworkTrafficEndpoints: React.FC = () => {
   const { t } = useTranslation()
   const [endpoints, setEndpoints] = useState<TrafficEndpoint[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState()
 
   useEffect(() => {
     trafficController
       .listEndpoints()
       .then(setEndpoints)
       .finally(() => setLoading(false))
+      .catch((err) => setError(err))
   }, [])
 
   if (loading) {
@@ -73,6 +78,24 @@ export const NetworkTrafficEndpoints: React.FC = () => {
     },
   ]
 
+  const fallbackCondition: NmxDataTableFallback[] = [
+    {
+      state: "loading",
+      condition: loading,
+      content: t("addon.networkTraffic.endpoints.fallbacks.loading"),
+    },
+    {
+      state: "error",
+      condition: error,
+      content: t("addon.networkTraffic.endpoints.fallbacks.error"),
+    },
+    {
+      state: "empty",
+      condition: !endpoints || endpoints.length <= 0,
+      content: t("addon.networkTraffic.endpoints.fallbacks.empty"),
+    },
+  ]
+
   const onRowClick = (row: TrafficEndpoint) => {
     console.log(row)
   }
@@ -84,6 +107,7 @@ export const NetworkTrafficEndpoints: React.FC = () => {
         rows={endpoints}
         clickableRows
         onRowClick={onRowClick}
+        fallbackConditions={fallbackCondition}
       />
     </div>
   )
