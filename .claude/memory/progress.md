@@ -124,11 +124,11 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.15.1 | M3 (auth page refinements, sparkline fix, dead code cleanup) |
-| @namorix/core | 0.14.1 | M3 (auth.service.ts getAuthStatus cache) |
-| @namorix/styles | 0.12.2 | M3 (auth.scss minor) |
-| @namorix/ui | 0.9.1 | M3 (sparkline 1-data-point fix, semantic color, cx fix) |
-| backend | 0.22.1 | M3 (NmxHubFilter, rate limiter policy partition, minor fixes) |
+| frontend | 0.16.0 | M3 (NetworkTraffic endpoints tab, NmxBadge bgEnabled, NmxDataTable ellipsis) |
+| @namorix/core | 0.14.2 | M3 (HttpMethods + HttpMethod type constants) |
+| @namorix/styles | 0.12.3 | M3 (SCSS badge/data-table/network-traffic tweaks) |
+| @namorix/ui | 0.9.2 | M3 (NmxBadge bgEnabled prop, NmxDataTable ellipsis disable) |
+| backend | 0.23.0 | M3 (TrafficX attributes, middleware dual-priority scan, controller refactor) |
 
 ## Version Rules
 
@@ -173,6 +173,16 @@
 | @namorix/ui | 0.9.1 | FIX: `canvas.ts` — sparkline 1-data-point NaN x coordinate. FIX: `NmxStatCard.tsx` — semantic color resolves from prop, not CSS variable. MODIFIED: `cx.ts` — utility updates. |
 | @namorix/styles | 0.12.2 | MODIFIED: `auth.scss` — minor fix. |
 | frontend | 0.15.1 | FIX: `auth.controller.ts` — stopConnection on logout. FIX: `Login.tsx`, `Register.tsx` — page refinements. FIX: `main.tsx` — updates. DELETED: `traffic.controller.ts` (dead code, replaced by SignalR). MODIFIED: `NetworkTrafficOverview.tsx` — signalr event-driven stats. |
+
+### 2026-05-21 (TrafficMonitorAttribute redesign: TrafficX attributes, middleware refactor, auto-disable register)
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| backend | 0.23.0 | NEW: `Core/Attributes/TrafficMonitorAttribute.cs` — TrafficGet/Post/Put/Delete/Patch attributes extending HttpMethodAttribute with Label. MODIFIED: `Server/Extensions/ApplicationBuilderExtensions.cs` — UseTrafficMonitorAsync only scans TrafficX attributes (Label property), removes old [TrafficMonitor] fallback scan. MODIFIED: `Controllers/AuthController.cs` — replace [HttpX] with [TrafficX], auto-disable register after first admin registration. DELETED: 7 controllers — removed [TrafficMonitor] class-level attribute. DELETED: `Hubs/NmxHub.cs` — unused using. |
+| frontend | 0.16.0 | NEW: `NetworkTrafficEndpoints.tsx` — NmxDataTable-based endpoints tab. MODIFIED: `NetworkTraffic.tsx` — wire endpoints tab with isMounted + Show. MODIFIED: `traffic.controller.ts` — added listEndpoints(). MODIFIED: `i18n/en.json` — endpoints tab keys. |
+| @namorix/ui | 0.9.2 | MODIFIED: `NmxBadge.tsx` — added bgEnabled prop. MODIFIED: `NmxDataTable.tsx` + `NmxDataTable.type.ts` — added disableEllipsisHeader, disableEllipsisCell props, CSS class rename. |
+| @namorix/styles | 0.12.3 | MODIFIED: badge.scss, data-table.scss, network-traffic.scss, index.scss — SCSS tweaks. |
+| @namorix/core | 0.14.2 | NEW: `constants.ts` — HttpMethods object + HttpMethod type. |
 
 ### 2026-05-21 (cache module: useTabCache, Show component, NetworkTraffic refactor)
 

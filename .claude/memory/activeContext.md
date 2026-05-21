@@ -25,6 +25,14 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic Phase 2 (SignalR
 
 ## Recent Changes
 
+### 2026-05-21 — TrafficMonitorAttribute redesign: TrafficX attributes, middleware refactor, endpoints tab
+
+- **backend (0.22.1 → 0.23.0)**: NEW TrafficGet/Post/Put/Delete/Patch attributes extending HttpMethodAttribute with Label. MODIFIED `UseTrafficMonitorAsync` — chỉ scan TrafficX (Label property), bỏ fallback [TrafficMonitor] filter. MODIFIED `AuthController` — `[HttpPost]` → `[TrafficPost]` trên all methods, auto-disable register sau khi tạo admin. DELETED `[TrafficMonitor]` class-level trên 7 controllers.
+- **frontend (0.15.1 → 0.16.0)**: NEW `NetworkTrafficEndpoints.tsx` — endpoints tab với NmxDataTable. MODIFIED `NetworkTraffic.tsx` — wire endpoints tab. MODIFIED `traffic.controller.ts` — `listEndpoints()`. NEW i18n keys.
+- **@namorix/ui (0.9.1 → 0.9.2)**: MODIFIED `NmxBadge.tsx` — `bgEnabled` prop. MODIFIED `NmxDataTable` — `disableEllipsisHeader`, `disableEllipsisCell`.
+- **@namorix/styles (0.12.2 → 0.12.3)**: SCSS tweaks for badge, data-table, network-traffic.
+- **@namorix/core (0.14.1 → 0.14.2)**: NEW `HttpMethods` + `HttpMethod` type.
+
 ### 2026-05-21 — Sparkline fix, auth cache, backend SignalR refinements
 
 - **@namorix/core (0.14.0 → 0.14.1)**: MODIFIED `auth/auth.service.ts` — cache `getAuthStatus()` result, tránh request trùng lặp.
