@@ -11,8 +11,8 @@ export interface NmxRailListProps extends WithBaseProps {
   onActiveTabChange?: (key: string) => void
 }
 
-export interface NmxRailItemData {
-  key: string
+export interface NmxRailItemData<T = string> {
+  key: T
   label: string
   icon: NmxIconFontSymbol
 }

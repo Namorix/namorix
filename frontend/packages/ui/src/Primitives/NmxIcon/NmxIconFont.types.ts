@@ -12,6 +12,9 @@ export const NmxIconFontSymbol = {
   LOGS: "ic-logs",
   NODES: "ic-nodes",
   STATS: "ic-stats",
+  APPEARANCE: "ic-appearance",
+  SETTING: "ic-setting",
+  USER: "ic-user",
 } as const
 
 export type NmxIconFontSymbol =
