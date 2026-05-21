@@ -10,3 +10,15 @@ export const AuthConstraints = {
   username: { minLength: 1, maxLength: 32 },
   password: { minLength: 8 },
 }
+
+export const HttpMethods = {
+  GET: "GET",
+  POST: "POST",
+  PUT: "PUT",
+  PATCH: "PATCH",
+  DELETE: "DELETE",
+  HEAD: "HEAD",
+  OPTIONS: "OPTIONS",
+} as const
+
+export type HttpMethod = (typeof HttpMethods)[keyof typeof HttpMethods]
