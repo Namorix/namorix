@@ -25,6 +25,11 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic Phase 1 ✅
 
 ## Recent Changes
 
+### 2026-05-21 — cache module (useTabCache, Show), NetworkTraffic refactor
+
+- **@namorix/core (0.12.0 → 0.13.0)**: NEW `cache/` module — `useTabCache()` hook (lazy mount + CSS hide + idle unmount via useReducer pattern), `Show` component (conditional render wrapper using `hidden` attribute). Exported from barrel.
+- **frontend (0.13.2 → 0.14.0)**: REFACTOR NetworkTraffic addon — dùng `useTabCache<Tab>` + `Show` component + i18n title key.
+
 ### 2026-05-21 — defineAddon factory, addon context, Desktop defocus fix
 
 - **@namorix/core (0.11.0 → 0.12.0)**: NEW `factory.tsx` — `defineAddon()` factory (tự động createRoot/mount/unmount). NEW `context.tsx` — `AddonContextProvider` wrapper + `useAddonContext()` hook cho addon đọc context từ shell. DELETED `NmxAddonBase.ts`.

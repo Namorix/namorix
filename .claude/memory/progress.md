@@ -124,8 +124,8 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.13.2 | M3 (defineAddon factory, addon context, defocus fix) |
-| @namorix/core | 0.12.0 | M3 (defineAddon factory, AddonContextProvider, useAddonContext hook) |
+| frontend | 0.14.0 | M3 (useTabCache, Show component, NetworkTraffic cache refactor) |
+| @namorix/core | 0.13.0 | M3 (cache module: useTabCache hook, Show component) |
 | @namorix/styles | 0.12.0 | M3 (stat-card SCSS, grid layout SCSS, shell addon SCSS, spacings mixin) |
 | @namorix/ui | 0.9.0 | M3 (NmxStatCard, NmxGrid layout, canvas.ts, cxSpacing, NmxSpacing type) |
 | backend | 0.20.2 | M3 (launchSettings.json) |
@@ -147,6 +147,13 @@
 | backend | Bug fixes, C# config tweaks | New endpoint, new service, auth feature |
 
 ## Version History
+
+### 2026-05-21 (cache module: useTabCache, Show component, NetworkTraffic refactor)
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.13.0 | NEW: `cache/` module — `useTabCache()` hook (lazy mount + CSS hide + idle unmount via useReducer), `Show` component (render when `when` prop is true, hidden otherwise). MODIFIED: `index.ts` barrel — exports cache module. |
+| frontend | 0.14.0 | REFACTOR: NetworkTraffic addon — dùng `useTabCache` + `Show` thay manual `useState` + conditional render. i18n: thêm `addon.networkTraffic.overview.title` key. |
 
 ### 2026-05-21 (defineAddon factory, addon context, Desktop defocus fix)
 
