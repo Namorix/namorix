@@ -87,7 +87,7 @@
 - [ ] Vitest tests for auth.service (no test files exist yet)
 
 ### M3 — System Addons (Built-in)
-**Status:** Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic Phase 1 ✅
+**Status:** Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic Phase 1 ✅ + Settings Addon ✅
 
 - [x] Desktop shell UI (taskbar, launcher, desktop area)
 - [x] Zustand stores (windows, launcher, geometry, taskbarRect)
@@ -101,7 +101,7 @@
 - [x] **Zustand → Redux migration** (4 stores → 3 slices, normalized state, memoized selectors, 10 component files rewritten)
 - [x] **NetworkTraffic backend Phase 1** — models, middleware, service, controller, workers, DI
 - [ ] Internal addon: Terminal
-- [ ] Internal addon: Settings (includes theme picker UI)
+- [x] Internal addon: Settings (includes theme picker UI)
 
 ### M4 — External Addon System (Docker)
 **Status:** Not Started
@@ -124,11 +124,11 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.16.0 | M3 (NetworkTraffic endpoints tab, NmxBadge bgEnabled, NmxDataTable ellipsis) |
-| @namorix/core | 0.14.2 | M3 (HttpMethods + HttpMethod type constants) |
-| @namorix/styles | 0.12.3 | M3 (SCSS badge/data-table/network-traffic tweaks) |
-| @namorix/ui | 0.9.2 | M3 (NmxBadge bgEnabled prop, NmxDataTable ellipsis disable) |
-| backend | 0.23.0 | M3 (TrafficX attributes, middleware dual-priority scan, controller refactor) |
+| frontend | 0.17.0 | M3 (Settings full app: NmxRail + 3 tabs + theme picker + system + account) |
+| @namorix/core | 0.15.0 | M3 (themeStore module, useThemeStore hook, ApiSettingsRoutes, ApiAuthRoutes.password) |
+| @namorix/styles | 0.13.0 | M3 (tag-input component SCSS, Settings addon styles) |
+| @namorix/ui | 0.10.0 | M3 (NmxTagInput component, APPEARANCE/SETTING/USER icon symbols) |
+| backend | 0.23.1 | M3 (fix cyclic reference TrafficAddress, migration regen) |
 
 ## Version Rules
 
@@ -147,6 +147,16 @@
 | backend | Bug fixes, C# config tweaks | New endpoint, new service, auth feature |
 
 ## Version History
+
+### 2026-05-21 (Settings addon: full 3 tabs, NmxTagInput, themeStore, controllers; NetworkTraffic Logs/Threats)
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.15.0 | NEW: `theme/themeStore.ts` — module-level singleton for cross-root theme state with get/set/subscribe. NEW: `useThemeStore()` hook. NEW: `ApiSettingsRoutes` (proxies, origins). NEW: `ApiUserRoutes.password`. MODIFIED: `ThemeProvider.tsx` — refactored to use themeStore for state management (broadcast via `themeStore.set()`). MODIFIED: `apiRoutes.ts` — added settings routes, fixed theme route. |
+| @namorix/ui | 0.10.0 | NEW: `NmxTagInput` primitive — controlled tag input with keyboard shortcuts (Enter/Tab/comma to create, Backspace to remove last, Escape to close dropdown), dropdown suggestions with "Create" fallback. MODIFIED: `NmxIconFont.types.ts` — added APPEARANCE, SETTING, USER icon symbols. |
+| @namorix/styles | 0.13.0 | NEW: `components/tag-input.scss` — flexbox wrap container, inline tag chips, remove button, absolute dropdown. NEW: `components/addon.scss` — Settings addon styles (theme-item, theme-list, list-item). MODIFIED: `icomoon` — new glyphs for settings icons. MODIFIED: `spacing.scss` — token updates. |
+| frontend | 0.17.0 | NEW: Settings addon — NmxRail + 3 tabs (Appearance with theme picker + themeStore, System with NmxForm + NmxTagInput for proxies/origins, Account with user info + change password form). NEW: `settings.controller.ts` — getProxies, setProxies, getOrigins, setOrigins. NEW: `NetworkTrafficLogs.tsx` — NmxDataTable with pagination. NEW: `NetworkTrafficThreats.tsx` — placeholder. NEW: `utils.ts` — helper functions. MODIFIED: `Settings.tsx` — replaced mock with NmxRail layout. MODIFIED: `NetworkTraffic.tsx` — wire logs tab. MODIFIED: `traffic.controller.ts` — listLogs pagination. MODIFIED: `en.json` — settings + network traffic i18n keys. |
+| backend | 0.23.1 | FIX: `TrafficAddress.cs` — removed cyclic reference (ICollection\<TrafficLog\>). MODIFIED: `TrafficMonitorService.cs` — minor fix. DELETED: old migration `20260519154427_InitialCreate`. NEW: migration `20260521134753_InitialCreate` (regenerated). |
 
 ### 2026-05-21 (SignalR backend: Hubs, notifiers, topic broadcasting)
 

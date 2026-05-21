@@ -2,7 +2,7 @@
 
 ## Current Work Focus
 
-M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic Phase 2 (SignalR) ✅
+M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic Phase 2 (SignalR) ✅ + Settings Addon ✅
 
 - Desktop shell: Taskbar, DesktopArea, WindowManager, Launcher ✅
 - DesktopArea + Taskbar refactored into modular sub-components (DesktopIcon, DesktopAreaView, TaskbarAppButton, TaskbarView) ✅
@@ -24,6 +24,14 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic Phase 2 (SignalR
 - Xóa 5 file Zustand store cũ (`stores/`)
 
 ## Recent Changes
+
+### 2026-05-21 — Settings addon (full 3 tabs), NmxTagInput, themeStore, NetworkTraffic Logs/Threats
+
+- **@namorix/core (0.14.2 → 0.15.0)**: NEW `theme/themeStore.ts` — module-level singleton for cross-root theme state (get/set/subscribe). NEW `useThemeStore()` hook. MODIFIED `ThemeProvider.tsx` — refactored to use themeStore (broadcast via `themeStore.set()`). NEW `ApiSettingsRoutes` (proxies, origins). NEW `ApiUserRoutes.password`.
+- **@namorix/ui (0.9.2 → 0.10.0)**: NEW `NmxTagInput` — controlled tag input with keyboard shortcuts (Enter/Tab/comma tạo tag, Backspace xoá cuối, Escape đóng dropdown), suggestions "Create" fallback. NEW icon symbols: APPEARANCE, SETTING, USER.
+- **@namorix/styles (0.12.3 → 0.13.0)**: NEW `tag-input.scss`. NEW Settings addon styles trong `addon.scss`. New icomoon glyphs. Spacing token updates.
+- **frontend (0.16.0 → 0.17.0)**: NEW Settings addon — NmxRail + 3 tabs (Appearance theme picker, System proxies/origins form, Account info + change password). NEW `settings.controller.ts`. NEW `NetworkTrafficLogs.tsx` + `NetworkTrafficThreats.tsx` + `utils.ts`. MODIFIED `Settings.tsx` — replace mock. MODIFIED `i18n/en.json` — settings + network traffic keys.
+- **backend (0.23.0 → 0.23.1)**: FIX `TrafficAddress.cs` — removed cyclic reference. Migration regenerated.
 
 ### 2026-05-21 — TrafficMonitorAttribute redesign: TrafficX attributes, middleware refactor, endpoints tab
 
@@ -180,6 +188,5 @@ Cả 3 attribute filter (`RequireAuthAttribute`, `RequireAdminAttribute`, `Requi
 
 1. M3 — Internal addon: File Manager
 2. M3 — Internal addon: Terminal (xterm.js)
-3. M3 — Internal addon: Settings
-4. Write Vitest tests for auth.service
-5. Add Vietnamese translations (vi.json is empty)
+3. Write Vitest tests for auth.service
+4. Add Vietnamese translations (vi.json is empty)
