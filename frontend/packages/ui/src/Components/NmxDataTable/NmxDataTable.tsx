@@ -32,7 +32,7 @@ function alignClass(
 ): string {
   return !align || align === "start"
     ? ""
-    : `nmx-data-table__${kind}-cell-align-${align}`
+    : `nmx-data-table__${kind}-cell--align-${align}`
 }
 
 export const NmxDataTable = <T extends object>({
@@ -79,6 +79,10 @@ export const NmxDataTable = <T extends object>({
               className={cx(
                 "nmx-data-table__header-cell",
                 alignClass("header", col.alignHeader),
+                {
+                  "nmx-data-table--ellipsis-disabled":
+                    col.disableEllipsisHeader === true,
+                },
               )}
             >
               {col.header}
@@ -137,6 +141,10 @@ export const NmxDataTable = <T extends object>({
                       className={cx(
                         "nmx-data-table__row-cell",
                         alignClass("row", col.alignCell),
+                        {
+                          "nmx-data-table--ellipsis-disabled":
+                            col.disableEllipsisCell === true,
+                        },
                       )}
                     >
                       {col.renderCell(row, rowIndex)}

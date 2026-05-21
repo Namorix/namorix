@@ -9,6 +9,8 @@ export interface NmxDataTableColumn<T = unknown> {
   grow?: number
   alignHeader?: NmxDataTableAlignType
   alignCell?: NmxDataTableAlignType
+  disableEllipsisHeader?: boolean
+  disableEllipsisCell?: boolean
 }
 
 export interface NmxDataTableFallback {
