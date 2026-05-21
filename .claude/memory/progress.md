@@ -124,11 +124,11 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.14.1 | M3 (SignalR cleanup, NetworkTraffic import cleanup, SCSS tweaks) |
-| @namorix/core | 0.13.0 | M3 (cache module: useTabCache hook, Show component) |
-| @namorix/styles | 0.12.1 | M3 (rail SCSS, network-traffic SCSS cleanup) |
+| frontend | 0.15.0 | M3 (SignalR realtime integration: useSignalR, event-driven polling) |
+| @namorix/core | 0.14.0 | M3 (signalr module: service, hooks, constants, group management) |
+| @namorix/styles | 0.12.1 | M3 (SCSS fixes: stat-card, rail, theme rebuild) |
 | @namorix/ui | 0.9.0 | M3 (NmxStatCard, NmxGrid layout, canvas.ts, cxSpacing, NmxSpacing type) |
-| backend | 0.21.0 | M3 (SignalR realtime: NmxHub, notifiers, topic broadcasting) |
+| backend | 0.22.0 | M3 (SignalR frontend integration, CountingStream fix, path constants) |
 
 ## Version Rules
 
@@ -155,6 +155,14 @@
 | backend | 0.21.0 | NEW: `Hubs/NmxHub.cs` — auth check, SubscribeTraffic/UnsubscribeTraffic. NEW: `Hubs/SignalRTrafficNotifier.cs` — ITrafficNotifier implement, broadcast to "traffic" group. NEW: `Hubs/SignalRSystemNotifier.cs` — ISystemNotifier implement, broadcast system:config-changed. NEW: `Core/Infrastructure/ITrafficNotifier.cs` + `ISystemNotifier.cs` — interfaces. NEW: `Core/Infrastructure/SignalREvents.cs` — typed records (TrafficLogsFlushed, ConfigChanged, ThemeChanged). NEW: `Core/Constants/SignalR.cs` — SignalGroups + SignalEvents constants. MODIFIED: `Program.cs` — AddSignalR, MapHub, DI for both notifiers. MODIFIED: `AuthMiddleware.cs` — added ClaimTypes.NameIdentifier (SignalR user mapping). MODIFIED: `CsrfMiddleware.cs` — skip /hubs path. MODIFIED: `SettingsService.cs` — inject ISystemNotifier, broadcast on SetRegisterEnabled. MODIFIED: `TrafficFlushWorker.cs` — resolve ITrafficNotifier from scope, notify after flush. MODIFIED: `UserController.cs` — inject IHubContext, broadcast user:theme-changed per user. MODIFIED: `TrafficMonitorController.cs` — removed `[TrafficMonitor]`. |
 | frontend | 0.14.1 | FIX: NetworkTraffic.tsx — removed unused `useState` import. |
 | @namorix/styles | 0.12.1 | MODIFIED: rail.scss, network-traffic.scss, index.scss, theme CSS — cleanup. |
+
+### 2026-05-21 (SignalR frontend integration: core signalr module, event-driven traffic, middleware fixes)
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.14.0 | NEW: `signalr/` module — `signalr.service.ts` (connection singleton, start/stop/state), `useSignalR.ts` (connection lifecycle hook), `useSignalREvent.ts` (typed event subscription hook), `useSignalRGroup.ts` (group subscribe/unsubscribe with reconnect), `constants.ts` (SignalRGroups, SignalREvent, typed payloads), `utils.ts` (capitalize, groupMethod). MODIFIED: `apiRoutes.ts` — added `HUB_MAIN`. MODIFIED: `index.ts` — barrel export. |
+| frontend | 0.15.0 | NEW: `vite.config.ts` — `/hubs` proxy with WebSocket support. NEW: `package.json` — `@microsoft/signalr` dependency. NEW: `Desktop.tsx` — `useSignalR(true)` on mount. NEW: `auth.controller.ts` — `stopConnection()` on logout. NEW: `useTrafficGroup.ts` — SignalR traffic group subscription. MODIFIED: `useTrafficStatsPolling.ts` — replaced 5s REST polling with event-driven `traffic:new-logs`. |
+| backend | 0.22.0 | NEW: `Core/Constants/SignalR.cs` — `SignalRPaths` (HubPrefix, HubMain). MODIFIED: `ITrafficNotifier.cs` — removed `int count` param from `NotifyFlushAsync`. MODIFIED: `SignalREvents.cs` — `TrafficLogsFlushed` changed from `int Count` to full stats record. MODIFIED: `SignalRTrafficNotifier.cs` — inject `TrafficMonitorService`, push aggregate stats. MODIFIED: `TrafficMonitorMiddleware.cs` — skip `/hubs` (fix sync write crash). MODIFIED: `CsrfMiddleware.cs` — use `SignalRPaths.HubPrefix`. MODIFIED: `Program.cs` — use `SignalRPaths.HubMain`. MODIFIED: `TrafficFlushWorker.cs` — `NotifyFlushAsync()` no param. |
 
 ### 2026-05-21 (cache module: useTabCache, Show component, NetworkTraffic refactor)
 

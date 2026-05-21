@@ -2,7 +2,7 @@
 
 ## Current Work Focus
 
-M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic Phase 1 ✅
+M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic Phase 2 (SignalR) ✅
 
 - Desktop shell: Taskbar, DesktopArea, WindowManager, Launcher ✅
 - DesktopArea + Taskbar refactored into modular sub-components (DesktopIcon, DesktopAreaView, TaskbarAppButton, TaskbarView) ✅
@@ -25,11 +25,11 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic Phase 1 ✅
 
 ## Recent Changes
 
-### 2026-05-21 — SignalR backend (Hubs, topic broadcasting, typed records)
+### 2026-05-21 — SignalR frontend integration (core signalr module, event-driven traffic, middleware fixes)
 
-- **backend (0.20.2 → 0.21.0)**: NEW SignalR infrastructure — NmxHub (auth check + traffic subscribe/unsubscribe), SignalRTrafficNotifier (broadcast `traffic:new-logs` to group), SignalRSystemNotifier (broadcast `system:config-changed` to all), typed records (TrafficLogsFlushed, ConfigChanged, ThemeChanged), constants (SignalGroups, SignalEvents). MODIFIED: Program.cs (AddSignalR + MapHub + DI), AuthMiddleware (ClaimTypes.NameIdentifier for SignalR user mapping), CsrfMiddleware (skip /hubs), SettingsService (ISystemNotifier broadcast), TrafficFlushWorker (ITrafficNotifier after flush), UserController (user:theme-changed per user).
-- **frontend (0.14.0 → 0.14.1)**: FIX NetworkTraffic.tsx — removed unused `useState` import.
-- **@namorix/styles (0.12.0 → 0.12.1)**: SCSS cleanup (rail, network-traffic, theme CSS).
+- **@namorix/core (0.13.0 → 0.14.0)**: NEW `signalr/` module — `signalr.service.ts` (connection singleton with `@microsoft/signalr`), `useSignalR` hook (connection lifecycle tied to Desktop mount/unmount), `useSignalREvent` hook (typed event subscription), `useSignalRGroup` hook (group subscribe/unsubscribe with `onreconnected` handler), `constants.ts` (SignalRGroups, SignalREvent, typed payload records), `utils.ts` (capitalize, groupMethod).
+- **frontend (0.14.0 → 0.15.0)**: NEW Vite proxy for `/hubs` with `ws: true`. NEW `@microsoft/signalr` dependency. MODIFIED `Desktop.tsx` — `useSignalR(true)` on authenticated Desktop mount. MODIFIED `auth.controller.ts` — `stopConnection()` before API logout call. REPLACED `useTrafficStatsPolling.ts` — removed 5s REST polling, now event-driven via SignalR `traffic:new-logs` with aggregate stats payload.
+- **backend (0.21.0 → 0.22.0)**: NEW `SignalRPaths` constants (HubPrefix, HubMain). FIX `ITrafficNotifier.NotifyFlushAsync()` — removed `int count` param. FIX `TrafficLogsFlushed` record — `int Count` → full stats record. FIX `SignalRTrafficNotifier` — inject `TrafficMonitorService`, push aggregate stats on flush. FIX `TrafficMonitorMiddleware` — skip `/hubs` to avoid CountingStream sync write crash. REFACTOR `CsrfMiddleware`, `Program.cs` — use `SignalRPaths` constants.
 
 ### 2026-05-21 — cache module (useTabCache, Show), NetworkTraffic refactor
 
@@ -158,6 +158,5 @@ Cả 3 attribute filter (`RequireAuthAttribute`, `RequireAdminAttribute`, `Requi
 1. M3 — Internal addon: File Manager
 2. M3 — Internal addon: Terminal (xterm.js)
 3. M3 — Internal addon: Settings
-4. M4 — SignalR + backend addon metadata
-5. Write Vitest tests for auth.service
-6. Add Vietnamese translations (vi.json is empty)
+4. Write Vitest tests for auth.service
+5. Add Vietnamese translations (vi.json is empty)
