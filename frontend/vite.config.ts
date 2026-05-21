@@ -23,6 +23,11 @@ export default defineConfig({
           })
         },
       },
+      "/hubs": {
+        target: "http://192.168.31.150:5000",
+        changeOrigin: true,
+        ws: true,
+      },
     },
   },
   resolve: {

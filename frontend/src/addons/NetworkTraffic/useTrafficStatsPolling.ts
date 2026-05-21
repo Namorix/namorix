@@ -1,34 +1,21 @@
-import { useEffect, useState } from "react"
-import { trafficController, type TrafficStats } from "./traffic.controller"
+import { useState } from "react"
+import {
+  SignalREvent,
+  SignalRGroups,
+  type TrafficLogsFlushed,
+  useSignalREvent,
+  useSignalRGroup,
+} from "@namorix/core"
 
-export function useTrafficStatsPolling(intervalMs = 30000, historySize = 20) {
-  const [stats, setStats] = useState<TrafficStats | null>(null)
-  const [history, setHistory] = useState<TrafficStats[]>([])
+export function useTrafficStatsPolling(historySize = 20) {
+  const [stats, setStats] = useState<TrafficLogsFlushed | null>(null)
+  const [history, setHistory] = useState<TrafficLogsFlushed[]>([])
 
-  useEffect(() => {
-    let running = true
-
-    const poll = () => {
-      trafficController
-        .getStats()
-        .then((s) => {
-          if (!running) {
-            return
-          }
-
-          setStats(s)
-          setHistory((prev) => [...prev.slice(1 - historySize + 1), s])
-        })
-        .catch(console.error)
-    }
-
-    poll()
-    const id = setInterval(poll, intervalMs)
-    return () => {
-      running = false
-      clearInterval(id)
-    }
-  }, [historySize, intervalMs])
+  useSignalRGroup(SignalRGroups.Traffic, true)
+  useSignalREvent<TrafficLogsFlushed>(SignalREvent.TrafficNewLogs, (data) => {
+    setStats(data)
+    setHistory((prev) => [...prev, data].slice(-historySize))
+  })
 
   const requestHistory = history.map((s) => s.totalRequests)
   const errorRateHistory = history.map((s) =>
