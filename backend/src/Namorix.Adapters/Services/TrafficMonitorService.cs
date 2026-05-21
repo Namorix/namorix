@@ -44,6 +44,8 @@ public class TrafficMonitorService(AppDbContext appDbContext)
 
         var total = await query.LongCountAsync();
         var items = await query
+            .Include(l => l.Endpoint)
+            .Include(l => l.TrafficAddress) 
             .OrderByDescending(l => l.Timestamp)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
