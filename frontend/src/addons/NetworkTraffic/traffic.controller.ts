@@ -1,14 +1,3 @@
-import { ApiError, ApiTrafficRoutes, getApiBaseUrl, http } from "@namorix/core"
-
-export interface TrafficStats {
-  totalRequests: number
-  errorCount: number
-  avgDurationMs: number
-  avgResponseSizeBytes: number
-  statusCodes: Record<string, number>
-  byEndpoint: EndpointStats[]
-}
-
 export interface EndpointStats {
   endpointId: number
   path: string
@@ -38,17 +27,3 @@ export interface TrafficLog {
   userId?: number
   timestamp: string
 }
-
-async function getStats(from?: string, to?: string): Promise<TrafficStats> {
-  const data = await http
-    .url(getApiBaseUrl() + ApiTrafficRoutes.stats)
-    .query({ from, to })
-    .get()
-    .json<TrafficStats>()
-  if (!data.success) {
-    throw ApiError.fromResponse(data)
-  }
-  return data.data
-}
-
-export const trafficController = { getStats }

@@ -20,6 +20,7 @@ export const NetworkTrafficOverview: React.FC = () => {
     <div className="nmx-network-traffic__overview">
       <NmxGrid cols={2}>
         <NmxStatCard
+          semantic="success"
           label={t("addon.networkTraffic.overview.stats.totalRequests")}
           value={stats?.totalRequests}
           sparkData={requestHistory}
@@ -37,6 +38,7 @@ export const NetworkTrafficOverview: React.FC = () => {
         />
 
         <NmxStatCard
+          semantic="warning"
           label={t("addon.networkTraffic.overview.stats.avgLatency")}
           value={
             stats?.avgDurationMs != null
@@ -48,6 +50,7 @@ export const NetworkTrafficOverview: React.FC = () => {
         />
 
         <NmxStatCard
+          semantic="info"
           label={t("addon.networkTraffic.overview.stats.avgSize")}
           value={stats ? (stats.avgResponseSizeBytes / 1024).toFixed(1) : null}
           unit={t("addon.networkTraffic.overview.stats.avgSizeUnit")}

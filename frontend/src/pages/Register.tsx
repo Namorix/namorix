@@ -16,7 +16,7 @@ import {
 } from "@namorix/ui"
 import { useTranslation } from "react-i18next"
 import { Link, useNavigate } from "react-router-dom"
-import { authController } from "../controllers/auth.controller"
+import { authController } from "../controllers"
 import {
   AuthConstraints,
   authService,
@@ -24,7 +24,7 @@ import {
   validate,
   ValidationFields,
 } from "@namorix/core"
-import { useAuthForm } from "../hooks/useAuthForm"
+import { useAuthForm } from "../hooks"
 
 export const Register: React.FC = () => {
   const { t } = useTranslation()

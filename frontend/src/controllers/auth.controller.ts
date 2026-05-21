@@ -4,6 +4,7 @@ import {
   ApiUserRoutes,
   getApiBaseUrl,
   http,
+  invalidateAuthStatusCache,
   NMX_THEME_STORAGE_KEY,
   stopConnection,
 } from "@namorix/core"
@@ -37,6 +38,7 @@ async function register(username: string, password: string): Promise<void> {
 }
 
 async function logout(): Promise<void> {
+  invalidateAuthStatusCache()
   await stopConnection()
   const data = await http
     .url(getApiBaseUrl() + ApiAuthRoutes.logout)

@@ -21,11 +21,12 @@ import { Link, useNavigate } from "react-router-dom"
 import {
   AuthConstraints,
   DefaultPaths,
+  getAuthStatusCache,
   validate,
   ValidationFields,
 } from "@namorix/core"
-import { authController } from "../controllers/auth.controller"
-import { useAuthForm } from "../hooks/useAuthForm"
+import { authController } from "../controllers"
+import { useAuthForm } from "../hooks"
 
 export const Login: React.FC = () => {
   const { t } = useTranslation()
@@ -139,15 +140,17 @@ export const Login: React.FC = () => {
                   uppercase
                 />
               </NmxFormActions>
-              <NmxCardFooter className="nmx-auth-view__card__footer">
-                <span>{t("auth.login.secondaryText")}</span>
-                <Link
-                  to={DefaultPaths.REGISTER}
-                  className="nmx-auth-view__secondary-link"
-                >
-                  {t("auth.login.secondaryActionLabel")}
-                </Link>
-              </NmxCardFooter>
+              {getAuthStatusCache()?.registerEnabled && (
+                <NmxCardFooter className="nmx-auth-view__card__footer">
+                  <span>{t("auth.login.secondaryText")}</span>
+                  <Link
+                    to={DefaultPaths.REGISTER}
+                    className="nmx-auth-view__secondary-link"
+                  >
+                    {t("auth.login.secondaryActionLabel")}
+                  </Link>
+                </NmxCardFooter>
+              )}
             </NmxForm>
           </NmxCardBody>
         </NmxCardContent>
