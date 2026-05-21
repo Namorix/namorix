@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.SignalR;
-using Namorix.Adapters.Services;
 using Namorix.Core.Constants;
 using Namorix.Core.Infrastructure;
 

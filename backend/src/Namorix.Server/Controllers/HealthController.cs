@@ -5,7 +5,6 @@ using Namorix.Core.Responses;
 
 namespace Namorix.Server.Controllers;
 
-[TrafficMonitor]
 [ApiController]
 [Route("api/health")]
 [DisableRateLimiting]

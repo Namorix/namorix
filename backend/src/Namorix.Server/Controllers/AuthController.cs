@@ -1,3 +1,4 @@
+using System.Reflection.Emit;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Namorix.Adapters.Services;
@@ -20,7 +21,7 @@ public class AuthController(AuthService authService, SettingsService settingsSer
 {
     private readonly AppConfig _appConfig = appConfig.Value;
     
-    [HttpPost("login")]
+    [TrafficPost("login", Label = "Auth Login")]
     [Validate(typeof(LoginSchema))]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
@@ -43,7 +44,7 @@ public class AuthController(AuthService authService, SettingsService settingsSer
         }
     }
 
-    [HttpPost("register")]
+    [TrafficPost("register", Label = "Auth Register")]
     [Validate(typeof(RegisterSchema))]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
@@ -55,6 +56,11 @@ public class AuthController(AuthService authService, SettingsService settingsSer
         try
         {
             var user = await authService.Register(request.Username, request.Password);
+
+            var status = await settingsService.GetAuthStatus();
+            if (!status.needsRegister)
+                await settingsService.SetRegisterEnabled(false);
+            
             return UserOk(user);
         }
         catch (AuthException ex) when (ex.Code == AuthErrors.UsernameExists)
@@ -64,7 +70,7 @@ public class AuthController(AuthService authService, SettingsService settingsSer
     }
 
 
-    [HttpPost("logout")]
+    [TrafficPost("logout", Label = "Auth Logout")]
     public async Task<IActionResult> Logout()
     {
         var refreshToken = GetRefreshCookie();
@@ -77,7 +83,7 @@ public class AuthController(AuthService authService, SettingsService settingsSer
         return Ok(ApiResponse.Ok());
     }
 
-    [HttpPost("logout-all")]
+    [TrafficPost("logout-all", Label = "Auth Logout All")]
     public async Task<IActionResult> LogoutAll()
     {
         var accessToken = GetAccessCookie();
@@ -93,7 +99,7 @@ public class AuthController(AuthService authService, SettingsService settingsSer
         return Ok(ApiResponse.Ok());
     }
 
-    [HttpGet("session")]
+    [TrafficGet("session", Label = "Auth Session")]
     public async Task<IActionResult> Session()
     {
         var accessToken = GetAccessCookie();
@@ -116,13 +122,13 @@ public class AuthController(AuthService authService, SettingsService settingsSer
 
     }
     
-    [HttpPost("refresh")]
+    [TrafficPost("refresh", Label = "Auth Refresh Token")]
     public async Task<IActionResult> Refresh()
     {
         return await TryRefresh();
     }
 
-    [HttpGet("status")]
+    [TrafficGet("status", Label = "Auth Status")]
     public async Task<IActionResult> Status()
     {
         var (needsRegister, registerEnabled) = await settingsService.GetAuthStatus();

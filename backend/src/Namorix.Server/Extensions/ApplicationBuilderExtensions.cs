@@ -52,20 +52,15 @@ public static class ApplicationBuilderExtensions
              .ToDictionary(e => (e.Method, e.Path));
 
          var controllerTypes = typeof(Program).Assembly.GetTypes()
-             .Where(t => t.IsAssignableTo(typeof(ControllerBase)) &&
-                         (t.GetCustomAttribute<TrafficMonitorAttribute>() != null ||
-                          t.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly)
-                              .Any(m => m.GetCustomAttribute<TrafficMonitorAttribute>() != null)));
+             .Where(t => t.IsAssignableTo(typeof(ControllerBase)));
 
          foreach (var controller in controllerTypes)
          {
-             var controllerAttr = controller.GetCustomAttribute<TrafficMonitorAttribute>();
              var basePath = controller.GetCustomAttribute<RouteAttribute>()?.Template?.Trim('/') ?? "";
 
              foreach (var method in controller.GetMethods(
                           BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly))
              {
-                 var methodAttr = method.GetCustomAttribute<TrafficMonitorAttribute>();
                  var httpAttr = method.GetCustomAttributes()
                      .OfType<HttpMethodAttribute>()
                      .FirstOrDefault();
@@ -73,27 +68,19 @@ public static class ApplicationBuilderExtensions
                  if (httpAttr == null)
                      continue;
 
-                 var httpMethod = httpAttr switch
-                 {
-                     HttpGetAttribute => "GET",
-                     HttpPostAttribute => "POST",
-                     HttpPutAttribute => "PUT",
-                     HttpDeleteAttribute => "DELETE",
-                     HttpPatchAttribute => "PATCH",
-                     _ => null
-                 };
-                 
-                 if (httpMethod == null)
+                 if (httpAttr.GetType().GetProperty("Label") == null)
                      continue;
 
-                 var fullPath = "/" + string.Join("/", new [] { basePath, httpAttr.Template }
+                 
+                 var label = httpAttr.GetType().GetProperty("Label")?.GetValue(httpAttr) as string;
+                 var httpMethod = httpAttr.HttpMethods.First();
+                 var fullPath = "/" + string.Join("/", new[] { basePath, httpAttr.Template }
                      .Where(s => !string.IsNullOrEmpty(s)));
-
-                 var label = methodAttr?.Label ?? controllerAttr?.Label;
-
+                 
                  if (existing.TryGetValue((httpMethod, fullPath), out var ep))
                  {
-                     ep.Label = label;
+                     if (label != null)
+                         ep.Label = label;
                  }
                  else
                  {

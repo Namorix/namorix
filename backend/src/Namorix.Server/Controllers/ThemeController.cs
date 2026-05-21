@@ -6,7 +6,6 @@ using Namorix.Core.Responses;
 
 namespace Namorix.Server.Controllers;
 
-[TrafficMonitor]
 [ApiController]
 [Route("api/themes")]
 public class ThemeController(ThemeService themeService): ControllerBase

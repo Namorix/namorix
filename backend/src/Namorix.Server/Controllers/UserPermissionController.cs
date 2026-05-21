@@ -6,7 +6,6 @@ using Namorix.Server.Middleware;
 
 namespace Namorix.Server.Controllers;
 
-[TrafficMonitor]
 [ApiController]
 [RequireAdmin]
 [Route("api/users/{userId:int}/permissions")]

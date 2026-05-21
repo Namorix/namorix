@@ -12,7 +12,6 @@ using Namorix.Server.Middleware;
 
 namespace Namorix.Server.Controllers;
 
-[TrafficMonitor]
 [ApiController]
 [RequireAuth]
 [Route("api/user")]
