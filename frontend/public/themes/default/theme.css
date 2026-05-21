@@ -171,8 +171,30 @@ body {
 .nmx-rail-content {
   flex: 1;
   min-width: 0;
+  padding: var(--nmx-spacing-md);
   overflow-x: hidden;
   overflow-y: auto;
+}
+.nmx-rail-content::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.nmx-rail-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+.nmx-rail-content::-webkit-scrollbar-thumb {
+  background-color: color-mix(in oklab, var(--nmx-color-on-surface-variant) 50%, transparent);
+  border-radius: 4px;
+  border: 2px solid transparent;
+}
+.nmx-rail-content::-webkit-scrollbar-button {
+  display: none;
+  height: 0;
+  width: 0;
+}
+.nmx-rail-content {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--nmx-color-on-surface-variant) 50%, transparent) transparent;
 }
 .nmx-rail {
   -webkit-user-select: none;
