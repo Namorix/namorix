@@ -68,6 +68,7 @@
   },
   "addon": {
     "networkTraffic": {
+      "title": "Network Traffic",
       "tabs": {
         "overview": "Overview",
         "endpoints": "Endpoints",
@@ -75,7 +76,6 @@
         "threats": "Threats"
       },
       "overview": {
-        "title": "Network Traffic",
         "stats": {
           "totalRequests": "Total Requests",
           "errorRate": "Error Rate",
@@ -84,6 +84,12 @@
           "avgSize": "Avg Size",
           "avgSizeUnit": "KB"
         }
+      },
+      "endpoints": {
+        "method": "Method",
+        "path": "Path",
+        "label": "Label",
+        "enabled": "Enabled"
       }
     }
   }

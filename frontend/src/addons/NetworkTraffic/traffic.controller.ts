@@ -1,15 +1,14 @@
-export interface EndpointStats {
-  endpointId: number
-  path: string
-  method: string
-  count: number
-  avgDurationMs: number
-  errorRate: number
-}
+import {
+  ApiError,
+  ApiTrafficRoutes,
+  getApiBaseUrl,
+  http,
+  type HttpMethod,
+} from "@namorix/core"
 
 export interface TrafficEndpoint {
   id: number
-  method: string
+  method: HttpMethod
   path: string
   label?: string
   addonId?: string
@@ -27,3 +26,15 @@ export interface TrafficLog {
   userId?: number
   timestamp: string
 }
+
+async function listEndpoints(): Promise<TrafficEndpoint[]> {
+  const data = await http
+    .url(getApiBaseUrl() + ApiTrafficRoutes.endpoints)
+    .get()
+    .json<TrafficEndpoint[]>()
+
+  if (!data.success) throw ApiError.fromResponse(data)
+  return data.data
+}
+
+export const trafficController = { listEndpoints }

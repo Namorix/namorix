@@ -8,6 +8,7 @@ import {
 import { NetworkTrafficOverview } from "./NetworkTrafficOverview"
 import { useTranslation } from "react-i18next"
 import { Show, useTabCache } from "@namorix/core"
+import { NetworkTrafficEndpoints } from "./NetworkTrafficEndpoints"
 
 type Tab = "overview" | "endpoints" | "logs" | "threats"
 
@@ -41,7 +42,7 @@ export const NetworkTraffic: React.FC = () => {
     <div className="nmx-addon-root nmx-addon-network-traffic">
       <NmxRail>
         <NmxRailList
-          title={t("addon.networkTraffic.overview.title")}
+          title={t("addon.networkTraffic.title")}
           items={TABS}
           t={t}
           activeKey={activeTab}
@@ -51,6 +52,11 @@ export const NetworkTraffic: React.FC = () => {
           {isMounted("overview") && (
             <Show when={activeTab === "overview"}>
               <NetworkTrafficOverview />
+            </Show>
+          )}
+          {isMounted("endpoints") && (
+            <Show when={activeTab === "endpoints"}>
+              <NetworkTrafficEndpoints />
             </Show>
           )}
         </NmxRailContent>
