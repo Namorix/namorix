@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -35,6 +36,8 @@ public class TrafficFlushWorker(IServiceScopeFactory scopeFactory,
                 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 db.TrafficLogs.AddRange(batch);
                 await db.SaveChangesAsync(stoppingToken);
+                var notifier = scope.ServiceProvider.GetRequiredService<ITrafficNotifier>();
+                await notifier.NotifyFlushAsync(batch.Count);
                 batch.Clear();
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)

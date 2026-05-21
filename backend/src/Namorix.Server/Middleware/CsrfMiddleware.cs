@@ -17,6 +17,12 @@ public class CsrfMiddleware(RequestDelegate requestDelegate, IOptions<AppConfig>
             return;
         }
 
+        if (httpContext.Request.Path.StartsWithSegments("/hubs"))
+        {
+            await requestDelegate(httpContext);
+            return;
+        }
+
         var token = httpContext.Request.Cookies[CookieName.CsrfToken] ??
                     Guid.NewGuid().ToString();
         

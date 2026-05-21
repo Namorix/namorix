@@ -17,6 +17,7 @@ public class AuthMiddleware(RequestDelegate requestDelegate)
                 var claims = new[]
                 {
                     new Claim(JwtClaims.UserId, payload.Value.userId.ToString()),
+                    new Claim(ClaimTypes.NameIdentifier, payload.Value.userId.ToString()),
                     new Claim(JwtClaims.Username, payload.Value.username),
                     new Claim(JwtClaims.Role, payload.Value.role.ToString())
                 };

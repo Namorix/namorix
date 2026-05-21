@@ -1,10 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Namorix.Adapters.Services;
 using Namorix.Core.Attributes;
 using Namorix.Core.Constants;
+using Namorix.Core.Infrastructure;
 using Namorix.Core.Responses;
 using Namorix.Core.Validation;
 using Namorix.Core.Validation.Schemas;
+using Namorix.Server.Hubs;
 using Namorix.Server.Middleware;
 
 namespace Namorix.Server.Controllers;
@@ -30,13 +33,16 @@ public class UserController : ControllerBase
     [Validate((typeof(SetThemeSchema)))]
     public async Task<IActionResult> SetTheme(
         [FromBody] SetThemeRequest request,
-        [FromServices] UserService userService)
+        [FromServices] UserService userService,
+        [FromServices] IHubContext<NmxHub> hubContext)
     {
         var userId = GetUserId();
         if (userId == null)
             return Unauthorized(ApiResponse.Fail(AuthErrors.Unauthorized));
 
         await userService.SetThemeAsync(userId.Value, request.ThemeId);
+        await hubContext.Clients.User(userId.Value.ToString())
+            .SendAsync(SignalEvents.UserThemeChanged, new ThemeChanged(request.ThemeId));
         return Ok(ApiResponse.Ok());
     }
 

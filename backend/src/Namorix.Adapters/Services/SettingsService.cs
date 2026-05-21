@@ -2,11 +2,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Namorix.Adapters.Persistence;
 using Namorix.Core.Constants;
+using Namorix.Core.Infrastructure;
 using Namorix.Core.Models;
 
 namespace Namorix.Adapters.Services;
 
-public class SettingsService(AppDbContext dbContext, IMemoryCache memoryCache)
+public class SettingsService(AppDbContext dbContext, IMemoryCache memoryCache, ISystemNotifier systemNotifier)
 {
     public async Task<bool> IsRegisterEnabled()
     {
@@ -33,6 +34,7 @@ public class SettingsService(AppDbContext dbContext, IMemoryCache memoryCache)
 
         await dbContext.SaveChangesAsync();
         memoryCache.Set(SettingKeys.RegisterEnabled, enabled, Time.ExpirationRelativeToNow);
+        await systemNotifier.NotifyConfigChangedAsync(SettingKeys.RegisterEnabled);
     }
 
     private async Task<List<string>> GetListAsync(string key)

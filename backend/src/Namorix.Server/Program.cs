@@ -9,8 +9,10 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Namorix.Adapters.Persistence;
 using Namorix.Adapters.Services;
+using Namorix.Core.Infrastructure;
 using Namorix.Server.Extensions;
 using Namorix.Server.Helpers;
+using Namorix.Server.Hubs;
 using Namorix.Workers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -42,8 +44,11 @@ builder.Services.AddScoped<SettingsService>();
 builder.Services.AddScoped<PermissionService>();
 builder.Services.AddScoped<ThemeService>();
 builder.Services.AddMemoryCache();
+builder.Services.AddSignalR();
 builder.Services.AddHostedService<TokenCleanupWorker>();
 builder.Services.AddScoped<TrafficMonitorService>();
+builder.Services.AddScoped<ITrafficNotifier, SignalRTrafficNotifier>();
+builder.Services.AddScoped<ISystemNotifier, SignalRSystemNotifier>();
 builder.Services.AddHostedService<TrafficFlushWorker>();
 builder.Services.AddHostedService<TrafficCleanupWorker>();
 
@@ -125,4 +130,5 @@ app.UseNotFoundHandler();
 app.UseRateLimiter();
 app.UseCsrfProtection();
 app.MapControllers();
+app.MapHub<NmxHub>("/hubs/main");
 app.Run();
