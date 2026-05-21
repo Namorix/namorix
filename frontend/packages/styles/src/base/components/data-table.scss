@@ -108,10 +108,14 @@
     text-overflow: clip;
   }
 
-  &__cell--fallback-content {
+  &__row-fallback-content {
     grid-column: 1 / -1;
     text-align: center;
     font-style: italic;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     color: var(--nmx-color-on-surface-variant);
 
     &--error {
@@ -120,6 +124,10 @@
 
     &--loading {
       color: var(--nmx-color-on-surface);
+    }
+
+    &--empty {
+      color: var(--nmx-color-warning);
     }
   }
 }

@@ -14,8 +14,8 @@ export interface NmxDataTableColumn<T = unknown> {
 }
 
 export interface NmxDataTableFallback {
-  condition: boolean
-  state?: "loading" | "error" | "empty" | "default"
+  condition: boolean | undefined | null
+  state?: "loading" | "error" | "empty"
   content?: React.ReactNode
 }
 

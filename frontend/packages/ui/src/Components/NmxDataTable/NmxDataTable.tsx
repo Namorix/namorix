@@ -96,12 +96,9 @@ export const NmxDataTable = <T extends object>({
               className="nmx-data-table__row nmx-data-table__row-fallback-content"
               role="row"
             >
-              <div
-                className="nmx-data-table__cel--fallback-content"
-                role="cell"
-              >
+              <div role="cell">
                 <p
-                  className={`nmx-data-table__cell--fallback-content--${fallbackEntry.state ?? "default"}`}
+                  className={`nmx-data-table__row-fallback-content--${fallbackEntry.state ?? "default"}`}
                 >
                   {fallbackEntry.content}
                 </p>
