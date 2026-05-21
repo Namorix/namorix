@@ -7,5 +7,5 @@ export function Show({
   when: boolean
   children: React.ReactNode
 }) {
-  return <div hidden={!when}>{children}</div>
+  return <div style={{ display: when ? "contents" : "none" }}>{children}</div>
 }

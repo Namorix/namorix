@@ -1,5 +1,5 @@
-import type { ThemeManifest } from "../theme"
-import React, { createContext, useContext, useState } from "react"
+import { type ThemeManifest, themeStore } from "../theme"
+import React, { createContext, useContext, useEffect, useState } from "react"
 import { loadTheme } from "../theme"
 import { NMX_THEME_CSS_PATH_KEY } from "../constants"
 
@@ -26,8 +26,10 @@ export const ThemeProvider = ({
   children,
 }: ThemeProviderProps) => {
   const [currentId, setCurrentId] = useState<string | null>(
-    initialThemeId ?? null,
+    initialThemeId ?? themeStore.get(),
   )
+
+  useEffect(() => themeStore.subscribe(setCurrentId), [])
 
   const switchTheme = async (id: string) => {
     const manifest = themes.find((theme) => theme.id === id)
