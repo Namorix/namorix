@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.SignalR;
+using Namorix.Adapters.Services;
 using Namorix.Core.Constants;
+using Namorix.Core.Infrastructure;
 
 namespace Namorix.Server.Hubs;
 
-public class NmxHub: Hub
+public class NmxHub(ITrafficNotifier trafficNotifier): Hub
 {
     public override async Task OnConnectedAsync()
     {
@@ -19,6 +21,7 @@ public class NmxHub: Hub
     public async Task SubscribeTraffic()
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, SignalRGroups.Traffic);
+        await trafficNotifier.NotifyFlushAsync();
     }
 
     public async Task UnsubscribeTraffic()

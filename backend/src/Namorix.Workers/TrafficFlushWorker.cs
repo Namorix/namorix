@@ -29,7 +29,6 @@ public class TrafficFlushWorker(IServiceScopeFactory scopeFactory,
             
             if (batch.Count == 0)
                 continue;
-
             try
             {
                 using var scope = scopeFactory.CreateScope();

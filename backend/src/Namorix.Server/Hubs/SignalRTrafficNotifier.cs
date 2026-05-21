@@ -16,7 +16,6 @@ public class SignalRTrafficNotifier(IHubContext<NmxHub> hubContext,
             endpoint.AvgDurationMs,
             endpoint.AvgResponseSizeBytes
         );
-        
         await hubContext.Clients
             .Groups(SignalRGroups.Traffic)
             .SendAsync(SignalREvents.TrafficNewLogs, record);

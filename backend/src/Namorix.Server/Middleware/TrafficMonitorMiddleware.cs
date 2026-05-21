@@ -28,7 +28,7 @@ public class TrafficMonitorMiddleware(RequestDelegate requestDelegate)
         var stopwatch = Stopwatch.StartNew();
         await requestDelegate(httpContext);
         stopwatch.Stop();
-        
+
         if (!Registry.TryGetValue((httpContext.Request.Method, httpContext.Request.Path.Value!), out var endpointId))
             return;
 

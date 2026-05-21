@@ -3,7 +3,7 @@ using System.Threading.RateLimiting;
 using Namorix.Core.Config;
 using Namorix.Core.Constants;
 using Namorix.Core.Responses;
-using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -44,7 +44,13 @@ builder.Services.AddScoped<SettingsService>();
 builder.Services.AddScoped<PermissionService>();
 builder.Services.AddScoped<ThemeService>();
 builder.Services.AddMemoryCache();
-builder.Services.AddSignalR();
+
+builder.Services.AddSignalR(options =>
+{
+    options.AddFilter<NmxHubFilter>();
+    options.EnableDetailedErrors = builder.Environment.IsDevelopment();
+});
+
 builder.Services.AddHostedService<TokenCleanupWorker>();
 builder.Services.AddScoped<TrafficMonitorService>();
 builder.Services.AddScoped<ITrafficNotifier, SignalRTrafficNotifier>();
@@ -54,13 +60,16 @@ builder.Services.AddHostedService<TrafficCleanupWorker>();
 
 builder.Services.AddRateLimiter(options =>
 {
-    options.AddFixedWindowLimiter("Global", opt =>
-    {
-        opt.PermitLimit = 100;
-        opt.Window = TimeSpan.FromMinutes(1);
-        opt.QueueLimit = 0;
-        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-    });
+    options.AddPolicy("Default", context =>
+        context.Request.Path.StartsWithSegments(SignalRPath.HubPrefix)
+            ? RateLimitPartition.GetNoLimiter("signalr-hubs")
+            : RateLimitPartition.GetFixedWindowLimiter("Global", _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 100,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0,
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+            }));
 
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
