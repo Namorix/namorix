@@ -21,6 +21,18 @@
   --nmx-spacing-7xl: calc(var(--nmx-spacing-unit) * 20); /* 80px */
   --nmx-spacing-8xl: calc(var(--nmx-spacing-unit) * 24); /* 96px */
 
-  --nmx-rail-width: 240px;
+  --nmx-content-width-xs: 480px; /* dialogs, narrow forms */
+  --nmx-content-width-sm: 640px; /* settings forms, single-column */
+  --nmx-content-width-md: 960px; /* dashboard, two-column */
+  --nmx-content-width-lg: 1280px; /* full page layout */
+  --nmx-content-width-xl: 1536px; /* wide screens */
+
   --nmx-rail-collapse-width: 56px;
+
+  /* Expanded states */
+  --nmx-rail-width-expanded-xs: 160px; /* ultra compact, icon + short label */
+  --nmx-rail-width-expanded-sm: 200px; /* compact label */
+  --nmx-rail-width-expanded-md: 240px; /* standard */
+  --nmx-rail-width-expanded-lg: 280px; /* với badge/meta */
+  --nmx-rail-width-expanded-xl: 320px; /* sub-menu mở */
 }

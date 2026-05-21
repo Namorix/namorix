@@ -7,3 +7,25 @@
   height: 100%;
   min-height: 0;
 }
+
+.nmx-addon__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: var(--nmx-font-size-lg);
+  color: var(--nmx-color-on-surface);
+}
+
+.nmx-addon-form {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  justify-content: center;
+  padding: var(--nmx-spacing-3xl) 0;
+
+  &__content {
+    max-width: var(--nmx-content-width-xs);
+    width: 100%;
+  }
+}

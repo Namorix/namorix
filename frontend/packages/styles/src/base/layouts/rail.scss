@@ -1,7 +1,7 @@
 @use "../abstract/mixins" as *;
 
 .nmx-rail {
-  --nmx-rail-current-width: var(--nmx-rail-width);
+  --nmx-rail-current-width: var(--nmx-rail-width-expanded-sm);
 
   display: flex;
   height: 100%;

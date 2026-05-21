@@ -31,12 +31,12 @@
   }
 
   &__header-cell {
-    color: var(--nmx-color-on-surface-variant);
-    background: var(--nmx-color-surface-mid);
+    color: var(--nmx-color-on-surface);
+    background: var(--nmx-color-primary);
     font-size: var(--nmx-font-size-sm);
     font-weight: var(--nmx-font-weight-bold);
     letter-spacing: var(--nmx-letter-spacing-wide);
-    padding: var(--nmx-spacing-md);
+    padding: var(--nmx-spacing-lg) var(--nmx-spacing-md);
     text-transform: uppercase;
     white-space: nowrap;
     overflow: hidden;
