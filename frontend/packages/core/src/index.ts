@@ -1,4 +1,5 @@
 export * from "./config"
+export * from "./cache"
 export * from "./auth"
 export * from "./router"
 export * from "./utils"
