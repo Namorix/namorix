@@ -75,6 +75,7 @@
         "threats": "Threats"
       },
       "overview": {
+        "title": "Network Traffic",
         "stats": {
           "totalRequests": "Total Requests",
           "errorRate": "Error Rate",
