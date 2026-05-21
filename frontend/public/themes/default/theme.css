@@ -165,7 +165,7 @@ body {
   width: var(--nmx-rail-current-width);
   height: 100%;
   background: var(--nmx-color-surface-low);
-  box-shadow: var(--nmx-shadow-md);
+  box-shadow: var(--nmx-shadow-sm);
   transition: width var(--nmx-duration-normal) var(--nmx-easing-standard);
 }
 .nmx-rail-content {
@@ -897,6 +897,7 @@ body {
   padding: var(--nmx-spacing-md);
   background: var(--nmx-color-surface-low);
   border-radius: var(--nmx-radius-md);
+  box-shadow: var(--nmx-shadow-sm);
 }
 .nmx-stat-card__header {
   font-size: var(--nmx-font-size-xs);
