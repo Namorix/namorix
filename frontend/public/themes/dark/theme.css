@@ -643,8 +643,8 @@ body {
   letter-spacing: var(--nmx-letter-spacing-wide);
   font-family: var(--nmx-font-sans), serif;
   line-height: var(--nmx-line-height-normal);
+  text-overflow: clip;
   white-space: nowrap;
-  background: color-mix(in oklab, var(--nmx-badge-bg, var(--nmx-color-primary)) 14%, transparent);
   color: var(--nmx-badge-text, var(--nmx-color-on-surface));
 }
 .nmx-badge--primary {
@@ -666,6 +666,9 @@ body {
 .nmx-badge--info {
   --nmx-badge-bg: var(--nmx-color-info);
   --nmx-badge-text: var(--nmx-color-info);
+}
+.nmx-badge-bg {
+  background: color-mix(in oklab, var(--nmx-badge-bg, var(--nmx-color-primary)) 14%, transparent);
 }
 .nmx-chip {
   display: inline-flex;
@@ -782,7 +785,9 @@ body {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  background: var(--nmx-color-surface-mid);
+  background: var(--nmx-color-surface-low);
+  border-radius: var(--nmx-radius-md);
+  box-shadow: var(--nmx-shadow-sm);
   overflow: hidden;
 }
 .nmx-data-table--no-columns {
@@ -801,8 +806,8 @@ body {
   display: contents;
 }
 .nmx-data-table__header-cell {
-  color: var(--nmx-color-on-surface);
-  background: var(--nmx-color-surface-high);
+  color: var(--nmx-color-on-surface-variant);
+  background: var(--nmx-color-surface-mid);
   font-size: var(--nmx-font-size-sm);
   font-weight: var(--nmx-font-weight-bold);
   letter-spacing: var(--nmx-letter-spacing-wide);
@@ -811,12 +816,6 @@ body {
   white-space: nowrap;
   overflow: hidden;
 }
-.nmx-data-table__header-cell--align-center {
-  text-align: center;
-}
-.nmx-data-table__header-cell--align-end {
-  text-align: end;
-}
 .nmx-data-table__body-scroll {
   grid-column: 1/-1;
   grid-row: 2;
@@ -824,7 +823,7 @@ body {
   overflow-x: hidden;
   overflow-y: auto;
   display: grid;
-  background: var(--nmx-color-surface-mid);
+  background: var(--nmx-color-surface-low);
   grid-template-columns: subgrid;
   align-content: start;
 }
@@ -862,7 +861,7 @@ body {
   cursor: pointer;
 }
 .nmx-data-table__row--clickable:hover {
-  background: var(--nmx-color-surface-high);
+  background: color-mix(in oklab, var(--nmx-color-surface-mid) 50%, transparent);
 }
 .nmx-data-table__row-cell {
   color: var(--nmx-color-on-surface);
@@ -877,6 +876,15 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.nmx-data-table__header-cell--align-center, .nmx-data-table__row-cell--align-center {
+  text-align: center;
+}
+.nmx-data-table__header-cell--align-end, .nmx-data-table__row-cell--align-end {
+  text-align: end;
+}
+.nmx-data-table--ellipsis-disabled {
+  text-overflow: clip;
 }
 .nmx-data-table__cell--fallback-content {
   grid-column: 1/-1;

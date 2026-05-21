@@ -10,14 +10,18 @@
   letter-spacing: var(--nmx-letter-spacing-wide);
   font-family: var(--nmx-font-sans), serif;
   line-height: var(--nmx-line-height-normal);
+  text-overflow: clip;
   white-space: nowrap;
 
-  background: color-mix(
-    in oklab,
-    var(--nmx-badge-bg, var(--nmx-color-primary)) 14%,
-    transparent
-  );
   color: var(--nmx-badge-text, var(--nmx-color-on-surface));
 
   @include semantic-variants("nmx-badge", true, true);
+
+  &-bg {
+    background: color-mix(
+      in oklab,
+      var(--nmx-badge-bg, var(--nmx-color-primary)) 14%,
+      transparent
+    );
+  }
 }

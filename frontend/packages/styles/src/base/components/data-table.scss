@@ -7,7 +7,9 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  background: var(--nmx-color-surface-mid);
+  background: var(--nmx-color-surface-low);
+  border-radius: var(--nmx-radius-md);
+  box-shadow: var(--nmx-shadow-sm);
   overflow: hidden;
 
   &--no-columns {
@@ -29,8 +31,8 @@
   }
 
   &__header-cell {
-    color: var(--nmx-color-on-surface);
-    background: var(--nmx-color-surface-high);
+    color: var(--nmx-color-on-surface-variant);
+    background: var(--nmx-color-surface-mid);
     font-size: var(--nmx-font-size-sm);
     font-weight: var(--nmx-font-weight-bold);
     letter-spacing: var(--nmx-letter-spacing-wide);
@@ -38,14 +40,6 @@
     text-transform: uppercase;
     white-space: nowrap;
     overflow: hidden;
-
-    &--align-center {
-      text-align: center;
-    }
-
-    &--align-end {
-      text-align: end;
-    }
   }
 
   &__body-scroll {
@@ -55,7 +49,7 @@
     overflow-x: hidden;
     overflow-y: auto;
     display: grid;
-    background: var(--nmx-color-surface-mid);
+    background: var(--nmx-color-surface-low);
     grid-template-columns: subgrid;
     align-content: start;
 
@@ -76,7 +70,11 @@
       cursor: pointer;
 
       &:hover {
-        background: var(--nmx-color-surface-high);
+        background: color-mix(
+          in oklab,
+          var(--nmx-color-surface-mid) 50%,
+          transparent
+        );
       }
     }
   }
@@ -96,6 +94,18 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+
+    &--align-center {
+      text-align: center;
+    }
+
+    &--align-end {
+      text-align: end;
+    }
+  }
+
+  &--ellipsis-disabled {
+    text-overflow: clip;
   }
 
   &__cell--fallback-content {
