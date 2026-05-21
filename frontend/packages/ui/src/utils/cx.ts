@@ -17,8 +17,14 @@ export function cx(...classes: NmxCxInput[]): string {
     .join(" ")
 }
 
-export function cxSemantic(prefix: string, semantic?: NmxSemanticColor) {
-  return !semantic ? "" : `${prefix}--${semantic}`
+export function cxSemantic(
+  prefix: string,
+  semantic?: NmxSemanticColor,
+  doubleSymbolMinus: boolean = true,
+) {
+  return !semantic
+    ? ""
+    : `${prefix}${doubleSymbolMinus ? "--" : "-"}${semantic}`
 }
 
 export function cxVariant(prefix: string, variant?: NmxButtonVariant) {

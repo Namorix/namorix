@@ -16,7 +16,7 @@ export function drawSparkline(
   const range = max - min || 1
 
   const points = plot.map((v, i) => ({
-    x: (i / (data.length - 1)) * width,
+    x: (i / (plot.length - 1)) * width,
     y: height - ((v - min) / range) * height,
   }))
 

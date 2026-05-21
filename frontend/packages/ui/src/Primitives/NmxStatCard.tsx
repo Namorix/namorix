@@ -18,7 +18,7 @@ export const NmxStatCard: React.FC<NmxStatCardProps> = ({
   label,
   value,
   unit,
-  semantic,
+  semantic = "info",
   trend,
   sparkData,
   shouldRender = true,
@@ -53,7 +53,7 @@ export const NmxStatCard: React.FC<NmxStatCardProps> = ({
 
       const accent =
         getComputedStyle(canvas)
-          .getPropertyValue("--nmx-stat-card-accent")
+          .getPropertyValue(cxSemantic("--nmx-color", semantic, false))
           .trim() ||
         getComputedStyle(document.documentElement)
           .getPropertyValue("--nmx-color-primary")
@@ -67,7 +67,7 @@ export const NmxStatCard: React.FC<NmxStatCardProps> = ({
     const observer = new ResizeObserver(draw)
     observer.observe(canvas)
     return () => observer.disconnect()
-  }, [sparkData])
+  }, [semantic, sparkData])
 
   if (!shouldRender) {
     return null
@@ -77,14 +77,7 @@ export const NmxStatCard: React.FC<NmxStatCardProps> = ({
     value === null || value === undefined ? "-" : String(value)
 
   return (
-    <div
-      {...rest}
-      className={cx(
-        "nmx-stat-card",
-        cxSemantic("nmx-stat-card", semantic),
-        className,
-      )}
-    >
+    <div {...rest} className={cx("nmx-stat-card", className)}>
       <span className="nmx-stat-card__header">{label}</span>
       <div className="nmx-stat-card__main">
         <span className="nmx-stat-card__value">{displayValue}</span>
