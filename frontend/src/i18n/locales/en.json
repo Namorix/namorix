@@ -95,7 +95,52 @@
           "loading": "Loading network endpoints...",
           "empty": "No network endpoints detected"
         }
+      },
+      "logs": {
+        "statusCode": "Status",
+        "method": "Method",
+        "path": "Path",
+        "duration": "Duration",
+        "size": "Size",
+        "ip": "IP",
+        "timestamp": "Timestamp",
+        "fallbacks": {
+          "error": "Failed to load logs",
+          "loading": "Loading network logs...",
+          "empty": "No network logs recorded yet"
+        }
+      },
+      "threats": {
+        "placeholder": "Feature coming soon..."
       }
+    },
+    "settings": {
+      "title": "Settings",
+      "tabs": {
+        "appearance": "Appearance",
+        "system": "System",
+        "account": "Account"
+      },
+      "appearance": {
+        "title": "Theme"
+      },
+      "system": {
+        "proxies": "Trusted Proxies",
+        "origins": "Allowed Origins"
+      },
+      "account": {
+        "title": "Account",
+        "username": "Username",
+        "role": "Role",
+        "changePassword": "Change Password",
+        "currentPassword": "Current Password",
+        "newPassword": "New Password",
+        "confirmPassword": "Confirm New Password",
+        "success": "Password changed",
+        "mismatch": "Passwords do not match",
+        "error": "Failed to change password"
+      },
+      "save": "Save"
     }
   }
 }

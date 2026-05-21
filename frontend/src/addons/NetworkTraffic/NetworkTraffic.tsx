@@ -9,10 +9,13 @@ import { NetworkTrafficOverview } from "./NetworkTrafficOverview"
 import { useTranslation } from "react-i18next"
 import { Show, useTabCache } from "@namorix/core"
 import { NetworkTrafficEndpoints } from "./NetworkTrafficEndpoints"
+import { NetworkTrafficLogs } from "./NetworkTrafficLogs"
+import { NetworkTrafficThreats } from "./NetworkTrafficThreats"
+import type { NmxRailItemData } from "@namorix/ui"
 
 type Tab = "overview" | "endpoints" | "logs" | "threats"
 
-const TABS: Array<{ key: Tab; icon: NmxIconFontSymbol; label: string }> = [
+const TABS: NmxRailItemData<Tab>[] = [
   {
     key: "overview",
     icon: NmxIconFontSymbol.STATS,
@@ -57,6 +60,16 @@ export const NetworkTraffic: React.FC = () => {
           {isMounted("endpoints") && (
             <Show when={activeTab === "endpoints"}>
               <NetworkTrafficEndpoints />
+            </Show>
+          )}
+          {isMounted("logs") && (
+            <Show when={activeTab === "logs"}>
+              <NetworkTrafficLogs />
+            </Show>
+          )}
+          {isMounted("threats") && (
+            <Show when={activeTab === "threats"}>
+              <NetworkTrafficThreats />
             </Show>
           )}
         </NmxRailContent>

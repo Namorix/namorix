@@ -5,18 +5,8 @@ import type {
   NmxDataTableColumn,
   NmxDataTableFallback,
 } from "../../../packages/ui/src/Components/NmxDataTable/NmxDataTable.type"
-import { NmxBadge, NmxDataTable, type NmxSemanticColor } from "@namorix/ui"
-import { type HttpMethod, HttpMethods } from "@namorix/core"
-
-function methodToSemantic(method: HttpMethod): NmxSemanticColor {
-  return method === HttpMethods.POST
-    ? "success"
-    : method === HttpMethods.PUT || method === HttpMethods.PATCH
-      ? "warning"
-      : method === HttpMethods.DELETE
-        ? "error"
-        : "info"
-}
+import { NmxBadge, NmxDataTable } from "@namorix/ui"
+import { methodToSemantic } from "./utils"
 
 export const NetworkTrafficEndpoints: React.FC = () => {
   const { t } = useTranslation()
@@ -28,13 +18,9 @@ export const NetworkTrafficEndpoints: React.FC = () => {
     trafficController
       .listEndpoints()
       .then(setEndpoints)
-      .finally(() => setLoading(false))
       .catch((err) => setError(err))
+      .finally(() => setLoading(false))
   }, [])
-
-  if (loading) {
-    return <div>Loading</div>
-  }
 
   const columns: NmxDataTableColumn<TrafficEndpoint>[] = [
     {
@@ -43,7 +29,7 @@ export const NetworkTrafficEndpoints: React.FC = () => {
         <NmxBadge
           semantic={methodToSemantic(row.method)}
           bgEnabled={false}
-          className="nmx-addon-network-traffic__endpoints-badge"
+          className="nmx-addon-network-traffic__badge"
         >
           {row.method}
         </NmxBadge>
@@ -69,7 +55,7 @@ export const NetworkTrafficEndpoints: React.FC = () => {
         <NmxBadge
           semantic={row.isEnabled ? "success" : "error"}
           bgEnabled={false}
-          className="nmx-addon-network-traffic__endpoints-badge"
+          className="nmx-addon-network-traffic__badge"
         >
           {String(row.isEnabled)}
         </NmxBadge>

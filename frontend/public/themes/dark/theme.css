@@ -1,10 +1,11 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap");@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Rajdhani:wght@300;400;500;600;700&display=swap");@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Rajdhani:wght@300;400;500;600;700&display=swap");
+@charset "UTF-8";@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap");@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Rajdhani:wght@300;400;500;600;700&display=swap");@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Rajdhani:wght@300;400;500;600;700&display=swap");
+
 
 
 
 @font-face {
   font-family: "icomoon";
-  src: url("/public/fonts/icomoon/fonts/icomoon.ttf?7htxuv") format("truetype"), url("/public/fonts/icomoon/fonts/icomoon.woff?7htxuv") format("woff"), url("/public/fonts/icomoon/fonts/icomoon.svg?7htxuv#icomoon") format("svg");
+  src: url("/public/fonts/icomoon/fonts/icomoon.ttf?tmltip") format("truetype"), url("/public/fonts/icomoon/fonts/icomoon.woff?tmltip") format("woff"), url("/public/fonts/icomoon/fonts/icomoon.svg?tmltip#icomoon") format("svg");
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -21,6 +22,15 @@
   /* Better Font Rendering =========== */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+.ic-appearance:before {
+  content: "\e90e";
+}
+.ic-user:before {
+  content: "\e90d";
+}
+.ic-setting:before {
+  content: "\e90f";
 }
 .ic-logs:before {
   content: "\e90a";
@@ -151,7 +161,7 @@ body {
   }
 }
 .nmx-rail {
-  --nmx-rail-current-width: var(--nmx-rail-width);
+  --nmx-rail-current-width: var(--nmx-rail-width-expanded-sm);
   display: flex;
   height: 100%;
   overflow: hidden;
@@ -312,6 +322,25 @@ body {
   width: 100%;
   height: 100%;
   min-height: 0;
+}
+.nmx-addon__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: var(--nmx-font-size-lg);
+  color: var(--nmx-color-on-surface);
+}
+.nmx-addon-form {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  justify-content: center;
+  padding: var(--nmx-spacing-3xl) 0;
+}
+.nmx-addon-form__content {
+  max-width: var(--nmx-content-width-xs);
+  width: 100%;
 }
 .nmx-card {
   background: var(--nmx-color-surface-low);
@@ -806,12 +835,12 @@ body {
   display: contents;
 }
 .nmx-data-table__header-cell {
-  color: var(--nmx-color-on-surface-variant);
-  background: var(--nmx-color-surface-mid);
+  color: var(--nmx-color-on-surface);
+  background: var(--nmx-color-primary);
   font-size: var(--nmx-font-size-sm);
   font-weight: var(--nmx-font-weight-bold);
   letter-spacing: var(--nmx-letter-spacing-wide);
-  padding: var(--nmx-spacing-md);
+  padding: var(--nmx-spacing-lg) var(--nmx-spacing-md);
   text-transform: uppercase;
   white-space: nowrap;
   overflow: hidden;
@@ -952,6 +981,87 @@ body {
 .nmx-stat-card__trend--neutral {
   color: var(--nmx-color-on-surface-variant);
 }
+.nmx-tag-input {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--nmx-spacing-sm);
+  padding: var(--nmx-spacing-lg) var(--nmx-spacing-2xl);
+  border-radius: var(--nmx-radius-md);
+  background: var(--nmx-color-surface-lowest);
+  cursor: text;
+  line-height: var(--nmx-line-height-normal);
+  transition: border-color 0.15s;
+}
+.nmx-tag-input:focus-within {
+  border-color: var(--nmx-color-primary);
+}
+.nmx-tag-input__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--nmx-spacing-xs);
+  padding: var(--nmx-spacing-xs) var(--nmx-spacing-sm);
+  color: var(--nmx-color-on-surface);
+  background: var(--nmx-color-surface-high);
+  border-radius: var(--nmx-radius-sm);
+  font-size: var(--nmx-font-size-sm);
+}
+.nmx-tag-input__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--nmx-color-on-surface);
+  opacity: 0.6;
+}
+.nmx-tag-input__remove:hover {
+  opacity: 1;
+}
+.nmx-tag-input__wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 120px;
+}
+.nmx-tag-input__input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: none;
+  font-size: var(--nmx-font-size-sm);
+  color: var(--nmx-color-on-surface);
+  padding: var(--nmx-spacing-xs) 0;
+}
+.nmx-tag-input__dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  margin-top: var(--nmx-spacing-sm);
+  color: var(--nmx-color-on-surface);
+  background: var(--nmx-color-surface-highest);
+  border-radius: var(--nmx-radius-md);
+  box-shadow: var(--nmx-shadow-dropdown);
+  max-height: 200px;
+  overflow-y: auto;
+}
+.nmx-tag-input__option {
+  padding: var(--nmx-spacing-sm) var(--nmx-spacing-md);
+  cursor: pointer;
+  font-size: var(--nmx-font-size-sm);
+}
+.nmx-tag-input__option:hover {
+  background: var(--nmx-color-surface-high);
+}
+.nmx-tag-input__option--create {
+  font-style: italic;
+  opacity: 0.8;
+}
 :root {
   --nmx-duration-instant: 0ms;
   --nmx-duration-fast: 100ms;
@@ -1009,8 +1119,18 @@ body {
   --nmx-spacing-6xl: calc(var(--nmx-spacing-unit) * 16); /* 64px */
   --nmx-spacing-7xl: calc(var(--nmx-spacing-unit) * 20); /* 80px */
   --nmx-spacing-8xl: calc(var(--nmx-spacing-unit) * 24); /* 96px */
-  --nmx-rail-width: 240px;
+  --nmx-content-width-xs: 480px; /* dialogs, narrow forms */
+  --nmx-content-width-sm: 640px; /* settings forms, single-column */
+  --nmx-content-width-md: 960px; /* dashboard, two-column */
+  --nmx-content-width-lg: 1280px; /* full page layout */
+  --nmx-content-width-xl: 1536px; /* wide screens */
   --nmx-rail-collapse-width: 56px;
+  /* Expanded states */
+  --nmx-rail-width-expanded-xs: 160px; /* ultra compact, icon + short label */
+  --nmx-rail-width-expanded-sm: 200px; /* compact label */
+  --nmx-rail-width-expanded-md: 240px; /* standard */
+  --nmx-rail-width-expanded-lg: 280px; /* với badge/meta */
+  --nmx-rail-width-expanded-xl: 320px; /* sub-menu mở */
 }
 :root {
   --nmx-font-sans: Inter, system-ui, sans-serif;

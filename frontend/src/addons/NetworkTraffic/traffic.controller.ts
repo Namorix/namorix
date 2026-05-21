@@ -16,6 +16,11 @@ export interface TrafficEndpoint {
   createdAt: string
 }
 
+export interface TrafficAddress {
+  id: number
+  ip: string
+}
+
 export interface TrafficLog {
   id: number
   endpointId: number
@@ -25,6 +30,13 @@ export interface TrafficLog {
   trafficAddressId?: number
   userId?: number
   timestamp: string
+  endpoint?: TrafficEndpoint
+  trafficAddress?: TrafficAddress
+}
+
+export interface TrafficLogResponse {
+  items: TrafficLog[]
+  total: number
 }
 
 async function listEndpoints(): Promise<TrafficEndpoint[]> {
@@ -37,4 +49,17 @@ async function listEndpoints(): Promise<TrafficEndpoint[]> {
   return data.data
 }
 
-export const trafficController = { listEndpoints }
+async function listLogs(
+  page: number,
+  size: number,
+): Promise<TrafficLogResponse> {
+  const data = await http
+    .url(getApiBaseUrl() + ApiTrafficRoutes.logs)
+    .query({ page, size })
+    .get()
+    .json<TrafficLogResponse>()
+  if (!data.success) throw ApiError.fromResponse(data)
+  return data.data
+}
+
+export const trafficController = { listEndpoints, listLogs }

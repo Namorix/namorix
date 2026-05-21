@@ -10,6 +10,8 @@ registerAddon(
       displayName: "Network Traffic",
       description: "Network traffic",
       icon: NmxIconSvgSymbol.APP_NETWORK_TRAFFIC,
+      defaultWidth: 1200,
+      defaultHeight: 500,
     },
     NetworkTraffic,
   ),
