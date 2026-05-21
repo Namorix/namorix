@@ -1,3 +1,5 @@
+export const HUB_MAIN = "/hubs/main"
+
 export const API_BASE = "/api"
 export const API_AUTH_BASE = API_BASE + "/auth"
 export const API_USER_BASE = API_BASE + "/user"
