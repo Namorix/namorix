@@ -1,0 +1,133 @@
+@use "../abstract/variables" as *;
+
+.nmx-settings-section {
+  margin: 0 auto var(--nmx-spacing-3xl) auto;
+}
+
+.nmx-settings-section__title {
+  display: inline-block;
+  font-size: var(--nmx-font-size-xs);
+  font-weight: var(--nmx-font-weight-medium);
+  color: var(--nmx-color-on-surface-variant);
+  letter-spacing: var(--nmx-letter-spacing-wider);
+  text-transform: uppercase;
+  margin: 0 0 var(--nmx-spacing-xl);
+}
+
+.nmx-settings-card {
+  background: var(--nmx-color-surface-low);
+  border-radius: var(--nmx-radius-lg);
+  padding: var(--nmx-spacing-lg) var(--nmx-spacing-xl);
+  box-shadow: var(--nmx-shadow-sm);
+}
+
+.nmx-settings-row {
+  --nmx-settings-row-control-basis: 250px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--nmx-spacing-md) 0;
+  gap: var(--nmx-spacing-md);
+
+  &__label_wrap {
+    flex: 1;
+  }
+
+  &__control {
+    flex: 0 1 var(--nmx-settings-row-control-basis);
+    display: flex;
+    justify-content: flex-end;
+    min-width: 0;
+  }
+
+  &__label {
+    display: block;
+    font-size: var(--nmx-font-size-sm);
+    color: var(--nmx-color-on-surface);
+  }
+
+  &__desc {
+    display: block;
+    font-size: var(--nmx-font-size-xs);
+    color: var(--nmx-color-on-surface-variant);
+    margin-top: var(--nmx-spacing-sm);
+  }
+}
+
+.nmx-accent-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--nmx-spacing-2xl), 1fr));
+  gap: var(--nmx-spacing-sm);
+  max-width: 200px;
+  width: 100%;
+}
+
+.nmx-accent-picker__dot {
+  width: var(--nmx-spacing-2xl);
+  height: var(--nmx-spacing-2xl);
+  border-radius: var(--nmx-radius-md);
+  cursor: pointer;
+  border: 2px solid transparent;
+
+  &--active {
+    border-color: var(--nmx-color-on-surface);
+  }
+}
+
+.nmx-rail-content {
+  container-type: inline-size;
+  container-name: settings;
+}
+
+@container settings (max-width: 580px) {
+  .nmx-settings-row:not(:has(input[type="checkbox"])) {
+    flex-wrap: wrap;
+  }
+
+  .nmx-settings-row:has(input[type="checkbox"]) .nmx-settings-row__control {
+    flex-shrink: 2;
+  }
+
+  .nmx-settings-row {
+    margin-bottom: var(--nmx-spacing-sm);
+
+    &__label_wrap {
+      white-space: nowrap;
+      overflow: hidden;
+      flex: 1 1 100%;
+    }
+
+    &__control:not(:has(input[type="checkbox"])) {
+      flex: 1 1 100%;
+      justify-content: center;
+      margin-top: var(--nmx-spacing-xs);
+    }
+  }
+
+  .nmx-accent-picker {
+    max-width: none;
+  }
+}
+
+@container settings (min-width: #{$nmx-breakpoint-sm}) {
+  .nmx-settings-row__control {
+    --nmx-settings-row-control-basis: 300px;
+  }
+}
+
+@container settings (min-width: #{$nmx-breakpoint-md}) {
+  .nmx-settings-section {
+    max-width: 840px;
+  }
+
+  .nmx-settings-row__control {
+    --nmx-settings-row-control-basis: 400px;
+  }
+}
+
+@container settings (min-width: #{$nmx-breakpoint-lg}) {
+  .nmx-settings-section {
+    max-width: 960px;
+  }
+}

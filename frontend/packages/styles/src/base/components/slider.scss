@@ -1,17 +1,17 @@
 .nmx-slider {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--nmx-spacing-sm);
 
   &__input {
     flex: 1;
-    accent-color: var(--nmx-color-primary, #378add);
+    accent-color: var(--nmx-color-primary);
     cursor: pointer;
   }
 
   &__value {
-    font-size: var(--nmx-font-size-sm, 13px);
-    color: var(--nmx-color-on-surface-variant, #666);
+    font-size: var(--nmx-font-size-sm);
+    color: var(--nmx-color-on-surface-variant);
     min-width: 36px;
     text-align: right;
   }

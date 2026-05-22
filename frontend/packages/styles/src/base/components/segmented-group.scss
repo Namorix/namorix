@@ -1,27 +1,27 @@
 .nmx-segmented-group {
   display: flex;
-  gap: 8px;
+  gap: var(--nmx-spacing-sm);
+  width: 100%;
 
   &__btn {
     flex: 1;
-    padding: 6px 0;
-    border: 0.5px solid var(--nmx-color-surface-mid, #ccc);
-    border-radius: var(--nmx-radius-md, 6px);
-    font-size: var(--nmx-font-size-sm, 12px);
-    color: var(--nmx-color-on-surface-variant, #666);
-    background: var(--nmx-color-surface-low, #fff);
+    border: 0;
+    padding: var(--nmx-spacing-md) var(--nmx-spacing-sm);
+    border-radius: var(--nmx-radius-md);
+    font-size: var(--nmx-font-size-sm);
+    color: var(--nmx-color-on-surface-variant);
+    background: var(--nmx-color-surface-mid);
+    box-shadow: var(--nmx-shadow-sm);
     cursor: pointer;
     text-align: center;
     font-family: inherit;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 
     &--active {
-      border-color: var(--nmx-color-primary, #378add);
-      color: var(--nmx-color-primary, #378add);
-      background: color-mix(
-        in srgb,
-        var(--nmx-color-primary, #378add) 10%,
-        transparent
-      );
+      color: var(--nmx-color-on-primary);
+      background: var(--nmx-color-primary);
     }
   }
 }

@@ -6,7 +6,7 @@
 
 @font-face {
   font-family: "icomoon";
-  src: url("/public/fonts/icomoon/fonts/icomoon.ttf?i0j2os") format("truetype"), url("/public/fonts/icomoon/fonts/icomoon.woff?i0j2os") format("woff"), url("/public/fonts/icomoon/fonts/icomoon.svg?i0j2os#icomoon") format("svg");
+  src: url("/public/fonts/icomoon/fonts/icomoon.ttf?3gku7o") format("truetype"), url("/public/fonts/icomoon/fonts/icomoon.woff?3gku7o") format("woff"), url("/public/fonts/icomoon/fonts/icomoon.svg?3gku7o#icomoon") format("svg");
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -23,6 +23,12 @@
   /* Better Font Rendering =========== */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+.ic-arrow-up:before {
+  content: "\e912";
+}
+.ic-arrow-down:before {
+  content: "\e913";
 }
 .ic-exit:before {
   content: "\e911";
@@ -172,6 +178,8 @@ body {
   display: flex;
   height: 100%;
   overflow: hidden;
+  container-type: inline-size;
+  container-name: contents;
 }
 .nmx-rail--collapsed {
   --nmx-rail-current-width: var(--nmx-rail-collapse-width);
@@ -268,6 +276,10 @@ body {
 .nmx-rail-item:hover {
   background: var(--nmx-color-surface-high);
 }
+.nmx-rail-item:hover .nmx-rail-item__label,
+.nmx-rail-item:hover .nmx-rail-item__btn {
+  color: var(--nmx-color-on-primary);
+}
 .nmx-rail-item--active {
   background: var(--nmx-color-primary);
 }
@@ -308,6 +320,23 @@ body {
 }
 .nmx-rail-item__toggle .nmx-rail-item__btn:hover {
   background: color-mix(in oklab, var(--nmx-color-primary) 85%, var(--nmx-color-mix-darken));
+}
+@container contents (max-width: 640px) {
+  .nmx-rail-list {
+    --nmx-rail-current-width: var(--nmx-rail-collapse-width);
+  }
+  .nmx-rail-item--active {
+    pointer-events: none;
+    cursor: auto;
+  }
+  .nmx-rail-item__label {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+  }
+  .nmx-rail-list > .nmx-rail-item__toggle .nmx-rail-item__label {
+    opacity: 0;
+  }
 }
 .nmx-grid {
   display: grid;
@@ -1107,61 +1136,197 @@ body {
     transform: rotate(360deg);
   }
 }
-.nmx-select {
-  font-size: var(--nmx-font-size-sm, 13px);
-  padding: 5px 8px;
-  border: 0.5px solid var(--nmx-color-surface-mid, #ccc);
-  border-radius: var(--nmx-radius-md, 6px);
-  background: var(--nmx-color-surface-low, #fff);
-  color: var(--nmx-color-on-surface, #000);
+.nmx-select-wrap {
+  position: relative;
+  width: 100%;
+}
+.nmx-select-wrap:after {
+  content: "\e913";
+  color: var(--nmx-color-on-surface-variant);
+  font-family: var(--nmx-font-icommon), serif;
+  position: absolute;
+  pointer-events: none;
+  top: 50%;
+  right: var(--nmx-spacing-md);
+  transform: translateY(-50%);
+  transition: color 0.2s, transform 0.2s ease;
+}
+.nmx-select-wrap:has(select:focus-visible):after {
+  color: var(--nmx-color-on-surface);
+  transform: translateY(-50%) rotate(180deg);
+}
+.nmx-select-control {
+  appearance: none;
+  -webkit-appearance: none;
+  font-size: var(--nmx-font-size-sm);
+  padding: var(--nmx-spacing-lg);
+  border-color: transparent;
+  border-radius: var(--nmx-radius-md);
+  background: var(--nmx-color-surface-lowest);
+  color: var(--nmx-color-on-surface-variant);
   font-family: var(--nmx-font-sans), sans-serif;
+  width: 100%;
   cursor: pointer;
   outline: none;
 }
-.nmx-select:focus-visible {
-  border-color: var(--nmx-color-primary, #378add);
-  box-shadow: 0 0 0 2px var(--nmx-color-primary-alpha, rgba(55, 138, 221, 0.2));
+.nmx-select-control:focus-visible {
+  color: var(--nmx-color-on-surface);
+  border-color: var(--nmx-color-primary);
+  box-shadow: 0 0 0 2px rgba(var(--nmx-color-primary-rgb), 0.2);
 }
-.nmx-select:disabled {
+.nmx-select-control:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 .nmx-slider {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--nmx-spacing-sm);
 }
 .nmx-slider__input {
   flex: 1;
-  accent-color: var(--nmx-color-primary, #378add);
+  accent-color: var(--nmx-color-primary);
   cursor: pointer;
 }
 .nmx-slider__value {
-  font-size: var(--nmx-font-size-sm, 13px);
-  color: var(--nmx-color-on-surface-variant, #666);
+  font-size: var(--nmx-font-size-sm);
+  color: var(--nmx-color-on-surface-variant);
   min-width: 36px;
   text-align: right;
 }
 .nmx-segmented-group {
   display: flex;
-  gap: 8px;
+  gap: var(--nmx-spacing-sm);
+  width: 100%;
 }
 .nmx-segmented-group__btn {
   flex: 1;
-  padding: 6px 0;
-  border: 0.5px solid var(--nmx-color-surface-mid, #ccc);
-  border-radius: var(--nmx-radius-md, 6px);
-  font-size: var(--nmx-font-size-sm, 12px);
-  color: var(--nmx-color-on-surface-variant, #666);
-  background: var(--nmx-color-surface-low, #fff);
+  border: 0;
+  padding: var(--nmx-spacing-md) var(--nmx-spacing-sm);
+  border-radius: var(--nmx-radius-md);
+  font-size: var(--nmx-font-size-sm);
+  color: var(--nmx-color-on-surface-variant);
+  background: var(--nmx-color-surface-mid);
+  box-shadow: var(--nmx-shadow-sm);
   cursor: pointer;
   text-align: center;
   font-family: inherit;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 .nmx-segmented-group__btn--active {
-  border-color: var(--nmx-color-primary, #378add);
-  color: var(--nmx-color-primary, #378add);
-  background: color-mix(in srgb, var(--nmx-color-primary, #378add) 10%, transparent);
+  color: var(--nmx-color-on-primary);
+  background: var(--nmx-color-primary);
+}
+.nmx-settings-section {
+  margin: 0 auto var(--nmx-spacing-3xl) auto;
+}
+.nmx-settings-section__title {
+  display: inline-block;
+  font-size: var(--nmx-font-size-xs);
+  font-weight: var(--nmx-font-weight-medium);
+  color: var(--nmx-color-on-surface-variant);
+  letter-spacing: var(--nmx-letter-spacing-wider);
+  text-transform: uppercase;
+  margin: 0 0 var(--nmx-spacing-xl);
+}
+.nmx-settings-card {
+  background: var(--nmx-color-surface-low);
+  border-radius: var(--nmx-radius-lg);
+  padding: var(--nmx-spacing-lg) var(--nmx-spacing-xl);
+  box-shadow: var(--nmx-shadow-sm);
+}
+.nmx-settings-row {
+  --nmx-settings-row-control-basis: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--nmx-spacing-md) 0;
+  gap: var(--nmx-spacing-md);
+}
+.nmx-settings-row__label_wrap {
+  flex: 1;
+}
+.nmx-settings-row__control {
+  flex: 0 1 var(--nmx-settings-row-control-basis);
+  display: flex;
+  justify-content: flex-end;
+  min-width: 0;
+}
+.nmx-settings-row__label {
+  display: block;
+  font-size: var(--nmx-font-size-sm);
+  color: var(--nmx-color-on-surface);
+}
+.nmx-settings-row__desc {
+  display: block;
+  font-size: var(--nmx-font-size-xs);
+  color: var(--nmx-color-on-surface-variant);
+  margin-top: var(--nmx-spacing-sm);
+}
+.nmx-accent-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--nmx-spacing-2xl), 1fr));
+  gap: var(--nmx-spacing-sm);
+  max-width: 200px;
+  width: 100%;
+}
+.nmx-accent-picker__dot {
+  width: var(--nmx-spacing-2xl);
+  height: var(--nmx-spacing-2xl);
+  border-radius: var(--nmx-radius-md);
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+.nmx-accent-picker__dot--active {
+  border-color: var(--nmx-color-on-surface);
+}
+.nmx-rail-content {
+  container-type: inline-size;
+  container-name: settings;
+}
+@container settings (max-width: 580px) {
+  .nmx-settings-row:not(:has(input[type=checkbox])) {
+    flex-wrap: wrap;
+  }
+  .nmx-settings-row:has(input[type=checkbox]) .nmx-settings-row__control {
+    flex-shrink: 2;
+  }
+  .nmx-settings-row {
+    margin-bottom: var(--nmx-spacing-sm);
+  }
+  .nmx-settings-row__label_wrap {
+    white-space: nowrap;
+    overflow: hidden;
+    flex: 1 1 100%;
+  }
+  .nmx-settings-row__control:not(:has(input[type=checkbox])) {
+    flex: 1 1 100%;
+    justify-content: center;
+    margin-top: var(--nmx-spacing-xs);
+  }
+  .nmx-accent-picker {
+    max-width: none;
+  }
+}
+@container settings (min-width: 580px) {
+  .nmx-settings-row__control {
+    --nmx-settings-row-control-basis: 300px;
+  }
+}
+@container settings (min-width: 800px) {
+  .nmx-settings-section {
+    max-width: 840px;
+  }
+  .nmx-settings-row__control {
+    --nmx-settings-row-control-basis: 400px;
+  }
+}
+@container settings (min-width: 1100px) {
+  .nmx-settings-section {
+    max-width: 960px;
+  }
 }
 :root {
   --nmx-duration-instant: 0ms;
@@ -1239,6 +1404,7 @@ body {
   --nmx-font-logo: Rajdhani, sans-serif;
   --nmx-font-chip: "DM Sans", sans-serif;
   --nmx-font-clock: "Orbitron", sans-serif;
+  --nmx-font-icommon: "icomoon";
   /* Font sizes */
   --nmx-font-size-xs: 0.75rem;
   --nmx-font-size-sm: 0.875rem;

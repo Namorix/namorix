@@ -6,6 +6,8 @@
   display: flex;
   height: 100%;
   overflow: hidden;
+  container-type: inline-size;
+  container-name: contents;
 
   &--collapsed {
     --nmx-rail-current-width: var(--nmx-rail-collapse-width);
@@ -90,6 +92,11 @@
 
   &:hover {
     background: var(--nmx-color-surface-high);
+
+    .nmx-rail-item__label,
+    .nmx-rail-item__btn {
+      color: var(--nmx-color-on-primary);
+    }
   }
 
   &--active {
@@ -150,5 +157,26 @@
         );
       }
     }
+  }
+}
+
+@container contents (max-width: 640px) {
+  .nmx-rail-list {
+    --nmx-rail-current-width: var(--nmx-rail-collapse-width);
+  }
+
+  .nmx-rail-item--active {
+    pointer-events: none;
+    cursor: auto;
+  }
+
+  .nmx-rail-item__label {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+  }
+
+  .nmx-rail-list > .nmx-rail-item__toggle .nmx-rail-item__label {
+    opacity: 0;
   }
 }

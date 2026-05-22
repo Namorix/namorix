@@ -1,18 +1,47 @@
-.nmx-select {
-  font-size: var(--nmx-font-size-sm, 13px);
-  padding: 5px 8px;
-  border: 0.5px solid var(--nmx-color-surface-mid, #ccc);
-  border-radius: var(--nmx-radius-md, 6px);
-  background: var(--nmx-color-surface-low, #fff);
-  color: var(--nmx-color-on-surface, #000);
+@use "../icomoon/variables" as *;
+
+.nmx-select-wrap {
+  position: relative;
+  width: 100%;
+
+  &:after {
+    content: "#{$ic-arrow-down}";
+    color: var(--nmx-color-on-surface-variant);
+    font-family: var(--nmx-font-icommon), serif;
+    position: absolute;
+    pointer-events: none;
+    top: 50%;
+    right: var(--nmx-spacing-md);
+    transform: translateY(-50%);
+    transition:
+      color 0.2s,
+      transform 0.2s ease;
+  }
+
+  &:has(select:focus-visible):after {
+    color: var(--nmx-color-on-surface);
+    transform: translateY(-50%) rotate(180deg);
+  }
+}
+
+.nmx-select-control {
+  appearance: none;
+  -webkit-appearance: none;
+  font-size: var(--nmx-font-size-sm);
+  padding: var(--nmx-spacing-lg);
+  border-color: transparent;
+  border-radius: var(--nmx-radius-md);
+  background: var(--nmx-color-surface-lowest);
+  color: var(--nmx-color-on-surface-variant);
   font-family: var(--nmx-font-sans), sans-serif;
+  width: 100%;
   cursor: pointer;
   outline: none;
 
   &:focus-visible {
-    border-color: var(--nmx-color-primary, #378add);
-    box-shadow: 0 0 0 2px
-      var(--nmx-color-primary-alpha, rgba(55, 138, 221, 0.2));
+    color: var(--nmx-color-on-surface);
+    border-color: var(--nmx-color-primary);
+    box-shadow: 0 0 0 2px rgba(var(--nmx-color-primary-rgb), 0.2);
   }
 
   &:disabled {
