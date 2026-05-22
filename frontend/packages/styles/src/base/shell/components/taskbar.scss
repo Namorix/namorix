@@ -96,9 +96,21 @@
   }
 
   &__clock {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     color: var(--nmx-color-on-surface);
-    font-size: var(--nmx-font-size-lg);
     font-family: var(--nmx-font-clock), sans-serif;
+
+    &__time {
+      font-size: var(--nmx-font-size-lg);
+      font-weight: var(--nmx-font-weight-semibold);
+    }
+
+    &__date {
+      font-size: var(--nmx-font-size-xs);
+      font-weight: var(--nmx-font-weight-bold);
+    }
   }
 
   &__signal {
