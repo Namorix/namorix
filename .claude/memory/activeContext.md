@@ -25,6 +25,13 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 ## Recent Changes
 
+### 2026-05-23 — SCSS token cleanup, NmxSettings components, rail container query, mount size vars
+
+- **@namorix/ui (0.12.0 → 0.13.0)**: NEW `NmxSettingsSection`, `NmxSettingsCard`, `NmxSettingsRow`, `NmxAccentColorPicker` — reusable settings layout components. MODIFIED `NmxRailContent` — ResizeObserver sets `--nmx-rail-content-width/height` CSS vars. MODIFIED `NmxRail` — `container-type: inline-size` + CSS container query auto-collapse under 640px. Token fallback cleanup in Select/Slider/SegmentedGroup.
+- **@namorix/styles (0.15.0 → 0.16.0)**: NEW `settings.scss` component SCSS. NEW `$nmx-breakpoint-*` SCSS variables (sm/md/lg/xl). NEW `--nmx-letter-spacing-wider` typography token. MODIFIED `rail.scss` — container query. DELETED setting.scss section/card/row/accent moved to settings.scss. Icomoon glyphs updated, theme CSS rebuilt.
+- **frontend (0.21.0 → 0.22.0)**: SettingsAppearance refactored to use NmxSettings components. `useAddonMount` — ResizeObserver sets `--nmx-mount-width/height` CSS vars on mount container.
+- **backend (0.25.0 → 0.25.1)**: Removed duplicate stats endpoint from TrafficMonitorController.
+
 ### 2026-05-22 — Settings Appearance UI with 3 new UI primitives
 
 - **@namorix/ui (0.11.2 → 0.12.0)**: NEW `NmxSelect` — styled native `<select>` primitive. NEW `NmxSlider` — range slider primitive. NEW `NmxSegmentedGroup` — segmented button group primitive.

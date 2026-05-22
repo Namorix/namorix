@@ -124,11 +124,11 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.21.0 | M3 (Settings Appearance full UI, launcher logout button, change password flow) |
+| frontend | 0.22.0 | M3 (Settings refactored to NmxSettings components, theme card grid) |
 | @namorix/core | 0.18.1 | M3 (appearance settings i18n keys) |
-| @namorix/styles | 0.15.0 | M3 (new component SCSS: select, slider, segmented-group; appearance layout styles) |
-| @namorix/ui | 0.12.0 | M3 (new primitives: NmxSelect, NmxSlider, NmxSegmentedGroup) |
-| backend | 0.25.0 | M3 (change password endpoint + ChangePasswordSchema + IncorrectPassword/PasswordChangeFailed error codes) |
+| @namorix/styles | 0.16.0 | M3 (settings component SCSS, breakpoint SCSS vars, token cleanup) |
+| @namorix/ui | 0.13.0 | M3 (NmxSettingsSection/Card/Row/AccentColorPicker, NmxRailContent size vars) |
+| backend | 0.25.1 | M3 (cleanup duplicate stats endpoint) |
 
 ## Version Rules
 
@@ -147,6 +147,15 @@
 | backend | Bug fixes, C# config tweaks | New endpoint, new service, auth feature |
 
 ## Version History
+
+### 2026-05-23 — SCSS token cleanup, NmxSettings components, rail container query
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/styles | 0.16.0 | NEW: `components/settings.scss` — NmxSettings component SCSS (section, card, row, accent-picker). NEW: `abstract/variables.scss` — `$nmx-breakpoint-*` (sm:580px, md:800px, lg:1100px, xl:1440px). NEW: `tokens/typography.scss` — `--nmx-letter-spacing-wider`. MODIFIED: `layouts/rail.scss` — container query auto-collapse at 640px. MODIFIED: `components/select.scss`, `slider.scss`, `segmented-group.scss` — removed hardcoded fallback hex/token values. DELETED: `shell/addon/setting.scss` — section/card/row/accent styles moved to settings.scss. MODIFIED: icomoon — new glyphs, theme CSS rebuilt. |
+| @namorix/ui | 0.13.0 | NEW: `Components/NmxSettings/` — `NmxSettingsSection`, `NmxSettingsCard`, `NmxSettingsRow`, `NmxAccentColorPicker` composite components. MODIFIED: `NmxRailContent` — ResizeObserver sets `--nmx-rail-content-width/height` CSS vars. MODIFIED: `NmxRail` — container-type + container-name for CSS auto-collapse. MODIFIED: `NmxSelect`, `NmxSlider`, `NmxSegmentedGroup` — token fallback cleanup. NEW icon symbols. |
+| frontend | 0.22.0 | MODIFIED: `SettingsAppearance` — refactored to use NmxSettingsSection/Card/Row/AccentColorPicker components. MODIFIED: `useAddonMount` — ResizeObserver sets `--nmx-mount-width/height` CSS vars on mount container. |
+| backend | 0.25.1 | FIX: `TrafficMonitorController` — removed duplicate `GET stats` endpoint. |
 
 ### 2026-05-22 — Settings Appearance UI with 3 new UI primitives
 
