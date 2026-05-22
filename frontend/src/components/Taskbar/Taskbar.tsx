@@ -18,7 +18,7 @@ export const Taskbar: React.FC = () => {
   const order = useAppSelector(selectorTaskbarOrder)
   const activeId = useAppSelector(selectorActiveId)
   const signalStatus = useSignalRStatus()
-  const time = useTaskbarClock()
+  const { time, date } = useTaskbarClock()
 
   const handleAppClick = useCallback(
     (id: string) => {
@@ -40,6 +40,7 @@ export const Taskbar: React.FC = () => {
     <TaskbarView
       order={order}
       time={time}
+      date={date}
       signalStatus={signalStatus}
       onStartClick={() => dispatch(toggleLauncher())}
       onAppClick={handleAppClick}

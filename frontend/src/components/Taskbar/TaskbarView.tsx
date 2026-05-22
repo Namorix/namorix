@@ -12,13 +12,14 @@ import type { SignalRStatus } from "@namorix/core"
 interface TaskViewProps {
   order: WindowId[]
   time: string
+  date: string
   signalStatus: SignalRStatus
   onStartClick: () => void
   onAppClick: (id: WindowId) => void
 }
 
 export const TaskbarView = memo<TaskViewProps>(
-  ({ order, time, signalStatus, onStartClick, onAppClick }) => {
+  ({ order, time, date, signalStatus, onStartClick, onAppClick }) => {
     return (
       <div className="nmx-taskbar">
         <div className="nmx-taskbar__inner">
@@ -42,7 +43,10 @@ export const TaskbarView = memo<TaskViewProps>(
               className={`nmx-taskbar__signal nmx-taskbar__signal--${signalStatus}`}
             />
 
-            <span className="nmx-taskbar__clock">{time}</span>
+            <div className="nmx-taskbar__clock">
+              <span className="nmx-taskbar__clock__time">{time}</span>
+              <span className="nmx-taskbar__clock__date">{date}</span>
+            </div>
           </div>
         </div>
       </div>
