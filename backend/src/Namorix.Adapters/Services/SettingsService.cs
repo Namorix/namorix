@@ -9,6 +9,20 @@ namespace Namorix.Adapters.Services;
 
 public class SettingsService(AppDbContext dbContext, IMemoryCache memoryCache, ISystemNotifier systemNotifier)
 {
+    public async Task<(List<string> proxies, List<string> origins, bool registerEnabled)> GetAllAsync()
+    {
+        var proxies = await GetTrustedProxies();
+        var origins = await GetAllowedOrigins();
+        var registerEnabled = await IsRegisterEnabled();
+        return (proxies, origins, registerEnabled);
+    }
+    public async Task SetAllAsync(List<string> proxies, List<string> origins, bool registerEnabled)
+    {
+        await SetTrustedProxies(proxies);
+        await SetAllowedOrigins(origins);
+        await SetRegisterEnabled(registerEnabled);
+    }
+    
     public async Task<bool> IsRegisterEnabled()
     {
         return await memoryCache.GetOrCreateAsync(SettingKeys.RegisterEnabled, async entry =>
@@ -65,7 +79,7 @@ public class SettingsService(AppDbContext dbContext, IMemoryCache memoryCache, I
         }
 
         await dbContext.SaveChangesAsync();
-        memoryCache.Set(key, value, Time.ExpirationRelativeToNow);
+        memoryCache.Remove(key);
     }
 
     public async Task<List<string>> GetTrustedProxies() =>
