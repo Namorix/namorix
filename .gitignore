@@ -3,6 +3,7 @@ backend/data
 package-lock.json
 pnpm-lock.yaml
 .idea/
+.codegraph/
 .claude/skills/skill-creator
 .claude/skills/find-skills
 memory/
