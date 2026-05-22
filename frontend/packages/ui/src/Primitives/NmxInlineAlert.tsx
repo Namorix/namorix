@@ -1,9 +1,20 @@
 import React from "react"
 import { cx, cxSemantic } from "../utils"
-import type { WithBaseProps, WithSemanticColor } from "../types"
+import type {
+  NmxSemanticColor,
+  WithBaseProps,
+  WithSemanticColor,
+} from "../types"
+
+type MessageType = string | Error | undefined | unknown | null
 
 interface NmxInlineAlertProps extends WithBaseProps, WithSemanticColor {
-  message?: string | undefined | null
+  message?: MessageType
+}
+
+export interface NmxInlineAlertState {
+  semantic: NmxSemanticColor
+  message?: MessageType
 }
 
 export const NmxInlineAlert: React.FC<NmxInlineAlertProps> = ({
@@ -26,7 +37,7 @@ export const NmxInlineAlert: React.FC<NmxInlineAlertProps> = ({
         className,
       )}
     >
-      {message}
+      {message ? String(message) : ""}
     </div>
   )
 }

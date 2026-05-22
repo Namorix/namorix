@@ -1,5 +1,6 @@
 import type { WithBaseProps, WithMuted, WithSemanticColor } from "../../types"
 import { cx, cxMuted, cxSemantic } from "../../utils"
+import React from "react"
 
 interface NmxMetaItemProps extends WithBaseProps, WithSemanticColor, WithMuted {
   label?: string
@@ -12,6 +13,7 @@ export const NmxMetaItem: React.FC<NmxMetaItemProps> = ({
   semantic,
   muted,
   shouldRender = true,
+  children,
   className,
   ...rest
 }) => {
@@ -22,7 +24,7 @@ export const NmxMetaItem: React.FC<NmxMetaItemProps> = ({
   return (
     <div {...rest} className={cx("nmx-meta-list__item", className)}>
       {label && <span className="nmx-meta-list__item-label">{label}</span>}
-      {value && (
+      {(value || children) && (
         <span
           className={cx(
             "nmx-meta-list__item-value",
@@ -33,7 +35,7 @@ export const NmxMetaItem: React.FC<NmxMetaItemProps> = ({
             cxMuted("nmx-meta-list__item-value", muted),
           )}
         >
-          {value}
+          {value ? value : children}
         </span>
       )}
     </div>

@@ -8,6 +8,7 @@ interface NmxButtonProps extends WithBaseProps, WithVariant, WithSemanticColor {
   disabled?: boolean
   fullWidth?: boolean
   uppercase?: boolean
+  onClick?: (e: React.MouseEvent) => void
 }
 
 export const NmxButton: React.FC<NmxButtonProps> = ({
@@ -18,6 +19,7 @@ export const NmxButton: React.FC<NmxButtonProps> = ({
   disabled = false,
   fullWidth = false,
   uppercase = false,
+  onClick,
   shouldRender = true,
   className,
   children,
@@ -40,6 +42,7 @@ export const NmxButton: React.FC<NmxButtonProps> = ({
         cxSemantic("nmx-button", semantic),
         className,
       )}
+      onClick={onClick}
     >
       {children ?? label}
     </button>

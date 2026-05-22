@@ -7,6 +7,7 @@ interface NmxToggleProps extends WithBaseProps {
   name?: string
   label?: string
   checked?: boolean
+  defaultChecked?: boolean
   disabled?: boolean
   onCheckedChanged?: (checked: boolean) => void
 }
@@ -15,8 +16,9 @@ export const NmxToggle: React.FC<NmxToggleProps> = ({
   id,
   name,
   label,
-  checked = false,
+  checked,
   disabled = false,
+  defaultChecked = false,
   shouldRender = true,
   onCheckedChanged,
   className,
@@ -36,7 +38,8 @@ export const NmxToggle: React.FC<NmxToggleProps> = ({
         className="nmx-toggle-input"
         type="checkbox"
         name={name}
-        defaultChecked={checked}
+        checked={checked}
+        defaultChecked={defaultChecked}
         disabled={disabled}
         onChange={(e) => onCheckedChanged?.(e.target.checked)}
       />
