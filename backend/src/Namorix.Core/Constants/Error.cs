@@ -10,6 +10,8 @@ public static class AuthErrors
     public const string RegisterClosed = "REGISTER_CLOSED";
     public const string Unauthorized = "UNAUTHORIZED";
     public const string Forbidden = "FORBIDDEN";
+    public const string IncorrectPassword = "INCORRECT_PASSWORD";
+    public const string PasswordChangeFailed = "PASSWORD_CHANGE_FAILED";
 }
 
 public static class ValidationErrorCodes

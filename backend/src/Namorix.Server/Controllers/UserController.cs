@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Namorix.Adapters.Services;
-using Namorix.Core.Attributes;
 using Namorix.Core.Constants;
+using Namorix.Core.Exceptions;
 using Namorix.Core.Infrastructure;
 using Namorix.Core.Responses;
 using Namorix.Core.Validation;
@@ -45,6 +45,28 @@ public class UserController : ControllerBase
         return Ok(ApiResponse.Ok());
     }
 
+    [HttpPut("password")]
+    [Validate(typeof(ChangePasswordSchema))]
+    public async Task<IActionResult> ChangePassword(
+        [FromBody] ChangePasswordRequest request,
+        [FromServices] UserService userService)
+    {
+        var userId = GetUserId();
+        if (userId == null)
+            return Unauthorized(ApiResponse.Fail(AuthErrors.Unauthorized));
+
+        try
+        {
+            await userService.ChangePasswordAsync(userId.Value, request.CurrentPassword, request.NewPassword);
+            return Ok(ApiResponse.Ok());
+        }
+        catch (AuthException ex) when (ex.Code == AuthErrors.IncorrectPassword)
+        {
+            return Unauthorized(ApiResponse.Fail(ex.Code, "Current password is incorrect"));
+        }
+    }
+
+    
     private int? GetUserId()
     {
         var claim = User.FindFirst(JwtClaims.UserId)?.Value;
@@ -55,4 +77,10 @@ public class UserController : ControllerBase
 public class SetThemeRequest
 {
     public string ThemeId { get; init; } = string.Empty;
+}
+
+public class ChangePasswordRequest
+{
+    public string CurrentPassword { get; init; } = string.Empty;
+    public string NewPassword { get; init; } = string.Empty;
 }
