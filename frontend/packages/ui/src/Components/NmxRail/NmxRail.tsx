@@ -2,6 +2,7 @@ import type { WithBaseProps } from "../../types"
 import React, { useCallback, useMemo, useState } from "react"
 import { cx } from "../../utils"
 import { NmxRailContext, type NmxRailContextValue } from "./NmxRailContext"
+import { isMobile } from "@namorix/core"
 
 export interface NmxRailLayoutProps extends WithBaseProps {
   collapsed?: boolean
@@ -21,7 +22,8 @@ export const NmxRail: React.FC<NmxRailLayoutProps> = ({
   ...rest
 }) => {
   const [internalCollapsed, setInternalCollapsed] = useState(defaultCollapsed)
-  const isCollapsed = collapsed ?? internalCollapsed
+  const isCollapsed = isMobile() ? true : (collapsed ?? internalCollapsed)
+  const isCollapsedOnActive = isMobile() ? true : collapseOnActiveClick
 
   const toggleCollapsed = useCallback(() => {
     const next = !isCollapsed
@@ -32,10 +34,10 @@ export const NmxRail: React.FC<NmxRailLayoutProps> = ({
   const context = useMemo<NmxRailContextValue>(
     () => ({
       collapsed: isCollapsed,
-      collapseOnActiveClick,
+      collapseOnActiveClick: isCollapsedOnActive,
       toggleCollapsed,
     }),
-    [collapseOnActiveClick, isCollapsed, toggleCollapsed],
+    [isCollapsedOnActive, isCollapsed, toggleCollapsed],
   )
 
   if (!shouldRender) {
@@ -49,6 +51,7 @@ export const NmxRail: React.FC<NmxRailLayoutProps> = ({
         className={cx(
           "nmx-rail",
           { "nmx-rail--collapsed": isCollapsed },
+          { "nmx-rail--disable-collapsed": isCollapsedOnActive },
           className,
         )}
       >

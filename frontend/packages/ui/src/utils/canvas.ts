@@ -17,7 +17,7 @@ export function drawSparkline(
 
   const points = plot.map((v, i) => ({
     x: (i / (plot.length - 1)) * width,
-    y: height - ((v - min) / range) * height,
+    y: height * 0.1 + ((max - v) / range) * height * 0.8,
   }))
 
   // Gradient fill
