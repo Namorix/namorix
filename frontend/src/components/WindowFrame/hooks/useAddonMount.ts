@@ -7,25 +7,22 @@ export const useAddonMount = (appId: WindowId) => {
   const mountRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    const container = mountRef.current
     const addon = resolveAddon(appId)
-    if (!addon || !mountRef.current) {
-      return
-    }
+    if (!addon || !container) return
 
     const context: AddonContext = {
       addonId: appId,
       nmxStore,
     }
 
-    addon.entry.mount(mountRef.current, context)
+    addon.entry.mount(container, context)
 
     if (import.meta.env.DEV) {
       setTimeout(() => {
-        const children = mountRef.current?.children
+        const children = container.children
 
-        if (!children || children.length === 0) {
-          return
-        }
+        if (!children || children.length === 0) return
 
         if (children.length === 1) {
           const root = children[0]
@@ -39,7 +36,10 @@ export const useAddonMount = (appId: WindowId) => {
     }
 
     return () => {
-      addon.entry.unmount()
+      const entryToUnmount = addon.entry
+      queueMicrotask(() => {
+        entryToUnmount.unmount(container)
+      })
     }
   }, [appId])
 

@@ -25,6 +25,14 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 ## Recent Changes
 
+### 2026-05-22 — change password, user controller, resolveError, logout button, bug fixes
+
+- **backend (0.24.1 → 0.25.0)**: NEW `UserController.PUT "password"` — change password endpoint. NEW `ChangePasswordSchema` — validation schema. NEW `UserService.ChangePasswordAsync()` — verify + hash password. MODIFIED `Error.cs` — added `IncorrectPassword`, `PasswordChangeFailed`.
+- **@namorix/core (0.17.0 → 0.18.0)**: NEW `resolveError()` utility. MODIFIED `types/error.ts` — new auth error codes. MODIFIED `validation-messages.ts` — new resolveAuthError cases. MODIFIED `i18n/locales/en.json` — new translation keys. FIX `apiRoutes.ts` — password route moved to API_USER_BASE. FIX `theme/registry.ts` — dedup themes.
+- **@namorix/styles (0.14.1 → 0.14.2)**: Launcher logout CSS, taskbar refinements, icon/theme updates.
+- **@namorix/ui (0.11.1 → 0.11.2)**: FIX NmxToggle checked/defaultChecked.
+- **frontend (0.19.0 → 0.20.0)**: Launcher logout button. auth.controller — isLoggingOut flag tránh Blocked popup. App.tsx — skip setBlocked when intentional. SettingsAccount — refactored to controller + resolveError. settings.controller — added changePassword. Password route moved to ApiUserRoutes.
+
 ### 2026-05-22 — nmxStore, admin role filtering, mobile support, launcher overflow fix
 
 - **@namorix/core (0.16.0 → 0.17.0)**: NEW `store/` module — nmxStore observable singleton (get/set/subscribe/useNmxStore hook), accessors (useUserStore, setThemeStore, useRegisterEnabledStore), initStores auto-init at module level. NEW `utils/isMobile.ts`. MODIFIED `addon/types.ts` — AddonContext passes nmxStore, removed locale/theme; NmxAddonManifest added role? field. MODIFIED `auth/auth.service.ts` — auto-populate user + registerEnabled into nmxStore. DELETED `providers/ThemeProvider.tsx`, `theme/themeStore.ts` (replaced by accessors).

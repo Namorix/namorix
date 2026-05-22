@@ -124,11 +124,11 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.19.0 | M3 (nmxStore wiring, admin role filtering addons/settings, mobile auto-maximize/hide maximize, launcher overflow fix) |
-| @namorix/core | 0.17.0 | M3 (nmxStore module + accessors + initStores, isMobile utility, addon manifest role field, removed themeStore/ThemeProvider) |
-| @namorix/styles | 0.14.1 | M3 (launcher overflow fix, data-table/rail tweaks) |
-| @namorix/ui | 0.11.1 | M3 (NmxRail, NmxStatCard, canvas sparkline bug fixes) |
-| backend | 0.24.1 | M3 (SignalR SubscribeTraffic admin role check) |
+| frontend | 0.20.0 | M3 (change password via user controller, logout button in launcher, resolveError utility) |
+| @namorix/core | 0.18.0 | M3 (resolveError utility, new auth error codes + i18n keys, validation-messages auth error cases, theme registry dedup fix, password route fix) |
+| @namorix/styles | 0.14.2 | M3 (launcher logout CSS, taskbar refinements, icon/theme updates) |
+| @namorix/ui | 0.11.2 | M3 (NmxToggle checked/defaultChecked fix) |
+| backend | 0.25.0 | M3 (change password endpoint + ChangePasswordSchema + IncorrectPassword/PasswordChangeFailed error codes) |
 
 ## Version Rules
 
@@ -147,6 +147,16 @@
 | backend | Bug fixes, C# config tweaks | New endpoint, new service, auth feature |
 
 ## Version History
+
+### 2026-05-22 — change password, user controller, resolveError, logout button, bug fixes
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| backend | 0.25.0 | NEW: `UserController.PUT "password"` — change password endpoint. NEW: `ChangePasswordSchema` — validation schema (currentPassword required, newPassword required + minLength). NEW: `UserService.ChangePasswordAsync()` — verify current password, hash new password via BCrypt. MODIFIED: `Error.cs` — added `IncorrectPassword` + `PasswordChangeFailed` error codes. |
+| @namorix/core | 0.18.0 | NEW: `resolveError()` utility in `validation-messages.ts` — unified error-to-string resolver (ApiError.formatApiError → Error.message → generic key fallback). MODIFIED: `types/error.ts` — added `INCORRECT_PASSWORD`, `PASSWORD_CHANGE_FAILED` to AuthErrorCodes. MODIFIED: `validation-messages.ts` — added resolveAuthError cases for new error codes. MODIFIED: `i18n/locales/en.json` — added `incorrectPassword`, `passwordChangeFailed` translation keys. MODIFIED: `apiRoutes.ts` — password route `API_AUTH_BASE` → `API_USER_BASE`. FIX: `theme/registry.ts` — dedup merged built-in + external themes by id. |
+| @namorix/styles | 0.14.2 | MODIFIED: `launcher.scss` — new `__footer` section (border-top separator, `__item--logout` horizontal layout). MODIFIED: `taskbar.scss`, `index.scss`, icon fonts, theme CSS. |
+| @namorix/ui | 0.11.2 | FIX: `NmxToggle.tsx` — chỉ pass `defaultChecked` khi `checked` undefined (fix React warning both checked + defaultChecked). |
+| frontend | 0.20.0 | NEW: Launcher logout button — `LauncherView` footer với nút logout + icon + label. MODIFIED: `auth.controller.ts` — `stopConnection` flag `isLoggingOut` trong nmxStore để tránh `Blocked` popup khi intentional logout. MODIFIED: `App.tsx` — onCloseHandler check `nmxStore.get("isLoggingOut")`, skip setBlocked khi intentional. MODIFIED: `SettingsAccount.tsx` — refactored to use `settingsController.changePassword()` + `resolveError()` catch pattern, removed direct nmxHttp. MODIFIED: `settings.controller.ts` — added `changePassword()` method. MOVED: password route from `ApiAuthRoutes.password` (`/api/auth/password`) → `ApiUserRoutes.password` (`/api/user/password`). |
 
 ### 2026-05-21 (Settings addon: full 3 tabs, NmxTagInput, themeStore, controllers; NetworkTraffic Logs/Threats)
 
