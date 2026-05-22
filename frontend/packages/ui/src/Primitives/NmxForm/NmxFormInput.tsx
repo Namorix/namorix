@@ -11,6 +11,7 @@ interface NmxFormInputProps extends WithBaseProps {
   required?: boolean
   disabled?: boolean
   invalid?: boolean
+  autoComplete?: string
   onValueChange?: (value: string) => void
 }
 
@@ -23,6 +24,7 @@ export const NmxFormInput: React.FC<NmxFormInputProps> = ({
   required = false,
   disabled = false,
   invalid = false,
+  autoComplete = "off",
   shouldRender = true,
   onValueChange,
   className,
@@ -43,6 +45,7 @@ export const NmxFormInput: React.FC<NmxFormInputProps> = ({
       disabled={disabled}
       required={required}
       value={value}
+      autoComplete={autoComplete}
       className={cx(
         "nmx-form-input",
         { "nmx-form-input--error": invalid },

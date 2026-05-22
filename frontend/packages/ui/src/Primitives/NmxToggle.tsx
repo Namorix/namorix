@@ -39,7 +39,7 @@ export const NmxToggle: React.FC<NmxToggleProps> = ({
         type="checkbox"
         name={name}
         checked={checked}
-        defaultChecked={defaultChecked}
+        defaultChecked={checked !== undefined ? undefined : defaultChecked}
         disabled={disabled}
         onChange={(e) => onCheckedChanged?.(e.target.checked)}
       />
