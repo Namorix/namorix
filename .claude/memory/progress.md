@@ -124,11 +124,11 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.18.0 | M3 (SignalR error handling + heartbeat, taskbar signal icon, settings consolidated, blocked refresh, maximize fix) |
-| @namorix/core | 0.16.0 | M3 (useSignalRStatus hook, UserRole types, register route, validation fields, signalr status events) |
-| @namorix/styles | 0.14.0 | M3 (loading component SCSS, taskbar signal blink animation, settings profile SCSS, blocked refresh) |
-| @namorix/ui | 0.11.0 | M3 (NmxLoading component, LINK icon symbol, NmxToggle checked fix) |
-| backend | 0.24.0 | M3 (consolidated GET/PUT /api/settings, register toggle, SettingsService cache fix) |
+| frontend | 0.19.0 | M3 (nmxStore wiring, admin role filtering addons/settings, mobile auto-maximize/hide maximize, launcher overflow fix) |
+| @namorix/core | 0.17.0 | M3 (nmxStore module + accessors + initStores, isMobile utility, addon manifest role field, removed themeStore/ThemeProvider) |
+| @namorix/styles | 0.14.1 | M3 (launcher overflow fix, data-table/rail tweaks) |
+| @namorix/ui | 0.11.1 | M3 (NmxRail, NmxStatCard, canvas sparkline bug fixes) |
+| backend | 0.24.1 | M3 (SignalR SubscribeTraffic admin role check) |
 
 ## Version Rules
 
@@ -159,6 +159,16 @@
 | @namorix/styles | 0.14.0 | NEW: `components/loading.scss` — NmxLoading SCSS (spin animation, overlay/solid modes). NEW: `shell/addon/setting.scss` — profile header, avatar, meta styles. MODIFIED: `shell/components/taskbar.scss` — tray signal icon (nmx-taskbar__signal with connected/disconnected/reconnecting states + blink keyframe). MODIFIED: `shell/components/blocked.scss` — refresh button styles. MODIFIED: icomoon fonts, spacing/typography tokens. |
 | frontend | 0.18.0 | NEW: App.tsx — SignalR `addOnCloseHandler` + heartbeat ping (5s health check when disconnected), NmxLoading wrapper for initial load + reconnect overlay. NEW: Blocked.tsx — refresh button (`window.location.reload()`). NEW: Taskbar/TaskbarView — SignalR status icon in tray (LINK icon, color-coded: green connected, yellow blink reconnecting, red disconnected). NEW: `useAuthForm.ts` — refactored to object alert pattern `{ semantic, message } \| null`. NEW: `settings.controller.ts` — consolidated `getAll()`/`setAll()`. MODIFIED: SettingsSystem.tsx — register toggle, single API call for all settings. MODIFIED: SettingsAccount.tsx — profile header (avatar + username/role), validate() chain for change password. MODIFIED: WindowFrameView.tsx — maximize height fix `calc(100vh - var(--nmx-taskbar-height))`. MODIFIED: Login.tsx, Register.tsx — adapted to new useAuthForm pattern. MODIFIED: i18n/en.json — settings system saved/saveFailed keys, blocked refresh key. |
 | backend | 0.24.0 | NEW: SettingsController — `GET /api/settings` + `PUT /api/settings` (consolidated all settings), `GET /api/settings/register` + `PUT /api/settings/register`. MODIFIED: SettingsService — `GetAllAsync()`, `SetAllAsync()`, `SetListAsync` cache fix (`memoryCache.Remove` thay `memoryCache.Set` để tránh InvalidCastException string→List). |
+
+### 2026-05-22 — nmxStore, admin role filtering, mobile support, launcher overflow fix
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.17.0 | NEW: `store/` module — nmxStore observable singleton (get/set/subscribe), useNmxStore hook, accessors (useUserStore, setThemeStore, useRegisterEnabledStore), initStores auto-init. NEW: `utils/isMobile.ts` — user agent + viewport detection. MODIFIED: `addon/types.ts` — AddonContext now passes nmxStore, removed locale/theme; NmxAddonManifest added optional role field. MODIFIED: `auth/auth.service.ts` — auto-populate user + registerEnabled into nmxStore. MODIFIED: `index.ts` — barrel export store. MODIFIED: `theme/index.ts` — removed themeStore export. DELETED: `providers/ThemeProvider.tsx`, `theme/themeStore.ts` (replaced by nmxStore accessors). |
+| @namorix/styles | 0.14.1 | FIX: `launcher.scss` — overflow on mobile (left+right spacing thay left:0). MODIFIED: `data-table.scss`, `rail.scss`. |
+| @namorix/ui | 0.11.1 | FIX: `canvas.ts` — sparkline fixes. FIX: `NmxRail.tsx` — layout fixes. FIX: `NmxStatCard.tsx`. |
+| frontend | 0.19.0 | NEW: Admin role-based addon filtering — `listAddons()` accepts userRole param, launcher + desktop filter by user role. NEW: Mobile support — isMobile() auto-maximizes windows, hides maximize button in titlebar. NEW: Settings system tab — admin-only via useUserStore + filter. MODIFIED: `registry.ts` — role filter. MODIFIED: `useLauncherSearch.ts`, `DesktopArea.tsx` — pass user role. MODIFIED: `WindowFrameView.tsx`, `WindowTitleBar.tsx` — mobile hide maximize. MODIFIED: `useOpenWindow.ts` — mobile auto-maximize. MODIFIED: `Root.tsx` — removed ThemeProvider. MODIFIED: `Login.tsx` — useRegisterEnabledStore. MODIFIED: `useAddonMount.ts` — pass nmxStore to addon context. |
+| backend | 0.24.1 | FIX: `NmxHub.cs` — SubscribeTraffic admin role check dùng `FindFirst(JwtClaims.Role)` thay `IsInRole()` (custom int claim). FIX: `NmxHubFilter.cs` — let HubException pass through (không catch generic). |
 
 | Package | Version | Changes |
 |---------|---------|---------|

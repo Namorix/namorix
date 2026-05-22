@@ -25,6 +25,16 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 ## Recent Changes
 
+### 2026-05-22 — nmxStore, admin role filtering, mobile support, launcher overflow fix
+
+- **@namorix/core (0.16.0 → 0.17.0)**: NEW `store/` module — nmxStore observable singleton (get/set/subscribe/useNmxStore hook), accessors (useUserStore, setThemeStore, useRegisterEnabledStore), initStores auto-init at module level. NEW `utils/isMobile.ts`. MODIFIED `addon/types.ts` — AddonContext passes nmxStore, removed locale/theme; NmxAddonManifest added role? field. MODIFIED `auth/auth.service.ts` — auto-populate user + registerEnabled into nmxStore. DELETED `providers/ThemeProvider.tsx`, `theme/themeStore.ts` (replaced by accessors).
+- **@namorix/styles (0.14.0 → 0.14.1)**: FIX launcher mobile overflow (left: 0 + translate → left: spacing-md + right: spacing-md).
+- **@namorix/ui (0.11.0 → 0.11.1)**: Bug fixes for canvas sparkline, NmxRail, NmxStatCard.
+- **frontend (0.18.0 → 0.19.0)**: Admin role-based addon filtering (listAddons filter by userRole), mobile window support (auto-maximize + hide maximize button), Settings admin-only system tab, launcher/desktop role-filtered addons. MODIFIED `registry.ts`, `useLauncherSearch.ts`, `DesktopArea.tsx`, `WindowFrameView.tsx`, `WindowTitleBar.tsx`, `useOpenWindow.ts`, `Root.tsx`, `Login.tsx`, `useAddonMount.ts`.
+- **backend (0.24.0 → 0.24.1)**: FIX NmxHub.cs — SubscribeTraffic admin check dùng `FindFirst(JwtClaims.Role)` thay `IsInRole()`. FIX NmxHubFilter — let HubException pass through.
+
+## Recent Changes
+
 ### 2026-05-21 — Settings addon (full 3 tabs), NmxTagInput, themeStore, NetworkTraffic Logs/Threats
 
 - **@namorix/core (0.14.2 → 0.15.0)**: NEW `theme/themeStore.ts` — module-level singleton for cross-root theme state (get/set/subscribe). NEW `useThemeStore()` hook. MODIFIED `ThemeProvider.tsx` — refactored to use themeStore (broadcast via `themeStore.set()`). NEW `ApiSettingsRoutes` (proxies, origins). NEW `ApiUserRoutes.password`.
