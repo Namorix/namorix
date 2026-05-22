@@ -13,6 +13,7 @@ import {
   NmxCardBody,
   NmxCardHeader,
   NmxCardFooter,
+  type NmxInlineAlertState,
 } from "@namorix/ui"
 import { useTranslation } from "react-i18next"
 import { Link, useNavigate } from "react-router-dom"
@@ -21,17 +22,18 @@ import {
   AuthConstraints,
   authService,
   DefaultPaths,
+  resolveError,
   validate,
   ValidationFields,
 } from "@namorix/core"
-import { useAuthForm } from "../hooks"
 
 export const Register: React.FC = () => {
   const { t } = useTranslation()
   const [username, setUsername] = useState("IzeroCs")
   const [password, setPassword] = useState("12345678")
   const [confirmPassword, setConfirmPassword] = useState("12345678")
-  const { busy, setBusy, alert, setAlert, handlerError } = useAuthForm()
+  const [busy, setBusy] = useState(false)
+  const [alert, setAlert] = useState<NmxInlineAlertState | null>(null)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -83,7 +85,10 @@ export const Register: React.FC = () => {
         navigate(DefaultPaths.LOGIN)
       }, 2000)
     } catch (err: unknown) {
-      handlerError(err, t, "auth.register.errors.generic")
+      setAlert({
+        semantic: "error",
+        message: resolveError(t, err, "auth.register.errors.generic"),
+      })
     }
 
     setBusy(false)
