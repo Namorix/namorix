@@ -1,0 +1,22 @@
+.nmx-select {
+  font-size: var(--nmx-font-size-sm, 13px);
+  padding: 5px 8px;
+  border: 0.5px solid var(--nmx-color-surface-mid, #ccc);
+  border-radius: var(--nmx-radius-md, 6px);
+  background: var(--nmx-color-surface-low, #fff);
+  color: var(--nmx-color-on-surface, #000);
+  font-family: var(--nmx-font-sans), sans-serif;
+  cursor: pointer;
+  outline: none;
+
+  &:focus-visible {
+    border-color: var(--nmx-color-primary, #378add);
+    box-shadow: 0 0 0 2px
+      var(--nmx-color-primary-alpha, rgba(55, 138, 221, 0.2));
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

@@ -1,0 +1,18 @@
+.nmx-slider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  &__input {
+    flex: 1;
+    accent-color: var(--nmx-color-primary, #378add);
+    cursor: pointer;
+  }
+
+  &__value {
+    font-size: var(--nmx-font-size-sm, 13px);
+    color: var(--nmx-color-on-surface-variant, #666);
+    min-width: 36px;
+    text-align: right;
+  }
+}
