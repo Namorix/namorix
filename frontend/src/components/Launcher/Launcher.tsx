@@ -10,11 +10,16 @@ import {
   useAppSelector,
   type WindowRect,
 } from "../../store"
+import { authController } from "../../controllers"
+import { useNavigate } from "react-router-dom"
+import { useUserStore } from "@namorix/core"
 
 export const Launcher: React.FC = () => {
   const dispatch = useAppDispatch()
   const openWindow = useOpenWindow()
   const isOpen = useAppSelector(selectorLauncherIsOpen)
+  const user = useUserStore()
+  const navigate = useNavigate()
 
   const { query, setQuery, items, searchRef } = useLauncherSearch(isOpen)
 
@@ -49,12 +54,20 @@ export const Launcher: React.FC = () => {
     close()
   }
 
+  const handleLogout = async () => {
+    close()
+    await authController.logout()
+    navigate("/login")
+  }
+
   return (
     <LauncherView
       items={items}
       query={query}
+      user={user}
       onQueryChange={setQuery}
       onClearQuery={() => setQuery("")}
+      onLogout={handleLogout}
       onOpenApp={handleOpenApp}
       searchRef={searchRef}
       onClose={close}

@@ -6,6 +6,7 @@ import {
   nmxHttp,
   NMX_THEME_STORAGE_KEY,
   stopConnection,
+  setUserStore,
 } from "@namorix/core"
 
 async function login(
@@ -37,6 +38,7 @@ async function register(username: string, password: string): Promise<void> {
 }
 
 async function logout(): Promise<void> {
+  setUserStore(null)
   await stopConnection()
   const data = await nmxHttp
     .url(getApiBaseUrl() + ApiAuthRoutes.logout)

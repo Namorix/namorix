@@ -10,6 +10,7 @@ import {
   HttpErrorCodes,
   removeOnCloseHandler,
   useSignalRStatus,
+  useUserStore,
 } from "@namorix/core"
 import React, { useEffect, useState } from "react"
 import { Navigate, Route, Routes } from "react-router-dom"
@@ -25,9 +26,12 @@ export const App: React.FC = () => {
   const [blocked, setBlocked] = useState<ApiErrorCode | null | undefined>(null)
   const [checking, setChecking] = useState(true)
   const signalStatus = useSignalRStatus()
+  const user = useUserStore()
 
   useEffect(() => {
-    const handler = () => setBlocked(HttpErrorCodes.CONNECTION_LOST)
+    const handler = () => {
+      if (user) setBlocked(HttpErrorCodes.CONNECTION_LOST)
+    }
 
     healthController
       .checkUntrustedProxy()
