@@ -1,15 +1,12 @@
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
-  ApiAuthRoutes,
-  getApiBaseUrl,
-  nmxHttp,
-  ApiError,
-  ApiUserRoutes,
   UserRole,
   validate,
   ValidationFields,
   AuthConstraints,
+  useUserStore,
+  resolveError,
 } from "@namorix/core"
 import {
   NmxButton,
@@ -26,29 +23,16 @@ import {
   NmxBadge,
   type NmxInlineAlertState,
 } from "@namorix/ui"
-
-interface UserInfo {
-  id: number
-  username: string
-  role: number
-}
+import { settingsController } from "./settings.controller"
 
 export const SettingsAccount: React.FC = () => {
   const { t } = useTranslation()
-  const [user, setUser] = useState<UserInfo | null>(null)
+  const user = useUserStore()
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [busy, setBusy] = useState(false)
   const [alert, setAlert] = useState<NmxInlineAlertState | null>(null)
-
-  useEffect(() => {
-    nmxHttp
-      .url(getApiBaseUrl() + ApiAuthRoutes.session)
-      .get()
-      .json<UserInfo>()
-      .then((r) => r.success && setUser(r.data))
-  }, [])
 
   const handleChangePassword = async (e: NmxFormSubmitEvent) => {
     e.preventDefault()
@@ -73,24 +57,23 @@ export const SettingsAccount: React.FC = () => {
     setBusy(true)
 
     try {
-      const res = await nmxHttp
-        .url(getApiBaseUrl() + ApiUserRoutes.password)
-        .put({ currentPassword, newPassword })
-        .json()
-      if (!res.success) throw ApiError.fromResponse(res)
+      await settingsController.changePassword(currentPassword, newPassword)
+
       setAlert({
         semantic: "success",
         message: t("addon.settings.account.success"),
       })
+
       setCurrentPassword("")
       setNewPassword("")
       setConfirmPassword("")
-    } catch {
+    } catch (err: unknown) {
       setAlert({
         semantic: "error",
-        message: t("addon.settings.account.error"),
+        message: resolveError(t, err, "addon.settings.account.error"),
       })
     }
+
     setBusy(false)
   }
 
@@ -119,6 +102,7 @@ export const SettingsAccount: React.FC = () => {
       </div>
       <NmxForm onSubmit={handleChangePassword}>
         <NmxInlineAlert semantic={alert?.semantic} message={alert?.message} />
+        <input name="username" hidden />
         <NmxFormField label={t("addon.settings.account.currentPassword")}>
           <NmxFormInput
             type="password"

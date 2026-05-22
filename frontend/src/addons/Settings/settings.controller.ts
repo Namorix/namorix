@@ -1,4 +1,10 @@
-import { ApiSettingsRoutes, getApiBaseUrl, nmxHttp } from "@namorix/core"
+import {
+  ApiError,
+  ApiSettingsRoutes,
+  ApiUserRoutes,
+  getApiBaseUrl,
+  nmxHttp,
+} from "@namorix/core"
 
 export const settingsController = {
   async getAll(): Promise<{
@@ -29,5 +35,16 @@ export const settingsController = {
       .put(data)
       .json()
     return res.success
+  },
+
+  async changePassword(
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
+    const res = await nmxHttp
+      .url(getApiBaseUrl() + ApiUserRoutes.password)
+      .put({ currentPassword, newPassword })
+      .json()
+    if (!res.success) throw ApiError.fromResponse(res)
   },
 }

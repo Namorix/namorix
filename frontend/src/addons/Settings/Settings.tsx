@@ -62,7 +62,7 @@ export const Settings: React.FC = () => {
           )}
           {isMounted("account") && (
             <Show when={activeTab === "account"}>
-              <SettingsAccount />
+              <SettingsAccount key={activeTab} />
             </Show>
           )}
         </NmxRailContent>

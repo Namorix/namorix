@@ -29,7 +29,6 @@ export const SettingsSystem: React.FC = () => {
       setProxies(data.proxies)
       setOrigins(data.origins)
       setRegisterEnabled(data.registerEnabled)
-      console.log("Data", data)
     })
   }, [])
 
