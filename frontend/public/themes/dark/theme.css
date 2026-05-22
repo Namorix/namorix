@@ -173,6 +173,10 @@ body {
 .nmx-rail--collapsed {
   --nmx-rail-current-width: var(--nmx-rail-collapse-width);
 }
+.nmx-rail--disable-collapsed .nmx-rail-item--active {
+  pointer-events: none;
+  cursor: auto;
+}
 .nmx-rail-list {
   display: flex;
   flex-direction: column;
@@ -232,6 +236,7 @@ body {
   text-align: left;
   white-space: nowrap;
   width: 100%;
+  transition: background-color 0.15s;
   -webkit-user-select: none;
   user-select: none;
 }
@@ -258,17 +263,20 @@ body {
   cursor: pointer;
 }
 .nmx-rail-item:hover {
-  background: var(--nmx-color-surface-mid);
-}
-.nmx-rail-item--active {
   background: var(--nmx-color-surface-high);
 }
+.nmx-rail-item--active {
+  background: var(--nmx-color-primary);
+}
+.nmx-rail-item--active:hover {
+  background: color-mix(in oklab, var(--nmx-color-primary) 85%, var(--nmx-color-mix-darken));
+}
 .nmx-rail-item--active .nmx-rail-item__label {
-  color: var(--nmx-color-primary);
+  color: var(--nmx-color-on-primary);
   font-weight: var(--nmx-font-weight-bold);
 }
 .nmx-rail-item--active .nmx-rail-item__btn {
-  color: var(--nmx-color-on-surface);
+  color: var(--nmx-color-on-primary);
 }
 .nmx-rail-item__label {
   opacity: 1;
@@ -296,7 +304,7 @@ body {
   border-radius: var(--nmx-radius-md);
 }
 .nmx-rail-item__toggle .nmx-rail-item__btn:hover {
-  background: var(--nmx-color-surface-high);
+  background: color-mix(in oklab, var(--nmx-color-primary) 85%, var(--nmx-color-mix-darken));
 }
 .nmx-grid {
   display: grid;
@@ -837,7 +845,7 @@ body {
   display: contents;
 }
 .nmx-data-table__header-cell {
-  color: var(--nmx-color-on-surface);
+  color: var(--nmx-color-on-primary);
   background: var(--nmx-color-primary);
   font-size: var(--nmx-font-size-sm);
   font-weight: var(--nmx-font-weight-bold);

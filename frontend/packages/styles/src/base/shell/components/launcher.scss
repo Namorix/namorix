@@ -10,15 +10,16 @@
 .nmx-launcher {
   position: fixed;
   bottom: 0;
-  left: 0;
+  left: var(--nmx-spacing-md);
+  right: var(--nmx-spacing-md);
   transform: translate(
-    var(--nmx-spacing-md),
+    0,
     calc((-1 * (var(--nmx-taskbar-height) + var(--nmx-spacing-md))))
   );
   will-change: transform;
   min-width: var(--nmx-task-launcher-min-width);
   max-width: var(--nmx-task-launcher-max-width);
-  width: 100%;
+  width: auto;
   background: var(--nmx-color-surface);
   border-radius: var(--nmx-radius-md);
   box-shadow: var(--nmx-shadow-md);
