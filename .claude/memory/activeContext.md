@@ -25,6 +25,13 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 ## Recent Changes
 
+### 2026-05-22 — Settings Appearance UI with 3 new UI primitives
+
+- **@namorix/ui (0.11.2 → 0.12.0)**: NEW `NmxSelect` — styled native `<select>` primitive. NEW `NmxSlider` — range slider primitive. NEW `NmxSegmentedGroup` — segmented button group primitive.
+- **@namorix/styles (0.14.2 → 0.15.0)**: NEW `select.scss`, `slider.scss`, `segmented-group.scss` component SCSS. MODIFIED `setting.scss` — full appearance layout (section, card, row, theme-grid, theme-card, accent color).
+- **@namorix/core (0.18.0 → 0.18.1)**: MODIFIED `i18n/locales/en.json` + `vi.json` — added 20 `addon.settings.appearance.*` translation keys.
+- **frontend (0.20.0 → 0.21.0)**: REWRITE `SettingsAppearance.tsx` — full UI with 4 sections (Theme, Layout, Typography, Language & Region) using new primitives.
+
 ### 2026-05-22 — change password, user controller, resolveError, logout button, bug fixes
 
 - **backend (0.24.1 → 0.25.0)**: NEW `UserController.PUT "password"` — change password endpoint. NEW `ChangePasswordSchema` — validation schema. NEW `UserService.ChangePasswordAsync()` — verify + hash password. MODIFIED `Error.cs` — added `IncorrectPassword`, `PasswordChangeFailed`.
@@ -207,4 +214,3 @@ Cả 3 attribute filter (`RequireAuthAttribute`, `RequireAdminAttribute`, `Requi
 1. M3 — Internal addon: File Manager
 2. M3 — Permission tree UI (deferred)
 3. Write Vitest tests for auth.service
-4. Add Vietnamese translations (vi.json is empty)

@@ -63,10 +63,13 @@ namorix/
 │   │   └── ui/               # @namorix/ui — React primitive components
 │   │       └── src/
 │   │           └── Primitives/
-│   │               ├── NmxButton/
+│   │               ├── NmxButton.tsx
 │   │               ├── NmxForm/
-│   │               ├── NmxInlineAlert/
-│   │               └── NmxToggle/
+│   │               ├── NmxInlineAlert.tsx
+│   │               ├── NmxToggle.tsx
+│   │               ├── NmxSelect.tsx
+│   │               ├── NmxSlider.tsx
+│   │               └── NmxSegmentedGroup.tsx
 │   └── src/
 │       ├── controllers/
 │       │   ├── auth.controller.ts
@@ -117,7 +120,7 @@ namorix/
 |---------|---------|---------------|
 | `@namorix/core` | Types, auth guards, http client, `ApiError`, i18n, validation, constants, addon, theme | frontend, @namorix/ui, external addons |
 | `@namorix/styles` | SCSS tokens, reset, fonts | frontend, @namorix/ui, external addons |
-| `@namorix/ui` | NmxButton, NmxForm, NmxInlineAlert, NmxToggle, etc. | frontend |
+| `@namorix/ui` | NmxButton, NmxForm, NmxInlineAlert, NmxToggle, NmxSelect, NmxSlider, NmxSegmentedGroup, etc. | frontend |
 | `backend` | ASP.NET Core 8 API server | - |
 | `frontend` | Vite React shell | - |
 

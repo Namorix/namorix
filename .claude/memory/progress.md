@@ -116,7 +116,7 @@
 ## Known Issues
 
 - Vitest tests for auth.service listed in M2 but no test files exist
-- i18n `vi.json` locale contains keys but translations are English
+- i18n `vi.json` locale contains keys but translations are English — partially resolved: appearance settings now have Vietnamese translations
 - `addonInstalls` table documented but not yet in schema (only 3 of 4 tables)
 - `frontend/src/components/index.ts` only exports AuthPage
 
@@ -124,10 +124,10 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.20.0 | M3 (change password via user controller, logout button in launcher, resolveError utility) |
-| @namorix/core | 0.18.0 | M3 (resolveError utility, new auth error codes + i18n keys, validation-messages auth error cases, theme registry dedup fix, password route fix) |
-| @namorix/styles | 0.14.2 | M3 (launcher logout CSS, taskbar refinements, icon/theme updates) |
-| @namorix/ui | 0.11.2 | M3 (NmxToggle checked/defaultChecked fix) |
+| frontend | 0.21.0 | M3 (Settings Appearance full UI, launcher logout button, change password flow) |
+| @namorix/core | 0.18.1 | M3 (appearance settings i18n keys) |
+| @namorix/styles | 0.15.0 | M3 (new component SCSS: select, slider, segmented-group; appearance layout styles) |
+| @namorix/ui | 0.12.0 | M3 (new primitives: NmxSelect, NmxSlider, NmxSegmentedGroup) |
 | backend | 0.25.0 | M3 (change password endpoint + ChangePasswordSchema + IncorrectPassword/PasswordChangeFailed error codes) |
 
 ## Version Rules
@@ -147,6 +147,15 @@
 | backend | Bug fixes, C# config tweaks | New endpoint, new service, auth feature |
 
 ## Version History
+
+### 2026-05-22 — Settings Appearance UI with 3 new UI primitives
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/ui | 0.12.0 | NEW: `NmxSelect` — styled native `<select>` primitive (value/defaultValue, options, placeholder, onChange). NEW: `NmxSlider` — range slider primitive (min/max/step, controlled/uncontrolled, showValue). NEW: `NmxSegmentedGroup` — segmented button group (1/N select, controlled/uncontrolled). |
+| @namorix/styles | 0.15.0 | NEW: `components/select.scss` — .nmx-select with focus-visible ring, disabled state. NEW: `components/slider.scss` — .nmx-slider (flex row, input range, value label). NEW: `components/segmented-group.scss` — .nmx-segmented-group (flex row, button variants, active state with accent color). MODIFIED: `shell/addon/setting.scss` — added appearance layout styles (section, card, row, theme-grid, theme-card, accent-row classes). MODIFIED: `components/index.scss` — 3 new forwards. |
+| @namorix/core | 0.18.1 | MODIFIED: `i18n/locales/en.json` — added `addon.settings.appearance.*` translation keys (20 keys). MODIFIED: `i18n/locales/vi.json` — Vietnamese translations for appearance settings (previously empty). |
+| frontend | 0.21.0 | REWRITE: `SettingsAppearance.tsx` — full UI according to mockup with 4 sections (Theme grid + accent color, Layout with slider/toggle/segmented, Typography with select/segmented, Language & Region with 3 selects). Uses new primitives: NmxSelect, NmxSlider, NmxSegmentedGroup. |
 
 ### 2026-05-22 — change password, user controller, resolveError, logout button, bug fixes
 

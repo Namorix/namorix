@@ -691,7 +691,7 @@ Namorix Backend (ASP.NET Core 8)
     ↕ gRPC Bidirectional Streaming
 Addon Backend (Docker container)
 ```
-**Trạng thái hiện tại:** Backend thuần REST (5 controllers). gRPC, SignalR chưa implement.
+**Trạng thái hiện tại:** SignalR đã implement (NmxHub, traffic:new-logs, system:config-changed, system:theme-changed). gRPC chưa (M4).
 
 ### Namorix Backend ↔ Addon Backend: gRPC (M4)
 - **Cần thêm:** package `Grpc.AspNetCore` vào server, define `.proto` file
@@ -701,12 +701,12 @@ Addon Backend (Docker container)
   - `AddonEvent`: ProgressEvent, ResultEvent, LogEvent, ErrorEvent
 - Addon backend có thể viết bằng bất kỳ ngôn ngữ nào (Go, Python, Node.js...)
 
-### Dashboard / Addon Frontend ↔ Namorix Backend: SignalR (M4)
+### Dashboard / Addon Frontend ↔ Namorix Backend: SignalR (M3 — ✅ Done)
 - SignalR có sẵn trong ASP.NET Core 8 — **không cần thêm package backend**
-- **Cần thêm npm package:** `@microsoft/signalr` cho frontend
-- Tạo Hub class, map với `app.MapHub<AddonHub>("/hubs/addon")`
+- Hub: `NmxHub` tại `/hubs/main`, auth check + group subscription (Traffic, System)
+- Frontend: `@microsoft/signalr`, `signalr.service.ts` singleton connection, `useSignalR` hook lifecycle tied to Desktop mount
+- Sự kiện: `traffic:new-logs`, `system:config-changed`, `system:theme-changed`
 - Dashboard Widget gọi `HubConnection` trong `mount()`, `stop()` trong `unmount()`
-- Vì cả 2 đầu đều C# + JS, SignalR tận dụng WebSocket + fallback tự động
 
 ### Addon Frontend ↔ Addon Backend: SignalR
 - Addon frontend dùng SignalR kết nối thẳng với addon backend của nó — không qua Namorix
@@ -718,5 +718,5 @@ Namorix Backend relay event từ gRPC stream của addon → forward qua SignalR
 | Đoạn | Protocol | Trạng thái |
 |------|----------|------------|
 | Namorix ↔ Addon Backend | gRPC | Chưa (M4 — cần `Grpc.AspNetCore`) |
-| Dashboard ↔ Namorix | SignalR | Chưa (M4 — có sẵn ASP.NET, cần `@microsoft/signalr`) |
+| Dashboard ↔ Namorix | SignalR | ✅ Xong (NmxHub, traffic/config/theme events) |
 | Addon Frontend ↔ Addon Backend | SignalR | Addon tự làm, cùng stack C# |
