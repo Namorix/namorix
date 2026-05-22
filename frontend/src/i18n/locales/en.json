@@ -128,12 +128,11 @@
       },
       "appearance": {
         "theme": "Theme",
+        "themeDesc": "Set app color theme",
         "accentColor": "Accent color",
         "accentColorDesc": "Main interactive color",
         "layout": "Layout",
-        "sidebarWidth": "Sidebar width",
-        "sidebarWidthDesc": "Expanded state",
-        "collapsedByDefault": "Collapsed by default",
+        "collapsedByDefault": "Always collapse",
         "collapsedByDefaultDesc": "Show icon only on start",
         "density": "Density",
         "densityDesc": "Spacing between elements",
@@ -142,11 +141,14 @@
         "spacious": "Spacious",
         "typography": "Typography",
         "fontFamily": "Font family",
+        "fontFamilyDesc": "Choose the typeface for the user interface",
         "fontSize": "Font size",
+        "fontSizeDesc": "Adjust the text size for better readability",
         "languageRegion": "Language & Region",
         "language": "Language",
+        "languageDesc": "Select your preferred display language",
         "dateFormat": "Date format",
-        "numberFormat": "Number format"
+        "dateFormatDesc": "Choose date display format"
       },
       "system": {
         "proxies": "Trusted Proxies",
