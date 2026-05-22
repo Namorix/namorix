@@ -97,7 +97,7 @@ class RequestBuilder {
         !this._url.includes(ApiAuthRoutes.refresh) &&
         !this._url.includes(ApiAuthRoutes.session)
       ) {
-        const refreshResponse = await http
+        const refreshResponse = await nmxHttp
           .url(getApiBaseUrl() + ApiAuthRoutes.refresh)
           .post()
           .json()
@@ -119,7 +119,7 @@ class RequestBuilder {
   }
 }
 
-export const http = {
+export const nmxHttp = {
   url: (url: string) => new RequestBuilder(url),
   getJson: async <T>(url: string): Promise<ApiResponse<T>> => {
     try {

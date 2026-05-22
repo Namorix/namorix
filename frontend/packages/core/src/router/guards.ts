@@ -1,4 +1,4 @@
-import { dedupe } from "../utils/dedupe"
+import { dedupe } from "../utils"
 
 export interface GuardPaths {
   HOME?: string

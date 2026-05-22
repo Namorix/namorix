@@ -1,11 +1,11 @@
 import type { ThemeManifest } from "./types"
-import { http } from "../http"
+import { nmxHttp } from "../http"
 import { getApiBaseUrl } from "../config"
 import { ApiThemeRoutes, ThemeRoutes } from "../apiRoutes"
-import { dedupe } from "../utils/dedupe"
+import { dedupe } from "../utils"
 
 async function getBuiltInThemes(): Promise<ThemeManifest[]> {
-  const result = await http.getJson<{ themes: ThemeManifest[] }>(
+  const result = await nmxHttp.getJson<{ themes: ThemeManifest[] }>(
     ThemeRoutes.builtin,
   )
   return result.success ? result.data.themes : []
@@ -14,7 +14,7 @@ async function getBuiltInThemes(): Promise<ThemeManifest[]> {
 export const getAllThemes = dedupe(async (): Promise<ThemeManifest[]> => {
   const [builtIn, external] = await Promise.allSettled([
     getBuiltInThemes(),
-    http
+    nmxHttp
       .url(getApiBaseUrl() + ApiThemeRoutes.themes)
       .get()
       .json<ThemeManifest[]>(),

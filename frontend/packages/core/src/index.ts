@@ -1,3 +1,5 @@
+import { initStores } from "./store"
+
 export * from "./config"
 export * from "./cache"
 export * from "./auth"
@@ -11,5 +13,7 @@ export * from "./apiRoutes"
 export * from "./constants"
 export * from "./addon"
 export * from "./theme"
-export * from "./providers"
 export * from "./signalr"
+export * from "./store"
+
+initStores()

@@ -1,43 +1,41 @@
 import type { AuthChecker } from "../router"
 import { getApiBaseUrl } from "../config"
-import { http } from "../http"
+import { nmxHttp } from "../http"
 import { ApiAuthRoutes } from "../apiRoutes"
-import type { AuthStatus } from "../types"
-
-let cacheStatus: AuthStatus | null = null
-
-export function invalidateAuthStatusCache() {
-  cacheStatus = null
-}
-
-export function getAuthStatusCache(): AuthStatus | null {
-  return cacheStatus
-}
+import type { AuthStatus, User } from "../types"
+import { setRegisterEnabledStore, setUserStore } from "../store"
 
 async function getAuthStatus(): Promise<AuthStatus> {
-  const data = await http
+  const data = await nmxHttp
     .url(getApiBaseUrl() + ApiAuthRoutes.status)
     .get()
     .json<AuthStatus>()
+
   if (!data.success) {
     throw new Error(data.error)
   }
-  cacheStatus = data.data
+
+  setRegisterEnabledStore(data.data.registerEnabled)
   return data.data
 }
 
 export const authService: AuthChecker = {
   isAuthenticated: async () => {
-    const data = await http
+    const data = await nmxHttp
       .url(getApiBaseUrl() + ApiAuthRoutes.session)
       .get()
-      .json()
+      .json<User>()
+
+    setUserStore(data.success ? data.data : null)
+
     return data.success
   },
+
   checkHasUsers: async () => {
     const status = await getAuthStatus()
     return !status.needsRegister
   },
+
   isRegistrationOpen: async () => {
     const status = await getAuthStatus()
     return status.registerEnabled
