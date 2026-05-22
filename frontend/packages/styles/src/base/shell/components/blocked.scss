@@ -1,6 +1,7 @@
 .nmx-blocked-page {
   min-height: 100vh;
   background: var(--nmx-color-bg);
+  padding: var(--nmx-spacing-lg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -31,5 +32,9 @@
 
   &__meta-list {
     padding-top: var(--nmx-spacing-lg);
+  }
+
+  &__refresh-btn {
+    margin-top: var(--nmx-spacing-4xl);
   }
 }

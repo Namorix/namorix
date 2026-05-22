@@ -18,14 +18,12 @@
 }
 
 .nmx-addon-form {
-  display: flex;
-  flex-direction: row;
   width: 100%;
-  justify-content: center;
-  padding: var(--nmx-spacing-3xl) 0;
+  padding: var(--nmx-spacing-3xl);
 
   &__content {
     max-width: var(--nmx-content-width-xs);
+    margin: auto;
     width: 100%;
   }
 }

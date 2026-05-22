@@ -88,13 +88,47 @@
 
   &__tray {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
     justify-content: center;
+    gap: var(--nmx-spacing-md);
     padding: 0 var(--nmx-spacing-sm);
   }
 
   &__clock {
     color: var(--nmx-color-on-surface);
-    font-size: var(--nmx-font-size-xs);
+    font-size: var(--nmx-font-size-lg);
+    font-family: var(--nmx-font-clock), sans-serif;
+  }
+
+  &__signal {
+    display: flex;
+    align-items: center;
+    font-size: var(--nmx-font-size-lg);
+    margin-right: var(--nmx-spacing-sm);
+    transition: color 0.3s ease;
+
+    &--connected {
+      color: var(--nmx-color-success);
+    }
+
+    &--disconnected {
+      color: var(--nmx-color-error);
+    }
+
+    &--reconnecting {
+      color: var(--nmx-color-warning);
+      animation: nmx-signal-blink 1.2s ease-in-out infinite;
+    }
+  }
+
+  @keyframes nmx-signal-blink {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.3;
+    }
   }
 }

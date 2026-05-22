@@ -5,6 +5,12 @@
       "name": "Light",
       "cssPath": "/themes/light/theme.css",
       "isBuiltIn": true
+    },
+    {
+      "id": "dark",
+      "name": "Dark",
+      "cssPath": "/themes/dark/theme.css",
+      "isBuiltIn": true
     }
   ]
 }
