@@ -2,13 +2,13 @@ import {
   ApiError,
   ApiTrafficRoutes,
   getApiBaseUrl,
+  type HttpMethods,
   nmxHttp,
-  type HttpMethod,
 } from "@namorix/core"
 
 export interface TrafficEndpoint {
   id: number
-  method: HttpMethod
+  method: HttpMethods
   path: string
   label?: string
   addonId?: string
