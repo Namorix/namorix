@@ -41,7 +41,7 @@ All coding rules are in `.claude/rules/` — read the relevant ones for your tas
 |---------|------------|
 | `@namorix/core` | React ecosystem |
 | `@namorix/styles` | **Nothing** — pure SCSS |
-| `@namorix/ui` | @namorix/core, React, @namorix/styles |
+| `@namorix/ui` | @namorix/core, React |
 | `frontend` | @namorix/core, @namorix/styles, @namorix/ui, React |
 | `backend` | ASP.NET Core 8 |
 
@@ -91,7 +91,7 @@ cd frontend && pnpm test            # Run tests
 
 1. **M1** — Static shell UI + mock auth ✅
 2. **M2** — Full auth backend ✅
-3. **M3** — System Addons (Built-in) ✅ (Desktop shell UI, addon contract + registry, Log Viewer, NetworkTraffic, theme system; File Manager, Terminal, Settings 🔜)
+3. **M3** — System Addons (Built-in) ✅ (Desktop shell UI, addon contract + registry, Log Viewer, NetworkTraffic, theme system; File Manager, Settings 🔜)
 4. **M4** — External addon system (Docker lifecycle, addon manager UI)
 5. **M5** — `@namorix/core` publish npm + addon integration guide
 
@@ -158,18 +158,15 @@ Never suggest code without understanding the current state. This prevents:
 
 ```
 @namorix/core — allowed to import:
-- @namorix/shared
 - React ecosystem
 
 frontend — allowed to import:
 - @namorix/core
-- @namorix/shared
 - @namorix/ui
 - @namorix/styles
 - React ecosystem
 
 backend (ASP.NET Core) — allowed to import:
-- @namorix/shared
 - ASP.NET Core 8 ecosystem
 ```
 

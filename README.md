@@ -5,7 +5,7 @@ Browser-based desktop shell, self-hosted.
 ## Features
 
 - **Desktop Shell** — Window manager, taskbar, launcher, desktop icon shortcuts
-- **System Addons** — Built-in addons (NetworkTraffic, SystemMonitor, Log Viewer, File Manager, Terminal, Settings) via addon contract
+- **System Addons** — Built-in addons (NetworkTraffic, Log Viewer, Settings, SystemMonitor) via addon contract
 - **External Addons** — Docker-based addons with 3 modes: widget DOM slot, full app via window.open, direct URL
 - **Centralized Auth** — Single auth server for shell and addons
 
@@ -106,7 +106,7 @@ namorix/
     ├── Namorix.sln            # Solution file
     └── src/
         ├── Namorix.Core/      # Config, Constants, Models, Exceptions, Responses, Validation
-        ├── Namorix.Adapters/  # Persistence (AppDbContext, migrations), Services (Auth, Permission, Settings)
+        ├── Namorix.Adapters/  # Persistence (AppDbContext, migrations), Services (Auth, Permission, Settings, Theme, User)
         ├── Namorix.Server/    # Controllers, Middleware, Extensions, Helpers, Program.cs
         └── Namorix.Workers/   # TokenCleanupWorker (background service)
 ```
@@ -166,7 +166,7 @@ public class AuthController(AuthService authService) : ControllerBase
 
 ### Internal Addons (M3 — Built-in)
 
-System addons (NetworkTraffic, SystemMonitor, Log Viewer, File Manager, Terminal, Settings) sử dụng chung addon contract với external addons:
+System addons (NetworkTraffic, Log Viewer, Settings, SystemMonitor) sử dụng chung addon contract với external addons:
 - **AddonEntry**: `mount(container, context)` / `unmount()` lifecycle
 - **NmxAddonManifest**: id, displayName, description?, icon?
 - **AddonContext**: addonId, locale, theme

@@ -2,7 +2,7 @@
 
 ## Current Work Focus
 
-M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic Phase 2 (SignalR) ✅ + Settings Addon ✅
+M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + Settings Addon ✅
 
 - Desktop shell: Taskbar, DesktopArea, WindowManager, Launcher ✅
 - DesktopArea + Taskbar refactored into modular sub-components (DesktopIcon, DesktopAreaView, TaskbarAppButton, TaskbarView) ✅
@@ -187,6 +187,6 @@ Cả 3 attribute filter (`RequireAuthAttribute`, `RequireAdminAttribute`, `Requi
 ## Next Steps
 
 1. M3 — Internal addon: File Manager
-2. M3 — Internal addon: Terminal (xterm.js)
+2. M3 — Permission tree UI (deferred)
 3. Write Vitest tests for auth.service
 4. Add Vietnamese translations (vi.json is empty)

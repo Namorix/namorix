@@ -124,11 +124,11 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.17.0 | M3 (Settings full app: NmxRail + 3 tabs + theme picker + system + account) |
-| @namorix/core | 0.15.0 | M3 (themeStore module, useThemeStore hook, ApiSettingsRoutes, ApiAuthRoutes.password) |
-| @namorix/styles | 0.13.0 | M3 (tag-input component SCSS, Settings addon styles) |
-| @namorix/ui | 0.10.0 | M3 (NmxTagInput component, APPEARANCE/SETTING/USER icon symbols) |
-| backend | 0.23.1 | M3 (fix cyclic reference TrafficAddress, migration regen) |
+| frontend | 0.18.0 | M3 (SignalR error handling + heartbeat, taskbar signal icon, settings consolidated, blocked refresh, maximize fix) |
+| @namorix/core | 0.16.0 | M3 (useSignalRStatus hook, UserRole types, register route, validation fields, signalr status events) |
+| @namorix/styles | 0.14.0 | M3 (loading component SCSS, taskbar signal blink animation, settings profile SCSS, blocked refresh) |
+| @namorix/ui | 0.11.0 | M3 (NmxLoading component, LINK icon symbol, NmxToggle checked fix) |
+| backend | 0.24.0 | M3 (consolidated GET/PUT /api/settings, register toggle, SettingsService cache fix) |
 
 ## Version Rules
 
@@ -149,6 +149,16 @@
 ## Version History
 
 ### 2026-05-21 (Settings addon: full 3 tabs, NmxTagInput, themeStore, controllers; NetworkTraffic Logs/Threats)
+
+### 2026-05-22 — SignalR error handling, loading overlay, settings register toggle, maximize fix
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.16.0 | NEW: `signalr/useSignalRStatus.ts` — status observer hook. NEW: `types/user.ts` — UserRole constants (Admin=1, User=0). MODIFIED: `signalr/signalr.service.ts` — status event system (addStatusHandler/removeStatusHandler), emit on reconnecting/reconnected/close, addOnCloseHandler/removeOnCloseHandler. MODIFIED: `useSignalR.ts` — refactored status tracking. MODIFIED: `apiRoutes.ts` — ApiSettingsRoutes.register. MODIFIED: `types/error.ts` — HttpErrorCodes.CONNECTION_LOST. MODIFIED: `i18n/validation-runner.ts` — CURRENT_PASSWORD, NEW_PASSWORD. MODIFIED: `i18n/locales/en.json` — common.fields (currentPassword, newPassword), user.role. |
+| @namorix/ui | 0.11.0 | NEW: `NmxLoading` primitive — full-screen loading overlay with spinner, two modes (solid bg / transparent overlay), CSS spin animation. MODIFIED: `NmxIconFont.types.ts` — LINK icon symbol. MODIFIED: `NmxToggle.tsx` — checked prop fix. MODIFIED: `NmxInlineAlert.tsx` — refactor. |
+| @namorix/styles | 0.14.0 | NEW: `components/loading.scss` — NmxLoading SCSS (spin animation, overlay/solid modes). NEW: `shell/addon/setting.scss` — profile header, avatar, meta styles. MODIFIED: `shell/components/taskbar.scss` — tray signal icon (nmx-taskbar__signal with connected/disconnected/reconnecting states + blink keyframe). MODIFIED: `shell/components/blocked.scss` — refresh button styles. MODIFIED: icomoon fonts, spacing/typography tokens. |
+| frontend | 0.18.0 | NEW: App.tsx — SignalR `addOnCloseHandler` + heartbeat ping (5s health check when disconnected), NmxLoading wrapper for initial load + reconnect overlay. NEW: Blocked.tsx — refresh button (`window.location.reload()`). NEW: Taskbar/TaskbarView — SignalR status icon in tray (LINK icon, color-coded: green connected, yellow blink reconnecting, red disconnected). NEW: `useAuthForm.ts` — refactored to object alert pattern `{ semantic, message } \| null`. NEW: `settings.controller.ts` — consolidated `getAll()`/`setAll()`. MODIFIED: SettingsSystem.tsx — register toggle, single API call for all settings. MODIFIED: SettingsAccount.tsx — profile header (avatar + username/role), validate() chain for change password. MODIFIED: WindowFrameView.tsx — maximize height fix `calc(100vh - var(--nmx-taskbar-height))`. MODIFIED: Login.tsx, Register.tsx — adapted to new useAuthForm pattern. MODIFIED: i18n/en.json — settings system saved/saveFailed keys, blocked refresh key. |
+| backend | 0.24.0 | NEW: SettingsController — `GET /api/settings` + `PUT /api/settings` (consolidated all settings), `GET /api/settings/register` + `PUT /api/settings/register`. MODIFIED: SettingsService — `GetAllAsync()`, `SetAllAsync()`, `SetListAsync` cache fix (`memoryCache.Remove` thay `memoryCache.Set` để tránh InvalidCastException string→List). |
 
 | Package | Version | Changes |
 |---------|---------|---------|
