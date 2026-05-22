@@ -1,11 +1,16 @@
-import React from "react"
+import { useState } from "react"
 import type { WithBaseProps } from "../types"
 import { cx } from "../utils"
+
+export interface NmxSegmentedGroupData<T extends string> {
+  value: T
+  label: string
+}
 
 interface NmxSegmentedGroupProps<T extends string> extends WithBaseProps {
   value?: T
   defaultValue?: T
-  options: { value: T; label: string }[]
+  options: NmxSegmentedGroupData<T>[]
   onChange?: (value: T) => void
 }
 
@@ -16,13 +21,16 @@ export const NmxSegmentedGroup = <T extends string>({
   onChange,
   className,
   shouldRender,
+  ...rest
 }: NmxSegmentedGroupProps<T>) => {
-  if (shouldRender === false) return null
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const [internalValue, setInternalValue] = React.useState(
+  const [internalValue, setInternalValue] = useState(
     defaultValue ?? options[0]?.value,
   )
+
+  if (shouldRender === false) {
+    return null
+  }
+
   const isControlled = value !== undefined
   const activeValue = isControlled ? value : (internalValue as T)
 
@@ -32,7 +40,7 @@ export const NmxSegmentedGroup = <T extends string>({
   }
 
   return (
-    <div className={cx("nmx-segmented-group", className)}>
+    <div {...rest} className={cx("nmx-segmented-group", className)}>
       {options.map((opt) => (
         <button
           key={opt.value}

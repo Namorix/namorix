@@ -22,10 +22,14 @@ export const NmxSlider: React.FC<NmxSliderProps> = ({
   onChange,
   className,
   shouldRender,
+  ...rest
 }) => {
-  if (shouldRender === false) return null
-
   const [internalValue, setInternalValue] = React.useState(defaultValue ?? min)
+
+  if (shouldRender === false) {
+    return null
+  }
+
   const isControlled = value !== undefined
   const displayValue = isControlled ? value : internalValue
 
@@ -36,7 +40,7 @@ export const NmxSlider: React.FC<NmxSliderProps> = ({
   }
 
   return (
-    <div className={cx("nmx-slider", className)}>
+    <div {...rest} className={cx("nmx-slider", className)}>
       <input
         type="range"
         className="nmx-slider__input"

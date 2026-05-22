@@ -21,9 +21,10 @@ export const NmxRail: React.FC<NmxRailLayoutProps> = ({
   children,
   ...rest
 }) => {
+  const isDeviceMobile = isMobile()
   const [internalCollapsed, setInternalCollapsed] = useState(defaultCollapsed)
-  const isCollapsed = isMobile() ? true : (collapsed ?? internalCollapsed)
-  const isCollapsedOnActive = isMobile() ? true : collapseOnActiveClick
+  const isCollapsed = isDeviceMobile ? true : (collapsed ?? internalCollapsed)
+  const isCollapsedOnActive = isDeviceMobile ? true : collapseOnActiveClick
 
   const toggleCollapsed = useCallback(() => {
     const next = !isCollapsed
@@ -51,7 +52,7 @@ export const NmxRail: React.FC<NmxRailLayoutProps> = ({
         className={cx(
           "nmx-rail",
           { "nmx-rail--collapsed": isCollapsed },
-          { "nmx-rail--disable-collapsed": isCollapsedOnActive },
+          { "nmx-rail--disable-collapsed": isDeviceMobile },
           className,
         )}
       >
