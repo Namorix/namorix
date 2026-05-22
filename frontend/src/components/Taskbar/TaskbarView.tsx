@@ -1,17 +1,24 @@
 import { memo } from "react"
-import { NmxIconSvg, NmxIconSvgSymbol } from "@namorix/ui"
+import {
+  NmxIconFont,
+  NmxIconFontSymbol,
+  NmxIconSvg,
+  NmxIconSvgSymbol,
+} from "@namorix/ui"
 import { TaskbarAppButton } from "./TaskbarAppButton"
 import type { WindowId } from "../../store"
+import type { SignalRStatus } from "@namorix/core"
 
 interface TaskViewProps {
   order: WindowId[]
   time: string
+  signalStatus: SignalRStatus
   onStartClick: () => void
   onAppClick: (id: WindowId) => void
 }
 
 export const TaskbarView = memo<TaskViewProps>(
-  ({ order, time, onStartClick, onAppClick }) => {
+  ({ order, time, signalStatus, onStartClick, onAppClick }) => {
     return (
       <div className="nmx-taskbar">
         <div className="nmx-taskbar__inner">
@@ -30,6 +37,11 @@ export const TaskbarView = memo<TaskViewProps>(
           </div>
 
           <div className="nmx-taskbar__tray">
+            <NmxIconFont
+              symbol={NmxIconFontSymbol.LINK}
+              className={`nmx-taskbar__signal nmx-taskbar__signal--${signalStatus}`}
+            />
+
             <span className="nmx-taskbar__clock">{time}</span>
           </div>
         </div>

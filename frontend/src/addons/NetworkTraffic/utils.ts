@@ -1,7 +1,7 @@
-import { type HttpMethod, HttpMethods } from "@namorix/core"
+import { HttpMethods } from "@namorix/core"
 import type { NmxSemanticColor } from "@namorix/ui"
 
-export function methodToSemantic(method?: HttpMethod): NmxSemanticColor {
+export function methodToSemantic(method?: HttpMethods): NmxSemanticColor {
   return method === HttpMethods.POST
     ? "success"
     : method === HttpMethods.PUT || method === HttpMethods.PATCH

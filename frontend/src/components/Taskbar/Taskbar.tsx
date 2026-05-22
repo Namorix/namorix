@@ -11,11 +11,13 @@ import {
   useAppDispatch,
   useAppSelector,
 } from "../../store"
+import { useSignalRStatus } from "@namorix/core"
 
 export const Taskbar: React.FC = () => {
   const dispatch = useAppDispatch()
   const order = useAppSelector(selectorTaskbarOrder)
   const activeId = useAppSelector(selectorActiveId)
+  const signalStatus = useSignalRStatus()
   const time = useTaskbarClock()
 
   const handleAppClick = useCallback(
@@ -38,6 +40,7 @@ export const Taskbar: React.FC = () => {
     <TaskbarView
       order={order}
       time={time}
+      signalStatus={signalStatus}
       onStartClick={() => dispatch(toggleLauncher())}
       onAppClick={handleAppClick}
     />

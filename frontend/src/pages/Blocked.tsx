@@ -6,6 +6,7 @@ import {
   MiddlewareErrorCodes,
 } from "@namorix/core"
 import {
+  NmxButton,
   NmxCard,
   NmxCardHeader,
   NmxIconBox,
@@ -37,6 +38,11 @@ export const Blocked: React.FC<BlockedProps> = ({ code }) => {
         return {
           title: t("blocked.notFound.title"),
           description: t("blocked.notFound.description"),
+        }
+      case HttpErrorCodes.CONNECTION_LOST:
+        return {
+          title: t("blocked.connectionLost.title"),
+          description: t("blocked.connectionLost.description"),
         }
       default:
         return {
@@ -75,6 +81,19 @@ export const Blocked: React.FC<BlockedProps> = ({ code }) => {
             value={new Date().toISOString()}
           />
         </NmxMetaList>
+        {code === HttpErrorCodes.CONNECTION_LOST && (
+          <NmxButton
+            semantic="primary"
+            label={t("blocked.refresh")}
+            className="nmx-blocked-page__refresh-btn"
+            fullWidth
+            uppercase
+            onClick={(e) => {
+              e.stopPropagation()
+              window.location.reload()
+            }}
+          />
+        )}
       </NmxCard>
     </div>
   )

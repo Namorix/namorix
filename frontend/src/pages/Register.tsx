@@ -31,21 +31,22 @@ export const Register: React.FC = () => {
   const [username, setUsername] = useState("IzeroCs")
   const [password, setPassword] = useState("12345678")
   const [confirmPassword, setConfirmPassword] = useState("12345678")
-  const { busy, alertVariant, alertMessage, setAlert, handlerError } =
-    useAuthForm()
+  const { busy, setBusy, alert, setAlert, handlerError } = useAuthForm()
   const navigate = useNavigate()
 
   useEffect(() => {
     authService.checkHasUsers().then((hasUsers) => {
       if (!hasUsers) {
-        setAlert("warning", t("auth.register.initialRegistration"))
+        setAlert({
+          semantic: "warning",
+          message: t("auth.register.initialRegistration"),
+        })
       }
     })
   }, [setAlert, t])
 
   const handleSubmit = async (e: NmxFormSubmitEvent) => {
     e.preventDefault()
-    setAlert("error", null, true)
 
     const error = validate(t)
       .required(ValidationFields.USERNAME, username)
@@ -70,18 +71,22 @@ export const Register: React.FC = () => {
       .first()
 
     if (error) {
-      return setAlert("error", error)
+      return setAlert({ semantic: "error", message: error })
     }
+
+    setBusy(true)
 
     try {
       await authController.register(username, password)
-      setAlert("success", t("auth.register.success"))
+      setAlert({ semantic: "success", message: t("auth.register.success") })
       setTimeout(() => {
         navigate(DefaultPaths.LOGIN)
       }, 2000)
     } catch (err: unknown) {
       handlerError(err, t, "auth.register.errors.generic")
     }
+
+    setBusy(false)
   }
 
   return (
@@ -98,9 +103,8 @@ export const Register: React.FC = () => {
           <NmxCardBody>
             <NmxForm onSubmit={handleSubmit}>
               <NmxInlineAlert
-                semantic={alertVariant}
-                message={alertMessage}
-                shouldRender={!!alertMessage}
+                semantic={alert?.semantic}
+                message={alert?.message}
               />
               <NmxFormField
                 label={t("auth.register.usernameLabel")}

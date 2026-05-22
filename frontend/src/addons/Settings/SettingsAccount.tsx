@@ -6,6 +6,10 @@ import {
   http,
   ApiError,
   ApiUserRoutes,
+  UserRole,
+  validate,
+  ValidationFields,
+  AuthConstraints,
 } from "@namorix/core"
 import {
   NmxButton,
@@ -15,9 +19,13 @@ import {
   NmxFormInput,
   NmxInlineAlert,
   type NmxFormSubmitEvent,
+  NmxIconFont,
+  NmxIconFontSymbol,
+  NmxMetaList,
+  NmxMetaItem,
+  NmxBadge,
+  type NmxInlineAlertState,
 } from "@namorix/ui"
-
-const API = getApiBaseUrl()
 
 interface UserInfo {
   id: number
@@ -32,14 +40,11 @@ export const SettingsAccount: React.FC = () => {
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [busy, setBusy] = useState(false)
-  const [alert, setAlert] = useState<{
-    semantic: "success" | "error"
-    message: string
-  } | null>(null)
+  const [alert, setAlert] = useState<NmxInlineAlertState | null>(null)
 
   useEffect(() => {
     http
-      .url(API + ApiAuthRoutes.session)
+      .url(getApiBaseUrl() + ApiAuthRoutes.session)
       .get()
       .json<UserInfo>()
       .then((r) => r.success && setUser(r.data))
@@ -49,19 +54,27 @@ export const SettingsAccount: React.FC = () => {
     e.preventDefault()
     setAlert(null)
 
-    if (newPassword !== confirmPassword) {
-      setAlert({
-        semantic: "error",
-        message: t("addon.settings.account.mismatch"),
-      })
-      return
+    const error = validate(t)
+      .required(ValidationFields.CURRENT_PASSWORD, currentPassword)
+      .required(ValidationFields.PASSWORD, newPassword)
+      .required(ValidationFields.CONFIRM_PASSWORD, confirmPassword)
+      .minLength(
+        ValidationFields.NEW_PASSWORD,
+        newPassword,
+        AuthConstraints.password.minLength,
+      )
+      .equal(ValidationFields.CONFIRM_PASSWORD, confirmPassword, newPassword)
+      .first()
+
+    if (error) {
+      return setAlert({ semantic: "error", message: error })
     }
 
     setBusy(true)
 
     try {
       const res = await http
-        .url(API + ApiUserRoutes.password)
+        .url(getApiBaseUrl() + ApiUserRoutes.password)
         .put({ currentPassword, newPassword })
         .json()
       if (!res.success) throw ApiError.fromResponse(res)
@@ -83,12 +96,29 @@ export const SettingsAccount: React.FC = () => {
 
   return (
     <div className="nmx-addon-form__content nmx-addon-setting__account">
+      <div className="nmx-addon-setting__profile-header">
+        <div className="nmx-addon-setting__avatar">
+          <NmxIconFont symbol={NmxIconFontSymbol.USER} />
+        </div>
+        <NmxMetaList className="nmx-addon-setting__meta-list">
+          <NmxMetaItem
+            value={user?.username}
+            className="nmx-addon-setting__meta-value"
+          />
+          <NmxMetaItem>
+            <NmxBadge
+              semantic={user?.role === UserRole.Admin ? "success" : "info"}
+              className="nmx-addon-setting__meta-role"
+            >
+              {user?.role === UserRole.Admin
+                ? t("user.role.admin")
+                : t("user.role.user")}
+            </NmxBadge>
+          </NmxMetaItem>
+        </NmxMetaList>
+      </div>
       <NmxForm onSubmit={handleChangePassword}>
-        <NmxInlineAlert
-          semantic={alert?.semantic}
-          message={alert?.message}
-          shouldRender={!!alert}
-        />
+        <NmxInlineAlert semantic={alert?.semantic} message={alert?.message} />
         <NmxFormField label={t("addon.settings.account.currentPassword")}>
           <NmxFormInput
             type="password"

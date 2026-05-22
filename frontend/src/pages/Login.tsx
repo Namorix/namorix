@@ -33,13 +33,12 @@ export const Login: React.FC = () => {
   const [username, setUsername] = useState("IzeroCs")
   const [password, setPassword] = useState("12345678")
   const [rememberMe, setRememberMe] = useState(false)
-  const { busy, alertVariant, alertMessage, setAlert, handlerError } =
-    useAuthForm()
+  const { busy, setBusy, alert, setAlert, handlerError } = useAuthForm()
   const navigate = useNavigate()
 
   const handleSubmit = async (e: NmxFormSubmitEvent) => {
     e.preventDefault()
-    setAlert("error", null, true)
+    setAlert({ semantic: "error", message: null })
 
     const error = validate(t)
       .required(ValidationFields.USERNAME, username)
@@ -62,18 +61,22 @@ export const Login: React.FC = () => {
       .first()
 
     if (error) {
-      return setAlert("error", error)
+      return setAlert({ semantic: "error", message: error })
     }
+
+    setBusy(true)
 
     try {
       await authController.login(username, password, rememberMe)
-      setAlert("success", t("auth.login.success"))
+      setAlert({ semantic: "success", message: t("auth.login.success") })
       setTimeout(() => {
         navigate(DefaultPaths.HOME)
       }, 2000)
     } catch (err: unknown) {
       handlerError(err, t, "auth.login.errors.generic")
     }
+
+    setBusy(false)
   }
 
   return (
@@ -90,9 +93,8 @@ export const Login: React.FC = () => {
           <NmxCardBody>
             <NmxForm onSubmit={handleSubmit}>
               <NmxInlineAlert
-                semantic={alertVariant}
-                message={alertMessage}
-                shouldRender={!!alertMessage}
+                semantic={alert?.semantic}
+                message={alert?.message}
               />
               <NmxFormField
                 label={t("auth.login.usernameLabel")}

@@ -8,6 +8,7 @@ import {
   NmxInlineAlert,
   type NmxSemanticColor,
   NmxTagInput,
+  NmxToggle,
 } from "@namorix/ui"
 import { settingsController } from "./settings.controller"
 import { useTranslation } from "react-i18next"
@@ -16,6 +17,7 @@ export const SettingsSystem: React.FC = () => {
   const { t } = useTranslation()
   const [proxies, setProxies] = useState<string[]>([])
   const [origins, setOrigins] = useState<string[]>([])
+  const [registerEnabled, setRegisterEnabled] = useState(false)
   const [busy, setBusy] = useState(false)
   const [alert, setAlert] = useState<{
     semantic: NmxSemanticColor
@@ -23,12 +25,11 @@ export const SettingsSystem: React.FC = () => {
   } | null>(null)
 
   useEffect(() => {
-    Promise.all([
-      settingsController.getProxies(),
-      settingsController.getOrigins(),
-    ]).then(([proxy, origin]) => {
-      setProxies(proxy)
-      setOrigins(origin)
+    settingsController.getAll().then((data) => {
+      setProxies(data.proxies)
+      setOrigins(data.origins)
+      setRegisterEnabled(data.registerEnabled)
+      console.log("Data", data)
     })
   }, [])
 
@@ -37,17 +38,25 @@ export const SettingsSystem: React.FC = () => {
     setAlert(null)
     setBusy(true)
 
-    const [okProxy, okOrigin] = await Promise.all([
-      settingsController.setProxies(proxies),
-      settingsController.setOrigins(origins),
-    ])
+    const ok = await settingsController.setAll({
+      proxies,
+      origins,
+      registerEnabled,
+    })
 
-    if (!okProxy) setProxies(await settingsController.getProxies())
-    if (!okOrigin) setOrigins(await settingsController.getOrigins())
+    if (!ok) {
+      const data = await settingsController.getAll()
+      setProxies(data.proxies)
+      setOrigins(data.origins)
+      setRegisterEnabled(data.registerEnabled)
+      console.log(data)
+    }
 
     setAlert({
-      semantic: okProxy && okOrigin ? "success" : "error",
-      message: okProxy && okOrigin ? "Saved" : "Failed",
+      semantic: ok ? "success" : "error",
+      message: ok
+        ? t("addon.settings.system.saved")
+        : t("addon.settings.system.saveFailed"),
     })
 
     setBusy(false)
@@ -75,6 +84,11 @@ export const SettingsSystem: React.FC = () => {
             placeholder="e.g. https://example.com"
           />
         </NmxFormField>
+        <NmxToggle
+          label={t("addon.settings.system.registerEnabled")}
+          checked={registerEnabled}
+          onCheckedChanged={setRegisterEnabled}
+        />
         <NmxFormActions>
           <NmxButton
             type="submit"

@@ -12,6 +12,10 @@
       "title": "Resource not found",
       "description": "The requested resource could not be found on this server. Please check the URL and try again."
     },
+    "connectionLost": {
+      "title": "Connection Lost",
+      "description": "The connection to the server was interrupted. Please check your internet settings and try again"
+    },
     "unknown": {
       "title": "An unexpected error occurred",
       "description": "We encountered an unknown issue. Please try again or contact support if the problem persists."
@@ -24,7 +28,8 @@
       "value": {
         "blocked": "Blocked"
       }
-    }
+    },
+    "refresh": "Refresh"
   },
   "auth": {
     "login": {
@@ -126,7 +131,10 @@
       },
       "system": {
         "proxies": "Trusted Proxies",
-        "origins": "Allowed Origins"
+        "origins": "Allowed Origins",
+        "registerEnabled": "Enable Registration",
+        "saved": "System settings saved successfully",
+        "saveFailed": "Failed to save system settings"
       },
       "account": {
         "title": "Account",

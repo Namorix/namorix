@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { trafficController, type TrafficEndpoint } from "./traffic.controller"
-import type {
-  NmxDataTableColumn,
-  NmxDataTableFallback,
-} from "../../../packages/ui/src/Components/NmxDataTable/NmxDataTable.type"
+import type { NmxDataTableColumn, NmxDataTableFallback } from "@namorix/ui"
 import { NmxBadge, NmxDataTable } from "@namorix/ui"
 import { methodToSemantic } from "./utils"
 

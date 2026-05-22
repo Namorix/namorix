@@ -45,7 +45,9 @@ export const WindowFrameView: React.FC<WindowFrameViewProps> = ({
       style={{
         transform: win.maximized ? "none" : `translate(${win.x}px, ${win.y}px)`,
         width: win.maximized ? "100%" : win.width,
-        height: win.maximized ? "100%" : win.height,
+        height: win.maximized
+          ? "calc(100vh - var(--nmx-taskbar-height))"
+          : win.height,
         zIndex,
         display: win.minimized && win.animState === "idle" ? "none" : undefined,
         transformOrigin,

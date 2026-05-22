@@ -1,34 +1,32 @@
 import { ApiSettingsRoutes, getApiBaseUrl, http } from "@namorix/core"
 
 export const settingsController = {
-  async getProxies(): Promise<string[]> {
+  async getAll(): Promise<{
+    proxies: string[]
+    origins: string[]
+    registerEnabled: boolean
+  }> {
     const res = await http
-      .url(getApiBaseUrl() + ApiSettingsRoutes.proxies)
+      .url(getApiBaseUrl() + ApiSettingsRoutes.base)
       .get()
-      .json<string[]>()
-    return res.success ? res.data : []
-  },
-
-  async setProxies(proxies: string[]): Promise<boolean> {
-    const res = await http
-      .url(getApiBaseUrl() + ApiSettingsRoutes.proxies)
-      .put(proxies)
-      .json()
+      .json<{
+        proxies: string[]
+        origins: string[]
+        registerEnabled: boolean
+      }>()
     return res.success
+      ? res.data
+      : { proxies: [], origins: [], registerEnabled: false }
   },
 
-  async getOrigins(): Promise<string[]> {
+  async setAll(data: {
+    proxies: string[]
+    origins: string[]
+    registerEnabled: boolean
+  }): Promise<boolean> {
     const res = await http
-      .url(getApiBaseUrl() + ApiSettingsRoutes.origins)
-      .get()
-      .json<string[]>()
-    return res.success ? res.data : []
-  },
-
-  async setOrigins(origins: string[]): Promise<boolean> {
-    const res = await http
-      .url(getApiBaseUrl() + ApiSettingsRoutes.origins)
-      .put(origins)
+      .url(getApiBaseUrl() + ApiSettingsRoutes.base)
+      .put(data)
       .json()
     return res.success
   },

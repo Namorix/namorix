@@ -33,7 +33,7 @@ const TABS: NmxRailItemData<Tab>[] = [
 ]
 
 export const Settings: React.FC = () => {
-  const { activeTab, setActiveTab, isMounted } = useTabCache<Tab>("account")
+  const { activeTab, setActiveTab, isMounted } = useTabCache<Tab>("system")
   const { t } = useTranslation()
   return (
     <div className="nmx-addon-root nmx-addon-setting">
