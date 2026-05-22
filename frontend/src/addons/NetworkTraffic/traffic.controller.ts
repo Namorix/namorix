@@ -2,7 +2,7 @@ import {
   ApiError,
   ApiTrafficRoutes,
   getApiBaseUrl,
-  http,
+  nmxHttp,
   type HttpMethod,
 } from "@namorix/core"
 
@@ -40,7 +40,7 @@ export interface TrafficLogResponse {
 }
 
 async function listEndpoints(): Promise<TrafficEndpoint[]> {
-  const data = await http
+  const data = await nmxHttp
     .url(getApiBaseUrl() + ApiTrafficRoutes.endpoints)
     .get()
     .json<TrafficEndpoint[]>()
@@ -53,7 +53,7 @@ async function listLogs(
   page: number,
   size: number,
 ): Promise<TrafficLogResponse> {
-  const data = await http
+  const data = await nmxHttp
     .url(getApiBaseUrl() + ApiTrafficRoutes.logs)
     .query({ page, size })
     .get()

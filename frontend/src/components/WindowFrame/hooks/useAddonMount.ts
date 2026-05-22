@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react"
 import { resolveAddon } from "../../../addons"
-import type { AddonContext } from "@namorix/core"
+import { type AddonContext, nmxStore } from "@namorix/core"
 import type { WindowId } from "../../../store"
 
 export const useAddonMount = (appId: WindowId) => {
@@ -14,8 +14,7 @@ export const useAddonMount = (appId: WindowId) => {
 
     const context: AddonContext = {
       addonId: appId,
-      locale: "en",
-      theme: "dark",
+      nmxStore,
     }
 
     addon.entry.mount(mountRef.current, context)

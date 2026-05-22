@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 import {
   ApiAuthRoutes,
   getApiBaseUrl,
-  http,
+  nmxHttp,
   ApiError,
   ApiUserRoutes,
   UserRole,
@@ -43,7 +43,7 @@ export const SettingsAccount: React.FC = () => {
   const [alert, setAlert] = useState<NmxInlineAlertState | null>(null)
 
   useEffect(() => {
-    http
+    nmxHttp
       .url(getApiBaseUrl() + ApiAuthRoutes.session)
       .get()
       .json<UserInfo>()
@@ -73,7 +73,7 @@ export const SettingsAccount: React.FC = () => {
     setBusy(true)
 
     try {
-      const res = await http
+      const res = await nmxHttp
         .url(getApiBaseUrl() + ApiUserRoutes.password)
         .put({ currentPassword, newPassword })
         .json()

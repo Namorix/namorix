@@ -1,4 +1,4 @@
-import type { AddonModule } from "@namorix/core"
+import { type AddonModule, UserRole } from "@namorix/core"
 
 const registries = new Map<string, AddonModule>()
 
@@ -13,6 +13,10 @@ export const resolveAddon = (id: string): AddonModule | undefined => {
   return registries.get(id)
 }
 
-export const listAddons = (): AddonModule[] => {
-  return Array.from(registries.values())
+export const listAddons = (userRole?: UserRole): AddonModule[] => {
+  return Array.from(registries.values()).filter(
+    (addon) =>
+      !addon.manifest.role ||
+      (userRole !== undefined && userRole === addon.manifest.role),
+  )
 }

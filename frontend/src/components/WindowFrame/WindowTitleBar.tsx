@@ -10,6 +10,7 @@ interface WindowTitleBarProps {
   title: string
   icon?: NmxIconSvgSymbol
   maximized: boolean
+  showMaximized?: boolean
   onTitleBarMouseDown: React.MouseEventHandler<HTMLDivElement>
   onMinimize: () => void
   onMaximize: () => void
@@ -22,6 +23,7 @@ export const WindowTitleBar = memo(
     title,
     icon,
     maximized,
+    showMaximized,
     onTitleBarMouseDown,
     onMinimize,
     onMaximize,
@@ -59,21 +61,25 @@ export const WindowTitleBar = memo(
           />
         </button>
 
-        <button
-          type="button"
-          className="nmx-window-frame__btn nmx-window-frame--maximize"
-          onMouseDown={(e) => {
-            e.stopPropagation()
-            return maximized ? onRestore() : onMaximize()
-          }}
-        >
-          <NmxIconFont
-            symbol={
-              maximized ? NmxIconFontSymbol.RESTORE : NmxIconFontSymbol.MAXIMIZE
-            }
-            className="nmx-window-frame__btn-icon"
-          />
-        </button>
+        {showMaximized !== false && (
+          <button
+            type="button"
+            className="nmx-window-frame__btn nmx-window-frame--maximize"
+            onMouseDown={(e) => {
+              e.stopPropagation()
+              return maximized ? onRestore() : onMaximize()
+            }}
+          >
+            <NmxIconFont
+              symbol={
+                maximized
+                  ? NmxIconFontSymbol.RESTORE
+                  : NmxIconFontSymbol.MAXIMIZE
+              }
+              className="nmx-window-frame__btn-icon"
+            />
+          </button>
+        )}
 
         <button
           type="button"

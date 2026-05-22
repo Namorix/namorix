@@ -10,6 +10,7 @@ import {
   type WindowRect,
 } from "../../../store"
 import { getWindowDefaults } from "../../../config"
+import { isMobile } from "@namorix/core"
 
 const clamp = (min: number, val: number, max: number) =>
   Math.max(min, Math.min(val, max))
@@ -82,7 +83,7 @@ export const useOpenWindow = () => {
     dispatch(moveWindow({ id: winId, x, y }))
     dispatch(resizeWindow({ id: winId, width, height }))
 
-    if (preferFullSize) {
+    if (preferFullSize || isMobile()) {
       dispatch(savePreMaximize({ id: winId, rect: { x, y, width, height } }))
       dispatch(maximizeWindow(winId))
     }

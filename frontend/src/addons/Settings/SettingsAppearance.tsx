@@ -2,12 +2,12 @@ import React, { useEffect, useState } from "react"
 import {
   getAllThemes,
   getApiBaseUrl,
-  http,
+  nmxHttp,
   ApiUserRoutes,
   type ThemeManifest,
   useThemeStore,
   loadTheme,
-  themeStore,
+  setThemeStore,
 } from "@namorix/core"
 
 export const SettingsAppearance: React.FC = () => {
@@ -23,13 +23,13 @@ export const SettingsAppearance: React.FC = () => {
   const handleSelect = async (id: string) => {
     const manifest = themes.find((t) => t.id === id)
     if (!manifest) return
-    const res = await http
+    const res = await nmxHttp
       .url(getApiBaseUrl() + ApiUserRoutes.theme)
       .put({ themeId: id })
       .json()
     if (!res.success) return
     await loadTheme(manifest.id, manifest.cssPath)
-    themeStore.set(id, manifest.cssPath)
+    setThemeStore(id, manifest.cssPath)
   }
 
   return (

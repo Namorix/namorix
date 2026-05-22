@@ -3,6 +3,7 @@ import type { WindowFrameViewProps } from "./WindowFrame.types"
 import { cx } from "@namorix/ui"
 import { WindowResizeHandles } from "./WindowResizeHandles"
 import { WindowTitleBar } from "./WindowTitleBar"
+import { isMobile } from "@namorix/core"
 
 export const WindowFrameView: React.FC<WindowFrameViewProps> = ({
   win,
@@ -63,6 +64,7 @@ export const WindowFrameView: React.FC<WindowFrameViewProps> = ({
         title={win.title}
         icon={win.icon}
         maximized={win.maximized}
+        showMaximized={!isMobile()}
         onTitleBarMouseDown={onTitleBarMouseDown}
         onMinimize={onMinimize}
         onMaximize={onMaximize}

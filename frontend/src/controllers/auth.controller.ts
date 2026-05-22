@@ -3,8 +3,7 @@ import {
   ApiError,
   ApiUserRoutes,
   getApiBaseUrl,
-  http,
-  invalidateAuthStatusCache,
+  nmxHttp,
   NMX_THEME_STORAGE_KEY,
   stopConnection,
 } from "@namorix/core"
@@ -14,13 +13,13 @@ async function login(
   password: string,
   rememberMe?: boolean,
 ): Promise<void> {
-  const data = await http
+  const data = await nmxHttp
     .url(getApiBaseUrl() + ApiAuthRoutes.login)
     .post({ username, password, rememberMe })
     .json<void>()
   if (!data.success) throw ApiError.fromResponse(data)
 
-  const themeRes = await http
+  const themeRes = await nmxHttp
     .url(getApiBaseUrl() + ApiUserRoutes.theme)
     .get()
     .json<{ themeId: string }>()
@@ -30,7 +29,7 @@ async function login(
 }
 
 async function register(username: string, password: string): Promise<void> {
-  const data = await http
+  const data = await nmxHttp
     .url(getApiBaseUrl() + ApiAuthRoutes.register)
     .post({ username, password })
     .json<void>()
@@ -38,9 +37,8 @@ async function register(username: string, password: string): Promise<void> {
 }
 
 async function logout(): Promise<void> {
-  invalidateAuthStatusCache()
   await stopConnection()
-  const data = await http
+  const data = await nmxHttp
     .url(getApiBaseUrl() + ApiAuthRoutes.logout)
     .post()
     .json<void>()

@@ -6,7 +6,7 @@ import {
   NmxRailList,
 } from "@namorix/ui"
 import type { NmxRailItemData } from "@namorix/ui"
-import { Show, useTabCache } from "@namorix/core"
+import { Show, UserRole, useTabCache, useUserStore } from "@namorix/core"
 import { useTranslation } from "react-i18next"
 import { SettingsAppearance } from "./SettingsAppearance"
 import { SettingsSystem } from "./SettingsSystem"
@@ -33,14 +33,18 @@ const TABS: NmxRailItemData<Tab>[] = [
 ]
 
 export const Settings: React.FC = () => {
-  const { activeTab, setActiveTab, isMounted } = useTabCache<Tab>("system")
   const { t } = useTranslation()
+  const { activeTab, setActiveTab, isMounted } = useTabCache<Tab>("appearance")
+  const user = useUserStore()
+  const isAdmin = user?.role === UserRole.Admin
+  const tabs = isAdmin ? TABS : TABS.filter((t) => t.key !== "system")
+
   return (
     <div className="nmx-addon-root nmx-addon-setting">
       <NmxRail>
         <NmxRailList
           title={t("addon.settings.title")}
-          items={TABS}
+          items={tabs}
           t={t}
           activeKey={activeTab}
           onActiveTabChange={(key) => setActiveTab(key as Tab)}

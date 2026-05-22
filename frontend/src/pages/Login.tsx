@@ -21,7 +21,7 @@ import { Link, useNavigate } from "react-router-dom"
 import {
   AuthConstraints,
   DefaultPaths,
-  getAuthStatusCache,
+  useRegisterEnabledStore,
   validate,
   ValidationFields,
 } from "@namorix/core"
@@ -34,6 +34,7 @@ export const Login: React.FC = () => {
   const [password, setPassword] = useState("12345678")
   const [rememberMe, setRememberMe] = useState(false)
   const { busy, setBusy, alert, setAlert, handlerError } = useAuthForm()
+  const registerEnabled = useRegisterEnabledStore()
   const navigate = useNavigate()
 
   const handleSubmit = async (e: NmxFormSubmitEvent) => {
@@ -142,7 +143,7 @@ export const Login: React.FC = () => {
                   uppercase
                 />
               </NmxFormActions>
-              {getAuthStatusCache()?.registerEnabled && (
+              {registerEnabled && (
                 <NmxCardFooter className="nmx-auth-view__card__footer">
                   <span>{t("auth.login.secondaryText")}</span>
                   <Link

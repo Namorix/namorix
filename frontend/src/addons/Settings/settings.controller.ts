@@ -1,4 +1,4 @@
-import { ApiSettingsRoutes, getApiBaseUrl, http } from "@namorix/core"
+import { ApiSettingsRoutes, getApiBaseUrl, nmxHttp } from "@namorix/core"
 
 export const settingsController = {
   async getAll(): Promise<{
@@ -6,7 +6,7 @@ export const settingsController = {
     origins: string[]
     registerEnabled: boolean
   }> {
-    const res = await http
+    const res = await nmxHttp
       .url(getApiBaseUrl() + ApiSettingsRoutes.base)
       .get()
       .json<{
@@ -24,7 +24,7 @@ export const settingsController = {
     origins: string[]
     registerEnabled: boolean
   }): Promise<boolean> {
-    const res = await http
+    const res = await nmxHttp
       .url(getApiBaseUrl() + ApiSettingsRoutes.base)
       .put(data)
       .json()
