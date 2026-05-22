@@ -9,6 +9,8 @@ export const ValidationFields = {
   USERNAME: "username",
   PASSWORD: "password",
   CONFIRM_PASSWORD: "confirmPassword",
+  CURRENT_PASSWORD: "currentPassword",
+  NEW_PASSWORD: "newPassword",
 } as const
 
 export type ValidationFields =

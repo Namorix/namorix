@@ -38,6 +38,7 @@ export const ApiTrafficRoutes = {
 }
 
 export const ApiSettingsRoutes = {
+  base: API_SETTINGS_BASE,
   proxies: API_SETTINGS_BASE + "/proxies",
   origins: API_SETTINGS_BASE + "/origins",
 }

@@ -1,4 +1,5 @@
 import type { ValidationErrorMeta } from "./validate"
+import type { ApiErrorCode } from "./error"
 
 export type ApiResponse<T = null> =
   | {
@@ -8,7 +9,7 @@ export type ApiResponse<T = null> =
   | {
       success: false
       error: string
-      code?: string
+      code?: ApiErrorCode
       field?: string
       meta?: ValidationErrorMeta
     }

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react"
 import { startConnection, stopConnection } from "./signalr.service"
-
-export type SignalRStatus = "connected" | "reconnecting" | "disconnected"
+import type { SignalRStatus } from "./types"
 
 export function useSignalR(active: boolean) {
   const [status, setStatus] = useState<SignalRStatus>("disconnected")
@@ -10,18 +9,16 @@ export function useSignalR(active: boolean) {
     if (!active) return
     let mounted = true
 
-    startConnection()
-      .then(() => {
-        if (!mounted) return
-        setStatus("connected")
-      })
-      .catch(() => {
-        if (mounted) setStatus("disconnected")
-      })
+    startConnection().then(() => {
+      if (!mounted) return
+      setStatus("connected")
+    })
 
     return () => {
       mounted = false
-      stopConnection()
+      stopConnection().catch(() => {
+        if (mounted) setStatus("disconnected")
+      })
     }
   }, [active])
 

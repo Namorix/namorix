@@ -13,7 +13,9 @@
       "username": "Username",
       "password": "Password",
       "email": "Email",
-      "confirmPassword": "Confirm password"
+      "confirmPassword": "Confirm password",
+      "currentPassword": "Current password",
+      "newPassword": "New password"
     },
     "auth": {
       "errors": {
@@ -25,6 +27,12 @@
     },
     "errors": {
       "untrustedProxy": "Proxy is not trusted. This proxy must be added to the trusted proxies list in Settings"
+    }
+  },
+  "user": {
+    "role": {
+      "admin": "Admin",
+      "user": "User"
     }
   }
 }

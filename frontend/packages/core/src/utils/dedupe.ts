@@ -1,4 +1,4 @@
-import { DEV } from "../env/development"
+// import { DEV } from "../env/development"
 
 /**
  * Wraps any async function so that concurrent calls share the same promise.
@@ -15,18 +15,20 @@ import { DEV } from "../env/development"
 export function dedupe<T extends unknown[], R>(
   fn: (...args: T) => Promise<R>,
 ): (...args: T) => Promise<R> {
-  if (!DEV) {
-    return fn
-  }
+  return fn
 
-  const pending = new Map<string, Promise<R>>()
-  return (...args: T): Promise<R> => {
-    const key = args.length === 0 ? "__none__" : JSON.stringify(args)
-    if (!pending.has(key)) {
-      const promise = fn(...args).finally(() => pending.delete(key))
-      pending.set(key, promise)
-    }
-
-    return pending.get(key)!
-  }
+  // if (!DEV) {
+  //   return fn
+  // }
+  //
+  // const pending = new Map<string, Promise<R>>()
+  // return (...args: T): Promise<R> => {
+  //   const key = args.length === 0 ? "__none__" : JSON.stringify(args)
+  //   if (!pending.has(key)) {
+  //     const promise = fn(...args).finally(() => pending.delete(key))
+  //     pending.set(key, promise)
+  //   }
+  //
+  //   return pending.get(key)!
+  // }
 }
