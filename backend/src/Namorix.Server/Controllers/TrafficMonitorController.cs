@@ -44,15 +44,6 @@ public class TrafficMonitorController(TrafficMonitorService trafficMonitorServic
         return Ok(ApiResponse.Ok(new { items, total }));
     }
 
-    [HttpGet("stats")]
-    public async Task<IActionResult> GetStats(
-        [FromQuery] DateTime? from = null,
-        [FromQuery] DateTime? to = null)
-    {
-        var stats = await trafficMonitorService.GetStats(from, to);
-        return Ok(ApiResponse.Ok(stats));
-    }
-
     [HttpDelete("logs")]
     public async Task<IActionResult> ClearLogs([FromQuery] DateTime? before = null)
     {
