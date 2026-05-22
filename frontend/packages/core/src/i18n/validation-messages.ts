@@ -149,6 +149,12 @@ export function resolveAuthError(err: ApiError): ValidationMessage | null {
     case AuthErrorCodes.REGISTER_CLOSED:
       key = "common.auth.errors.registerClosed"
       break
+    case AuthErrorCodes.INCORRECT_PASSWORD:
+      key = "common.auth.errors.incorrectPassword"
+      break
+    case AuthErrorCodes.PASSWORD_CHANGE_FAILED:
+      key = "common.auth.errors.passwordChangeFailed"
+      break
     default:
       return null
   }
@@ -204,4 +210,18 @@ export function runValidation(
     }
   }
   return null
+}
+
+export function resolveError(
+  t: TFunction,
+  err: unknown,
+  genericKey: string,
+): string {
+  if (err instanceof ApiError) {
+    return formatApiError(t, err) ?? t(genericKey)
+  }
+  if (err instanceof Error) {
+    return err.message
+  }
+  return t(genericKey)
 }

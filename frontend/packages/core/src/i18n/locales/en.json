@@ -22,7 +22,9 @@
         "invalidCredentials": "Invalid username or password",
         "usernameExists": "This username is already taken",
         "unauthorized": "Unauthorized. Please login again",
-        "registerClosed": "Registration is currently closed"
+        "registerClosed": "Registration is currently closed",
+        "incorrectPassword": "Current password is incorrect",
+        "passwordChangeFailed": "Failed to change password"
       }
     },
     "errors": {

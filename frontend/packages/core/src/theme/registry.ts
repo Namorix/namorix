@@ -2,7 +2,6 @@ import type { ThemeManifest } from "./types"
 import { nmxHttp } from "../http"
 import { getApiBaseUrl } from "../config"
 import { ApiThemeRoutes, ThemeRoutes } from "../apiRoutes"
-import { dedupe } from "../utils"
 
 async function getBuiltInThemes(): Promise<ThemeManifest[]> {
   const result = await nmxHttp.getJson<{ themes: ThemeManifest[] }>(
@@ -11,7 +10,7 @@ async function getBuiltInThemes(): Promise<ThemeManifest[]> {
   return result.success ? result.data.themes : []
 }
 
-export const getAllThemes = dedupe(async (): Promise<ThemeManifest[]> => {
+export const getAllThemes = async (): Promise<ThemeManifest[]> => {
   const [builtIn, external] = await Promise.allSettled([
     getBuiltInThemes(),
     nmxHttp
@@ -30,5 +29,10 @@ export const getAllThemes = dedupe(async (): Promise<ThemeManifest[]> => {
     themes.push(...external.value.data)
   }
 
-  return themes
-})
+  const seen = new Set<string>()
+  return themes.filter((t) => {
+    if (seen.has(t.id)) return false
+    seen.add(t.id)
+    return true
+  })
+}

@@ -22,7 +22,7 @@ export interface AddonContext {
 
 export interface AddonEntry {
   mount(container: HTMLElement, context: AddonContext): void | Promise<void>
-  unmount(): void
+  unmount(container: HTMLElement): void
 }
 
 export interface AddonModule {

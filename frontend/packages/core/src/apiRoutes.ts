@@ -18,7 +18,7 @@ export const ApiAuthRoutes = {
 
 export const ApiUserRoutes = {
   theme: API_USER_BASE + "/theme",
-  password: API_AUTH_BASE + "/password",
+  password: API_USER_BASE + "/password",
 }
 
 export const ApiMiddlewareRoutes = {
