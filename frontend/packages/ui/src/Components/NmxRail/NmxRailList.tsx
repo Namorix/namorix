@@ -5,22 +5,24 @@ import { NmxRailContext } from "./NmxRailContext"
 import type { NmxRailListProps } from "./NmxRail.types"
 import { NmxRailItem } from "./NmxRailItem"
 import { useIsWindowed } from "../../context/NmxHostContext"
+import { NmxTabContext } from "../NmxTabContext"
 
 export const NmxRailList: React.FC<NmxRailListProps> = ({
   title,
   items,
   t,
-  activeKey,
   showToggle,
-  onActiveTabChange,
   shouldRender = true,
   className,
   ...rest
 }) => {
   const { collapsed, toggleCollapsed } = useContext(NmxRailContext)
+  const tabCtx = useContext(NmxTabContext)
   const isWindowed = useIsWindowed()
   const isToggleShowed =
     typeof showToggle === "boolean" ? showToggle : isWindowed
+  const activeKey = tabCtx?.activeTab ?? ""
+  const onActiveTabChange = tabCtx?.setActiveTab ?? (() => {})
 
   if (!shouldRender) {
     return null
@@ -46,9 +48,7 @@ export const NmxRailList: React.FC<NmxRailListProps> = ({
             icon={item.icon}
             label={!t ? item.label : t(item.label)}
             active={activeKey === item.key}
-            onClick={() => {
-              onActiveTabChange?.(item.key)
-            }}
+            onClick={() => onActiveTabChange(item.key)}
           />
         ))}
       </div>

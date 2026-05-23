@@ -6,9 +6,7 @@ export interface NmxRailListProps extends WithBaseProps {
   title?: string
   items?: NmxRailItemData[]
   showToggle?: boolean
-  activeKey: string
   t?: TFunction
-  onActiveTabChange?: (key: string) => void
 }
 
 export interface NmxRailItemData<T = string> {

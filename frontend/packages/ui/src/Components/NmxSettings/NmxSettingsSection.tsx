@@ -3,7 +3,7 @@ import { type WithBaseProps } from "../../types"
 import { cx } from "../../utils"
 
 interface NmxSettingsSectionProps extends WithBaseProps {
-  title: string
+  title?: string
 }
 
 export const NmxSettingsSection: React.FC<NmxSettingsSectionProps> = ({
@@ -17,7 +17,7 @@ export const NmxSettingsSection: React.FC<NmxSettingsSectionProps> = ({
 
   return (
     <section {...rest} className={cx("nmx-settings-section", className)}>
-      <span className="nmx-settings-section__title">{title}</span>
+      {title && <span className="nmx-settings-section__title">{title}</span>}
       {children}
     </section>
   )

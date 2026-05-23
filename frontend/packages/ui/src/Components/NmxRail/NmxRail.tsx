@@ -1,26 +1,31 @@
 import type { WithBaseProps } from "../../types"
-import React, { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { cx } from "../../utils"
 import { NmxRailContext, type NmxRailContextValue } from "./NmxRailContext"
 import { isMobile } from "@namorix/core"
+import { NmxTabProvider } from "../NmxTabProvider"
 
-export interface NmxRailLayoutProps extends WithBaseProps {
+export interface NmxRailLayoutProps<
+  T extends string = string,
+> extends WithBaseProps {
   collapsed?: boolean
   defaultCollapsed?: boolean
   onCollapsedChange?: (collapsed: boolean) => void
   collapseOnActiveClick?: boolean
+  defaultTab?: T
 }
 
-export const NmxRail: React.FC<NmxRailLayoutProps> = ({
+export const NmxRail = <T extends string = string>({
   collapsed,
   defaultCollapsed = false,
   onCollapsedChange,
   collapseOnActiveClick = true,
+  defaultTab,
   shouldRender = true,
   className,
   children,
   ...rest
-}) => {
+}: NmxRailLayoutProps<T>) => {
   const isDeviceMobile = isMobile()
   const [internalCollapsed, setInternalCollapsed] = useState(defaultCollapsed)
   const isCollapsed = isDeviceMobile ? true : (collapsed ?? internalCollapsed)
@@ -45,7 +50,7 @@ export const NmxRail: React.FC<NmxRailLayoutProps> = ({
     return null
   }
 
-  return (
+  const content = (
     <NmxRailContext.Provider value={context}>
       <div
         {...rest}
@@ -60,4 +65,10 @@ export const NmxRail: React.FC<NmxRailLayoutProps> = ({
       </div>
     </NmxRailContext.Provider>
   )
+
+  if (defaultTab !== undefined) {
+    return <NmxTabProvider defaultTab={defaultTab}>{content}</NmxTabProvider>
+  }
+
+  return content
 }

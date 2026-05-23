@@ -3,10 +3,13 @@ import type { WithBaseProps } from "../../types"
 
 export type NmxDataTableAlignType = "start" | "center" | "end"
 
+export type NmxDataTableBreakpoint = "sm" | "md" | "lg" | "xl"
+
 export interface NmxDataTableColumn<T = unknown> {
   header: string
   renderCell: (row: T, rowIndex: number) => React.ReactNode
   grow?: number
+  hideBelow?: NmxDataTableBreakpoint
   alignHeader?: NmxDataTableAlignType
   alignCell?: NmxDataTableAlignType
   disableEllipsisHeader?: boolean

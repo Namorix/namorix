@@ -3,8 +3,8 @@ import type {
   NmxDataTableColumn,
   NmxDataTableProps,
 } from "./NmxDataTable.type"
-import React from "react"
-import { cx } from "../../utils"
+import React, { useEffect, useRef, useState } from "react"
+import { cx, getBreakpointDefaults } from "../../utils"
 
 function buildGridTemplateColumns<T>(
   cols: ReadonlyArray<NmxDataTableColumn<T>>,
@@ -22,8 +22,14 @@ function buildGridTemplateColumns<T>(
     return `${Array.from({ length: num - 1 }, () => "auto").join(" ")} minmax(0, 1fr)`
   }
   return cols
-    .map((col) => (col.grow != null ? `minmax(0, ${col.grow}fr)` : "auto"))
-    .join("")
+    .map((col) => {
+      if (col.grow != null) {
+        const min = col.disableEllipsisCell ? "min-content" : "0"
+        return `minmax(${min}, ${col.grow}fr)`
+      }
+      return "auto"
+    })
+    .join(" ")
 }
 
 function alignClass(
@@ -47,6 +53,18 @@ export const NmxDataTable = <T extends object>({
   className,
   ...rest
 }: NmxDataTableProps<T>) => {
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const [containerWidth, setContainerWidth] = useState(Infinity)
+
+  useEffect(() => {
+    if (!wrapRef.current) return
+    const ro = new ResizeObserver(([entry]) => {
+      if (entry) setContainerWidth(entry.contentRect.width)
+    })
+    ro.observe(wrapRef.current)
+    return () => ro.disconnect()
+  }, [])
+
   if (!shouldRender) {
     return null
   }
@@ -61,18 +79,26 @@ export const NmxDataTable = <T extends object>({
   )
   const hasClick = clickableRows && !!onRowClick && !fallbackEntry
 
+  const visibleColumns = columns.filter((col) => {
+    if (!col.hideBelow) return true
+    const bp = getBreakpointDefaults()[col.hideBelow]
+    return containerWidth >= bp
+  })
+
   const columnVars = disableAutoCellSize
-    ? ({ "--nmx-data-table-columns": String(colCount) } as React.CSSProperties)
+    ? ({
+        "--nmx-data-table-columns": String(visibleColumns.length),
+      } as React.CSSProperties)
     : ({
-        "--nmx-data-table-columns": String(colCount),
-        gridTemplateColumns: buildGridTemplateColumns<T>(columns),
+        "--nmx-data-table-columns": String(visibleColumns.length),
+        gridTemplateColumns: buildGridTemplateColumns(visibleColumns),
       } as React.CSSProperties)
 
   return (
-    <div {...rest} className={cx("nmx-data-table", className)}>
+    <div {...rest} ref={wrapRef} className={cx("nmx-data-table", className)}>
       <div className="nmx-data-table__wrap" role="table" style={columnVars}>
         <div className="nmx-data-table__header-row" role="row">
-          {columns.map((col, index) => (
+          {visibleColumns.map((col, index) => (
             <div
               key={index}
               role="columnheader"
@@ -131,7 +157,7 @@ export const NmxDataTable = <T extends object>({
                     hasClick ? () => onRowClick?.(row, rowIndex) : undefined
                   }
                 >
-                  {columns.map((col, colIndex) => (
+                  {visibleColumns.map((col, colIndex) => (
                     <div
                       key={colIndex}
                       role="cell"
