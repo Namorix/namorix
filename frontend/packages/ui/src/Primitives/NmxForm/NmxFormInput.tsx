@@ -4,6 +4,7 @@ import type { WithBaseProps } from "../../types"
 
 interface NmxFormInputProps extends WithBaseProps {
   id?: string
+  ref?: React.RefObject<HTMLInputElement | null>
   type?: string
   name?: string
   value?: string
@@ -17,6 +18,7 @@ interface NmxFormInputProps extends WithBaseProps {
 
 export const NmxFormInput: React.FC<NmxFormInputProps> = ({
   id,
+  ref,
   type,
   name,
   value,
@@ -38,6 +40,7 @@ export const NmxFormInput: React.FC<NmxFormInputProps> = ({
     <input
       {...rest}
       id={id}
+      ref={ref}
       type={type}
       name={name}
       placeholder={placeholder}
