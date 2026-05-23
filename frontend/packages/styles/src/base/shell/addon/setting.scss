@@ -1,3 +1,20 @@
+.nmx-addon-setting {
+  & .nmx-addon-setting__meta-list {
+    gap: var(--nmx-spacing-md);
+  }
+
+  & .nmx-addon-setting__meta-role {
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  & .nmx-addon-setting__meta-value {
+    color: var(--nmx-color-on-surface);
+    font-size: var(--nmx-font-size-2xl);
+    font-weight: var(--nmx-font-weight-bold);
+  }
+}
+
 .nmx-addon-setting__profile-header {
   display: flex;
   align-items: center;
@@ -16,21 +33,4 @@
   background: var(--nmx-color-surface-low);
   border-radius: var(--nmx-radius-md);
   box-shadow: var(--nmx-shadow-sm);
-}
-
-.nmx-addon-setting {
-  & .nmx-addon-setting__meta-list {
-    gap: var(--nmx-spacing-md);
-  }
-
-  & .nmx-addon-setting__meta-role {
-    font-weight: bold;
-    text-transform: uppercase;
-  }
-
-  & .nmx-addon-setting__meta-value {
-    color: var(--nmx-color-on-surface);
-    font-size: var(--nmx-font-size-2xl);
-    font-weight: var(--nmx-font-weight-bold);
-  }
 }

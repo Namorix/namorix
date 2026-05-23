@@ -38,10 +38,10 @@
   cursor: pointer;
   outline: none;
 
+  &:hover,
   &:focus-visible {
     color: var(--nmx-color-on-surface);
-    border-color: var(--nmx-color-primary);
-    box-shadow: 0 0 0 2px rgba(var(--nmx-color-primary-rgb), 0.2);
+    background: var(--nmx-color-surface-mid);
   }
 
   &:disabled {

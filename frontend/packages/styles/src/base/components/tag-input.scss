@@ -5,12 +5,14 @@
   padding: var(--nmx-spacing-lg) var(--nmx-spacing-2xl);
   border-radius: var(--nmx-radius-md);
   background: var(--nmx-color-surface-lowest);
-  cursor: text;
   line-height: var(--nmx-line-height-normal);
+  cursor: text;
   transition: border-color 0.15s;
+  width: 100%;
 
+  &:hover,
   &:focus-within {
-    border-color: var(--nmx-color-primary);
+    background: var(--nmx-color-surface-mid);
   }
 }
 

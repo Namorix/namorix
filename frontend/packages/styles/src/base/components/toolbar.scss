@@ -1,0 +1,92 @@
+@use "../abstract/mixins" as *;
+
+.nmx-toolbar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.nmx-toolbar-header {
+  display: flex;
+  align-items: center;
+  gap: var(--nmx-spacing-md);
+  padding: var(--nmx-spacing-md) var(--nmx-spacing-lg);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.nmx-toolbar-list {
+  display: flex;
+  align-items: center;
+  gap: var(--nmx-spacing-sm);
+  border-radius: var(--nmx-radius-md);
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  @include scrollbar-none;
+}
+
+.nmx-toolbar-item {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: var(--nmx-spacing-md) var(--nmx-spacing-lg);
+  border-radius: var(--nmx-radius-md);
+  font-size: var(--nmx-font-size-sm);
+  font-weight: var(--nmx-font-weight-medium);
+  color: var(--nmx-color-on-surface-variant);
+  background: transparent;
+  transition:
+    background 0.1s,
+    color 0.1s;
+  white-space: nowrap;
+
+  &__icon {
+    margin-right: var(--nmx-spacing-xs);
+  }
+
+  &:hover {
+    background: var(--nmx-color-surface-mid);
+    color: var(--nmx-color-on-surface);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--nmx-color-primary);
+    outline-offset: 2px;
+  }
+
+  &--active {
+    background: var(--nmx-color-primary);
+    color: var(--nmx-color-on-primary);
+
+    &:hover {
+      background: var(--nmx-color-primary);
+      color: var(--nmx-color-on-primary);
+    }
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+}
+
+.nmx-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--nmx-spacing-sm);
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.nmx-toolbar-content {
+  flex: 1;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+  overflow-wrap: anywhere;
+}

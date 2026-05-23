@@ -22,6 +22,7 @@
   --nmx-window-drag-min-visible: 150px; // Min px of window that must remain visible when dragged to edge
   --nmx-window-drag-threshold: 30px; // Pixels mouse must move before a drag begins (prevents accidental drags on click)
   --nmx-window-titlebar-cursor-offset: 8px; // Cursor offset from titlebar top edge during drag
+  --nmx-window-titlebar-height: 45px;
 
   // ─── Window Layout ────────────────────────────────────────
   --nmx-window-margin: 20px; // Safe margin from screen edges

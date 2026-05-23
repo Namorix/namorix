@@ -31,7 +31,7 @@
   &-content {
     flex: 1;
     min-width: 0;
-    padding: var(--nmx-spacing-md);
+    padding: var(--nmx-spacing-3xl) var(--nmx-spacing-md);
     overflow-x: hidden;
     overflow-y: auto;
 
@@ -90,12 +90,12 @@
     cursor: pointer;
   }
 
-  &:hover {
+  &:hover:not(&--active) {
     background: var(--nmx-color-surface-high);
 
     .nmx-rail-item__label,
     .nmx-rail-item__btn {
-      color: var(--nmx-color-on-primary);
+      color: var(--nmx-color-on-surface);
     }
   }
 

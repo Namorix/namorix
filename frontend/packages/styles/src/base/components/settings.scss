@@ -2,16 +2,16 @@
 
 .nmx-settings-section {
   margin: 0 auto var(--nmx-spacing-3xl) auto;
-}
 
-.nmx-settings-section__title {
-  display: inline-block;
-  font-size: var(--nmx-font-size-xs);
-  font-weight: var(--nmx-font-weight-medium);
-  color: var(--nmx-color-on-surface-variant);
-  letter-spacing: var(--nmx-letter-spacing-wider);
-  text-transform: uppercase;
-  margin: 0 0 var(--nmx-spacing-xl);
+  &__title {
+    display: inline-block;
+    font-size: var(--nmx-font-size-xs);
+    font-weight: var(--nmx-font-weight-medium);
+    color: var(--nmx-color-on-surface-variant);
+    letter-spacing: var(--nmx-letter-spacing-wider);
+    text-transform: uppercase;
+    margin: 0 0 var(--nmx-spacing-xl) var(--nmx-spacing-md);
+  }
 }
 
 .nmx-settings-card {
@@ -35,7 +35,7 @@
   }
 
   &__control {
-    flex: 0 1 var(--nmx-settings-row-control-basis);
+    flex: 0 0 var(--nmx-settings-row-control-basis);
     display: flex;
     justify-content: flex-end;
     min-width: 0;

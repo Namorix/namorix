@@ -10,8 +10,7 @@
     border-radius: var(--nmx-radius-md);
     font-size: var(--nmx-font-size-sm);
     color: var(--nmx-color-on-surface-variant);
-    background: var(--nmx-color-surface-mid);
-    box-shadow: var(--nmx-shadow-sm);
+    background: var(--nmx-color-surface-lowest);
     cursor: pointer;
     text-align: center;
     font-family: inherit;
@@ -19,9 +18,15 @@
     text-overflow: ellipsis;
     overflow: hidden;
 
+    &:hover:not(&--active) {
+      background: var(--nmx-color-surface-mid);
+    }
+
     &--active {
       color: var(--nmx-color-on-primary);
       background: var(--nmx-color-primary);
+      cursor: auto;
+      pointer-events: none;
     }
   }
 }

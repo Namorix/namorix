@@ -1,24 +1,14 @@
 @use "../../abstract/mixins" as *;
 
 .nmx-addon-network-traffic {
+  padding: 0;
+
   & &__badge {
     font-weight: var(--nmx-font-weight-bold);
     text-transform: uppercase;
   }
 }
 
-.nmx-addon-network-traffic__logs {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-
-  &__data-table {
-    flex: 1;
-    min-height: 0;
-  }
-
-  &__pagination {
-    flex-shrink: 0;
-    padding-top: var(--nmx-spacing-md);
-  }
+.nmx-addon-network-traffic__overview {
+  padding: var(--nmx-spacing-md);
 }

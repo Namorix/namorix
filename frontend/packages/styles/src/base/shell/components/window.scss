@@ -30,7 +30,7 @@
     display: flex;
     align-items: center;
     gap: var(--nmx-spacing-xs);
-    height: 40px;
+    height: var(--nmx-window-titlebar-height);
     padding: 0 var(--nmx-spacing-sm);
     padding-left: var(--nmx-spacing-md);
     background: var(--nmx-color-surface-low);
@@ -94,13 +94,13 @@
       color: var(--nmx-color-on-surface);
     }
 
-    &--close:hover {
-      background: var(--nmx-color-error);
-      color: var(--nmx-color-on-surface);
-    }
-
     &--minimize:hover {
       background: var(--nmx-color-surface-high);
+    }
+
+    &--close:hover {
+      background: var(--nmx-color-error);
+      color: var(--nmx-color-on-primary);
     }
   }
 

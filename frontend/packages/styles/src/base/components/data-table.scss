@@ -7,9 +7,6 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  background: var(--nmx-color-surface-low);
-  border-radius: var(--nmx-radius-md);
-  box-shadow: var(--nmx-shadow-sm);
   overflow: hidden;
 
   &--no-columns {
@@ -31,9 +28,9 @@
   }
 
   &__header-cell {
-    color: var(--nmx-color-on-primary);
-    background: var(--nmx-color-primary);
-    font-size: var(--nmx-font-size-sm);
+    color: var(--nmx-color-on-surface);
+    background: var(--nmx-color-surface-mid);
+    font-size: var(--nmx-font-size-xs);
     font-weight: var(--nmx-font-weight-bold);
     letter-spacing: var(--nmx-letter-spacing-wide);
     padding: var(--nmx-spacing-lg) var(--nmx-spacing-md);
