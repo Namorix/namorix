@@ -38,9 +38,12 @@ public class TrafficMonitorController(TrafficMonitorService trafficMonitorServic
         [FromQuery] int size = 50,
         [FromQuery] int? ep = null,
         [FromQuery] DateTime? from = null,
-        [FromQuery] DateTime? to = null)
+        [FromQuery] DateTime? to = null,
+        [FromQuery] string? search = null)
     {
-        var (items, total) = await trafficMonitorService.GetLogs(page, size, ep, from, to);
+        Console.WriteLine($"Search {search}");
+        
+        var (items, total) = await trafficMonitorService.GetLogs(page, size, ep, from, to, search);
         return Ok(ApiResponse.Ok(new { items, total }));
     }
 

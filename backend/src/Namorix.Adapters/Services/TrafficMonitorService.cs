@@ -30,27 +30,46 @@ public class TrafficMonitorService(AppDbContext appDbContext)
         return await appDbContext.TrafficEndpoints.OrderBy(e => e.Path).ToListAsync();
     }
 
-    public async Task<(List<TrafficLog> Items, long Total)> GetLogs(int page, int pageSize, int? endpointId,
-        DateTime? from, DateTime? to)
+    public async Task<(List<TrafficLog> Items, long Total)> GetLogs(
+        int page, int pageSize, int? endpointId, DateTime? from, DateTime? to, string? search = null)
     {
-        var query = appDbContext.TrafficLogs.AsQueryable();
-
+        var query = appDbContext.TrafficLogs
+            .Include(l => l.Endpoint)
+            .Include(l => l.TrafficAddress)
+            .AsQueryable();
+        
         if (endpointId.HasValue)
-            query = query.Where(l => l.EndpointId == endpointId);
+            query = query.Where(l => l.EndpointId == endpointId.Value);
+        
         if (from.HasValue)
             query = query.Where(l => l.Timestamp >= from.Value);
+        
         if (to.HasValue)
             query = query.Where(l => l.Timestamp <= to.Value);
-
+        
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            int.TryParse(search, out var statusCode);
+    
+            query = query.Where(l =>
+                (l.Endpoint != null && (
+                    l.Endpoint.Path.Contains(search) ||
+                    l.Endpoint.Method.Contains(search)
+                )) ||
+                (l.TrafficAddress != null && 
+                 l.TrafficAddress.Ip.StartsWith(search)
+                ) ||
+                (statusCode != 0 && l.StatusCode == statusCode)
+            );
+        }
+        
         var total = await query.LongCountAsync();
         var items = await query
-            .Include(l => l.Endpoint)
-            .Include(l => l.TrafficAddress) 
             .OrderByDescending(l => l.Timestamp)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
-
+        
         return (items, total);
     }
 
