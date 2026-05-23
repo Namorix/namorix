@@ -15,7 +15,7 @@ Browser-based desktop shell, self-hosted.
 |-------|------------|
 | Frontend | Vite + React |
 | Backend | ASP.NET Core 8 |
-| Database | SQLite + EF Core |
+| Database | PostgreSQL + EF Core |
 | Auth | JWT (access + refresh) with HttpOnly cookies |
 | Terminal | xterm.js |
 | Realtime | SignalR |
@@ -202,7 +202,7 @@ Addon có 3 mode tích hợp:
 | `JWT__AccessTokenExpirationMinutes` | Jwt.AccessTokenExpirationMinutes | 15 | Access token TTL |
 | `JWT__RefreshTokenExpirationDays` | Jwt.RefreshTokenExpirationDays | 7 | Refresh token TTL |
 | `JWT__RefreshTokenExpirationDaysRemember` | Jwt.RefreshTokenExpirationDaysRemember | 90 | Remember-me TTL |
-| `ConnectionStrings__DefaultConnection` | ConnectionStrings.DefaultConnection | `Data Source=namorix.db` | SQLite connection string |
+| `ConnectionStrings__DefaultConnection` | ConnectionStrings.DefaultConnection | `Host=localhost;Port=5432;Database=namorix;Username=namorix;Password=12345` | PostgreSQL connection string |
 | `SECURE_COOKIE` | AppConfig.SecureCookie | false | Set true for HTTPS |
 | `CSRF_DISABLE` | AppConfig.CsrfEnabled | false | Set true to disable CSRF |
 

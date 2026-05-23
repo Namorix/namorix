@@ -124,11 +124,11 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.23.0 | M3 (zOrder separation, NmxToolbar in NetworkTraffic, NmxTabContext in Settings) |
+| frontend | 0.24.0 | M3 (NmxSearchInput, NetworkTraffic search/debounce/onTabChange) |
 | @namorix/core | 0.18.1 | M3 (appearance settings i18n keys) |
-| @namorix/styles | 0.17.0 | M3 (toolbar SCSS, breakpoint CSS vars, addon-page, data-table redesign) |
-| @namorix/ui | 0.14.0 | M3 (NmxToolbar ecosystem, NmxTabContext, NmxAddonRoot/Page, data-table responsive) |
-| backend | 0.25.1 | M3 (cleanup duplicate stats endpoint) |
+| @namorix/styles | 0.18.0 | M3 (search-input SCSS, network-traffic container/search styles, tag-input rewrite) |
+| @namorix/ui | 0.15.0 | M3 (NmxSearchInput, NmxTabContext generic + onTabChange, NmxFormInput ref) |
+| backend | 0.26.0 | M3 (PostgreSQL, search API, Include TrafficAddress) |
 
 ## Version Rules
 
@@ -147,6 +147,15 @@
 | backend | Bug fixes, C# config tweaks | New endpoint, new service, auth feature |
 
 ## Version History
+
+### 2026-05-23 — NmxSearchInput, PostgreSQL migration, search filter API
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/ui | 0.15.0 | NEW: `NmxSearchInput` — search input primitive with icon + clear button, uses NmxFormInput, `onSubmit` prop. MODIFIED: `NmxTabContext` — `useNmxTabContext<T>()` generic. MODIFIED: `NmxTabProvider` + `NmxToolbar` — `onTabChange` callback. MODIFIED: `NmxTagInput` — rewrite with scroller-wrap + dropdown isolation, full keyboard navigation fix (Arrow Up/Down/Enter/Escape). MODIFIED: `NmxFormInput` — `ref` prop (React 19 pattern). |
+| @namorix/styles | 0.18.0 | NEW: `search-input.scss` — `.nmx-search-input` flex layout with icon + clear button. NEW: `network-traffic.scss` — `container-type` for toolbar, toolbar-actions flex override, search container query (260px → 100% at 580px). MODIFIED: `tag-input.scss` — scroller-wrap, dropdown sibling. MODIFIED: `form.scss` — autofill styling. MODIFIED: `launcher.scss` — removed redundant icon/clear classes. Theme CSS rebuilt. |
+| frontend | 0.24.0 | NEW: NetworkTraffic search — NmxSearchInput in toolbar-actions, debounce 500ms, filter prop, `onTabChange` clears search on tab switch. NEW: `NmxSearchInput` in Launcher — replaces manual icon + input + clear pattern. MODIFIED: `NetworkTrafficLogs` — `filter` prop, API search param. MODIFIED: `traffic.controller` — `search` param in `listLogs()`. MODIFIED: `LauncherView` — removed search icon + clear button DOM (handled by NmxSearchInput). MODIFIED: `i18n/en.json` — searchPlaceholder key. |
+| backend | 0.26.0 | CHANGED: SQLite → PostgreSQL (`Npgsql.EntityFrameworkCore.PostgreSQL`). NEW: `search` param in `GET /api/traffic/logs` — client-side filter (path/method/IP). MODIFIED: `TrafficMonitorService.GetLogs()` — added `Include(l => l.TrafficAddress)`, search filter. MODIFIED: `TrafficMonitorController.GetLogs()` — `search` query param. MODIFIED: `appsettings.json` — PostgreSQL connection string. MODIFIED: `Program.cs` — `UseNpgsql`. NEW: PostgreSQL migrations regen. |
 
 ### 2026-05-23 — NmxToolbar ecosystem, NmxTabContext, zOrder, data-table responsive
 

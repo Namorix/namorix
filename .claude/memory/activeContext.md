@@ -25,6 +25,13 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 ## Recent Changes
 
+### 2026-05-23 — NmxSearchInput, PostgreSQL migration, search filter API
+
+- **@namorix/ui (0.14.0 → 0.15.0)**: NEW `NmxSearchInput` — search input with icon + clear, uses NmxFormInput, `onSubmit` prop. MODIFIED `NmxTabContext` — `useNmxTabContext<T>()` generic. MODIFIED `NmxTabProvider` + `NmxToolbar` — `onTabChange` callback. MODIFIED `NmxTagInput` — full rewrite (scroller-wrap, keyboard nav, dropdown isolation). MODIFIED `NmxFormInput` — `ref` prop.
+- **@namorix/styles (0.17.0 → 0.18.0)**: NEW `search-input.scss`. NEW `network-traffic.scss` — container-type, toolbar-actions flex, search container query. MODIFIED `tag-input.scss`, `form.scss`, `launcher.scss`. Theme CSS rebuilt.
+- **frontend (0.23.0 → 0.24.0)**: NetworkTraffic search — NmxSearchInput + debounce 500ms + filter + onTabChange clear. Launcher — uses NmxSearchInput. NetworkTrafficLogs — filter prop, API search. i18n — searchPlaceholder key.
+- **backend (0.25.1 → 0.26.0)**: SQLite → PostgreSQL (Npgsql). NEW `search` param in `GET /api/traffic/logs`. MODIFIED TrafficMonitorService — Include TrafficAddress, search filter. PostgreSQL migrations regen.
+
 ### 2026-05-23 — NmxToolbar ecosystem, NmxTabContext, zOrder, data-table responsive
 
 - **@namorix/ui (0.13.0 → 0.14.0)**: NEW `NmxToolbar/` — composable toolbar system replacing NmxRail in horizontal layouts. NEW `NmxTabContext` + `NmxTabProvider` — shared tab context for both NmxToolbar and NmxRail (removes manual useTabCache boilerplate). NEW `NmxAddonRoot/Page` — addon layout wrappers. NEW `hooks/`, `breakpointDefaults.ts`, `cssVariableCache.ts`. MODIFIED `NmxRail` — generic `<T>`, NmxTabContext. MODIFIED `NmxDataTable` — responsive columns via hideBelow + ResizeObserver + breakpoint CSS vars. MODIFIED `NmxRail.types` — removed activeKey/onActiveTabChange.
