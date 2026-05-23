@@ -25,7 +25,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IOptions<AppCo
     {
         if (!optionsBuilder.IsConfigured && _config != null)
         {
-            optionsBuilder.UseSqlite(_config.ConnectionString);
+            optionsBuilder.UseNpgsql(_config.ConnectionString);
         }
     }
 

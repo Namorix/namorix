@@ -18,6 +18,9 @@ db-update:
 db-rollback:
 	$(EF_REMOVE)
 
+db-remove:
+	$(EF_REMOVE)
+
 db-reset:
 	$(EF_DROP) --force
 	$(EF_UPDATE)

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -15,10 +17,10 @@ namespace Namorix.Adapters.Migrations
                 name: "AddonManifests",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    DisplayName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    Description = table.Column<string>(type: "TEXT", maxLength: 250, nullable: true),
-                    Icon = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true)
+                    Id = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    DisplayName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: true),
+                    Icon = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -29,11 +31,11 @@ namespace Namorix.Adapters.Migrations
                 name: "Permissions",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    Value = table.Column<int>(type: "INTEGER", nullable: false),
-                    Description = table.Column<string>(type: "TEXT", maxLength: 250, nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Value = table.Column<int>(type: "integer", nullable: false),
+                    Description = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -44,10 +46,10 @@ namespace Namorix.Adapters.Migrations
                 name: "Settings",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Key = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    Value = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Key = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Value = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -58,15 +60,15 @@ namespace Namorix.Adapters.Migrations
                 name: "ThemeManifests",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    Version = table.Column<string>(type: "TEXT", maxLength: 10, nullable: true),
-                    Author = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
-                    Description = table.Column<string>(type: "TEXT", maxLength: 250, nullable: true),
-                    Preview = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
-                    CssPath = table.Column<string>(type: "TEXT", maxLength: 250, nullable: false),
-                    Tags = table.Column<string>(type: "TEXT", nullable: true),
-                    IsBuiltIn = table.Column<bool>(type: "INTEGER", nullable: false)
+                    Id = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Version = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: true),
+                    Author = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    Description = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: true),
+                    Preview = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    CssPath = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false),
+                    Tags = table.Column<List<string>>(type: "text[]", nullable: true),
+                    IsBuiltIn = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -77,9 +79,9 @@ namespace Namorix.Adapters.Migrations
                 name: "TrafficAddresses",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Ip = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Ip = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -90,14 +92,14 @@ namespace Namorix.Adapters.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Username = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    Password = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    Role = table.Column<int>(type: "INTEGER", nullable: false),
-                    ThemeId = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Username = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Password = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Role = table.Column<int>(type: "integer", nullable: false),
+                    ThemeId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -108,14 +110,14 @@ namespace Namorix.Adapters.Migrations
                 name: "TrafficEndpoints",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Method = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
-                    Path = table.Column<string>(type: "TEXT", maxLength: 500, nullable: false),
-                    Label = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
-                    AddonId = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
-                    IsEnabled = table.Column<bool>(type: "INTEGER", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Method = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    Path = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    Label = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    AddonId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    IsEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -131,17 +133,17 @@ namespace Namorix.Adapters.Migrations
                 name: "RefreshTokens",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    UserId = table.Column<int>(type: "INTEGER", nullable: false),
-                    Jti = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    TokenHash = table.Column<string>(type: "TEXT", maxLength: 500, nullable: false),
-                    ExpiresAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    UserAgent = table.Column<string>(type: "TEXT", maxLength: 1000, nullable: true),
-                    Fingerprint = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
-                    IpAddress = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
-                    LastUsedAt = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    Jti = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    TokenHash = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UserAgent = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    Fingerprint = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    IpAddress = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    LastUsedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -158,11 +160,11 @@ namespace Namorix.Adapters.Migrations
                 name: "UserPermissions",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    UserId = table.Column<int>(type: "INTEGER", nullable: false),
-                    PermissionId = table.Column<int>(type: "INTEGER", nullable: false),
-                    GrantedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    PermissionId = table.Column<int>(type: "integer", nullable: false),
+                    GrantedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -185,15 +187,15 @@ namespace Namorix.Adapters.Migrations
                 name: "TrafficLogs",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    EndpointId = table.Column<int>(type: "INTEGER", nullable: false),
-                    StatusCode = table.Column<int>(type: "INTEGER", nullable: false),
-                    DurationMs = table.Column<long>(type: "INTEGER", nullable: false),
-                    ResponseSizeBytes = table.Column<long>(type: "INTEGER", nullable: false),
-                    TrafficAddressId = table.Column<long>(type: "INTEGER", nullable: true),
-                    UserId = table.Column<int>(type: "INTEGER", nullable: true),
-                    Timestamp = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    EndpointId = table.Column<int>(type: "integer", nullable: false),
+                    StatusCode = table.Column<int>(type: "integer", nullable: false),
+                    DurationMs = table.Column<long>(type: "bigint", nullable: false),
+                    ResponseSizeBytes = table.Column<long>(type: "bigint", nullable: false),
+                    TrafficAddressId = table.Column<long>(type: "bigint", nullable: true),
+                    UserId = table.Column<int>(type: "integer", nullable: true),
+                    Timestamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
