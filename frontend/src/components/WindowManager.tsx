@@ -1,11 +1,11 @@
 import React, { memo } from "react"
 import { WindowFrame } from "./WindowFrame"
-import { selectorWindowOrder, useAppSelector } from "../store"
+import { selectorZOrder, useAppSelector } from "../store"
 
 const MemoWindowFrame = memo(WindowFrame)
 
 export const WindowManager: React.FC = () => {
-  const order = useAppSelector(selectorWindowOrder)
+  const order = useAppSelector(selectorZOrder)
 
   return (
     <>

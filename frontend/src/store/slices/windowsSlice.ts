@@ -4,12 +4,14 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
 export interface WindowsState {
   byId: Record<WindowId, WindowData>
   order: WindowId[]
+  zOrder: WindowId[]
   activeId: WindowId | null
 }
 
 const initialState: WindowsState = {
   byId: {},
   order: [],
+  zOrder: [],
   activeId: null,
 }
 
@@ -45,6 +47,7 @@ export const windowsSlice = createSlice({
         defocusAllWindows(state)
 
         state.order.push(id)
+        state.zOrder.push(id)
         state.activeId = id
       },
 
@@ -82,6 +85,7 @@ export const windowsSlice = createSlice({
       const id = action.payload
       delete state.byId[id]
       state.order = state.order.filter((wid) => wid !== id)
+      state.zOrder = state.zOrder.filter((wid) => wid !== id)
       if (state.activeId === id) {
         state.activeId = state.order.at(-1) ?? null
       }
@@ -98,8 +102,8 @@ export const windowsSlice = createSlice({
       const wasMinimized = win.minimized
       win.focused = true
       win.minimized = false
-      state.order = state.order.filter((wid) => wid !== id)
-      state.order.push(id)
+      state.zOrder = state.zOrder.filter((wid) => wid !== id)
+      state.zOrder.push(id)
       state.activeId = id
 
       if (wasMinimized) {
@@ -194,6 +198,12 @@ export const windowsSlice = createSlice({
       const win = state.byId[action.payload.id]
       if (win) win.originRect = action.payload.rect
     },
+
+    closeAllWindows(state) {
+      state.byId = {}
+      state.order = []
+      state.zOrder = []
+    },
   },
 })
 
@@ -211,6 +221,7 @@ export const {
   savePreMaximize,
   clearPreMaximize,
   setOriginRect,
+  closeAllWindows,
 } = windowsSlice.actions
 
 export const windowsReducer = windowsSlice.reducer

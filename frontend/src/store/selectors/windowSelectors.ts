@@ -7,6 +7,8 @@ export const selectorWindowsState = (state: RootState) => state.windowsState
 export const selectorWindowOrder = (state: RootState) =>
   state.windowsState.order
 
+export const selectorZOrder = (state: RootState) => state.windowsState.zOrder
+
 export const selectorActiveId = (state: RootState) =>
   state.windowsState.activeId
 
@@ -32,4 +34,4 @@ export const selectorPreMaximize = (id: WindowId) => (state: RootState) =>
   state.windowsState.byId[id]?.preMaximize ?? null
 
 export const selectorZIndex = (id: WindowId) => (state: RootState) =>
-  state.windowsState.order.indexOf(id)
+  state.windowsState.zOrder.indexOf(id)

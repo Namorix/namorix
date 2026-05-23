@@ -10,8 +10,9 @@ import {
   methodToSemantic,
   statusToSemantic,
 } from "./utils"
+import { NmxAddonPage } from "@namorix/ui"
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 5
 
 export const NetworkTrafficLogs: React.FC = () => {
   const { t } = useTranslation()
@@ -57,7 +58,6 @@ export const NetworkTrafficLogs: React.FC = () => {
       renderCell: (row) => (
         <NmxBadge
           semantic={methodToSemantic(row.endpoint?.method)}
-          bgEnabled={false}
           className="nmx-addon-network-traffic__badge"
         >
           {row?.endpoint?.method}
@@ -66,6 +66,7 @@ export const NetworkTrafficLogs: React.FC = () => {
       grow: 1,
       alignHeader: "center",
       alignCell: "center",
+      disableEllipsisCell: true,
     },
     {
       header: t("addon.networkTraffic.logs.path"),
@@ -76,28 +77,30 @@ export const NetworkTrafficLogs: React.FC = () => {
       header: t("addon.networkTraffic.logs.duration"),
       renderCell: (row) => formatDuration(row.durationMs),
       grow: 1,
-      alignHeader: "end",
-      alignCell: "end",
+      alignHeader: "center",
+      alignCell: "center",
       disableEllipsisCell: true,
+      hideBelow: "xl",
     },
     {
       header: t("addon.networkTraffic.logs.size"),
       renderCell: (row) => formatSize(row.responseSizeBytes),
       grow: 1,
-      alignHeader: "end",
-      alignCell: "end",
+      alignHeader: "center",
+      alignCell: "center",
       disableEllipsisCell: true,
+      hideBelow: "xl",
     },
     {
       header: t("addon.networkTraffic.logs.ip"),
       renderCell: (row) => row.trafficAddress?.ip ?? "-",
-      grow: 1,
+      grow: 2,
     },
     {
       header: t("addon.networkTraffic.logs.timestamp"),
       renderCell: (row) => formatTimestamp(row.timestamp),
       grow: 2,
-      disableEllipsisCell: true,
+      hideBelow: "lg",
     },
   ]
 
@@ -121,11 +124,12 @@ export const NetworkTrafficLogs: React.FC = () => {
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
   return (
-    <div className="nmx-addon-network-traffic__logs">
+    <NmxAddonPage className="nmx-addon-network-traffic__logs">
       <NmxDataTable
         columns={columns}
         rows={logs}
         fallbackConditions={fallbackConditions}
+        className="nmx-addon-page__data-table"
       />
       {total > 0 && (
         <NmxPagination
@@ -133,7 +137,7 @@ export const NetworkTrafficLogs: React.FC = () => {
           totalPages={totalPages}
           totalItems={total}
           pageSize={PAGE_SIZE}
-          className="nmx-addon-network-traffic__logs__pagination"
+          className="nmx-addon-page__pagination"
           onPageChange={(page) => {
             setLoading(true)
             setError(undefined)
@@ -141,6 +145,6 @@ export const NetworkTrafficLogs: React.FC = () => {
           }}
         />
       )}
-    </div>
+    </NmxAddonPage>
   )
 }

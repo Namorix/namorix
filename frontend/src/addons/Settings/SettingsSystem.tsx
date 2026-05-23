@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from "react"
 import {
   NmxButton,
-  NmxForm,
-  NmxFormActions,
-  NmxFormField,
-  type NmxFormSubmitEvent,
   NmxInlineAlert,
   type NmxSemanticColor,
+  NmxSettingsCard,
+  NmxSettingsRow,
+  NmxSettingsSection,
   NmxTagInput,
   NmxToggle,
 } from "@namorix/ui"
 import { settingsController } from "./settings.controller"
 import { useTranslation } from "react-i18next"
+import { NmxAddonPage } from "@namorix/ui"
 
 export const SettingsSystem: React.FC = () => {
   const { t } = useTranslation()
@@ -32,7 +32,7 @@ export const SettingsSystem: React.FC = () => {
     })
   }, [])
 
-  const handleSave = async (e: NmxFormSubmitEvent) => {
+  const handleSave = async (e: React.MouseEvent) => {
     e.preventDefault()
     setAlert(null)
     setBusy(true)
@@ -62,42 +62,62 @@ export const SettingsSystem: React.FC = () => {
   }
 
   return (
-    <div className="nmx-addon-form__content nmx-addon-setting__appearance">
-      <NmxForm onSubmit={handleSave}>
+    <NmxAddonPage className="nmx-addon-setting__system">
+      <NmxSettingsSection shouldRender={!!alert}>
         <NmxInlineAlert
           semantic={alert?.semantic}
           message={alert?.message}
           shouldRender={!!alert}
         />
-        <NmxFormField label={t("addon.settings.system.proxies")}>
-          <NmxTagInput
-            value={proxies}
-            onChange={setProxies}
-            placeholder="e.g. 10.0.0.0/8"
-          />
-        </NmxFormField>
-        <NmxFormField label={t("addon.settings.system.origins")}>
-          <NmxTagInput
-            value={origins}
-            onChange={setOrigins}
-            placeholder="e.g. https://example.com"
-          />
-        </NmxFormField>
-        <NmxToggle
-          label={t("addon.settings.system.registerEnabled")}
-          checked={registerEnabled}
-          onCheckedChanged={setRegisterEnabled}
+      </NmxSettingsSection>
+      <NmxSettingsSection title={t("addon.settings.system.proxySection")}>
+        <NmxSettingsCard>
+          <NmxSettingsRow
+            label={t("addon.settings.system.proxies")}
+            description={t("addon.settings.system.proxiesDesc")}
+          >
+            <NmxTagInput
+              value={proxies}
+              onChange={setProxies}
+              placeholder="e.g. 10.0.0.0/8"
+            />
+          </NmxSettingsRow>
+          <NmxSettingsRow
+            label={t("addon.settings.system.origins")}
+            description={t("addon.settings.system.originsDesc")}
+          >
+            <NmxTagInput
+              value={origins}
+              onChange={setOrigins}
+              placeholder="e.g. https://example.com"
+            />
+          </NmxSettingsRow>
+        </NmxSettingsCard>
+      </NmxSettingsSection>
+      <NmxSettingsSection
+        title={t("addon.settings.system.registrationSection")}
+      >
+        <NmxSettingsCard>
+          <NmxSettingsRow
+            label={t("addon.settings.system.registerEnabled")}
+            description={t("addon.settings.system.registerEnabledDesc")}
+          >
+            <NmxToggle
+              checked={registerEnabled}
+              onCheckedChanged={setRegisterEnabled}
+            />
+          </NmxSettingsRow>
+        </NmxSettingsCard>
+      </NmxSettingsSection>
+      <NmxSettingsSection>
+        <NmxButton
+          onClick={handleSave}
+          disabled={busy}
+          label={t("addon.settings.save")}
+          uppercase
+          fullWidth
         />
-        <NmxFormActions>
-          <NmxButton
-            type="submit"
-            disabled={busy}
-            uppercase
-            fullWidth
-            label={t("addon.settings.save")}
-          />
-        </NmxFormActions>
-      </NmxForm>
-    </div>
+      </NmxSettingsSection>
+    </NmxAddonPage>
   )
 }

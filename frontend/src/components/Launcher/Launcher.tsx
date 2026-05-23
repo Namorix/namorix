@@ -4,6 +4,7 @@ import { LauncherView } from "./LauncherView"
 import { useOpenWindow } from "../WindowFrame"
 import { rectToOrigin, type OnOpenApp } from "../../types"
 import {
+  closeAllWindows,
   closeLauncher,
   selectorLauncherIsOpen,
   useAppDispatch,
@@ -56,6 +57,7 @@ export const Launcher: React.FC = () => {
 
   const handleLogout = async () => {
     close()
+    dispatch(closeAllWindows())
     await authController.logout()
     navigate("/login")
   }

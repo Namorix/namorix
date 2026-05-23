@@ -10,20 +10,20 @@ import {
 } from "@namorix/core"
 import {
   NmxButton,
-  NmxForm,
-  NmxFormActions,
-  NmxFormField,
   NmxFormInput,
   NmxInlineAlert,
-  type NmxFormSubmitEvent,
   NmxIconFont,
   NmxIconFontSymbol,
   NmxMetaList,
   NmxMetaItem,
   NmxBadge,
   type NmxInlineAlertState,
+  NmxSettingsSection,
+  NmxSettingsCard,
+  NmxSettingsRow,
 } from "@namorix/ui"
 import { settingsController } from "./settings.controller"
+import { NmxAddonPage } from "@namorix/ui"
 
 export const SettingsAccount: React.FC = () => {
   const { t } = useTranslation()
@@ -34,7 +34,7 @@ export const SettingsAccount: React.FC = () => {
   const [busy, setBusy] = useState(false)
   const [alert, setAlert] = useState<NmxInlineAlertState | null>(null)
 
-  const handleChangePassword = async (e: NmxFormSubmitEvent) => {
+  const handleChangePassword = async (e: React.MouseEvent) => {
     e.preventDefault()
     setAlert(null)
 
@@ -78,63 +78,78 @@ export const SettingsAccount: React.FC = () => {
   }
 
   return (
-    <div className="nmx-addon-form__content nmx-addon-setting__account">
-      <div className="nmx-addon-setting__profile-header">
-        <div className="nmx-addon-setting__avatar">
-          <NmxIconFont symbol={NmxIconFontSymbol.USER} />
-        </div>
-        <NmxMetaList className="nmx-addon-setting__meta-list">
-          <NmxMetaItem
-            value={user?.username}
-            className="nmx-addon-setting__meta-value"
-          />
-          <NmxMetaItem>
-            <NmxBadge
-              semantic={user?.role === UserRole.Admin ? "success" : "info"}
-              className="nmx-addon-setting__meta-role"
-            >
-              {user?.role === UserRole.Admin
-                ? t("user.role.admin")
-                : t("user.role.user")}
-            </NmxBadge>
-          </NmxMetaItem>
-        </NmxMetaList>
-      </div>
-      <NmxForm onSubmit={handleChangePassword}>
-        <NmxInlineAlert semantic={alert?.semantic} message={alert?.message} />
-        <input name="username" hidden />
-        <NmxFormField label={t("addon.settings.account.currentPassword")}>
-          <NmxFormInput
-            type="password"
-            value={currentPassword}
-            onValueChange={setCurrentPassword}
-            disabled={busy}
-          />
-        </NmxFormField>
-        <NmxFormField label={t("addon.settings.account.newPassword")}>
-          <NmxFormInput
-            type="password"
-            value={newPassword}
-            onValueChange={setNewPassword}
-            disabled={busy}
-          />
-        </NmxFormField>
-        <NmxFormField label={t("addon.settings.account.confirmPassword")}>
-          <NmxFormInput
-            type="password"
-            value={confirmPassword}
-            onValueChange={setConfirmPassword}
-            disabled={busy}
-          />
-        </NmxFormField>
-        <NmxFormActions>
-          <NmxButton
-            type="submit"
-            disabled={busy}
-            label={t("addon.settings.save")}
-          />
-        </NmxFormActions>
-      </NmxForm>
-    </div>
+    <NmxAddonPage className="nmx-addon-setting__account">
+      <NmxSettingsSection title={t("addon.settings.account.title")}>
+        <NmxSettingsCard>
+          <div className="nmx-addon-setting__profile-header">
+            <div className="nmx-addon-setting__avatar">
+              <NmxIconFont symbol={NmxIconFontSymbol.USER} />
+            </div>
+            <NmxMetaList className="nmx-addon-setting__meta-list">
+              <NmxMetaItem
+                value={user?.username}
+                className="nmx-addon-setting__meta-value"
+              />
+              <NmxMetaItem>
+                <NmxBadge
+                  semantic={user?.role === UserRole.Admin ? "success" : "info"}
+                  className="nmx-addon-setting__meta-role"
+                >
+                  {user?.role === UserRole.Admin
+                    ? t("user.role.admin")
+                    : t("user.role.user")}
+                </NmxBadge>
+              </NmxMetaItem>
+            </NmxMetaList>
+          </div>
+
+          <NmxInlineAlert semantic={alert?.semantic} message={alert?.message} />
+          <NmxSettingsRow
+            label={t("addon.settings.account.currentPassword")}
+            description={t("addon.settings.account.currentPasswordDesc")}
+          >
+            <NmxFormInput
+              type="password"
+              value={currentPassword}
+              onValueChange={setCurrentPassword}
+              disabled={busy}
+            />
+          </NmxSettingsRow>
+          <NmxSettingsRow
+            label={t("addon.settings.account.newPassword")}
+            description={t("addon.settings.account.newPasswordDesc", {
+              count: AuthConstraints.password.minLength,
+            })}
+          >
+            <NmxFormInput
+              type="password"
+              value={newPassword}
+              onValueChange={setNewPassword}
+              disabled={busy}
+            />
+          </NmxSettingsRow>
+          <NmxSettingsRow
+            label={t("addon.settings.account.confirmPassword")}
+            description={t("addon.settings.account.confirmPassword")}
+          >
+            <NmxFormInput
+              type="password"
+              value={confirmPassword}
+              onValueChange={setConfirmPassword}
+              disabled={busy}
+            />
+          </NmxSettingsRow>
+        </NmxSettingsCard>
+      </NmxSettingsSection>
+      <NmxSettingsSection>
+        <NmxButton
+          onClick={handleChangePassword}
+          disabled={busy}
+          label={t("addon.settings.save")}
+          fullWidth
+          uppercase
+        />
+      </NmxSettingsSection>
+    </NmxAddonPage>
   )
 }

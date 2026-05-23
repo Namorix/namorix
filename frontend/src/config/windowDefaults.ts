@@ -1,4 +1,6 @@
-interface WindowDefaults {
+import { createCssVariableCache } from "@namorix/ui"
+
+type WindowDefaults = {
   defaultWidth: number
   defaultHeight: number
   minWidth: number
@@ -26,29 +28,7 @@ const WINDOW_DEFAULTS = {
   cascadeMaxOffset: ["--nmx-window-cascade-max-offset", 200],
 } as const satisfies Record<keyof WindowDefaults, [string, number]>
 
-let _cache: WindowDefaults | null = null
-const cache = {
-  get(): WindowDefaults {
-    if (_cache) {
-      return _cache
-    }
+const windowCache = createCssVariableCache<WindowDefaults>(WINDOW_DEFAULTS)
 
-    const cs = getComputedStyle(document.documentElement)
-
-    _cache = Object.fromEntries(
-      Object.entries(WINDOW_DEFAULTS).map(([key, [prop, fallback]]) => [
-        key,
-        parseFloat(cs.getPropertyValue(prop)) || fallback,
-      ]),
-    ) as unknown as WindowDefaults
-
-    return _cache
-  },
-
-  invalidate() {
-    _cache = null
-  },
-}
-
-export const getWindowDefaults = () => cache.get()
-export const invalidateWindowDefaults = () => cache.invalidate()
+export const getWindowDefaults = () => windowCache.get()
+export const invalidateWindowDefaults = () => windowCache.invalidate()

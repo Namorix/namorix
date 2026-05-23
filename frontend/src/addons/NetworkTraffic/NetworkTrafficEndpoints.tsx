@@ -4,6 +4,7 @@ import { trafficController, type TrafficEndpoint } from "./traffic.controller"
 import type { NmxDataTableColumn, NmxDataTableFallback } from "@namorix/ui"
 import { NmxBadge, NmxDataTable } from "@namorix/ui"
 import { methodToSemantic } from "./utils"
+import { NmxAddonPage } from "@namorix/ui"
 
 export const NetworkTrafficEndpoints: React.FC = () => {
   const { t } = useTranslation()
@@ -25,7 +26,6 @@ export const NetworkTrafficEndpoints: React.FC = () => {
       renderCell: (row) => (
         <NmxBadge
           semantic={methodToSemantic(row.method)}
-          bgEnabled={false}
           className="nmx-addon-network-traffic__badge"
         >
           {row.method}
@@ -58,6 +58,7 @@ export const NetworkTrafficEndpoints: React.FC = () => {
         </NmxBadge>
       ),
       grow: 1,
+      hideBelow: "lg",
     },
   ]
 
@@ -84,14 +85,15 @@ export const NetworkTrafficEndpoints: React.FC = () => {
   }
 
   return (
-    <div className="nmx-addon-network-traffic__endpoints">
+    <NmxAddonPage className="nmx-addon-network-traffic__endpoints">
       <NmxDataTable
         columns={columns}
         rows={endpoints}
         clickableRows
         onRowClick={onRowClick}
         fallbackConditions={fallbackCondition}
+        className="nmx-addon-page__data-table"
       />
-    </div>
+    </NmxAddonPage>
   )
 }

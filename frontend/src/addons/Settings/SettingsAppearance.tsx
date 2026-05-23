@@ -1,14 +1,4 @@
-import React, { useEffect, useState } from "react"
-import {
-  getAllThemes,
-  getApiBaseUrl,
-  nmxHttp,
-  ApiUserRoutes,
-  type ThemeManifest,
-  useThemeStore,
-  loadTheme,
-  setThemeStore,
-} from "@namorix/core"
+import React, { useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
   type NmxAccentColorData,
@@ -22,6 +12,7 @@ import {
   NmxSettingsSection,
   NmxToggle,
 } from "@namorix/ui"
+import { NmxAddonPage } from "@namorix/ui"
 
 const ACCENT_COLORS: NmxAccentColorData[] = [
   { id: "blue", color: "#378ADD" },
@@ -65,31 +56,14 @@ const THEMES: NmxSelectData[] = [{ value: "dark", label: "Dark" }]
 
 export const SettingsAppearance: React.FC = () => {
   const { t } = useTranslation()
-  const [themes, setThemes] = useState<ThemeManifest[]>([])
-  const currentId = useThemeStore()
   const [collapsedDefault, setCollapsedDefault] = useState(false)
   const [density, setDensity] = useState("default")
   const [fontFamily, setFontFamily] = useState("Inter")
   const [fontSize, setFontSize] = useState("md")
   const [accentColor, setAccentColor] = useState("blue")
-  useEffect(() => {
-    getAllThemes()
-      .then(setThemes)
-      .catch(() => {})
-  }, [])
-  const handleThemeSelect = async (id: string) => {
-    const manifest = themes.find((t) => t.id === id)
-    if (!manifest) return
-    const res = await nmxHttp
-      .url(getApiBaseUrl() + ApiUserRoutes.theme)
-      .put({ themeId: id })
-      .json()
-    if (!res.success) return
-    await loadTheme(manifest.id, manifest.cssPath)
-    setThemeStore(id, manifest.cssPath)
-  }
+
   return (
-    <div className="nmx-addon-setting__appearance">
+    <NmxAddonPage className="nmx-addon-setting__appearance">
       <NmxSettingsSection title={t("addon.settings.appearance.theme")}>
         <NmxSettingsCard>
           <NmxSettingsRow
@@ -176,6 +150,6 @@ export const SettingsAppearance: React.FC = () => {
           </NmxSettingsRow>
         </NmxSettingsCard>
       </NmxSettingsSection>
-    </div>
+    </NmxAddonPage>
   )
 }

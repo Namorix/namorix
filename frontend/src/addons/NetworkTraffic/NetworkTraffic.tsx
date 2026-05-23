@@ -1,21 +1,24 @@
-import React from "react"
+import React, { useState } from "react"
 import {
   NmxIconFontSymbol,
-  NmxRailList,
-  NmxRailContent,
-  NmxRail,
+  type NmxToolbarItemData,
+  NmxToolbar,
+  NmxToolbarList,
+  NmxIconFont,
+  NmxToolbarContent,
+  NmxToolbarHeader,
+  NmxAddonRoot,
+  NmxToolbarActions,
 } from "@namorix/ui"
 import { NetworkTrafficOverview } from "./NetworkTrafficOverview"
 import { useTranslation } from "react-i18next"
-import { Show, useTabCache } from "@namorix/core"
 import { NetworkTrafficEndpoints } from "./NetworkTrafficEndpoints"
 import { NetworkTrafficLogs } from "./NetworkTrafficLogs"
 import { NetworkTrafficThreats } from "./NetworkTrafficThreats"
-import type { NmxRailItemData } from "@namorix/ui"
 
 type Tab = "overview" | "endpoints" | "logs" | "threats"
 
-const TABS: NmxRailItemData<Tab>[] = [
+const TABS: NmxToolbarItemData<Tab>[] = [
   {
     key: "overview",
     icon: NmxIconFontSymbol.STATS,
@@ -37,43 +40,39 @@ const TABS: NmxRailItemData<Tab>[] = [
     label: "addon.networkTraffic.tabs.threats",
   },
 ]
+
 export const NetworkTraffic: React.FC = () => {
-  const { activeTab, setActiveTab, isMounted } = useTabCache<Tab>("overview")
   const { t } = useTranslation()
+  const [filter, setFilter] = useState("")
 
   return (
-    <div className="nmx-addon-root nmx-addon-network-traffic">
-      <NmxRail>
-        <NmxRailList
-          title={t("addon.networkTraffic.title")}
-          items={TABS}
-          t={t}
-          activeKey={activeTab}
-          onActiveTabChange={(key) => setActiveTab(key as Tab)}
-        />
-        <NmxRailContent className="nmx-addon-network-traffic__content">
-          {isMounted("overview") && (
-            <Show when={activeTab === "overview"}>
-              <NetworkTrafficOverview />
-            </Show>
-          )}
-          {isMounted("endpoints") && (
-            <Show when={activeTab === "endpoints"}>
-              <NetworkTrafficEndpoints />
-            </Show>
-          )}
-          {isMounted("logs") && (
-            <Show when={activeTab === "logs"}>
-              <NetworkTrafficLogs />
-            </Show>
-          )}
-          {isMounted("threats") && (
-            <Show when={activeTab === "threats"}>
-              <NetworkTrafficThreats />
-            </Show>
-          )}
-        </NmxRailContent>
-      </NmxRail>
-    </div>
+    <NmxAddonRoot className="nmx-addon-network-traffic">
+      <NmxToolbar<Tab> defaultTab="endpoints">
+        <NmxToolbarHeader>
+          <NmxToolbarList items={TABS} t={t} />
+          <NmxToolbarActions<Tab> tabKeys={["logs", "endpoints"]}>
+            <NmxIconFont symbol={NmxIconFontSymbol.SEARCH} />
+            <input
+              type="text"
+              placeholder="Filter..."
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            />
+          </NmxToolbarActions>
+        </NmxToolbarHeader>
+        <NmxToolbarContent<Tab> tabKey="overview">
+          <NetworkTrafficOverview />
+        </NmxToolbarContent>
+        <NmxToolbarContent<Tab> tabKey="endpoints">
+          <NetworkTrafficEndpoints filter={filter} />
+        </NmxToolbarContent>
+        <NmxToolbarContent<Tab> tabKey="logs">
+          <NetworkTrafficLogs filter={filter} />
+        </NmxToolbarContent>
+        <NmxToolbarContent<Tab> tabKey="threats">
+          <NetworkTrafficThreats />
+        </NmxToolbarContent>
+      </NmxToolbar>
+    </NmxAddonRoot>
   )
 }
