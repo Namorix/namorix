@@ -12,6 +12,10 @@
     text-transform: uppercase;
     margin: 0 0 var(--nmx-spacing-xl) var(--nmx-spacing-md);
   }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 
 .nmx-settings-card {

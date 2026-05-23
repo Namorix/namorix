@@ -1,4 +1,5 @@
 @use "../../abstract/mixins" as *;
+@use "../../abstract/variables" as *;
 
 .nmx-addon-network-traffic {
   padding: 0;
@@ -11,4 +12,23 @@
 
 .nmx-addon-network-traffic__overview {
   padding: var(--nmx-spacing-md);
+}
+
+.nmx-addon-network-traffic__toolbar-header {
+  container-type: inline-size;
+}
+
+.nmx-addon-network-traffic__toolbar-actions {
+  min-width: 200px;
+}
+
+.nmx-addon-network-traffic__toolbar-actions {
+  @container (min-width: #{$nmx-breakpoint-lg}) {
+    min-width: 400px;
+  }
+
+  @container (max-width: #{$nmx-breakpoint-md}) {
+    flex: 1;
+    width: 100%;
+  }
 }

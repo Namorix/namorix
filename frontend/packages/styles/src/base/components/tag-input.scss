@@ -1,7 +1,7 @@
+@use "../abstract/mixins" as *;
+
 .nmx-tag-input {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--nmx-spacing-sm);
+  position: relative;
   padding: var(--nmx-spacing-lg) var(--nmx-spacing-2xl);
   border-radius: var(--nmx-radius-md);
   background: var(--nmx-color-surface-lowest);
@@ -16,6 +16,13 @@
   }
 }
 
+.nmx-tag-input__scroller {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--nmx-spacing-sm);
+  align-items: center;
+}
+
 .nmx-tag-input__tag {
   display: inline-flex;
   align-items: center;
@@ -25,6 +32,8 @@
   background: var(--nmx-color-surface-high);
   border-radius: var(--nmx-radius-sm);
   font-size: var(--nmx-font-size-sm);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .nmx-tag-input__remove {
@@ -70,11 +79,13 @@
   z-index: 100;
   margin-top: var(--nmx-spacing-sm);
   color: var(--nmx-color-on-surface);
-  background: var(--nmx-color-surface-highest);
+  background: var(--nmx-color-surface-low);
   border-radius: var(--nmx-radius-md);
-  box-shadow: var(--nmx-shadow-dropdown);
+  box-shadow: var(--nmx-shadow-md);
   max-height: 200px;
   overflow-y: auto;
+
+  @include scrollbar-none;
 }
 
 .nmx-tag-input__option {
@@ -83,11 +94,15 @@
   font-size: var(--nmx-font-size-sm);
 
   &:hover {
-    background: var(--nmx-color-surface-high);
+    background: var(--nmx-color-surface-mid);
   }
 }
 
 .nmx-tag-input__option--create {
   font-style: italic;
   opacity: 0.8;
+}
+
+.nmx-tag-input__option--active {
+  background: var(--nmx-color-surface-high);
 }

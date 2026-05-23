@@ -43,10 +43,10 @@
   padding: var(--nmx-spacing-lg) var(--nmx-spacing-2xl);
   font-size: var(--nmx-font-size-sm);
   line-height: var(--nmx-line-height-normal);
-  color: var(--nmx-color-on-surface);
+  color: var(--nmx-color-on-surface-variant);
   background: var(--nmx-color-surface-lowest);
   border: 0;
-  font-family: inherit;
+  font-family: var(--nmx-font-sans), serif;
   transition: border-color 0.15s;
   outline: none;
 
@@ -67,7 +67,7 @@
   &:-webkit-autofill:hover,
   &:-webkit-autofill:focus {
     -webkit-text-fill-color: var(--nmx-color-on-surface);
-    -webkit-box-shadow: 0 0 0px 1000px var(--nmx-color-surface-mid) inset;
+    -webkit-box-shadow: 0 0 0 1000px var(--nmx-color-surface-mid) inset;
     caret-color: var(--nmx-color-on-surface);
   }
 

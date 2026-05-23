@@ -225,6 +225,9 @@ body {
   scrollbar-width: thin;
   scrollbar-color: color-mix(in oklab, var(--nmx-color-on-surface-variant) 50%, transparent) transparent;
 }
+.nmx-rail-content .nmx-addon-page {
+  display: contents;
+}
 .nmx-rail {
   -webkit-user-select: none;
   user-select: none;
@@ -468,10 +471,10 @@ body {
   padding: var(--nmx-spacing-lg) var(--nmx-spacing-2xl);
   font-size: var(--nmx-font-size-sm);
   line-height: var(--nmx-line-height-normal);
-  color: var(--nmx-color-on-surface);
+  color: var(--nmx-color-on-surface-variant);
   background: var(--nmx-color-surface-lowest);
   border: 0;
-  font-family: inherit;
+  font-family: var(--nmx-font-sans), serif;
   transition: border-color 0.15s;
   outline: none;
 }
@@ -486,7 +489,7 @@ body {
 }
 .nmx-form-input:hover, .nmx-form-input:focus, .nmx-form-input:-webkit-autofill:hover, .nmx-form-input:-webkit-autofill:focus {
   -webkit-text-fill-color: var(--nmx-color-on-surface);
-  -webkit-box-shadow: 0 0 0px 1000px var(--nmx-color-surface-mid) inset;
+  -webkit-box-shadow: 0 0 0 1000px var(--nmx-color-surface-mid) inset;
   caret-color: var(--nmx-color-on-surface);
 }
 .nmx-form-input:disabled {
@@ -1040,9 +1043,7 @@ body {
   color: var(--nmx-color-on-surface-variant);
 }
 .nmx-tag-input {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--nmx-spacing-sm);
+  position: relative;
   padding: var(--nmx-spacing-lg) var(--nmx-spacing-2xl);
   border-radius: var(--nmx-radius-md);
   background: var(--nmx-color-surface-lowest);
@@ -1054,6 +1055,12 @@ body {
 .nmx-tag-input:hover, .nmx-tag-input:focus-within {
   background: var(--nmx-color-surface-mid);
 }
+.nmx-tag-input__scroller {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--nmx-spacing-sm);
+  align-items: center;
+}
 .nmx-tag-input__tag {
   display: inline-flex;
   align-items: center;
@@ -1063,6 +1070,8 @@ body {
   background: var(--nmx-color-surface-high);
   border-radius: var(--nmx-radius-sm);
   font-size: var(--nmx-font-size-sm);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .nmx-tag-input__remove {
   display: inline-flex;
@@ -1103,11 +1112,19 @@ body {
   z-index: 100;
   margin-top: var(--nmx-spacing-sm);
   color: var(--nmx-color-on-surface);
-  background: var(--nmx-color-surface-highest);
+  background: var(--nmx-color-surface-low);
   border-radius: var(--nmx-radius-md);
-  box-shadow: var(--nmx-shadow-dropdown);
+  box-shadow: var(--nmx-shadow-md);
   max-height: 200px;
   overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.nmx-tag-input__dropdown::-webkit-scrollbar {
+  display: none;
+}
+.nmx-tag-input__dropdown::-webkit-scrollbar-track {
+  background: transparent;
 }
 .nmx-tag-input__option {
   padding: var(--nmx-spacing-sm) var(--nmx-spacing-md);
@@ -1115,11 +1132,14 @@ body {
   font-size: var(--nmx-font-size-sm);
 }
 .nmx-tag-input__option:hover {
-  background: var(--nmx-color-surface-high);
+  background: var(--nmx-color-surface-mid);
 }
 .nmx-tag-input__option--create {
   font-style: italic;
   opacity: 0.8;
+}
+.nmx-tag-input__option--active {
+  background: var(--nmx-color-surface-high);
 }
 .nmx-loading {
   position: fixed;
@@ -1250,6 +1270,9 @@ body {
   letter-spacing: var(--nmx-letter-spacing-wider);
   text-transform: uppercase;
   margin: 0 0 var(--nmx-spacing-xl) var(--nmx-spacing-md);
+}
+.nmx-settings-section:last-child {
+  margin-bottom: 0;
 }
 .nmx-settings-card {
   background: var(--nmx-color-surface-low);
@@ -1430,6 +1453,43 @@ body {
   overflow: hidden;
   padding: 0;
   overflow-wrap: anywhere;
+}
+.nmx-search-input {
+  display: flex;
+  align-items: center;
+  gap: var(--nmx-spacing-sm);
+  background: var(--nmx-color-surface-lowest);
+  border-radius: var(--nmx-radius-md);
+  padding: 0 var(--nmx-spacing-sm) 0 var(--nmx-spacing-lg);
+  flex: 1;
+}
+.nmx-search-input:hover, .nmx-search-input:focus-within {
+  background: var(--nmx-color-surface-mid);
+}
+.nmx-search-input__icon {
+  flex-shrink: 0;
+  color: var(--nmx-color-on-surface-variant);
+}
+.nmx-search-input__control.nmx-form-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  padding: var(--nmx-spacing-md) 0;
+}
+.nmx-search-input__clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--nmx-color-on-surface-variant);
+  flex-shrink: 0;
+}
+.nmx-search-input__clear:hover {
+  color: var(--nmx-color-error);
 }
 :root {
   --nmx-duration-instant: 0ms;

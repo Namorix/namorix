@@ -1,0 +1,43 @@
+.nmx-search-input {
+  display: flex;
+  align-items: center;
+  gap: var(--nmx-spacing-sm);
+  background: var(--nmx-color-surface-lowest);
+  border-radius: var(--nmx-radius-md);
+  padding: 0 var(--nmx-spacing-sm) 0 var(--nmx-spacing-lg);
+  flex: 1;
+
+  &:hover,
+  &:focus-within {
+    background: var(--nmx-color-surface-mid);
+  }
+
+  &__icon {
+    flex-shrink: 0;
+    color: var(--nmx-color-on-surface-variant);
+  }
+
+  &__control.nmx-form-input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    padding: var(--nmx-spacing-md) 0;
+  }
+
+  &__clear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--nmx-color-on-surface-variant);
+    flex-shrink: 0;
+
+    &:hover {
+      color: var(--nmx-color-error);
+    }
+  }
+}

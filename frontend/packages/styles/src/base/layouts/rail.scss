@@ -36,6 +36,10 @@
     overflow-y: auto;
 
     @include scrollbar();
+
+    .nmx-addon-page {
+      display: contents;
+    }
   }
 
   @include no-user-select;

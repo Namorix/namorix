@@ -38,61 +38,9 @@
     }
   }
 
-  &__search-wrap {
-    padding: var(--nmx-spacing-md);
-    position: relative;
-    display: flex;
-    align-items: center;
-  }
-
-  &__search-icon {
-    position: absolute;
-    left: calc(var(--nmx-spacing-md) * 2);
-    width: 14px;
-    height: 14px;
-    color: var(--nmx-color-on-surface-variant);
-    pointer-events: none;
-  }
-
   &__search {
-    all: unset;
-    width: 100%;
-    box-sizing: border-box;
-    padding: var(--nmx-spacing-md);
-    padding-left: calc(var(--nmx-spacing-md) * 2 + var(--nmx-spacing-md));
-    background: var(--nmx-color-surface-mid);
-    border-radius: var(--nmx-radius-md);
-    color: var(--nmx-color-on-surface);
-    font-size: var(--nmx-font-size-sm);
-
-    &::placeholder {
-      color: var(--nmx-color-on-surface-variant);
-    }
-
-    &:focus {
-      outline: none;
-    }
-  }
-
-  &__search-clear {
-    all: unset;
-    position: absolute;
-    right: var(--nmx-spacing-xs);
-    color: var(--nmx-color-on-surface-variant);
-    font-size: var(--nmx-font-size-lg);
-    line-height: 1;
-    padding: var(--nmx-spacing-sm);
-    border-radius: var(--nmx-radius-md);
-    cursor: pointer;
-
-    &-icon {
-      font-size: var(--nmx-font-size-md);
-    }
-
-    &:hover {
-      background: var(--nmx-color-surface-high);
-      color: var(--nmx-color-on-surface);
-    }
+    margin: var(--nmx-spacing-md);
+    margin-bottom: 0;
   }
 
   &__grid {
