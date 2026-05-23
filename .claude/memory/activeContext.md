@@ -25,6 +25,12 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 ## Recent Changes
 
+### 2026-05-23 — NmxToolbar ecosystem, NmxTabContext, zOrder, data-table responsive
+
+- **@namorix/ui (0.13.0 → 0.14.0)**: NEW `NmxToolbar/` — composable toolbar system replacing NmxRail in horizontal layouts. NEW `NmxTabContext` + `NmxTabProvider` — shared tab context for both NmxToolbar and NmxRail (removes manual useTabCache boilerplate). NEW `NmxAddonRoot/Page` — addon layout wrappers. NEW `hooks/`, `breakpointDefaults.ts`, `cssVariableCache.ts`. MODIFIED `NmxRail` — generic `<T>`, NmxTabContext. MODIFIED `NmxDataTable` — responsive columns via hideBelow + ResizeObserver + breakpoint CSS vars. MODIFIED `NmxRail.types` — removed activeKey/onActiveTabChange.
+- **@namorix/styles (0.16.0 → 0.17.0)**: NEW `toolbar.scss` — full toolbar component SCSS. NEW `tokens/breakpoint.scss` — `--nmx-breakpoint-*` CSS vars. NEW `addon.scss` — `.nmx-addon-page` with data-table/pagination slots. NEW `--nmx-window-titlebar-height` token. MODIFIED `data-table.scss` — removed bg/border/shadow, new header styling (surface-mid, xs font). MODIFIED `settings.scss` — BEM nesting.
+- **frontend (0.22.0 → 0.23.0)**: REWRITE NetworkTraffic — NmxRail → NmxToolbar. REFACTOR Settings — useTabCache/Show → NmxTabContext. MODIFIED windowsSlice — zOrder tách khỏi order (taskbar order, WM zOrder). MODIFIED WindowManager — render theo zOrder. MODIFIED windowSelectors — zOrder selectors. MODIFIED windowDefaults — cleanup. i18n +9 keys.
+
 ### 2026-05-23 — SCSS token cleanup, NmxSettings components, rail container query, mount size vars
 
 - **@namorix/ui (0.12.0 → 0.13.0)**: NEW `NmxSettingsSection`, `NmxSettingsCard`, `NmxSettingsRow`, `NmxAccentColorPicker` — reusable settings layout components. MODIFIED `NmxRailContent` — ResizeObserver sets `--nmx-rail-content-width/height` CSS vars. MODIFIED `NmxRail` — `container-type: inline-size` + CSS container query auto-collapse under 640px. Token fallback cleanup in Select/Slider/SegmentedGroup.

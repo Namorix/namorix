@@ -124,10 +124,10 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.22.0 | M3 (Settings refactored to NmxSettings components, theme card grid) |
+| frontend | 0.23.0 | M3 (zOrder separation, NmxToolbar in NetworkTraffic, NmxTabContext in Settings) |
 | @namorix/core | 0.18.1 | M3 (appearance settings i18n keys) |
-| @namorix/styles | 0.16.0 | M3 (settings component SCSS, breakpoint SCSS vars, token cleanup) |
-| @namorix/ui | 0.13.0 | M3 (NmxSettingsSection/Card/Row/AccentColorPicker, NmxRailContent size vars) |
+| @namorix/styles | 0.17.0 | M3 (toolbar SCSS, breakpoint CSS vars, addon-page, data-table redesign) |
+| @namorix/ui | 0.14.0 | M3 (NmxToolbar ecosystem, NmxTabContext, NmxAddonRoot/Page, data-table responsive) |
 | backend | 0.25.1 | M3 (cleanup duplicate stats endpoint) |
 
 ## Version Rules
@@ -147,6 +147,14 @@
 | backend | Bug fixes, C# config tweaks | New endpoint, new service, auth feature |
 
 ## Version History
+
+### 2026-05-23 — NmxToolbar ecosystem, NmxTabContext, zOrder, data-table responsive
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/ui | 0.14.0 | NEW: `NmxToolbar/` — NmxToolbar, Header, List, Item, Content, Actions composable toolbar system. NEW: `NmxTabContext` + `NmxTabProvider` — shared tab state for Toolbar/Rail. NEW: `NmxAddonRoot` + `NmxAddonPage` — addon layout wrappers. NEW: `hooks/`, `breakpointDefaults.ts`, `cssVariableCache.ts`. MODIFIED: `NmxRail` — generic `<T>`, NmxTabContext integration. MODIFIED: `NmxDataTable` — responsive columns via hideBelow + ResizeObserver. MODIFIED: `NmxRail.types` — removed activeKey/onActiveTabChange (moved to context). |
+| @namorix/styles | 0.17.0 | NEW: `components/toolbar.scss` — full toolbar SCSS (list, item, header, actions, content). NEW: `tokens/breakpoint.scss` — `--nmx-breakpoint-*` CSS vars (sm/md/lg/xl). NEW: `addon.scss` — `.nmx-addon-page` + `__data-table` + `__pagination`. NEW: `tokens.scss` — `--nmx-window-titlebar-height`. MODIFIED: `data-table.scss` — removed bg/border/shadow, header color/font. MODIFIED: `settings.scss` — BEM nesting. |
+| frontend | 0.23.0 | REWRITE: `NetworkTraffic` — từ NmxRail → NmxToolbar ecosystem. REFACTOR: `Settings` tabs — từ manual useTabCache → NmxTabContext. MODIFIED: `windowsSlice` — zOrder tách khỏi order (taskbar dùng order, WM dùng zOrder). MODIFIED: `WindowManager` — render theo zOrder. MODIFIED: `windowSelectors` — selectorZOrder + selectorZIndex dùng zOrder. MODIFIED: `windowDefaults` — cleanup -32 dòng. MODIFIED: `Launcher` — minor fix. MODIFIED: `i18n/en.json` — +9 keys. |
 
 ### 2026-05-23 — SCSS token cleanup, NmxSettings components, rail container query
 
