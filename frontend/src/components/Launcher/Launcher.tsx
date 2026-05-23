@@ -68,7 +68,6 @@ export const Launcher: React.FC = () => {
       query={query}
       user={user}
       onQueryChange={setQuery}
-      onClearQuery={() => setQuery("")}
       onLogout={handleLogout}
       onOpenApp={handleOpenApp}
       searchRef={searchRef}

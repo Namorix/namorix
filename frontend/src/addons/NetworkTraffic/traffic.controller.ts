@@ -52,10 +52,11 @@ async function listEndpoints(): Promise<TrafficEndpoint[]> {
 async function listLogs(
   page: number,
   size: number,
+  search?: string,
 ): Promise<TrafficLogResponse> {
   const data = await nmxHttp
     .url(getApiBaseUrl() + ApiTrafficRoutes.logs)
-    .query({ page, size })
+    .query({ page, size, search })
     .get()
     .json<TrafficLogResponse>()
   if (!data.success) throw ApiError.fromResponse(data)

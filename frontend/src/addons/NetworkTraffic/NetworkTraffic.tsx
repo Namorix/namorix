@@ -1,14 +1,14 @@
-import React, { useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import {
   NmxIconFontSymbol,
   type NmxToolbarItemData,
   NmxToolbar,
   NmxToolbarList,
-  NmxIconFont,
   NmxToolbarContent,
   NmxToolbarHeader,
   NmxAddonRoot,
   NmxToolbarActions,
+  NmxSearchInput,
 } from "@namorix/ui"
 import { NetworkTrafficOverview } from "./NetworkTrafficOverview"
 import { useTranslation } from "react-i18next"
@@ -16,9 +16,9 @@ import { NetworkTrafficEndpoints } from "./NetworkTrafficEndpoints"
 import { NetworkTrafficLogs } from "./NetworkTrafficLogs"
 import { NetworkTrafficThreats } from "./NetworkTrafficThreats"
 
-type Tab = "overview" | "endpoints" | "logs" | "threats"
+export type NetworkTrafficTab = "overview" | "endpoints" | "logs" | "threats"
 
-const TABS: NmxToolbarItemData<Tab>[] = [
+const TABS: NmxToolbarItemData<NetworkTrafficTab>[] = [
   {
     key: "overview",
     icon: NmxIconFontSymbol.STATS,
@@ -43,33 +43,37 @@ const TABS: NmxToolbarItemData<Tab>[] = [
 
 export const NetworkTraffic: React.FC = () => {
   const { t } = useTranslation()
-  const [filter, setFilter] = useState("")
+  const [filter, setFilter] = useState<string>("")
 
   return (
     <NmxAddonRoot className="nmx-addon-network-traffic">
-      <NmxToolbar<Tab> defaultTab="endpoints">
-        <NmxToolbarHeader>
+      <NmxToolbar<NetworkTrafficTab>
+        defaultTab="endpoints"
+        onTabChange={() => setFilter("")}
+      >
+        <NmxToolbarHeader className="nmx-addon-network-traffic__toolbar-header">
           <NmxToolbarList items={TABS} t={t} />
-          <NmxToolbarActions<Tab> tabKeys={["logs", "endpoints"]}>
-            <NmxIconFont symbol={NmxIconFontSymbol.SEARCH} />
-            <input
-              type="text"
-              placeholder="Filter..."
+          <NmxToolbarActions<NetworkTrafficTab>
+            tabKeys={["logs", "endpoints"]}
+            className="nmx-addon-network-traffic__toolbar-actions"
+          >
+            <NmxSearchInput
               value={filter}
-              onChange={(e) => setFilter(e.target.value)}
+              onChange={setFilter}
+              placeholder={t("addon.networkTraffic.searchPlaceholder")}
             />
           </NmxToolbarActions>
         </NmxToolbarHeader>
-        <NmxToolbarContent<Tab> tabKey="overview">
+        <NmxToolbarContent<NetworkTrafficTab> tabKey="overview">
           <NetworkTrafficOverview />
         </NmxToolbarContent>
-        <NmxToolbarContent<Tab> tabKey="endpoints">
-          <NetworkTrafficEndpoints filter={filter} />
+        <NmxToolbarContent<NetworkTrafficTab> tabKey="endpoints">
+          <NetworkTrafficEndpoints />
         </NmxToolbarContent>
-        <NmxToolbarContent<Tab> tabKey="logs">
-          <NetworkTrafficLogs filter={filter} />
+        <NmxToolbarContent<NetworkTrafficTab> tabKey="logs">
+          <NetworkTrafficLogs filterSearch={filter} />
         </NmxToolbarContent>
-        <NmxToolbarContent<Tab> tabKey="threats">
+        <NmxToolbarContent<NetworkTrafficTab> tabKey="threats">
           <NetworkTrafficThreats />
         </NmxToolbarContent>
       </NmxToolbar>

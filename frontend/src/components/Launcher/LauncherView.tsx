@@ -1,14 +1,19 @@
 import React from "react"
-import { NmxIconFont, NmxIconFontSymbol, NmxIconSvg } from "@namorix/ui"
+import {
+  NmxIconFont,
+  NmxIconFontSymbol,
+  NmxIconSvg,
+  NmxSearchInput,
+} from "@namorix/ui"
 import type { AddonItem, OnOpenApp } from "../../types"
 import { type User } from "@namorix/core"
+import { useTranslation } from "react-i18next"
 
 interface LauncherViewProps {
   items: AddonItem[]
   query: string
   user?: User | null
   onQueryChange: (query: string) => void
-  onClearQuery: () => void
   onLogout: () => void
   onOpenApp: OnOpenApp
   searchRef: React.RefObject<HTMLInputElement | null>
@@ -21,42 +26,23 @@ export const LauncherView: React.FC<
   query,
   user,
   onQueryChange,
-  onClearQuery,
   onLogout,
   onOpenApp,
   onClose,
   searchRef,
 }) => {
+  const { t } = useTranslation()
+
   return (
     <div className="nmx-launcher-overlay" onMouseDown={onClose}>
       <div className="nmx-launcher" onMouseDown={(e) => e.stopPropagation()}>
-        <div className="nmx-launcher__search-wrap">
-          <NmxIconFont
-            symbol={NmxIconFontSymbol.SEARCH}
-            className="nmx-launcher__search-icon"
-          />
-          <input
-            ref={searchRef}
-            className="nmx-launcher__search"
-            type="text"
-            placeholder="Search apps..."
-            value={query}
-            onChange={(e) => onQueryChange(e.target.value)}
-          />
-          {query && (
-            <button
-              className="nmx-launcher__search-clear"
-              onMouseDown={onClearQuery}
-              type="button"
-              aria-label="Clear"
-            >
-              <NmxIconFont
-                symbol={NmxIconFontSymbol.CLOSE}
-                className="nmx-launcher__search-clear-icon"
-              />
-            </button>
-          )}
-        </div>
+        <NmxSearchInput
+          ref={searchRef}
+          value={query}
+          onChange={onQueryChange}
+          placeholder={t("launcher.searchPlaceholder")}
+          className="nmx-launcher__search"
+        />
 
         <div className="nmx-launcher__grid">
           {items.length > 0 ? (

@@ -71,9 +71,13 @@
       "success": "Account created successfully. Taking you to login..."
     }
   },
+  "launcher": {
+    "searchPlaceholder": "Search app..."
+  },
   "addon": {
     "networkTraffic": {
       "title": "Network Traffic",
+      "searchPlaceholder": "Filter by method, path or IP...",
       "tabs": {
         "overview": "Overview",
         "endpoints": "Endpoints",
