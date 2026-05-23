@@ -6,10 +6,12 @@ export interface NmxToolbarProps<
   T extends string = string,
 > extends WithBaseProps {
   defaultTab?: T
+  onTabChange?: (tab: T) => void
 }
 
 export const NmxToolbar = <T extends string = string>({
   defaultTab,
+  onTabChange,
   shouldRender = true,
   className,
   children,
@@ -24,7 +26,14 @@ export const NmxToolbar = <T extends string = string>({
   )
 
   if (defaultTab !== undefined) {
-    return <NmxTabProvider defaultTab={defaultTab}>{content}</NmxTabProvider>
+    return (
+      <NmxTabProvider
+        defaultTab={defaultTab}
+        onTabChange={onTabChange as ((tab: string) => void) | undefined}
+      >
+        {content}
+      </NmxTabProvider>
+    )
   }
 
   return content

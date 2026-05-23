@@ -18,3 +18,7 @@ export function useNmxTabContext() {
   }
   return ctx
 }
+
+export function useActiveTab<T extends string = string>() {
+  return useNmxTabContext().activeTab as T
+}
