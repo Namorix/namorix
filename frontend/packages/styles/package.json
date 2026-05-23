@@ -1,6 +1,6 @@
 {
   "name": "@namorix/styles",
-  "version": "0.17.0",
+  "version": "0.18.0",
   "license": "GPL-3.0-only",
   "type": "module",
   "main": "src/index.scss",
