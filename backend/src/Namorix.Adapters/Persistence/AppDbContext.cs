@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Namorix.Adapters.FlatFile;
 using Namorix.Core.Config;
 using Namorix.Core.Models;
 
@@ -16,9 +17,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IOptions<AppCo
     public DbSet<UserPermission> UserPermissions { get; set; }
     public DbSet<ThemeManifest> ThemeManifests { get; set; }
     public DbSet<AddonManifest> AddonManifests { get; set; }
-    public DbSet<TrafficEndpoint> TrafficEndpoints { get; set; }
-    public DbSet<TrafficAddress> TrafficAddresses { get; set; }
-    public DbSet<TrafficLog> TrafficLogs { get; set; }
+    public DbSet<TrafficLogSerializer> TrafficLogs { get; set; }
     
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -41,14 +40,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IOptions<AppCo
 
         modelBuilder.Entity<AddonManifest>()
             .HasIndex(a => a.Id)
-            .IsUnique();
-
-        modelBuilder.Entity<TrafficEndpoint>()
-            .HasIndex(e => new { e.Method, e.Path })
-            .IsUnique();
-
-        modelBuilder.Entity<TrafficAddress>()
-            .HasIndex(a => a.Ip)
             .IsUnique();
     }
 }

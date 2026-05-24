@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Namorix.Adapters.Services;
-using Namorix.Core.Attributes;
 using Namorix.Core.Responses;
 using Namorix.Server.Middleware;
 
@@ -8,46 +7,22 @@ namespace Namorix.Server.Controllers;
 
 [ApiController]
 [RequireAdmin]
-[Route("api/traffic")]
+[Route("api/traffic/logs")]
 public class TrafficMonitorController(TrafficMonitorService trafficMonitorService): ControllerBase
 {
-    [HttpGet("endpoints")]
-    public async Task<IActionResult> ListEndpoints()
-    {
-        var endpoints = await trafficMonitorService.ListEndpoints();
-        return Ok(ApiResponse.Ok(endpoints));
-    }
-
-    [HttpPost("endpoints")]
-    public async Task<IActionResult> RegisterEndpoint([FromBody] RegisterEndpointRequest request)
-    {
-        var endpoint = await trafficMonitorService.RegisterEndpoint(request.Method, request.Path, request.Label);
-        return Ok(ApiResponse.Ok(endpoint));
-    }
-
-    [HttpDelete("endpoints/{id:int}")]
-    public async Task<IActionResult> RemoveEndpoint(int id)
-    {
-        await trafficMonitorService.RemoveEndpoint(id);
-        return Ok(ApiResponse.Ok());
-    }
-
-    [HttpGet("logs")]
+    [HttpGet]
     public async Task<IActionResult> GetLogs(
         [FromQuery] int page = 1,
-        [FromQuery] int size = 50,
-        [FromQuery] int? ep = null,
+        [FromQuery] int size = 30,
         [FromQuery] DateTime? from = null,
         [FromQuery] DateTime? to = null,
         [FromQuery] string? search = null)
     {
-        Console.WriteLine($"Search {search}");
-        
-        var (items, total) = await trafficMonitorService.GetLogs(page, size, ep, from, to, search);
-        return Ok(ApiResponse.Ok(new { items, total }));
+        var (items, total, elapsedMs) = await trafficMonitorService
+            .GetLogs(page, size, from, to, search);
+        return Ok(ApiResponse.Ok(new { items, total, elapsedMs }));
     }
-
-    [HttpDelete("logs")]
+    [HttpDelete]
     public async Task<IActionResult> ClearLogs([FromQuery] DateTime? before = null)
     {
         await trafficMonitorService.ClearLogs(before);

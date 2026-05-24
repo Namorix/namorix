@@ -7,9 +7,12 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using Namorix.Adapters.FlatFile;
 using Namorix.Adapters.Persistence;
 using Namorix.Adapters.Services;
+using Namorix.Core.FlatFile;
 using Namorix.Core.Infrastructure;
+using Namorix.Core.IO;
 using Namorix.Server.Extensions;
 using Namorix.Server.Helpers;
 using Namorix.Server.Hubs;
@@ -45,6 +48,11 @@ builder.Services.AddScoped<PermissionService>();
 builder.Services.AddScoped<ThemeService>();
 builder.Services.AddMemoryCache();
 
+builder.Services.AddSingleton<FlatFileOptions>();
+builder.Services.AddSingleton<IFlatFileStore, FlatFileStore>();
+builder.Services.AddSingleton<DataDirectory>(_ => new DataDirectory("data"));
+builder.Services.AddSingleton<TrafficMonitorService>();
+
 builder.Services.AddSignalR(options =>
 {
     options.AddFilter<NmxHubFilter>();
@@ -52,7 +60,6 @@ builder.Services.AddSignalR(options =>
 });
 
 builder.Services.AddHostedService<TokenCleanupWorker>();
-builder.Services.AddScoped<TrafficMonitorService>();
 builder.Services.AddScoped<ITrafficNotifier, SignalRTrafficNotifier>();
 builder.Services.AddScoped<ISystemNotifier, SignalRSystemNotifier>();
 builder.Services.AddHostedService<TrafficFlushWorker>();
@@ -134,7 +141,6 @@ app.UseSecurityHeaders();
 app.UseAuth();
 app.UseTrustedProxy();
 app.UseRouting();
-await app.UseTrafficMonitorAsync();
 app.UseNotFoundHandler();
 app.UseRateLimiter();
 app.UseCsrfProtection();

@@ -1,89 +1,41 @@
-using Microsoft.EntityFrameworkCore;
-using Namorix.Adapters.Persistence;
-using Namorix.Core.Models;
+using System.Diagnostics;
+using Namorix.Adapters.Filters;
+using Namorix.Adapters.FlatFile;
+using Namorix.Core.FlatFile;
+using Namorix.Core.IO;
 
 namespace Namorix.Adapters.Services;
 
-public class TrafficMonitorService(AppDbContext appDbContext)
+public class TrafficMonitorService(IFlatFileStore flatFileStore, DataDirectory dataDir)
 {
-    public async Task<TrafficEndpoint> RegisterEndpoint(string method, string path, string? label)
+    public async Task<(List<TrafficLogSerializer> Items, long Total, long ElapsedMs)> GetLogs(
+        int page, int pageSize, DateTime? from, DateTime? to, string? search = null)
     {
-        var endpoint = new TrafficEndpoint
-        {
-            Method = method,
-            Path = path,
-            Label = label
-        };
-
-        appDbContext.TrafficEndpoints.Add(endpoint);
-        await appDbContext.SaveChangesAsync();
-        return endpoint;
+        var sw = Stopwatch.StartNew();
+        
+        var filter = TrafficLogFilterParser.Parse(page, pageSize, null, from, to, search);
+        var predicate = filter.ToPredicate();
+        var skip = (page - 1) * pageSize;
+        
+        var total = await flatFileStore.CountAsync(predicate);
+        var items = new List<TrafficLogSerializer>();
+        await foreach (var item in flatFileStore.QueryAsync(predicate, skip, pageSize))
+            items.Add(item);
+        
+        sw.Stop();
+        return (items, total, sw.ElapsedMilliseconds);
     }
-
-    public async Task RemoveEndpoint(int id)
-    {
-        await appDbContext.TrafficEndpoints.Where(e => e.Id == id).ExecuteDeleteAsync();
-    }
-
-    public async Task<List<TrafficEndpoint>> ListEndpoints()
-    {
-        return await appDbContext.TrafficEndpoints.OrderBy(e => e.Path).ToListAsync();
-    }
-
-    public async Task<(List<TrafficLog> Items, long Total)> GetLogs(
-        int page, int pageSize, int? endpointId, DateTime? from, DateTime? to, string? search = null)
-    {
-        var query = appDbContext.TrafficLogs
-            .Include(l => l.Endpoint)
-            .Include(l => l.TrafficAddress)
-            .AsQueryable();
-        
-        if (endpointId.HasValue)
-            query = query.Where(l => l.EndpointId == endpointId.Value);
-        
-        if (from.HasValue)
-            query = query.Where(l => l.Timestamp >= from.Value);
-        
-        if (to.HasValue)
-            query = query.Where(l => l.Timestamp <= to.Value);
-        
-        if (!string.IsNullOrWhiteSpace(search))
-        {
-            int.TryParse(search, out var statusCode);
     
-            query = query.Where(l =>
-                (l.Endpoint != null && (
-                    l.Endpoint.Path.Contains(search) ||
-                    l.Endpoint.Method.Contains(search)
-                )) ||
-                (l.TrafficAddress != null && 
-                 l.TrafficAddress.Ip.StartsWith(search)
-                ) ||
-                (statusCode != 0 && l.StatusCode == statusCode)
-            );
-        }
-        
-        var total = await query.LongCountAsync();
-        var items = await query
-            .OrderByDescending(l => l.Timestamp)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
-        
-        return (items, total);
-    }
-
     public async Task<TrafficStats> GetStats(DateTime? from, DateTime? to)
     {
-        var query = appDbContext.TrafficLogs.AsQueryable();
-
-        if (from.HasValue)
-            query = query.Where(l => l.Timestamp >= from.Value);
-        if (to.HasValue)
-            query = query.Where(l => l.Timestamp <= to.Value);
-
-        var logs = await query.ToListAsync();
-
+        var logs = new List<TrafficLogSerializer>();
+        await foreach (var item in flatFileStore.QueryAsync<TrafficLogSerializer>(log =>
+        {
+           if (from.HasValue && log.Timestamp < from.Value) return false;
+           return !to.HasValue || log.Timestamp <= to.Value;
+        }))
+        logs.Add(item);
+        
         return new TrafficStats
         {
             TotalRequests = logs.Count,
@@ -95,15 +47,10 @@ public class TrafficMonitorService(AppDbContext appDbContext)
             ByEndpoint = []
         };
     }
-
-    public async Task ClearLogs(DateTime? before)
+    public Task ClearLogs(DateTime? before)
     {
-        var query = appDbContext.TrafficLogs.AsQueryable();
-        if (before.HasValue)
-            query = query.Where(l => l.Timestamp < before.Value);
-        await query.ExecuteDeleteAsync();
+        return dataDir.PurgeAllAsync(before ?? DateTime.UtcNow);
     }
-
 }
 
 public class TrafficStats
@@ -116,9 +63,8 @@ public class TrafficStats
     public List<EndpointStats> ByEndpoint { get; init; } = [];
 }
 
-public class EndpointStats
+public abstract class EndpointStats
 {
-    public int EndpointId { get; init; }
     public string Path { get; init; } = "";
     public string Method { get; init; } = "";
     public long Count { get; init; }

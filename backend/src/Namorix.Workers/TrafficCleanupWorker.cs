@@ -1,25 +1,23 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Namorix.Adapters.Persistence;
+using Namorix.Adapters.FlatFile;
+using Namorix.Core.IO;
 
 namespace Namorix.Workers;
 
-public class TrafficCleanupWorker(IServiceScopeFactory scopeFactory,
+public class TrafficCleanupWorker(DataDirectory dataDir,
     ILogger<TrafficCleanupWorker> logger): BackgroundService
 {
-    // TODO update delete traffic address
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         logger.LogInformation("Traffic cleanup worker starting");
-        await Cleanup(stoppingToken);
+        Cleanup();
 
         using var timer = new PeriodicTimer(TimeSpan.FromDays(1));
         try
         {
             while (await timer.WaitForNextTickAsync(stoppingToken))
-                await Cleanup(stoppingToken);
+                Cleanup();
         }
         catch (OperationCanceledException)
         {
@@ -27,23 +25,13 @@ public class TrafficCleanupWorker(IServiceScopeFactory scopeFactory,
         }
     }
 
-    private async Task Cleanup(CancellationToken stoppingToken)
+    private void Cleanup()
     {
         try
         {
-            using var scope = scopeFactory.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var cutoff = DateTime.UtcNow.AddDays(-30);
-            var count = await db.TrafficLogs
-                .Where(l => l.Timestamp < cutoff)
-                .ExecuteDeleteAsync(stoppingToken);
-            
-            if (count > 0)
-                logger.LogInformation("Cleanup {Count} traffic logs older than 30 days", count);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
+            var deleted = dataDir.PurgeCategory<TrafficLogSerializer>(30);
+            if (deleted > 0)
+                logger.LogInformation("Cleanup {MonthCount} traffic log directories", deleted);
         }
         catch (Exception ex)
         {
