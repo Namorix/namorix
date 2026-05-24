@@ -118,31 +118,65 @@ public static class TrafficLogFilterParser
     private static void ParseDate(string val, ref TrafficLogFilter filter)
     {
         var dateStr = val[0] is '>' or '<' ? val[1..] : val;
-        if (!DateTime.TryParse(dateStr, out var dt)) return;
+        
+        if (dateStr.Length == 4 && int.TryParse(dateStr, out var year))
+        {
+            var from = new DateTime(year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            var to   = new DateTime(year + 1, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddTicks(-1);
+            ApplyRange(val[0], from, to, ref filter);
+            return;
+        }
+        
+        var sep = dateStr.IndexOfAny(['/', '-']);
+        if (sep > 0)
+        {
+            var left  = dateStr[..sep];
+            var right = dateStr[(sep + 1)..];
 
+            if (right.IndexOfAny(['/', '-']) < 0
+                && int.TryParse(left, out var y)
+                && int.TryParse(right, out var m)
+                && m is >= 1 and <= 12)
+            {
+                var from = new DateTime(y, m, 1, 0, 0, 0, DateTimeKind.Utc);
+                var to   = from.AddMonths(1).AddTicks(-1);
+                ApplyRange(val[0], from, to, ref filter);
+                return;
+            }
+        }
+        
+        if (!DateTime.TryParse(dateStr, out var dt)) return;
         if (dt.Kind == DateTimeKind.Unspecified)
             dt = DateTime.SpecifyKind(dt, DateTimeKind.Utc);
 
+        var date = DateTime.SpecifyKind(dt.Date, DateTimeKind.Utc);
         switch (val[0])
         {
             case '>':
-                filter = filter with { From = dt.Date };
+                filter = filter with { From = date };
                 break;
             case '<':
-                filter = filter with { To = dt.Date.AddDays(1).AddTicks(-1) };
+                filter = filter with { To = date.AddDays(1).AddTicks(-1) };
                 break;
             default:
-            {
                 var fromTime = filter.From?.TimeOfDay ?? TimeSpan.Zero;
-                var toTime = filter.To?.TimeOfDay ?? new TimeSpan(23, 59, 59);
-
+                var toTime   = filter.To?.TimeOfDay   ?? new TimeSpan(23, 59, 59);
                 filter = filter with
                 {
-                    From = dt.Date.Add(fromTime),
-                    To = dt.Date.Add(toTime)
+                    From = date.Add(fromTime),
+                    To   = date.Add(toTime)
                 };
                 break;
-            }
         }
+    }
+
+    private static void ApplyRange(char prefix, DateTime from, DateTime to, ref TrafficLogFilter filter)
+    {
+        filter = prefix switch
+        {
+            '>' => filter with { From = from },
+            '<' => filter with { To = to },
+            _   => filter with { From = from, To = to }
+        };
     }
 }
