@@ -1601,6 +1601,10 @@ body {
 .nmx-search-input__suggestion--active {
   background: var(--nmx-color-surface-high);
 }
+.nmx-search-input__suggestion--disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
 :root {
   --nmx-duration-instant: 0ms;
   --nmx-duration-fast: 100ms;

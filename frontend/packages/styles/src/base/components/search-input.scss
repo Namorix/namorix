@@ -132,4 +132,9 @@
   &__suggestion--active {
     background: var(--nmx-color-surface-high);
   }
+
+  &__suggestion--disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
 }
