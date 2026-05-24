@@ -14,6 +14,7 @@ interface NmxSelectProps extends WithBaseProps {
   onChange?: (value: string) => void
   placeholder?: string
   disabled?: boolean
+  selectClass?: string
 }
 
 export const NmxSelect: React.FC<NmxSelectProps> = ({
@@ -23,6 +24,7 @@ export const NmxSelect: React.FC<NmxSelectProps> = ({
   onChange,
   placeholder,
   disabled,
+  selectClass,
   className,
   shouldRender,
   ...rest
@@ -36,10 +38,9 @@ export const NmxSelect: React.FC<NmxSelectProps> = ({
   }
 
   return (
-    <div className="nmx-select-wrap">
+    <div {...rest} className={cx("nmx-select-wrap", className)}>
       <select
-        {...rest}
-        className={cx("nmx-select-control", className)}
+        className={cx("nmx-select-control", selectClass)}
         value={value}
         defaultValue={defaultValue}
         onChange={handleChange}

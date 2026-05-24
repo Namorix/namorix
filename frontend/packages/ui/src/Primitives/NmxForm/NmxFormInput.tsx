@@ -14,6 +14,7 @@ interface NmxFormInputProps extends WithBaseProps {
   invalid?: boolean
   autoComplete?: string
   onValueChange?: (value: string) => void
+  onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>
 }
 
 export const NmxFormInput: React.FC<NmxFormInputProps> = ({
@@ -29,6 +30,7 @@ export const NmxFormInput: React.FC<NmxFormInputProps> = ({
   autoComplete = "off",
   shouldRender = true,
   onValueChange,
+  onKeyDown,
   className,
   ...rest
 }) => {
@@ -49,6 +51,7 @@ export const NmxFormInput: React.FC<NmxFormInputProps> = ({
       required={required}
       value={value}
       autoComplete={autoComplete}
+      onKeyDown={onKeyDown}
       className={cx(
         "nmx-form-input",
         { "nmx-form-input--error": invalid },

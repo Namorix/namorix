@@ -19,6 +19,7 @@ export const NmxIconFontSymbol = {
   USER: "ic-user",
   LINK: "ic-link",
   EXIT: "ic-exit",
+  ENTER: "ic-enter",
 } as const
 
 export type NmxIconFontSymbol =
