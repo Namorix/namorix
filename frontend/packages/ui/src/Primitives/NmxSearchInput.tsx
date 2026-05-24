@@ -112,7 +112,6 @@ export const NmxSearchInput = ({
   const handleChange = (v: string) => {
     onChange?.(v)
     if (value === undefined) setInternalValue(v)
-    setShowDropdown(true)
   }
 
   return (
@@ -137,7 +136,10 @@ export const NmxSearchInput = ({
         <NmxFormInput
           ref={ref}
           value={resolvedValue}
-          onValueChange={handleChange}
+          onValueChange={(value) => {
+            setShowDropdown(true)
+            handleChange(value)
+          }}
           placeholder={placeholder}
           disabled={disabled}
           invalid={invalid}
@@ -158,7 +160,10 @@ export const NmxSearchInput = ({
           <button
             type="button"
             className="nmx-search-input__clear"
-            onClick={() => handleChange("")}
+            onClick={() => {
+              setShowDropdown(false)
+              handleChange("")
+            }}
           >
             <NmxIconFont symbol={NmxIconFontSymbol.CLOSE} />
           </button>
@@ -182,9 +187,6 @@ export const NmxSearchInput = ({
                       if (disabled) return
                       e.preventDefault()
                       insertSuggestion(s.key)
-                    }}
-                    onMouseEnter={() => {
-                      if (!disabled) setActiveIndex(i)
                     }}
                   >
                     <span className="nmx-search-input__suggestion-key">
