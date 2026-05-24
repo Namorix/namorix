@@ -1,5 +1,5 @@
 import { NmxBadge, NmxDataTable, NmxPagination } from "@namorix/ui"
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useEffect, useRef, useState } from "react"
 import { trafficController, type TrafficLog } from "./traffic.controller"
 import { useTranslation } from "react-i18next"
 import type { NmxDataTableColumn, NmxDataTableFallback } from "@namorix/ui"
@@ -28,6 +28,7 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
   const [elapsedMs, setElapsedMs] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<unknown>()
+  const prevFilterRef = useRef(filterSearch)
 
   const fetchLogs = useCallback(
     async (pg: number, filter: string | undefined, size: number) => {
@@ -47,9 +48,14 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
   )
 
   useEffect(() => {
-    console.log("Effect logs")
+    const isNewFilter = prevFilterRef.current !== filterSearch
+    if (isNewFilter) prevFilterRef.current = filterSearch
+    const pg = isNewFilter ? 1 : page
+
+    console.log("Effect log")
+
     const timeout = setTimeout(() => {
-      fetchLogs(page, filterSearch, pageSize).catch((err) => console.error(err))
+      fetchLogs(pg, filterSearch, pageSize).catch((err) => console.error(err))
     }, 0)
     return () => clearTimeout(timeout)
   }, [filterSearch, page, pageSize, fetchLogs])
@@ -75,10 +81,10 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
       header: t("addon.networkTraffic.logs.method"),
       renderCell: (row) => (
         <NmxBadge
-          semantic={methodToSemantic(row.endpoint?.method)}
+          semantic={methodToSemantic(row?.method)}
           className="nmx-addon-network-traffic__badge"
         >
-          {row?.endpoint?.method}
+          {row?.method}
         </NmxBadge>
       ),
       grow: 1,
@@ -88,7 +94,7 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
     },
     {
       header: t("addon.networkTraffic.logs.path"),
-      renderCell: (row) => row.endpoint?.path ?? "-",
+      renderCell: (row) => row?.path ?? "-",
       grow: 3,
     },
     {
@@ -111,7 +117,7 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
     },
     {
       header: t("addon.networkTraffic.logs.ip"),
-      renderCell: (row) => row.trafficAddress?.ip ?? "-",
+      renderCell: (row) => row?.ip ?? "-",
       grow: 2,
     },
     {

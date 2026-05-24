@@ -6,32 +6,16 @@ import {
   nmxHttp,
 } from "@namorix/core"
 
-export interface TrafficEndpoint {
+export interface TrafficLog {
   id: number
   method: HttpMethods
   path: string
-  label?: string
-  addonId?: string
-  isEnabled: boolean
-  createdAt: string
-}
-
-export interface TrafficAddress {
-  id: number
-  ip: string
-}
-
-export interface TrafficLog {
-  id: number
-  endpointId: number
   statusCode: number
   durationMs: number
   responseSizeBytes: number
-  trafficAddressId?: number
+  ip?: string
   userId?: number
   timestamp: string
-  endpoint?: TrafficEndpoint
-  trafficAddress?: TrafficAddress
 }
 
 export interface TrafficLogResponse {

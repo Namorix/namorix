@@ -60,6 +60,10 @@ export const NetworkTraffic: React.FC = () => {
           <NmxToolbarList items={TABS} t={t} />
           <NmxToolbarActions tabKeys={["logs"]}>
             <NmxSearchInput
+              onChange={(filter) => {
+                if (filter.length <= 0 && filter !== filterLogs)
+                  setFilterLogs(filter)
+              }}
               onSubmit={setFilterLogs}
               placeholder={t("addon.networkTraffic.searchPlaceholder")}
               suggestions={searchSuggestions}
