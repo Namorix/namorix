@@ -31,6 +31,12 @@
       "untrustedProxy": "Proxy is not trusted. This proxy must be added to the trusted proxies list in Settings"
     }
   },
+  "ui": {
+    "pagination": {
+      "showing": "Showing {{from}}-{{to}} of {{total}}",
+      "elapsed": " · {{ms}}ms"
+    }
+  },
   "addon": {
     "settings": {
       "appearance": {

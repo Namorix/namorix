@@ -21,4 +21,10 @@ export const HttpMethods = {
   OPTIONS: "OPTIONS",
 } as const
 
+export const PaginationDefaults = {
+  defaultPageSize: 30,
+  pageSizeOptions: [10, 20, 30, 50, 100],
+  storageKey: "nmx_page_size",
+}
+
 export type HttpMethods = (typeof HttpMethods)[keyof typeof HttpMethods]
