@@ -124,11 +124,11 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.24.0 | M3 (NmxSearchInput, NetworkTraffic search/debounce/onTabChange) |
-| @namorix/core | 0.18.1 | M3 (appearance settings i18n keys) |
-| @namorix/styles | 0.18.0 | M3 (search-input SCSS, network-traffic container/search styles, tag-input rewrite) |
-| @namorix/ui | 0.15.0 | M3 (NmxSearchInput, NmxTabContext generic + onTabChange, NmxFormInput ref) |
-| backend | 0.26.0 | M3 (PostgreSQL, search API, Include TrafficAddress) |
+| frontend | 0.25.0 | M3 (NetworkTraffic flat model, NmxPagination pageSize, NmxSearchInput suggestions) |
+| @namorix/core | 0.19.0 | M3 (hooks module, PaginationDefaults, i18n keys) |
+| @namorix/styles | 0.19.0 | M3 (pagination SCSS, search-input dropdown, elevation tokens, icomoon glyphs) |
+| @namorix/ui | 0.16.0 | M3 (NmxPagination pageSize/elapsedMs, NmxSearchInput suggestions, NmxFormInput ref) |
+| backend | 0.27.0 | M3 (flat file storage for traffic, DataDirectory, IFlatFileStore, filter/predicate system) |
 
 ## Version Rules
 
@@ -148,11 +148,15 @@
 
 ## Version History
 
-### 2026-05-23 — NmxSearchInput, PostgreSQL migration, search filter API
+### 2026-05-24 — Flat file storage for NetworkTraffic, NmxPagination pageSize, NmxSearchInput suggestions
 
 | Package | Version | Changes |
 |---------|---------|---------|
-| @namorix/ui | 0.15.0 | NEW: `NmxSearchInput` — search input primitive with icon + clear button, uses NmxFormInput, `onSubmit` prop. MODIFIED: `NmxTabContext` — `useNmxTabContext<T>()` generic. MODIFIED: `NmxTabProvider` + `NmxToolbar` — `onTabChange` callback. MODIFIED: `NmxTagInput` — rewrite with scroller-wrap + dropdown isolation, full keyboard navigation fix (Arrow Up/Down/Enter/Escape). MODIFIED: `NmxFormInput` — `ref` prop (React 19 pattern). |
+| backend | 0.27.0 | MAJOR REWRITE: EF Core/PostgreSQL → flat file storage for NetworkTraffic. NEW: `IFlatFileSerializer<T>`, `IFlatFileStore`, `FlatFileStore` — generic flat file append/query/count infrastructure. NEW: `DataDirectory` (`Core.IO`) — folder manager with `TrafficPath`/`LogsPath`, `PurgeCategory<T>()`, `PurgeAllAsync()`, stats. NEW: `TrafficLogSerializer` (`Adapters.FlatFile`) — flat model, no FK entities. NEW: `TrafficLogFilter`+`TrafficLogFilterParser`+`TrafficLogFilterPredicate` (`Adapters.Filters`) — search/filter/predicate system for in-memory filtering. MOVED: `TrafficBuffer` to `Adapters.Infrastructure`. REWRITTEN: `TrafficMonitorService` — uses `IFlatFileStore` + `DataDirectory`, manual `await foreach`. REWRITTEN: `TrafficFlushWorker` — `Channel<TrafficLogSerializer>` → `IFlatFileStore.AppendAsync()`. REWRITTEN: `TrafficCleanupWorker` — `DataDirectory.PurgeCategory<TrafficLogSerializer>(30)`. SIMPLIFIED: `TrafficMonitorMiddleware` — removed endpoint/address registry, flat log record. SIMPLIFIED: `TrafficMonitorController` — removed endpoint management. MODIFIED: `Program.cs` — DI for flat file stack (`AddSingleton<FlatFileOptions>`, `AddSingleton<IFlatFileStore, FlatFileStore>()`, `AddSingleton<DataDirectory>`), `TrafficMonitorService` → singleton. DELETED: `TrafficLog`, `TrafficEndpoint`, `TrafficAddress` models, EF migrations, `TrafficLogFilterExtensions` (EF IQueryable). |
+| @namorix/core | 0.19.0 | NEW: `hooks/` module — `usePageSize` hook (page size state with localStorage persistence, default/sizeOptions/showAll). NEW: `constants.ts` — `PaginationDefaults` (pageSize, pageSizes, showAll). MODIFIED: `i18n/locales/en.json` — pagination/table i18n keys (6 lines). MODIFIED: `index.ts` — barrel export for hooks. |
+| @namorix/ui | 0.16.0 | MODIFIED: `NmxPagination` — new `elapsedMs`, `pageSize`, `pageSizeOptions`, `onPageSizeChange` props; `NmxSelect`-based page size picker, elapsed time display. MODIFIED: `NmxSearchInput` — suggestions dropdown with `suggestions`, `onSuggestionSelect`, `showSuggestions`, keyboard navigation (Arrow Down/Up/Enter/Escape). MODIFIED: `NmxFormInput` — `ref` prop. MODIFIED: `NmxIconFont.types.ts` — new SEARCH icon. MODIFIED: `NmxSelect` — `placeholder` prop. |
+| @namorix/styles | 0.19.0 | NEW: `pagination.scss` — page size select, elapsed time, pagination info styles (33 lines). MODIFIED: `search-input.scss` — suggestions dropdown with active/hover states, repositioned icon + clear, keyboard highlight. MODIFIED: `elevation.scss` — new `--nmx-search-shadow` + `--nmx-pagination-shadow` tokens. MODIFIED: `icomoon/fonts.scss`, `variables.scss` — new SEARCH + PAGE_SIZE glyphs. MODIFIED: `addon.scss`, `select.scss`, `toolbar.scss` — minor tweaks. MODIFIED: `index.scss` — forward pagination. REBUILT: default + dark theme CSS. |
+| frontend | 0.25.0 | MODIFIED: `NetworkTrafficLogs` — updated to flat model (direct method/path/ip fields, no nested endpoint/address). MODIFIED: `traffic.controller.ts` — updated `TrafficLog` type to match flat model. MODIFIED: `NetworkTraffic.tsx` — removed endpoints-related wiring. DELETED: `NetworkTrafficEndpoints.tsx` — no longer relevant (flat file storage has no endpoint registry). DELETED: `LogViewer.scss` — unused file. MODIFIED: `LogViewer.tsx` — removed LogViewer.scss import. MODIFIED: `i18n/locales/en.json` — new NetworkTraffic/log-related keys (13 lines). |
 | @namorix/styles | 0.18.0 | NEW: `search-input.scss` — `.nmx-search-input` flex layout with icon + clear button. NEW: `network-traffic.scss` — `container-type` for toolbar, toolbar-actions flex override, search container query (260px → 100% at 580px). MODIFIED: `tag-input.scss` — scroller-wrap, dropdown sibling. MODIFIED: `form.scss` — autofill styling. MODIFIED: `launcher.scss` — removed redundant icon/clear classes. Theme CSS rebuilt. |
 | frontend | 0.24.0 | NEW: NetworkTraffic search — NmxSearchInput in toolbar-actions, debounce 500ms, filter prop, `onTabChange` clears search on tab switch. NEW: `NmxSearchInput` in Launcher — replaces manual icon + input + clear pattern. MODIFIED: `NetworkTrafficLogs` — `filter` prop, API search param. MODIFIED: `traffic.controller` — `search` param in `listLogs()`. MODIFIED: `LauncherView` — removed search icon + clear button DOM (handled by NmxSearchInput). MODIFIED: `i18n/en.json` — searchPlaceholder key. |
 | backend | 0.26.0 | CHANGED: SQLite → PostgreSQL (`Npgsql.EntityFrameworkCore.PostgreSQL`). NEW: `search` param in `GET /api/traffic/logs` — client-side filter (path/method/IP). MODIFIED: `TrafficMonitorService.GetLogs()` — added `Include(l => l.TrafficAddress)`, search filter. MODIFIED: `TrafficMonitorController.GetLogs()` — `search` query param. MODIFIED: `appsettings.json` — PostgreSQL connection string. MODIFIED: `Program.cs` — `UseNpgsql`. NEW: PostgreSQL migrations regen. |

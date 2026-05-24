@@ -25,6 +25,14 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 ## Recent Changes
 
+### 2026-05-24 — Flat file storage for NetworkTraffic, NmxPagination pageSize, NmxSearchInput suggestions
+
+- **backend (0.26.0 → 0.27.0)**: COMPLETE REWRITE of traffic storage from EF Core/PostgreSQL to flat file system. New infrastructure: `IFlatFileSerializer<T>`, `IFlatFileStore`/`FlatFileStore`, `DataDirectory` (Core.IO). New flat model `TrafficLogSerializer` with no FK entities. New filter/predicate system (`TrafficLogFilter`+`TrafficLogFilterParser`+`TrafficLogFilterPredicate`). `TrafficMonitorService`, `TrafficFlushWorker`, `TrafficCleanupWorker` rewritten to use flat file stack. `TrafficMonitorMiddleware` simplified — no endpoint/address registry. `TrafficMonitorController` cleaned up. Deleted EF Core traffic models and migrations.
+- **@namorix/core (0.18.1 → 0.19.0)**: NEW `hooks/` module with `usePageSize` hook (localStorage persistence). NEW `PaginationDefaults`. NEW i18n keys for pagination/table.
+- **@namorix/ui (0.15.0 → 0.16.0)**: MODIFIED `NmxPagination` — `elapsedMs`, `pageSize`, `pageSizeOptions`, `onPageSizeChange`. MODIFIED `NmxSearchInput` — suggestions dropdown with keyboard nav. MODIFIED `NmxFormInput` — `ref` prop. MODIFIED `NmxSelect` — `placeholder` prop.
+- **@namorix/styles (0.18.0 → 0.19.0)**: NEW `pagination.scss`. MODIFIED `search-input.scss` — suggestions dropdown. NEW elevation tokens (`--nmx-search-shadow`, `--nmx-pagination-shadow`). NEW icomoon glyphs. Theme CSS rebuilt.
+- **frontend (0.24.0 → 0.25.0)**: NetworkTraffic — flat model refactoring, removed endpoints tab. Deleted `NetworkTrafficEndpoints.tsx`, `LogViewer.scss`. Updated i18n keys.
+
 ### 2026-05-23 — NmxSearchInput, PostgreSQL migration, search filter API
 
 - **@namorix/ui (0.14.0 → 0.15.0)**: NEW `NmxSearchInput` — search input with icon + clear, uses NmxFormInput, `onSubmit` prop. MODIFIED `NmxTabContext` — `useNmxTabContext<T>()` generic. MODIFIED `NmxTabProvider` + `NmxToolbar` — `onTabChange` callback. MODIFIED `NmxTagInput` — full rewrite (scroller-wrap, keyboard nav, dropdown isolation). MODIFIED `NmxFormInput` — `ref` prop.
