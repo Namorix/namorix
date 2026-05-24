@@ -15,7 +15,7 @@ Browser-based desktop shell, self-hosted.
 |-------|------------|
 | Frontend | Vite + React |
 | Backend | ASP.NET Core 8 |
-| Database | PostgreSQL + EF Core |
+| Database | SQLite + EF Core |
 | Auth | JWT (access + refresh) with HttpOnly cookies |
 | Terminal | xterm.js |
 | Realtime | SignalR |
@@ -43,86 +43,95 @@ cd frontend && pnpm dev         # Frontend (Vite port 5173)
 ```
 namorix/
 ├── frontend/
-│   ├── package.json          # pnpm workspace root
+│   ├── package.json          # pnpm workspace root (port 5173)
 │   ├── pnpm-workspace.yaml   # workspace config
 │   ├── tsconfig.base.json    # shared TypeScript config
+│   ├── public/themes/        # Compiled theme CSS (default, dark)
 │   ├── packages/
 │   │   ├── core/             # @namorix/core — browser-only types, utils (publishable)
 │   │   │   └── src/
-│   │   │       ├── auth/     # auth.service.ts (AuthChecker for guards)
-│   │   │       ├── http/     # ApiError, http client with auto-refresh
-│   │   │       ├── router/   # GuardedRoute, createAuthGuard, createLoginGuard, createRegisterGuard
+│   │   │       ├── addon/    # AddonEntry, NmxAddonManifest, AddonContext, defineAddon()
+│   │   │       ├── auth/     # auth.service.ts (AuthChecker), store auto-populate
+│   │   │       ├── cache/    # useTabCache, Show component
+│   │   │       ├── env/      # Dev/prod config via package.json exports
+│   │   │       ├── fingerprint/ # FingerprintComponents, generateFingerprint()
+│   │   │       ├── hooks/    # usePageSize
+│   │   │       ├── http/     # ApiError, http client with auto-refresh + CSRF
 │   │   │       ├── i18n/     # NmxI18n, ValidationRunner, validation-messages
+│   │   │       ├── router/   # GuardedRoute, createAuthGuard/LoginGuard/RegisterGuard
+│   │   │       ├── signalr/  # SignalR service, hooks (useSignalR, useSignalREvent, useSignalRGroup), constants
+│   │   │       ├── store/    # nmxStore observable singleton, accessors
 │   │   │       ├── theme/    # ThemeManifest types, loader (hot swap CSS), registry
-│   │   │       ├── providers/# ThemeProvider, useTheme hook
-│   │   │       ├── config.ts # configureCore(), getApiBaseUrl()
+│   │   │       ├── types/    # ApiResponse, ValidationErrorMeta, error codes
+│   │   │       ├── utils/    # cx, dedupe, isMobile, sanitizePath
 │   │   │       ├── apiRoutes.ts
-│   │   │       ├── constants.ts
-│   │   │       └── utils/    # cx (className utility)
+│   │   │       ├── config.ts
+│   │   │       └── constants.ts
 │   │   ├── styles/           # @namorix/styles — SCSS tokens, reset, fonts
-│   │   └── ui/               # @namorix/ui — React primitive components
+│   │   │   └── src/
+│   │   │       ├── base/     # Components, layouts, icomoon icons, abstract (vars/mixins)
+│   │   │       └── themes/   # Default + dark theme SCSS (compiled to public/themes/)
+│   │   └── ui/               # @namorix/ui — React components
 │   │       └── src/
-│   │           └── Primitives/
-│   │               ├── NmxButton.tsx
-│   │               ├── NmxForm/
-│   │               ├── NmxInlineAlert.tsx
-│   │               ├── NmxToggle.tsx
-│   │               ├── NmxSelect.tsx
-│   │               ├── NmxSlider.tsx
-│   │               └── NmxSegmentedGroup.tsx
+│   │           ├── Primitives/    # Self-contained: NmxButton, NmxForm, NmxIcon, NmxInlineAlert,
+│   │           │                   # NmxToggle, NmxSelect, NmxSlider, NmxSegmentedGroup, NmxBadge,
+│   │           │                   # NmxChip, NmxLoading, NmxPagination, NmxPulseDot, NmxSearchInput,
+│   │           │                   # NmxStatCard, NmxTagInput
+│   │           ├── Components/    # Composite: NmxCard, NmxDataTable, NmxMetaList, NmxRail,
+│   │           │                   # NmxSettings, NmxToolbar, NmxAddon
+│   │           ├── hooks/         # useHorizontalDrag
+│   │           ├── context/       # NmxHostContext, useIsWindowed
+│   │           ├── Layouts/       # (future) NmxGrid
+│   │           ├── types/         # Base, primitives shared types
+│   │           └── utils/         # cx helpers (cx, cxSize, cxSemantic, cxVariant)
 │   └── src/
-│       ├── controllers/
-│       │   ├── auth.controller.ts
-│       │   └── health.controller.ts
+│       ├── addons/           # Built-in addon registry + implementations
+│       │   ├── registry.ts   # registerAddon, resolveAddon, listAddons
+│       │   ├── LogViewer/
+│       │   ├── NetworkTraffic/  # Overview/Logs with SignalR + flat file backend
+│       │   ├── Settings/       # Appearance, System, Account tabs
+│       │   └── SystemMonitor/
 │       ├── components/
-│       │   ├── Auth/            # AuthPage (hero + form panel layout)
-│       │   ├── Taskbar/         # Clock, start button, window buttons
-│       │   ├── DesktopArea/     # App icon shortcuts
-│       │   ├── WindowFrame/     # Draggable, resizable window chrome
-│       │   ├── WindowManager/   # Renders all open windows
-│       │   └── Launcher/        # Start menu with system app list
-│       ├── store/
-│       │   ├── index.ts             # configureStore, RootState, AppDispatch
-│       │   ├── hooks.ts             # useAppDispatch, useAppSelector
-│       │   ├── types.ts             # WindowId, AnimState, WindowRect, WindowData
-│       │   ├── slices/
-│       │   │   ├── windowsSlice.ts  # Window lifecycle + geometry + animation
-│       │   │   ├── launcherSlice.ts # Launcher open/close
-│       │   │   └── taskbarSlice.ts  # Taskbar button rects
-│       │   └── selectors/
-│       │       ├── windowSelectors.ts
-│       │       ├── launcherSelectors.ts
-│       │       └── taskbarSelectors.ts
-│       ├── config/
-│       │   └── windowDefaults.ts    # CSS token cache (read from --nmx-*)
-│       ├── types/
-│       │   ├── windowing.ts     # WindowId, WindowState interfaces
-│       │   └── index.ts
-│       ├── pages/
-│       │   ├── Login.tsx
-│       │   ├── Register.tsx
-│       │   └── Desktop.tsx      # Full shell layout
-│       ├── styles/
-│       └── i18n/
+│       │   ├── Auth/         # AuthPage styled wrapper
+│       │   ├── AuthView.tsx  # Hero + form panel layout
+│       │   ├── DesktopArea/  # Desktop icon shortcuts, grid layout
+│       │   ├── Launcher/     # Start menu with search + system app list
+│       │   ├── Taskbar/      # Clock, start button, window buttons, signal status
+│       │   ├── WindowFrame/  # Draggable, resizable window chrome (6 hooks)
+│       │   └── WindowManager.tsx  # Render all open windows by zOrder
+│       ├── config/windowDefaults.ts # CSS token cache (read from --nmx-*)
+│       ├── constants/        # App-level constants
+│       ├── controllers/      # auth.controller, health.controller
+│       ├── hooks/            # useTaskbarClock
+│       ├── i18n/locales/     # en.json, vi.json
+│       ├── pages/            # Login, Register, Desktop, Blocked
+│       ├── store/            # Redux Toolkit
+│       │   ├── index.ts      # configureStore
+│       │   ├── hooks.ts      # useAppDispatch, useAppSelector (shallowEqual)
+│       │   ├── types.ts
+│       │   ├── slices/       # windowsSlice, launcherSlice, taskbarSlice
+│       │   └── selectors/    # Memoized createSelector
+│       └── types/            # WindowId, WindowState, windowing types
 └── backend/                   # ASP.NET Core 8 API (port 3000)
     ├── Makefile               # Build/EF commands
     ├── Namorix.sln            # Solution file
     └── src/
-        ├── Namorix.Core/      # Config, Constants, Models, Exceptions, Responses, Validation
-        ├── Namorix.Adapters/  # Persistence (AppDbContext, migrations), Services (Auth, Permission, Settings, Theme, User)
-        ├── Namorix.Server/    # Controllers, Middleware, Extensions, Helpers, Program.cs
-        └── Namorix.Workers/   # TokenCleanupWorker (background service)
+        ├── Namorix.Core/      # Config, Constants (SignalR), Models, Exceptions, Responses, Validation
+        ├── Namorix.Adapters/  # Persistence (AppDbContext, SQLite migrations), FlatFile traffic store,
+        │                       # Services (Auth, Permission, Settings, Theme, User, TrafficMonitor)
+        ├── Namorix.Server/    # Controllers, Middleware, Hubs (NmxHub), Extensions, Program.cs
+        └── Namorix.Workers/   # TokenCleanupWorker, TrafficFlushWorker, TrafficCleanupWorker, TrafficStatsWorker
 ```
 
 ## Packages
 
 | Package | Purpose | Importable By |
 |---------|---------|---------------|
-| `@namorix/core` | Types, auth guards, http client, `ApiError`, i18n, validation, constants, addon, theme | frontend, @namorix/ui, external addons |
-| `@namorix/styles` | SCSS tokens, reset, fonts | frontend, @namorix/ui, external addons |
-| `@namorix/ui` | NmxButton, NmxForm, NmxInlineAlert, NmxToggle, NmxSelect, NmxSlider, NmxSegmentedGroup, etc. | frontend |
-| `backend` | ASP.NET Core 8 API server | - |
-| `frontend` | Vite React shell | - |
+| `@namorix/core` | Types, auth guards, http client with auto-refresh + CSRF, `ApiError`, i18n (NmxI18n, ValidationRunner), SignalR hooks, store (nmxStore), theme, addon contract, fingerprint, cache (useTabCache, Show), hooks (usePageSize) | frontend, @namorix/ui, external addons |
+| `@namorix/styles` | SCSS tokens, reset, fonts, icomoon icons, component/layout SCSS (shared by all themes) | frontend, @namorix/ui, external addons |
+| `@namorix/ui` | Primitives (NmxButton, NmxForm, NmxInlineAlert, NmxToggle, NmxSelect, NmxSlider, NmxSegmentedGroup, NmxBadge, NmxChip, NmxLoading, NmxPagination, NmxPulseDot, NmxSearchInput, NmxStatCard, NmxTagInput) + Composite (NmxCard, NmxDataTable, NmxMetaList, NmxRail, NmxSettings, NmxToolbar, NmxAddon) + NmxTabContext + NmxHostContext | frontend |
+| `backend` | ASP.NET Core 8 API server (SignalR hubs, flat file traffic storage, SQLite) | - |
+| `frontend` | Vite React shell (Redux Toolkit, SignalR client, addon system) | - |
 
 ## Auth Architecture
 
@@ -202,7 +211,7 @@ Addon có 3 mode tích hợp:
 | `JWT__AccessTokenExpirationMinutes` | Jwt.AccessTokenExpirationMinutes | 15 | Access token TTL |
 | `JWT__RefreshTokenExpirationDays` | Jwt.RefreshTokenExpirationDays | 7 | Refresh token TTL |
 | `JWT__RefreshTokenExpirationDaysRemember` | Jwt.RefreshTokenExpirationDaysRemember | 90 | Remember-me TTL |
-| `ConnectionStrings__DefaultConnection` | ConnectionStrings.DefaultConnection | `Host=localhost;Port=5432;Database=namorix;Username=namorix;Password=12345` | PostgreSQL connection string |
+| `ConnectionStrings__DefaultConnection` | ConnectionStrings.DefaultConnection | `Data Source=namorix.db` | SQLite connection string |
 | `SECURE_COOKIE` | AppConfig.SecureCookie | false | Set true for HTTPS |
 | `CSRF_DISABLE` | AppConfig.CsrfEnabled | false | Set true to disable CSRF |
 
@@ -210,6 +219,6 @@ Addon có 3 mode tích hợp:
 
 1. **M1** — Static shell UI + mock auth page ✅
 2. **M2** — Full auth backend (login/register/logout/refresh/session, decorators, i18n, validation) ✅
-3. **M3** — System Addons (Built-in): Redux state management, addon contract + registry, Log Viewer, NetworkTraffic, SystemMonitor, theme system (hot swap CSS, localStorage+DB), File Manager, Terminal, Settings 🔜
+3. **M3** — System Addons (Built-in): addon contract + registry, Log Viewer, NetworkTraffic (SignalR + flat file storage), SystemMonitor, Settings (Appearance/System/Account), theme system (hot swap CSS, localStorage+DB), File Manager 🔜, Terminal 🔜
 4. **M4** — External addon system (Docker lifecycle, addon manager)
 5. **M5** — @namorix/core publish npm + addon integration guide

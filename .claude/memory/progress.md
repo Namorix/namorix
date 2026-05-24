@@ -124,11 +124,11 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.25.0 | M3 (NetworkTraffic flat model, NmxPagination pageSize, NmxSearchInput suggestions) |
-| @namorix/core | 0.19.0 | M3 (hooks module, PaginationDefaults, i18n keys) |
-| @namorix/styles | 0.19.0 | M3 (pagination SCSS, search-input dropdown, elevation tokens, icomoon glyphs) |
-| @namorix/ui | 0.16.0 | M3 (NmxPagination pageSize/elapsedMs, NmxSearchInput suggestions, NmxFormInput ref) |
-| backend | 0.27.0 | M3 (flat file storage for traffic, DataDirectory, IFlatFileStore, filter/predicate system) |
+| frontend | 0.25.1 | M3 (page reset on filter change, stats-init handling, traffic controller updates) |
+| @namorix/core | 0.20.0 | M3 (BucketData type, TrafficStatsInit event, i18n keys) |
+| @namorix/styles | 0.19.1 | M3 (search-input dropdown SCSS tweaks, theme CSS rebuilt) |
+| @namorix/ui | 0.16.1 | M3 (NmxSearchInput dropdown fixes: Enter submit, suggestion click, disabled skips, duplicate keys) |
+| backend | 0.28.0 | M3 (ParseTime fixes, page clamp, TrafficStatsInit, cumulative stats on subscribe, CsvHelper, TrafficStatsWorker) |
 
 ## Version Rules
 
@@ -148,7 +148,15 @@
 
 ## Version History
 
-### 2026-05-24 — Flat file storage for NetworkTraffic, NmxPagination pageSize, NmxSearchInput suggestions
+### 2026-05-24 — NmxSearchInput dropdown fixes, ParseTime timezone/window fix, page reset, page clamp
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/ui | 0.16.1 | FIX: `NmxSearchInput` — Enter submits correctly, suggestion click inserts text, arrow keys skip disabled items, `usedKeys` prevents duplicate keys, dropdown hides on Enter/re-shows on typing. NEW: `insertSuggestion` useCallback for consistent suggestion insertion. SEPARATED: `showDropdown` state from `focused`. |
+| @namorix/styles | 0.19.1 | FIX: `search-input.scss` — minor dropdown styling tweaks. Theme CSS rebuilt. |
+| @namorix/core | 0.20.0 | NEW: `constants.ts` — `BucketData` type (hour/requests/errors/avgDurationMs/avgSizeBytes). NEW: `TrafficStatsInit` event constant for cumulative stats on subscribe. |
+| frontend | 0.25.1 | FIX: `NetworkTrafficLogs` — page reset on filter change (`prevFilterRef` + `isNewFilter`). FIX: `useTrafficStatsPolling` — handles `traffic:stats-init` for cumulative stat cards. MODIFIED: `traffic.controller.ts` — updated types for flat model. MODIFIED: `NetworkTraffic` — minor wiring. |
+| backend | 0.28.0 | FIX: `TrafficLogFilterParser.ParseTime` — bare hour parsing (`:00` suffix), timezone (UTC direct, no local→UTC), widened window (hour/minute granularity). FIX: `TrafficMonitorService.GetLogs` — page clamp (`page = Math.Min(page, totalPages)`). NEW: `TrafficStatsWorker` — background stats aggregation. NEW: `NmxHub.SubscribeTraffic` — sends `traffic:stats-init` with cumulative `BucketData[]`. NEW: `SignalRTrafficNotifier` — sends cumulative stats on flush. NEW: CsvHelper dependency. MODIFIED: `FlatFileStore` — query/predicate refinements. |
 
 | Package | Version | Changes |
 |---------|---------|---------|

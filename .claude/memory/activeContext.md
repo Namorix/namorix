@@ -25,7 +25,13 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 ## Recent Changes
 
-### 2026-05-24 — Flat file storage for NetworkTraffic, NmxPagination pageSize, NmxSearchInput suggestions
+### 2026-05-24 — NmxSearchInput dropdown fixes, ParseTime bug fix, page reset, page clamp
+
+- **@namorix/ui (0.16.0 → 0.16.1)**: FIX `NmxSearchInput` — Enter submit, suggestion click insert text, arrow keys skip disabled items, `usedKeys` prevents duplicate suggestion keys, `showDropdown` state separated from `focused`, dropdown hide on Enter/re-show on typing. NEW `insertSuggestion` useCallback.
+- **@namorix/styles (0.19.0 → 0.19.1)**: FIX `search-input.scss` dropdown tweaks. Theme CSS rebuilt.
+- **@namorix/core (0.19.0 → 0.20.0)**: NEW `BucketData` type + `TrafficStatsInit` event constant for cumulative stats on SignalR subscribe.
+- **frontend (0.25.0 → 0.25.1)**: FIX `NetworkTrafficLogs` — page reset on filter change using `prevFilterRef`. FIX `useTrafficStatsPolling` — handles `traffic:stats-init` for stat cards.
+- **backend (0.27.0 → 0.28.0)**: FIX `ParseTime` — bare hour parsing, UTC timezone, widened window. FIX `GetLogs` — page clamp. NEW `TrafficStatsWorker`. NEW `traffic:stats-init` on subscribe with cumulative `BucketData[]`. NEW CsvHelper dependency.
 
 - **backend (0.26.0 → 0.27.0)**: COMPLETE REWRITE of traffic storage from EF Core/PostgreSQL to flat file system. New infrastructure: `IFlatFileSerializer<T>`, `IFlatFileStore`/`FlatFileStore`, `DataDirectory` (Core.IO). New flat model `TrafficLogSerializer` with no FK entities. New filter/predicate system (`TrafficLogFilter`+`TrafficLogFilterParser`+`TrafficLogFilterPredicate`). `TrafficMonitorService`, `TrafficFlushWorker`, `TrafficCleanupWorker` rewritten to use flat file stack. `TrafficMonitorMiddleware` simplified — no endpoint/address registry. `TrafficMonitorController` cleaned up. Deleted EF Core traffic models and migrations.
 - **@namorix/core (0.18.1 → 0.19.0)**: NEW `hooks/` module with `usePageSize` hook (localStorage persistence). NEW `PaginationDefaults`. NEW i18n keys for pagination/table.

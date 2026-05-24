@@ -54,7 +54,7 @@ At the start of a session, ask the user if they'd like to initialize CodeGraph:
 | Desktop is the only auth server | Addon and shell trust sessions issued by Desktop; addon only **verifies** via API. |
 | HttpOnly cookie for tokens | Reduces XSS risk. |
 | Monorepo + publishable `core` package | Shell and third-party addons share contracts (`@namorix/core`). |
-| PostgreSQL + EF Core | Simple for single-node self-hosted (ASP.NET Core 8 + Entity Framework Core). |
+| SQLite + EF Core | Simple for single-node self-hosted (ASP.NET Core 8 + Entity Framework Core). |
 | Docker via Unix socket | Desktop backend runs on same machine as Docker. |
 | SignalR | Unified realtime layer for backend events. |
 
@@ -63,7 +63,7 @@ At the start of a session, ask the user if they'd like to initialize CodeGraph:
 - **Frontend:** Vite + React (window manager, taskbar, system apps)
 - **Backend:** ASP.NET Core 8, WebSocket (shell + terminal), auth, logs
 - **Frontend packages:** `@namorix/core` (types, auth, http, i18n, guards), `@namorix/ui` (React primitives), `@namorix/styles` (SCSS tokens) — all at `frontend/packages/*`
-- **Database:** PostgreSQL + EF Core
+- **Database:** SQLite + EF Core
 - **Terminal:** xterm.js
 - **Realtime:** SignalR
 
