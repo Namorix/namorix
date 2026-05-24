@@ -60,6 +60,7 @@
   &--active {
     background: var(--nmx-color-primary);
     color: var(--nmx-color-on-primary);
+    font-weight: var(--nmx-font-weight-bold);
 
     &:hover {
       background: var(--nmx-color-primary);

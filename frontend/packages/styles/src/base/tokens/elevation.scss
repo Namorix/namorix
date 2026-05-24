@@ -15,4 +15,9 @@
 
   // inset — pressed state, input focus inner
   --nmx-shadow-inset: inset 0 1px 3px rgba(0, 0, 0, 0.12);
+
+  --nmx-z-dropdown: 100;
+  --nmx-z-modal: 200;
+  --nmx-z-tooltip: 300;
+  --nmx-z-toast: 400;
 }
