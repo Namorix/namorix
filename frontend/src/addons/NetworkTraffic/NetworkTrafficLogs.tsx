@@ -1,9 +1,4 @@
-import {
-  NmxBadge,
-  NmxDataTable,
-  NmxPagination,
-  useActiveTab,
-} from "@namorix/ui"
+import { NmxBadge, NmxDataTable, NmxPagination } from "@namorix/ui"
 import React, { useCallback, useEffect, useState } from "react"
 import { trafficController, type TrafficLog } from "./traffic.controller"
 import { useTranslation } from "react-i18next"
@@ -16,9 +11,7 @@ import {
   statusToSemantic,
 } from "./utils"
 import { NmxAddonPage } from "@namorix/ui"
-import type { NetworkTrafficTab } from "./NetworkTraffic"
-
-const PAGE_SIZE = 30
+import { usePageSize } from "@namorix/core"
 
 interface NetworkTrafficLogsProps {
   filterSearch?: string
@@ -28,38 +21,38 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
   filterSearch,
 }) => {
   const { t } = useTranslation()
+  const { pageSize, setPageSize, options: pageSizeOptions } = usePageSize()
   const [logs, setLogs] = useState<TrafficLog[]>([])
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
+  const [elapsedMs, setElapsedMs] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<unknown>()
-  const activeTab = useActiveTab<NetworkTrafficTab>()
 
-  const fetchLogs = useCallback(async (pg: number, filter: string) => {
-    setLoading(true)
+  const fetchLogs = useCallback(
+    async (pg: number, filter: string | undefined, size: number) => {
+      setLoading(true)
+      setPage(pg)
 
-    trafficController
-      .listLogs(pg, PAGE_SIZE, filter)
-      .then((res) => {
-        setLogs(res.items)
-        setTotal(res.total)
-      })
-      .finally(() => setLoading(false))
-  }, [])
+      trafficController
+        .listLogs(pg, size, filter)
+        .then((res) => {
+          setLogs(res.items)
+          setTotal(res.total)
+          setElapsedMs(res.elapsedMs)
+        })
+        .finally(() => setLoading(false))
+    },
+    [],
+  )
 
   useEffect(() => {
-    if (activeTab !== "logs" || !filterSearch || filterSearch.length <= 0)
-      return
-
+    console.log("Effect logs")
     const timeout = setTimeout(() => {
-      console.log("NetworkTrafficLogs", filterSearch, activeTab)
-      setLoading(true)
-      setPage(1)
-
-      fetchLogs(1, filterSearch).catch((err) => console.error(err))
-    }, 500)
+      fetchLogs(page, filterSearch, pageSize).catch((err) => console.error(err))
+    }, 0)
     return () => clearTimeout(timeout)
-  }, [filterSearch, activeTab, fetchLogs])
+  }, [filterSearch, page, pageSize, fetchLogs])
 
   const columns: NmxDataTableColumn<TrafficLog>[] = [
     {
@@ -147,7 +140,8 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
     },
   ]
 
-  const totalPages = Math.ceil(total / PAGE_SIZE)
+  const totalPages = Math.ceil(total / pageSize)
+
   return (
     <NmxAddonPage className="nmx-addon-network-traffic__logs">
       <NmxDataTable
@@ -161,7 +155,13 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
           page={page}
           totalPages={totalPages}
           totalItems={total}
-          pageSize={PAGE_SIZE}
+          elapsedMs={elapsedMs}
+          pageSize={pageSize}
+          pageSizeOptions={pageSizeOptions}
+          onPageSizeChange={(size) => {
+            setPageSize(size)
+            setPage(1)
+          }}
           className="nmx-addon-page__pagination"
           onPageChange={(page) => {
             setLoading(true)

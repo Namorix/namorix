@@ -78,9 +78,9 @@
     "networkTraffic": {
       "title": "Network Traffic",
       "searchPlaceholder": "Filter by method, path or IP...",
+      "searchHelp": "Syntax: m=GET p=/api s=200 ip=192.168\n  m=       — filter by method\n  p=       — filter by path\n  ip=      — filter by IP\n  s=200    — exact status code\n  s=2xx    — status range 200-299\n  t=>2026-05-24T12:00  — after time\n  t=<2026-05-24T12:00  — before time\n  d=>2026-05-24  — after date\n  d=<2026-05-24  — before date",
       "tabs": {
         "overview": "Overview",
-        "endpoints": "Endpoints",
         "logs": "Logs",
         "threats": "Threats"
       },
@@ -92,17 +92,6 @@
           "avgLatencyUnit": "ms",
           "avgSize": "Avg Size",
           "avgSizeUnit": "KB"
-        }
-      },
-      "endpoints": {
-        "method": "Method",
-        "path": "Path",
-        "label": "Label",
-        "enabled": "Enabled",
-        "fallbacks": {
-          "error": "Connection failed. Please try again",
-          "loading": "Loading network endpoints...",
-          "empty": "No network endpoints detected"
         }
       },
       "logs": {

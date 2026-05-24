@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react"
+import React, { useState } from "react"
 import {
   NmxIconFontSymbol,
   type NmxToolbarItemData,
@@ -9,25 +9,20 @@ import {
   NmxAddonRoot,
   NmxToolbarActions,
   NmxSearchInput,
+  type NmxSearchSuggestion,
 } from "@namorix/ui"
 import { NetworkTrafficOverview } from "./NetworkTrafficOverview"
 import { useTranslation } from "react-i18next"
-import { NetworkTrafficEndpoints } from "./NetworkTrafficEndpoints"
 import { NetworkTrafficLogs } from "./NetworkTrafficLogs"
 import { NetworkTrafficThreats } from "./NetworkTrafficThreats"
 
-export type NetworkTrafficTab = "overview" | "endpoints" | "logs" | "threats"
+export type NetworkTrafficTab = "overview" | "logs" | "threats"
 
 const TABS: NmxToolbarItemData<NetworkTrafficTab>[] = [
   {
     key: "overview",
     icon: NmxIconFontSymbol.STATS,
     label: "addon.networkTraffic.tabs.overview",
-  },
-  {
-    key: "endpoints",
-    icon: NmxIconFontSymbol.NODES,
-    label: "addon.networkTraffic.tabs.endpoints",
   },
   {
     key: "logs",
@@ -41,37 +36,42 @@ const TABS: NmxToolbarItemData<NetworkTrafficTab>[] = [
   },
 ]
 
+const searchSuggestions: NmxSearchSuggestion[] = [
+  { key: "m=", label: "method", description: "filter by HTTP method" },
+  { key: "p=", label: "path", description: "filter by URL path" },
+  {
+    key: "s=",
+    label: "status",
+    description: "status code (200) or range (2xx)",
+  },
+  { key: "ip=", label: "IP", description: "filter by IP prefix" },
+  { key: "d=", label: "date", description: "d=>2026-06-07 or d=2026-06-07" },
+  { key: "t=", label: "time", description: "t=>11:20 or t=11:20:22" },
+]
+
 export const NetworkTraffic: React.FC = () => {
   const { t } = useTranslation()
-  const [filter, setFilter] = useState<string>("")
+  const [filterLogs, setFilterLogs] = useState("")
 
   return (
     <NmxAddonRoot className="nmx-addon-network-traffic">
-      <NmxToolbar<NetworkTrafficTab>
-        defaultTab="endpoints"
-        onTabChange={() => setFilter("")}
-      >
+      <NmxToolbar<NetworkTrafficTab> defaultTab="overview">
         <NmxToolbarHeader className="nmx-addon-network-traffic__toolbar-header">
           <NmxToolbarList items={TABS} t={t} />
-          <NmxToolbarActions<NetworkTrafficTab>
-            tabKeys={["logs", "endpoints"]}
-            className="nmx-addon-network-traffic__toolbar-actions"
-          >
+          <NmxToolbarActions tabKeys={["logs"]}>
             <NmxSearchInput
-              value={filter}
-              onChange={setFilter}
+              onSubmit={setFilterLogs}
               placeholder={t("addon.networkTraffic.searchPlaceholder")}
+              suggestions={searchSuggestions}
+              className="nmx-addon-network-traffic__toolbar-actions"
             />
           </NmxToolbarActions>
         </NmxToolbarHeader>
         <NmxToolbarContent<NetworkTrafficTab> tabKey="overview">
           <NetworkTrafficOverview />
         </NmxToolbarContent>
-        <NmxToolbarContent<NetworkTrafficTab> tabKey="endpoints">
-          <NetworkTrafficEndpoints />
-        </NmxToolbarContent>
         <NmxToolbarContent<NetworkTrafficTab> tabKey="logs">
-          <NetworkTrafficLogs filterSearch={filter} />
+          <NetworkTrafficLogs filterSearch={filterLogs} />
         </NmxToolbarContent>
         <NmxToolbarContent<NetworkTrafficTab> tabKey="threats">
           <NetworkTrafficThreats />

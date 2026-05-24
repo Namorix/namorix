@@ -37,16 +37,7 @@ export interface TrafficLog {
 export interface TrafficLogResponse {
   items: TrafficLog[]
   total: number
-}
-
-async function listEndpoints(): Promise<TrafficEndpoint[]> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiTrafficRoutes.endpoints)
-    .get()
-    .json<TrafficEndpoint[]>()
-
-  if (!data.success) throw ApiError.fromResponse(data)
-  return data.data
+  elapsedMs: number
 }
 
 async function listLogs(
@@ -63,4 +54,4 @@ async function listLogs(
   return data.data
 }
 
-export const trafficController = { listEndpoints, listLogs }
+export const trafficController = { listLogs }
