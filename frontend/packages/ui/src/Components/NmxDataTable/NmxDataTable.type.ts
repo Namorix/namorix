@@ -30,4 +30,6 @@ export interface NmxDataTableProps<T = unknown> extends WithBaseProps {
   disableAutoCellSize?: boolean
   getRowClass?: (row: T, rowIndex: number) => string | undefined
   onRowClick?: (row: T, rowIndex: number) => void
+  headerClass?: string
+  rowClass?: string
 }

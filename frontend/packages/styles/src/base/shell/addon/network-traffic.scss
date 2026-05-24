@@ -15,6 +15,7 @@
 }
 
 .nmx-addon-network-traffic__toolbar-header {
+  background: var(--nmx-color-surface-low);
   container-type: inline-size;
 }
 
@@ -28,7 +29,15 @@
   }
 
   @container (max-width: #{$nmx-breakpoint-md}) {
-    flex: 1;
     width: 100%;
   }
+}
+
+.nmx-addon-network-traffic__data-table-header {
+  background: var(--nmx-color-surface-mid);
+}
+
+.nmx-addon-network-traffic__data-table-row,
+.nmx-addon-network-traffic__pagination {
+  background: var(--nmx-color-surface-low);
 }

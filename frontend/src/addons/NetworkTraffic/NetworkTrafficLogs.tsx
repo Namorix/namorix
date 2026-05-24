@@ -155,6 +155,8 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
         rows={logs}
         fallbackConditions={fallbackConditions}
         className="nmx-addon-page__data-table"
+        headerClass="nmx-addon-network-traffic__data-table-header"
+        rowClass="nmx-addon-network-traffic__data-table-row"
       />
       {total > 0 && (
         <NmxPagination
@@ -168,7 +170,7 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
             setPageSize(size)
             setPage(1)
           }}
-          className="nmx-addon-page__pagination"
+          className="nmx-addon-page__pagination nmx-addon-network-traffic__pagination"
           onPageChange={(page) => {
             setLoading(true)
             setError(undefined)

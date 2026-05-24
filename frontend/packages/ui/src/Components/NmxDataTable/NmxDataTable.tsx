@@ -50,6 +50,8 @@ export const NmxDataTable = <T extends object>({
   getRowClass,
   onRowClick,
   shouldRender = true,
+  headerClass,
+  rowClass,
   className,
   ...rest
 }: NmxDataTableProps<T>) => {
@@ -109,6 +111,7 @@ export const NmxDataTable = <T extends object>({
                   "nmx-data-table--ellipsis-disabled":
                     col.disableEllipsisHeader === true,
                 },
+                headerClass,
               )}
             >
               {col.header}
@@ -151,6 +154,7 @@ export const NmxDataTable = <T extends object>({
                     "nmx-data-table__row",
                     { "nmx-data-table__row--clickable": hasClick },
                     extra,
+                    rowClass,
                   )}
                   role="row"
                   onClick={
