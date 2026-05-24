@@ -74,18 +74,30 @@ public static class TrafficLogFilterParser
     private static void ParseTime(string val, ref TrafficLogFilter filter)
     {
         var dateStr = val[0] is '>' or '<' ? val[1..] : val;
+        var normalized = dateStr.Contains(':') ? dateStr : dateStr + ":00";
 
-        if (TimeOnly.TryParse(dateStr, out var timeOnly))
+        if (TimeOnly.TryParse(normalized, out var timeOnly))
         {
-            var localDt = DateTime.Today.Add(timeOnly.ToTimeSpan());
-            var utcDt = TimeZoneInfo.ConvertTimeToUtc(localDt, TimeZoneInfo.Local);
-
-            filter = val[0] switch
+            var utcDt = DateTime.Today.Add(timeOnly.ToTimeSpan());
+            utcDt = DateTime.SpecifyKind(utcDt, DateTimeKind.Utc);
+            
+            switch (val[0])
             {
-                '>' => filter with { From = utcDt },
-                '<' => filter with { To = utcDt },
-                _ => filter with { From = utcDt.AddSeconds(-1), To = utcDt.AddSeconds(1) }
+                case '>':
+                    filter = filter with { From = utcDt }; return;
+                case '<':
+                    filter = filter with { To = utcDt }; return;
+            }
+
+            var parts = dateStr.Split(':');
+            var (from, to) = parts.Length switch
+            {
+                1 => (utcDt, utcDt.AddHours(1).AddTicks(-1)),        // t=16
+                2 => (utcDt, utcDt.AddMinutes(1).AddTicks(-1)),      // t=16:20
+                _ => (utcDt.AddSeconds(-1), utcDt.AddSeconds(1))     // t=16:20:30
             };
+
+            filter = filter with { From = from, To = to };
             return;
         }
         

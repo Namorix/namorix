@@ -24,4 +24,8 @@
     <ProjectReference Include="..\Namorix.Workers\Namorix.Workers.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="data\" />
+  </ItemGroup>
+
 </Project>

@@ -14,6 +14,7 @@ public static class SignalRGroups
 public static class SignalREvents
 {
     public const string TrafficNewLogs = "traffic:new-logs";
+    public const string TrafficStatsInit = "traffic:stats-init";
     public const string SystemConfigChanged = "system:config-changed";
     public const string UserThemeChanged = "user:theme-changed";
 }

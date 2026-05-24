@@ -12,10 +12,8 @@ public class FlatFileStore(FlatFileOptions options) : IFlatFileStore
 
     private string GetFilePath<T>(DateTime timestamp) where T : class, IFlatFileSerializer<T>
     {
-        var datePath = timestamp.ToString("yyyy/MM");
-        var dir = Path.Combine(_basePath, T.Category, datePath);
-        var file = $"{timestamp:dd}.{T.Category}";
-        return Path.Combine(dir, file);
+        var dir = Path.Combine(_basePath, T.Category);
+        return Path.Combine(dir, $"{T.Category}-{timestamp:yyyy-MM-dd}.log");
     }
     
     public async Task AppendAsync<T>(T entry) where T : class, IFlatFileSerializer<T>
@@ -91,10 +89,7 @@ public class FlatFileStore(FlatFileOptions options) : IFlatFileStore
     {
         var dir = Path.Combine(_basePath, T.Category);
         if (!Directory.Exists(dir)) yield break;
-
-        foreach (var yearDir in Directory.GetDirectories(dir).OrderBy(d => d))
-        foreach (var monthDir in Directory.GetDirectories(yearDir).OrderBy(d => d))
-        foreach (var file in Directory.GetFiles(monthDir, $"*.{T.Category}").OrderBy(f => f))
+        foreach (var file in Directory.GetFiles(dir, "*.log").OrderBy(f => f))
             yield return file;
     }
 }

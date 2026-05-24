@@ -17,14 +17,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IOptions<AppCo
     public DbSet<UserPermission> UserPermissions { get; set; }
     public DbSet<ThemeManifest> ThemeManifests { get; set; }
     public DbSet<AddonManifest> AddonManifests { get; set; }
-    public DbSet<TrafficLogSerializer> TrafficLogs { get; set; }
     
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (!optionsBuilder.IsConfigured && _config != null)
         {
-            optionsBuilder.UseNpgsql(_config.ConnectionString);
+            optionsBuilder.UseSqlite(_config.ConnectionString);
         }
     }
 

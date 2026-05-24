@@ -40,7 +40,7 @@ builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =
 });
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<SettingsService>();
@@ -64,6 +64,7 @@ builder.Services.AddScoped<ITrafficNotifier, SignalRTrafficNotifier>();
 builder.Services.AddScoped<ISystemNotifier, SignalRSystemNotifier>();
 builder.Services.AddHostedService<TrafficFlushWorker>();
 builder.Services.AddHostedService<TrafficCleanupWorker>();
+builder.Services.AddHostedService<TrafficStatsWorker>(); 
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -139,6 +140,7 @@ app.UseCors(policy =>
 
 app.UseSecurityHeaders();
 app.UseAuth();
+app.UseTrafficMonitor(); 
 app.UseTrustedProxy();
 app.UseRouting();
 app.UseNotFoundHandler();

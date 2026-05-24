@@ -3,12 +3,14 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Namorix.Adapters.FlatFile;
 using Namorix.Adapters.Infrastructure;
+using Namorix.Adapters.Services;
 using Namorix.Core.FlatFile;
 using Namorix.Core.Infrastructure;
 
 namespace Namorix.Workers;
 
 public class TrafficFlushWorker(IFlatFileStore flatFileStore,
+    TrafficMonitorService monitorService,
     IServiceScopeFactory scopeFactory,
     ILogger<TrafficFlushWorker> logger) : BackgroundService
 {
@@ -35,6 +37,8 @@ public class TrafficFlushWorker(IFlatFileStore flatFileStore,
             {
                 foreach (var log in batch)
                     await flatFileStore.AppendAsync(log);
+                
+                monitorService.Accumulate(batch); 
                 using var scope = scopeFactory.CreateScope();
                 var notifier = scope.ServiceProvider.GetRequiredService<ITrafficNotifier>();
                 await notifier.NotifyFlushAsync();
