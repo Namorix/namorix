@@ -33,35 +33,77 @@ export const NmxSearchInput = ({
   shouldRender = true,
   className,
 }: NmxSearchInputProps) => {
-  const [focused, setFocused] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
-  const showDropdown = focused && suggestions && suggestions.length > 0
+  const [showDropdown, setShowDropdown] = useState(false)
   const [internalValue, setInternalValue] = useState("")
   const resolvedValue = value ?? internalValue
+  const usedKeys =
+    suggestions
+      ?.filter((s) => resolvedValue.includes(s.key))
+      .map((s) => s.key) ?? []
+
+  const insertSuggestion = React.useCallback(
+    (suggestionKey: string) => {
+      const prefix = resolvedValue && !resolvedValue.endsWith(" ") ? " " : ""
+      const newVal = resolvedValue + prefix + suggestionKey
+      setInternalValue(newVal)
+      onChange?.(newVal)
+      setActiveIndex(-1)
+      setShowDropdown(false)
+    },
+    [resolvedValue, onChange],
+  )
 
   if (!shouldRender) return null
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!showDropdown) return
+    if (!suggestions) return
+
     switch (e.key) {
       case "ArrowDown":
+        if (!showDropdown) return
         e.preventDefault()
-        setActiveIndex((prev) => (prev < suggestions.length - 1 ? prev + 1 : 0))
+        setActiveIndex((prev) => {
+          let next = prev < suggestions.length - 1 ? prev + 1 : 0
+          let attempts = 0
+          while (
+            usedKeys.includes(suggestions[next]?.key ?? "") &&
+            attempts < suggestions.length
+          ) {
+            next = next < suggestions.length - 1 ? next + 1 : 0
+            attempts++
+          }
+          return next
+        })
         break
 
       case "ArrowUp":
+        if (!showDropdown) return
         e.preventDefault()
-        setActiveIndex((prev) => (prev > 0 ? prev - 1 : suggestions.length - 1))
+        setActiveIndex((prev) => {
+          let next = prev > 0 ? prev - 1 : suggestions.length - 1
+          let attempts = 0
+          while (
+            usedKeys.includes(suggestions[next]?.key ?? "") &&
+            attempts < suggestions.length
+          ) {
+            next = next > 0 ? next - 1 : suggestions.length - 1
+            attempts++
+          }
+          return next
+        })
         break
 
       case "Enter":
-        if (activeIndex >= 0 && activeIndex < suggestions.length) {
-          e.preventDefault()
+        if (
+          activeIndex >= 0 &&
+          suggestions &&
+          activeIndex < suggestions.length
+        ) {
           const s = suggestions[activeIndex]
-          if (!s) break
-          const prefix = value && !value.endsWith(" ") ? " " : ""
-          onChange?.(value + prefix + s.key)
-          setActiveIndex(-1)
+          if (!s || usedKeys.includes(s.key)) break
+          e.preventDefault()
+          insertSuggestion(s.key)
         }
         break
     }
@@ -70,16 +112,19 @@ export const NmxSearchInput = ({
   const handleChange = (v: string) => {
     onChange?.(v)
     if (value === undefined) setInternalValue(v)
+    setShowDropdown(true)
   }
 
   return (
     <div className={cx("nmx-search-input-wrapper", className)}>
       <div
         className="nmx-search-input"
-        onFocus={() => setFocused(true)}
+        onFocus={() => {
+          setShowDropdown(true)
+        }}
         onBlur={(e) => {
           if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-            setFocused(false)
+            setShowDropdown(false)
             setActiveIndex(-1)
           }
         }}
@@ -98,14 +143,18 @@ export const NmxSearchInput = ({
           invalid={invalid}
           className="nmx-search-input__control"
           onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-            if (e.key === "Escape") {
+            if (e.key === "Enter") {
+              e.preventDefault()
+              setShowDropdown(false)
+              onSubmit?.(resolvedValue)
+            } else if (e.key === "Escape") {
               e.preventDefault()
               e.currentTarget.blur()
               setActiveIndex(-1)
             }
           }}
         />
-        {value && (
+        {resolvedValue && (
           <button
             type="button"
             className="nmx-search-input__clear"
@@ -115,40 +164,51 @@ export const NmxSearchInput = ({
           </button>
         )}
         {showDropdown && (
-          <div className="nmx-search-input__dropdown">
-            {suggestions.map((s, i) => (
-              <div
-                key={s.key}
-                className={cx("nmx-search-input__suggestion", {
-                  "nmx-search-input__suggestion--active": i === activeIndex,
-                })}
-                onMouseDown={(e) => {
-                  e.preventDefault()
-                  onChange?.(
-                    value + (value && !value.endsWith(" ") ? " " : "") + s.key,
-                  )
-                  setActiveIndex(-1)
-                }}
-                onMouseEnter={() => setActiveIndex(i)}
-              >
-                <span className="nmx-search-input__suggestion-key">
-                  {s.key}
-                </span>
-                <span className="nmx-search-input__suggestion-label">
-                  {s.label}
-                </span>
-                <span className="nmx-search-input__suggestion-desc">
-                  {s.description}
-                </span>
-              </div>
-            ))}
+          <div
+            className="nmx-search-input__dropdown"
+            onMouseLeave={() => setActiveIndex(-1)}
+          >
+            {suggestions &&
+              suggestions.map((s, i) => {
+                const disabled = usedKeys.includes(s.key)
+                return (
+                  <div
+                    key={s.key}
+                    className={cx("nmx-search-input__suggestion", {
+                      "nmx-search-input__suggestion--active": i === activeIndex,
+                      "nmx-search-input__suggestion--disabled": disabled,
+                    })}
+                    onMouseDown={(e) => {
+                      if (disabled) return
+                      e.preventDefault()
+                      insertSuggestion(s.key)
+                    }}
+                    onMouseEnter={() => {
+                      if (!disabled) setActiveIndex(i)
+                    }}
+                  >
+                    <span className="nmx-search-input__suggestion-key">
+                      {s.key}
+                    </span>
+                    <span className="nmx-search-input__suggestion-label">
+                      {s.label}
+                    </span>
+                    <span className="nmx-search-input__suggestion-desc">
+                      {s.description}
+                    </span>
+                  </div>
+                )
+              })}
           </div>
         )}
       </div>
       <button
         type="button"
         className="nmx-search-input__submit"
-        onClick={() => onSubmit?.(resolvedValue)}
+        onClick={() => {
+          onSubmit?.(resolvedValue)
+          setShowDropdown(false)
+        }}
       >
         <NmxIconFont symbol={NmxIconFontSymbol.ENTER} />
       </button>
