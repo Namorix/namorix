@@ -124,11 +124,11 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.25.2 | M3 (NetworkTraffic wiring, new i18n keys) |
-| @namorix/core | 0.21.0 | M3 (LogLevel type, SignalR Logs constants) |
-| @namorix/styles | 0.19.1 | M3 (search-input dropdown SCSS tweaks, theme CSS rebuilt) |
+| frontend | 0.26.0 | M3 (LogViewer rewrite: real API + SignalR, NmxDataTable, i18n keys) |
+| @namorix/core | 0.22.0 | M3 (new types/logs.ts module: LogEntry, LogLevel, LogGroup types; ApiLogRoutes) |
+| @namorix/styles | 0.19.2 | M3 (minor SCSS tweaks: addon.scss + network-traffic cleanup, theme CSS rebuilt) |
 | @namorix/ui | 0.16.1 | M3 (NmxSearchInput dropdown fixes: Enter submit, suggestion click, disabled skips, duplicate keys) |
-| backend | 0.29.0 | M3 (Core migration, Log pipeline, DI extensions, Program.cs cleanup) |
+| backend | 0.30.0 | M3 (LogGroup splitting, DataDirectory fixes, FileLoggerProvider DI, FlatFileOptions) |
 
 ## Version Rules
 
@@ -147,6 +147,15 @@
 | backend | Bug fixes, C# config tweaks | New endpoint, new service, auth feature |
 
 ## Version History
+
+### 2026-05-25 (later) — LogGroup splitting, DataDirectory fixes, LogViewer rewrite with real API + SignalR
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| backend | 0.30.0 | NEW: `LogGroups` constants (core/app/controller/auth/database/misc). NEW: `LogEntrySerializer.MapSourceToGroup` — maps source namespace to group. NEW: `LogEntrySerializer.Group` computed property (serialized int). NEW: `IFlatFileStore.AppendAsync<T>(entry, subDirectory)` — subdirectory support. NEW: `FlatFileStore.GetFilePath` — subdirectory-aware path resolution. NEW: `FileLoggerProvider` DI registration in `AddNamorixCore()`. NEW: `FlatFileOptions.MinLogLevel` — configurable minimum log level. MODIFIED: `LogFlushWorker` — passes `e.LogGroup` as subdirectory. MODIFIED: `FlatFileStore.GetFilesForCategory` — `SearchOption.AllDirectories` to find files in subdirectories. MODIFIED: `FileLogger.Log<TState>` — assigns `LogGroup` via `MapSourceToGroup`. MODIFIED: `DataDirectory.PurgeCategory` — `SearchOption.AllDirectories`, `LogPattern` changed to `*.log`, `DateFromFileName` uses last-10-chars of filename. |
+| @namorix/core | 0.22.0 | NEW: `types/logs.ts` — `LogLevel` type union, `LogGroup` type union, `LogEntry` type (`level: number`, `group: number`, `source`, `message`, `timestamp`). NEW: `apiRoutes.ts` — `ApiLogRoutes` config. MOVED: `LogEntry` type from `signalr/constants.ts` → `types/logs.ts`. DELETED: old string-union `LogLevel` from `constants.ts` (replaced by `types/logs.ts` types). |
+| @namorix/styles | 0.19.2 | MODIFIED: `addon.scss` — minor LogViewer styling. DELETED: `network-traffic.scss` — unused styles removed. Theme CSS rebuilt. |
+| frontend | 0.26.0 | REWRITE: `LogViewer.tsx` — full rewrite (~230 lines): real API via `logController.listLogs()`, SignalR real-time via `useSignalRGroup(SignalRGroups.Logs)` + `useSignalREvent(SignalREvent.LogsNewEntry)`, `NmxDataTable` with 5 columns (level/group/source/message/timestamp), `NmxPagination` with `usePageSize`, `NmxSelect` level filter, `NmxSearchInput` source filter, `NmxButton` refresh, `NmxBadge` with semantic colors. NEW: `log.controller.ts` — controller pattern matching `traffic.controller.ts`. NEW: `i18n/locales/en.json` — `addon.logViewer.*` translation keys. MODIFIED: `LogViewer.addon.tsx` — wiring updates. MODIFIED: `NetworkTraffic.addon.tsx`, `NetworkTraffic.tsx`, `NetworkTrafficLogs.tsx`, `Settings.addon.tsx` — minor cleanup. |
 
 ### 2026-05-25 — Core migration: shared infrastructure moved to Namorix.Core, new Log pipeline, DI extensions
 

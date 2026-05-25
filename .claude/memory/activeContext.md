@@ -25,6 +25,13 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 ## Recent Changes
 
+### 2026-05-25 (later) — LogGroup splitting, DataDirectory fixes, LogViewer rewrite with real API + SignalR
+
+- **backend (0.29.0 → 0.30.0)**: NEW LogGroup splitting — flat files split into subdirectories by source category (`data/logs/core/`, `data/logs/app/`, `data/logs/controller/`, `data/logs/auth/`, `data/logs/database/`, `data/logs/misc/`). NEW `MapSourceToGroup()` — maps C# namespace to LogGroup. NEW `IFlatFileStore.AppendAsync<T>(entry, subDirectory)` — subdirectory support. NEW `FileLoggerProvider` DI registration + `FlatFileOptions.MinLogLevel`. FIX `DataDirectory.PurgeCategory` — `SearchOption.AllDirectories`, `LogPattern`→`*.log`, `DateFromFileName` last-10-chars. FIX `FlatFileStore.GetFilesForCategory` — recursive search for files in subdirectories.
+- **@namorix/core (0.21.0 → 0.22.0)**: NEW `types/logs.ts` module — `LogLevel` type, `LogGroup` type, `LogEntry` type with `level: number` and `group: number`. NEW `ApiLogRoutes`. MOVED `LogEntry` from `signalr/constants.ts` to `types/logs.ts`.
+- **frontend (0.25.1 → 0.26.0)**: REWRITE `LogViewer.tsx` — real API via `logController.listLogs()`, SignalR real-time, `NmxDataTable`/`NmxPagination`/`NmxBadge`/`NmxSelect`/`NmxSearchInput`/`NmxButton`. NEW `log.controller.ts`. NEW i18n keys (`addon.logViewer.*`).
+- **@namorix/styles (0.19.1 → 0.19.2)**: Minor SCSS tweaks (addon.scss, network-traffic cleanup, theme CSS rebuilt).
+
 ### 2026-05-25 — Core migration: shared infrastructure → Namorix.Core, Log pipeline, DI extensions
 
 - **backend (0.28.0 → 0.29.0)**: MAJOR REFACTOR — 20+ files moved from Adapters/Server/Workers to Namorix.Core (FlatFileStore, all middleware, hubs/filters/notifiers, traffic pipeline, SecurityHeaders, NetworkHelper). NEW: Log pipeline — `LogEntrySerializer`, `LogBuffer` (Channel 50K), `LogFlushWorker` (batch 100/5s), `FileLogger`+`FileLoggerProvider` (ILogger capture), `ILogNotifier`/`SignalRLogNotifier` (SignalR broadcast), `LogService` (query), `LogController` (REST API). NEW: `ServiceCollectionExtensions.AddNamorixCore()` — one-call DI for all Core services + SignalR + rate limiter + controllers + CORS + memory cache. NEW: `ApplicationBuilderExtensions.UseNamorixCore()` — middleware pipeline with callback for CORS/Auth/TrustedProxy injection. FIX: `DataDirectory.PurgeCategory` flat file pattern. FIX: `ServiceCollectionExtensions` interface-to-itself bug. Program.cs simplified by ~80 lines.
