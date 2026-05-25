@@ -25,6 +25,12 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 ## Recent Changes
 
+### 2026-05-25 — Core migration: shared infrastructure → Namorix.Core, Log pipeline, DI extensions
+
+- **backend (0.28.0 → 0.29.0)**: MAJOR REFACTOR — 20+ files moved from Adapters/Server/Workers to Namorix.Core (FlatFileStore, all middleware, hubs/filters/notifiers, traffic pipeline, SecurityHeaders, NetworkHelper). NEW: Log pipeline — `LogEntrySerializer`, `LogBuffer` (Channel 50K), `LogFlushWorker` (batch 100/5s), `FileLogger`+`FileLoggerProvider` (ILogger capture), `ILogNotifier`/`SignalRLogNotifier` (SignalR broadcast), `LogService` (query), `LogController` (REST API). NEW: `ServiceCollectionExtensions.AddNamorixCore()` — one-call DI for all Core services + SignalR + rate limiter + controllers + CORS + memory cache. NEW: `ApplicationBuilderExtensions.UseNamorixCore()` — middleware pipeline with callback for CORS/Auth/TrustedProxy injection. FIX: `DataDirectory.PurgeCategory` flat file pattern. FIX: `ServiceCollectionExtensions` interface-to-itself bug. Program.cs simplified by ~80 lines.
+- **@namorix/core (0.20.0 → 0.21.0)**: NEW `LogLevel` enum + SignalR Logs constants (`logs:new-entry`).
+- **frontend (0.25.1 → 0.25.2)**: NetworkTraffic wiring updates, new i18n keys.
+
 ### 2026-05-24 — NmxSearchInput dropdown fixes, ParseTime bug fix, page reset, page clamp
 
 - **@namorix/ui (0.16.0 → 0.16.1)**: FIX `NmxSearchInput` — Enter submit, suggestion click insert text, arrow keys skip disabled items, `usedKeys` prevents duplicate suggestion keys, `showDropdown` state separated from `focused`, dropdown hide on Enter/re-show on typing. NEW `insertSuggestion` useCallback.

@@ -124,11 +124,11 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.25.1 | M3 (page reset on filter change, stats-init handling, traffic controller updates) |
-| @namorix/core | 0.20.0 | M3 (BucketData type, TrafficStatsInit event, i18n keys) |
+| frontend | 0.25.2 | M3 (NetworkTraffic wiring, new i18n keys) |
+| @namorix/core | 0.21.0 | M3 (LogLevel type, SignalR Logs constants) |
 | @namorix/styles | 0.19.1 | M3 (search-input dropdown SCSS tweaks, theme CSS rebuilt) |
 | @namorix/ui | 0.16.1 | M3 (NmxSearchInput dropdown fixes: Enter submit, suggestion click, disabled skips, duplicate keys) |
-| backend | 0.28.0 | M3 (ParseTime fixes, page clamp, TrafficStatsInit, cumulative stats on subscribe, CsvHelper, TrafficStatsWorker) |
+| backend | 0.29.0 | M3 (Core migration, Log pipeline, DI extensions, Program.cs cleanup) |
 
 ## Version Rules
 
@@ -147,6 +147,14 @@
 | backend | Bug fixes, C# config tweaks | New endpoint, new service, auth feature |
 
 ## Version History
+
+### 2026-05-25 — Core migration: shared infrastructure moved to Namorix.Core, new Log pipeline, DI extensions
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| backend | 0.29.0 | MAJOR REFACTOR: 20+ files moved from Adapters/Server/Workers → `Namorix.Core` (FlatFileStore, TrafficLogSerializer, TrafficBuffer, traffic workers, TrafficMonitorService/Controller/Middleware, all middleware, all hubs/filters/notifiers, NetworkHelper). NEW: `LogController` — `GET /api/logs`, `DELETE /api/logs`. NEW: `ServiceCollectionExtensions.AddNamorixCore()` — DI extension for all Core services, SignalR, rate limiter, controllers, CORS, memory cache. NEW: `ApplicationBuilderExtensions.UseNamorixCore()` — full middleware pipeline with callback (CORS/Auth/TrustedProxy injection). NEW: Log pipeline — `LogEntrySerializer` (pipe-separated flat file), `LogBuffer` (Channel 50K), `LogFlushWorker` (batch 100/5s), `FileLogger`+`FileLoggerProvider` (ILogger capture), `ILogNotifier`/`SignalRLogNotifier` (SignalR broadcast), `LogService` (query + filter). NEW: `Constants/Log.cs` — LogLevel constants. NEW: `Infrastructure/ILogNotifier.cs`. FIX: `ServiceCollectionExtensions` — `IFlatFileStore → FlatFileStore` (was registering interface-to-itself). FIX: `DataDirectory.PurgeCategory` — flat file pattern (`{category}-*.log` + date from filename) instead of subdirectory iteration. MOVED: `SecurityHeadersMiddleware` → Core.Middleware. SIMPLIFIED: `Program.cs` — ~80 lines replaced with `AddNamorixCore()` + `UseNamorixCore()`. SIMPLIFIED: `Server/ApplicationBuilderExtensions.cs` — only `UseAuth()` + `UseTrustedProxy()` remaining. |
+| @namorix/core | 0.21.0 | NEW: `constants.ts` — `LogLevel` enum (`Trace`/`Debug`/`Info`/`Warn`/`Error`/`Critical`). NEW: `signalr/constants.ts` — Logs SignalRGroups + SignalREvent (`logs:new-entry`). |
+| frontend | 0.25.2 | MODIFIED: `NetworkTraffic.tsx` — wiring updates. MODIFIED: `i18n/locales/en.json` — new translation keys. |
 
 ### 2026-05-24 — NmxSearchInput dropdown fixes, ParseTime timezone/window fix, page reset, page clamp
 

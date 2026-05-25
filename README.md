@@ -116,11 +116,13 @@ namorix/
     ├── Makefile               # Build/EF commands
     ├── Namorix.sln            # Solution file
     └── src/
-        ├── Namorix.Core/      # Config, Constants (SignalR), Models, Exceptions, Responses, Validation
-        ├── Namorix.Adapters/  # Persistence (AppDbContext, SQLite migrations), FlatFile traffic store,
-        │                       # Services (Auth, Permission, Settings, Theme, User, TrafficMonitor)
-        ├── Namorix.Server/    # Controllers, Middleware, Hubs (NmxHub), Extensions, Program.cs
-        └── Namorix.Workers/   # TokenCleanupWorker, TrafficFlushWorker, TrafficCleanupWorker, TrafficStatsWorker
+        ├── Namorix.Core/      # Shared infrastructure (FlatFile, Hubs, Middleware, Workers, Services,
+        │                       # Extensions, Logger, Infrastructure, Constants, Config, Responses, Validation)
+        ├── Namorix.Adapters/  # Persistence (AppDbContext, SQLite migrations),
+        │                       # Services (Auth, Permission, Settings, Theme, User)
+        ├── Namorix.Server/    # Controllers, Middleware (Auth/TrustedProxy/RequirePermission),
+        │                       # Extensions, Program.cs
+        └── Namorix.Workers/   # TokenCleanupWorker
 ```
 
 ## Packages
@@ -130,7 +132,7 @@ namorix/
 | `@namorix/core` | Types, auth guards, http client with auto-refresh + CSRF, `ApiError`, i18n (NmxI18n, ValidationRunner), SignalR hooks, store (nmxStore), theme, addon contract, fingerprint, cache (useTabCache, Show), hooks (usePageSize) | frontend, @namorix/ui, external addons |
 | `@namorix/styles` | SCSS tokens, reset, fonts, icomoon icons, component/layout SCSS (shared by all themes) | frontend, @namorix/ui, external addons |
 | `@namorix/ui` | Primitives (NmxButton, NmxForm, NmxInlineAlert, NmxToggle, NmxSelect, NmxSlider, NmxSegmentedGroup, NmxBadge, NmxChip, NmxLoading, NmxPagination, NmxPulseDot, NmxSearchInput, NmxStatCard, NmxTagInput) + Composite (NmxCard, NmxDataTable, NmxMetaList, NmxRail, NmxSettings, NmxToolbar, NmxAddon) + NmxTabContext + NmxHostContext | frontend |
-| `backend` | ASP.NET Core 8 API server (SignalR hubs, flat file traffic storage, SQLite) | - |
+| `backend` | ASP.NET Core 8 API server (SignalR, flat file traffic + logs, SQLite, Log pipeline, FileLogger) | - |
 | `frontend` | Vite React shell (Redux Toolkit, SignalR client, addon system) | - |
 
 ## Auth Architecture
