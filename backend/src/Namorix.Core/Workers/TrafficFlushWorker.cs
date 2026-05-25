@@ -2,10 +2,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Namorix.Adapters.FlatFile;
-using Namorix.Adapters.Infrastructure;
 using Namorix.Adapters.Services;
 using Namorix.Core.FlatFile;
 using Namorix.Core.Infrastructure;
+using Namorix.Core.Services;
 
 namespace Namorix.Workers;
 

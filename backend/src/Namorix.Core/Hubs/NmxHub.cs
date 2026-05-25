@@ -1,12 +1,11 @@
 using Microsoft.AspNetCore.SignalR;
 using Namorix.Adapters.Services;
 using Namorix.Core.Constants;
-using Namorix.Core.Infrastructure;
+using Namorix.Core.Services;
 
 namespace Namorix.Server.Hubs;
 
-public class NmxHub(ITrafficNotifier trafficNotifier,
-    TrafficMonitorService monitorService): Hub
+public class NmxHub(TrafficMonitorService monitorService): Hub
 {
     public override async Task OnConnectedAsync()
     {

@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Namorix.Adapters.Services;
+using Namorix.Core.Middleware;
 using Namorix.Core.Responses;
+using Namorix.Core.Services;
 using Namorix.Server.Middleware;
 
 namespace Namorix.Server.Controllers;
@@ -22,6 +24,7 @@ public class TrafficMonitorController(TrafficMonitorService trafficMonitorServic
             .GetLogs(page, size, from, to, search);
         return Ok(ApiResponse.Ok(new { items, total, elapsedMs }));
     }
+    
     [HttpDelete]
     public async Task<IActionResult> ClearLogs([FromQuery] DateTime? before = null)
     {

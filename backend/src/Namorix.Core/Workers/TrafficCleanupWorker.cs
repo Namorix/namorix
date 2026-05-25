@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Namorix.Adapters.FlatFile;
+using Namorix.Core.FlatFile;
 using Namorix.Core.IO;
 
 namespace Namorix.Workers;

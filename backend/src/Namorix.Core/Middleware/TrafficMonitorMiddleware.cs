@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using System.Security.Claims;
 using Namorix.Adapters.FlatFile;
-using Namorix.Adapters.Infrastructure;
 using Namorix.Core.Constants;
+using Namorix.Core.FlatFile;
 using Namorix.Core.Infrastructure;
 
 namespace Namorix.Server.Middleware;

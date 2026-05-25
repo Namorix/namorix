@@ -1,5 +1,6 @@
 using System.Threading.Channels;
 using Namorix.Adapters.FlatFile;
+using Namorix.Core.FlatFile;
 
 namespace Namorix.Adapters.Infrastructure;
 

@@ -1,4 +1,5 @@
 using Namorix.Adapters.FlatFile;
+using Namorix.Core.FlatFile;
 
 namespace Namorix.Adapters.Filters;
 

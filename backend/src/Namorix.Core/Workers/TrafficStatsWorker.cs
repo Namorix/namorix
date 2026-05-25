@@ -4,6 +4,7 @@ using Namorix.Adapters.FlatFile;
 using Namorix.Adapters.Services;
 using Namorix.Core.FlatFile;
 using Namorix.Core.IO;
+using Namorix.Core.Services;
 
 namespace Namorix.Workers;
 

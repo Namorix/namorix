@@ -1,6 +1,6 @@
 using System.Diagnostics;
-using Namorix.Adapters.Filters;
 using Namorix.Adapters.FlatFile;
+using Namorix.Core.Filters;
 using Namorix.Core.FlatFile;
 using Namorix.Core.IO;
 
