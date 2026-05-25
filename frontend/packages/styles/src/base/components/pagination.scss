@@ -3,6 +3,8 @@
   align-items: center;
   gap: var(--nmx-spacing-sm);
   font-family: var(--nmx-font-sans), serif;
+  background: var(--nmx-color-surface-low);
+  padding: var(--nmx-spacing-xs) var(--nmx-spacing-lg);
 
   &__count {
     font-size: var(--nmx-font-size-xs);
@@ -53,23 +55,13 @@
     opacity: 0.7;
   }
 
-  &__size-wrap {
-    min-width: 56px;
-    margin-left: auto;
-  }
-
-  & &__size-wrap:after {
-    right: var(--nmx-spacing-xs);
+  & &__size-select {
+    padding-top: var(--nmx-spacing-sm);
+    padding-bottom: var(--nmx-spacing-sm);
   }
 
   & &__size-wrap,
   & &__size-select {
     width: auto;
-  }
-
-  & &__size-select {
-    padding-right: var(--nmx-spacing-xl);
-    padding-top: var(--nmx-spacing-sm);
-    padding-bottom: var(--nmx-spacing-sm);
   }
 }

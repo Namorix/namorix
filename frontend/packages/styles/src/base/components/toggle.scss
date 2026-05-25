@@ -45,7 +45,6 @@
   width: var(--nmx-toggle-width);
   border-radius: var(--nmx-radius-full);
   cursor: pointer;
-  user-select: none;
   border: var(--nmx-toggle-thumb-inset) solid transparent;
   background: var(--nmx-color-surface-mid);
   transition:
@@ -75,6 +74,5 @@
   font-size: var(--nmx-font-size-sm);
   line-height: var(--nmx-line-height-base);
   color: var(--nmx-color-on-surface-variant);
-  user-select: none;
   cursor: pointer;
 }

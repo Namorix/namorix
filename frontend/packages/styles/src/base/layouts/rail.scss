@@ -41,8 +41,6 @@
       display: contents;
     }
   }
-
-  @include no-user-select;
 }
 
 .nmx-rail-list__items {
@@ -65,8 +63,6 @@
   white-space: nowrap;
   width: 100%;
   transition: background-color 0.15s;
-
-  @include no-user-select;
 
   &__toggle {
     padding-bottom: var(--nmx-spacing-md);

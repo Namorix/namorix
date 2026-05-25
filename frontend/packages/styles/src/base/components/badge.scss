@@ -6,7 +6,7 @@
   padding: var(--nmx-spacing-sm) var(--nmx-spacing-md);
   border-radius: var(--nmx-radius-md);
   font-size: var(--nmx-font-size-xs);
-  font-weight: var(--nmx-font-weight-medium);
+  font-weight: var(--nmx-font-weight-bold);
   letter-spacing: var(--nmx-letter-spacing-wide);
   font-family: var(--nmx-font-sans), serif;
   line-height: var(--nmx-line-height-normal);
@@ -17,11 +17,15 @@
 
   @include semantic-variants("nmx-badge", true, true);
 
-  &-bg {
+  &--bg {
     background: color-mix(
       in oklab,
       var(--nmx-badge-bg, var(--nmx-color-primary)) 14%,
       transparent
     );
+  }
+
+  &--uppercase {
+    text-transform: uppercase;
   }
 }

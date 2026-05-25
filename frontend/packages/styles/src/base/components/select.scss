@@ -3,6 +3,8 @@
 .nmx-select-wrap {
   position: relative;
   width: 100%;
+  display: flex;
+  align-items: center;
 
   &:after {
     content: "#{$ic-arrow-down}";
@@ -30,6 +32,7 @@
   -webkit-appearance: none;
   font-size: var(--nmx-font-size-sm);
   padding: var(--nmx-spacing-lg);
+  padding-right: calc(var(--nmx-spacing-md) * 3);
   border-color: transparent;
   border-radius: var(--nmx-radius-md);
   background: var(--nmx-color-surface-lowest);

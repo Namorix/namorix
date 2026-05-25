@@ -5,6 +5,11 @@
   user-select: none;
 }
 
+@mixin user-select {
+  -webkit-user-select: auto;
+  user-select: auto;
+}
+
 @mixin truncate {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -83,4 +88,12 @@
       --#{$prefix}-spacing: #{$spacing};
     }
   }
+}
+
+@mixin flex-fill-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
 }

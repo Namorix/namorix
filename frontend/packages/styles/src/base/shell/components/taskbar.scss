@@ -19,8 +19,6 @@
   box-sizing: border-box;
   z-index: 9999;
 
-  @include no-user-select;
-
   &__inner {
     display: flex;
     flex-direction: row;

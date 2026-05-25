@@ -9,8 +9,6 @@
   bottom: var(--nmx-taskbar-height);
   background: var(--nmx-wallpaper);
 
-  @include no-user-select;
-
   &__grid {
     display: flex;
     flex-direction: column;

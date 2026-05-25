@@ -1,0 +1,73 @@
+@use "../abstract/mixins" as *;
+
+.nmx-horizontal-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--nmx-spacing-md);
+  padding: var(--nmx-spacing-md);
+  container-type: inline-size;
+
+  @include spacings("nmx-horizontal-wrap");
+
+  &--align-start {
+    align-items: flex-start;
+  }
+
+  &--align-center {
+    align-items: center;
+  }
+
+  &--align-end {
+    align-items: flex-end;
+  }
+
+  &--align-stretch {
+    align-items: stretch;
+  }
+
+  &--justify-start {
+    justify-content: flex-start;
+  }
+
+  &--justify-center {
+    justify-content: center;
+  }
+
+  &--justify-end {
+    justify-content: flex-end;
+  }
+
+  &--justify-between {
+    justify-content: space-between;
+  }
+
+  &--justify-around {
+    justify-content: space-around;
+  }
+}
+
+.nmx-horizontal-wrap__item {
+  display: flex;
+  flex-direction: row;
+  flex: 0 1 auto;
+
+  .nmx-select-wrap {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .nmx-select-control {
+    padding: var(--nmx-spacing-lg);
+    height: 50px;
+  }
+}
+
+.nmx-horizontal-wrap__item--push-left {
+  flex: 1 0 auto;
+}
+
+.nmx-horizontal-wrap__item--push-right {
+  margin-inline-start: auto;
+  min-width: 200px;
+}

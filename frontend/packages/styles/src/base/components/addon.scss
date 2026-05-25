@@ -1,3 +1,5 @@
+@use "../abstract/mixins" as *;
+
 .nmx-addon-root {
   display: flex;
   flex-direction: column;
@@ -9,28 +11,19 @@
 }
 
 .nmx-addon-page {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  min-height: 0;
+  @include flex-fill-column;
 
   &__data-table {
     flex: 1;
   }
-
-  &__pagination {
-    padding: var(--nmx-spacing-sm);
-    background: var(--nmx-color-surface-low);
-  }
 }
 
-.nmx-addon__placeholder {
+.nmx-addon__toolbar-content {
+  padding: var(--nmx-spacing-md);
+}
+
+.nmx-addon__placeholder,
+.nmx-addon__toolbar-content__placeholder {
   display: flex;
   align-items: center;
   justify-content: center;

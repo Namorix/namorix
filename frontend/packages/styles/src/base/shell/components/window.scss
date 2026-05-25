@@ -38,8 +38,6 @@
     cursor: default;
     flex-shrink: 0;
 
-    @include no-user-select;
-
     .nmx-window-frame:not(.nmx-window-frame--focused) & {
       opacity: 0.65;
     }

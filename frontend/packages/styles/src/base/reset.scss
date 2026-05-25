@@ -1,3 +1,5 @@
+@use "./abstract/mixins" as *;
+
 * {
   box-sizing: border-box;
 }
@@ -23,4 +25,12 @@ body {
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
+
+  @include no-user-select;
+}
+
+input,
+textarea,
+[contenteditable] {
+  @include user-select;
 }

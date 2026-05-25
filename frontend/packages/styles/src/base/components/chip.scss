@@ -14,8 +14,6 @@
   white-space: nowrap;
   transition: opacity 0.15s;
 
-  @include no-user-select;
-
   background: color-mix(
     in oklab,
     var(--nmx-chip-bg, var(--nmx-color-primary)) 34%,
