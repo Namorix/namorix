@@ -8,6 +8,7 @@ public class FileLogger(string categoryName, Func<LogLevel> minLevel) : ILogger
 {
     public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
     public bool IsEnabled(LogLevel logLevel) => logLevel >= minLevel();
+    private readonly string _logGroup = LogEntrySerializer.MapSourceToGroup(categoryName);
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state,
         Exception? exception, Func<TState, Exception?, string> formatter)
@@ -19,6 +20,7 @@ public class FileLogger(string categoryName, Func<LogLevel> minLevel) : ILogger
         {
             Level = logLevel,
             Source = categoryName,
+            LogGroup = _logGroup,
             Message = msg,
             Timestamp = DateTime.UtcNow,
         });

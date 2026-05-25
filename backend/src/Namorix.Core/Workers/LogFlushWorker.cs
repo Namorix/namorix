@@ -28,7 +28,9 @@ public class LogFlushWorker(
 
             try
             {
-                foreach (var e in batch) await flatFileStore.AppendAsync(e);
+                foreach (var e in batch)
+                    await flatFileStore.AppendAsync(e, e.LogGroup);
+
                 await notifier.NotifyFlushAsync(batch);
                 batch.Clear();
             }

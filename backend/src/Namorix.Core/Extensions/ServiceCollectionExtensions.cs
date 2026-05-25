@@ -5,11 +5,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Namorix.Core.Constants;
 using Namorix.Core.FlatFile;
 using Namorix.Core.Hubs;
 using Namorix.Core.Infrastructure;
 using Namorix.Core.IO;
+using Namorix.Core.Logger;
 using Namorix.Core.Responses;
 using Namorix.Core.Services;
 using Namorix.Core.Workers;
@@ -31,6 +33,13 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<TrafficMonitorService>();
         services.AddSingleton<LogService>();
         services.AddSingleton<ILogNotifier, SignalRLogNotifier>();
+        
+        services.AddSingleton<ILoggerProvider>(sp =>
+        {
+            var options = sp.GetRequiredService<FlatFileOptions>();
+            return new FileLoggerProvider(() => options.MinLogLevel);
+        });
+        
         services.AddScoped<ITrafficNotifier, SignalRTrafficNotifier>();
         services.AddScoped<ISystemNotifier, SignalRSystemNotifier>();
         services.AddHostedService<LogFlushWorker>();
@@ -75,6 +84,7 @@ public static class ServiceCollectionExtensions
         services.AddControllers().AddJsonOptions(options =>
         {
             options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+            options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
         });
         
         services.AddCors();

@@ -1,10 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Namorix.Core.FlatFile;
+using Namorix.Core.Middleware;
 using Namorix.Core.Services;
 
 namespace Namorix.Core.Controllers;
 
-[ApiController, Route("api/logs")]
+// [RequireAdmin]
+[ApiController]
+[Route("api/logs")]
 public class LogController(LogService logService) : ControllerBase
 {
     [HttpGet]

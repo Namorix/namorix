@@ -68,9 +68,9 @@ public class DataDirectory(string basePath)
         if (!Directory.Exists(catDir)) return 0;
         var deleted = 0;
         
-        foreach (var file in Directory.GetFiles(catDir, LogPattern(category)))
+        foreach (var file in Directory.GetFiles(catDir, LogPattern, SearchOption.AllDirectories))
         {
-            var dateStr = DateFromFileName(file, category);
+            var dateStr = DateFromFileName(file);
             if (!DateTime.TryParse(dateStr, out var fileDate)
                 || fileDate >= cutoff) continue;
             
@@ -87,10 +87,9 @@ public class DataDirectory(string basePath)
         
         foreach (var catDir in Directory.GetDirectories(basePath))
         {
-            var category = Path.GetFileName(catDir);
-            foreach (var file in Directory.GetFiles(catDir, LogPattern(category)))
+            foreach (var file in Directory.GetFiles(catDir, LogPattern, SearchOption.AllDirectories))
             {
-                var dateStr = DateFromFileName(file, category);
+                var dateStr = DateFromFileName(file);
                 if (!DateTime.TryParse(dateStr, out var fileDate)
                     || fileDate >= cutoff) continue;
                 
@@ -101,10 +100,13 @@ public class DataDirectory(string basePath)
         return Task.FromResult(deleted);
     }
     
-    private static string LogPattern(string category) => $"{category}-*.log";
+    private static string LogPattern => "*.log";
     
-    private static string DateFromFileName(string file, string category) =>
-        Path.GetFileNameWithoutExtension(file).Replace($"{category}-", "");
+    private static string DateFromFileName(string file)
+    {
+        var name = Path.GetFileNameWithoutExtension(file);
+        return name.Length >= 10 ? name[^10..] : "";
+    }
 }
 
 public record DataDirectoryStats(
