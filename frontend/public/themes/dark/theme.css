@@ -390,6 +390,7 @@ body {
 }
 .nmx-addon-page__pagination {
   padding: var(--nmx-spacing-sm);
+  background: var(--nmx-color-surface-low);
 }
 .nmx-addon__placeholder {
   display: flex;
