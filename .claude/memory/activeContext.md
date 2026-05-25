@@ -25,6 +25,14 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 ## Recent Changes
 
+### 2026-05-25 — ILogger injection across services/middleware, SignalR reconnect loop, NmxHorizontalWrap, RequireAdmin
+
+- **backend (0.30.0 → 0.30.1)**: NEW `HubContextExtensions.RequireAdmin()` — extension method với ILogger warning log khi non-admin gọi SignalR methods. MODIFIED `NmxHub` — ILogger injection, full logging (connect/disconnect/subscribe/unsubscribe). MODIFIED 7 services/middleware files — ILogger injection với 20+ log points across auth operations (login, register, token reuse detection, fingerprint mismatch revoke, CSRF mismatch, untrusted proxy blocked).
+- **@namorix/core (0.22.0 → 0.23.0)**: MODIFIED `signalr.service.ts` — `scheduleReconnect()` with exponential backoff (5s→10s→20s→30s cap), infinite retry, `reconnectDelay` reset on successful connection.
+- **@namorix/ui (0.16.1 → 0.17.0)**: NEW `NmxHorizontalWrap` — flexbox wrap layout (gap/align/justify). NEW `NmxHorizontalWrapItem` (pushRight). 
+- **@namorix/styles (0.19.2 → 0.20.0)**: NEW `horizontal-wrap.scss`. Multiple component SCSS fixes. Theme CSS rebuilt.
+- **frontend (0.26.0 → 0.26.1)**: MODIFIED `App.tsx` — `hasBeenConnected` state, loading overlay shows on both disconnect + reconnect (không overlay ở Login page).
+
 ### 2026-05-25 (later) — LogGroup splitting, DataDirectory fixes, LogViewer rewrite with real API + SignalR
 
 - **backend (0.29.0 → 0.30.0)**: NEW LogGroup splitting — flat files split into subdirectories by source category (`data/logs/core/`, `data/logs/app/`, `data/logs/controller/`, `data/logs/auth/`, `data/logs/database/`, `data/logs/misc/`). NEW `MapSourceToGroup()` — maps C# namespace to LogGroup. NEW `IFlatFileStore.AppendAsync<T>(entry, subDirectory)` — subdirectory support. NEW `FileLoggerProvider` DI registration + `FlatFileOptions.MinLogLevel`. FIX `DataDirectory.PurgeCategory` — `SearchOption.AllDirectories`, `LogPattern`→`*.log`, `DateFromFileName` last-10-chars. FIX `FlatFileStore.GetFilesForCategory` — recursive search for files in subdirectories.

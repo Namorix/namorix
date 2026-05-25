@@ -125,10 +125,11 @@
 | Package | Version | Milestone |
 |---------|---------|-----------|
 | frontend | 0.26.0 | M3 (LogViewer rewrite: real API + SignalR, NmxDataTable, i18n keys) |
-| @namorix/core | 0.22.0 | M3 (new types/logs.ts module: LogEntry, LogLevel, LogGroup types; ApiLogRoutes) |
-| @namorix/styles | 0.19.2 | M3 (minor SCSS tweaks: addon.scss + network-traffic cleanup, theme CSS rebuilt) |
-| @namorix/ui | 0.16.1 | M3 (NmxSearchInput dropdown fixes: Enter submit, suggestion click, disabled skips, duplicate keys) |
-| backend | 0.30.0 | M3 (LogGroup splitting, DataDirectory fixes, FileLoggerProvider DI, FlatFileOptions) |
+| frontend | 0.26.1 | M3 (SignalR loading overlay + hasBeenConnected, various pages fixes) |
+| @namorix/core | 0.23.0 | M3 (SignalR reconnection loop with exponential backoff, scheduleReconnect) |
+| @namorix/styles | 0.20.0 | M3 (new horizontal-wrap.scss layout, various SCSS fixes across components, theme CSS rebuilt) |
+| @namorix/ui | 0.17.0 | M3 (New NmxHorizontalWrap layout component + NmxHorizontalWrapItem, various component fixes) |
+| backend | 0.30.1 | M3 (ILogger injection across auth/services/middleware, new HubContextExtensions.RequireAdmin, NmxHub logging) |
 
 ## Version Rules
 
@@ -156,6 +157,16 @@
 | @namorix/core | 0.22.0 | NEW: `types/logs.ts` — `LogLevel` type union, `LogGroup` type union, `LogEntry` type (`level: number`, `group: number`, `source`, `message`, `timestamp`). NEW: `apiRoutes.ts` — `ApiLogRoutes` config. MOVED: `LogEntry` type from `signalr/constants.ts` → `types/logs.ts`. DELETED: old string-union `LogLevel` from `constants.ts` (replaced by `types/logs.ts` types). |
 | @namorix/styles | 0.19.2 | MODIFIED: `addon.scss` — minor LogViewer styling. DELETED: `network-traffic.scss` — unused styles removed. Theme CSS rebuilt. |
 | frontend | 0.26.0 | REWRITE: `LogViewer.tsx` — full rewrite (~230 lines): real API via `logController.listLogs()`, SignalR real-time via `useSignalRGroup(SignalRGroups.Logs)` + `useSignalREvent(SignalREvent.LogsNewEntry)`, `NmxDataTable` with 5 columns (level/group/source/message/timestamp), `NmxPagination` with `usePageSize`, `NmxSelect` level filter, `NmxSearchInput` source filter, `NmxButton` refresh, `NmxBadge` with semantic colors. NEW: `log.controller.ts` — controller pattern matching `traffic.controller.ts`. NEW: `i18n/locales/en.json` — `addon.logViewer.*` translation keys. MODIFIED: `LogViewer.addon.tsx` — wiring updates. MODIFIED: `NetworkTraffic.addon.tsx`, `NetworkTraffic.tsx`, `NetworkTrafficLogs.tsx`, `Settings.addon.tsx` — minor cleanup. |
+
+### 2026-05-25 — ILogger injection across services/middleware, SignalR reconnect loop, NmxHorizontalWrap, RequireAdmin
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| backend | 0.30.1 | NEW: `HubContextExtensions.RequireAdmin()` extension with ILogger warning log. MODIFIED: `NmxHub` — ILogger injection, OnConnectedAsync/OnDisconnectedAsync/subscribe/unsubscribe logging. MODIFIED: `AuthService`, `PermissionService`, `SettingsService`, `UserService`, `AuthMiddleware`, `CsrfMiddleware`, `TrustedProxyMiddleware` — ILogger injection (20+ log points: login fail/success, register fail/success, token reuse, fingerprint mismatch+revoke, refresh, CSRF mismatch, untrusted proxy blocked). |
+| @namorix/core | 0.23.0 | MODIFIED: `signalr.service.ts` — `scheduleReconnect()` with exponential backoff (5s→30s cap), infinite retry, reset on success. |
+| @namorix/ui | 0.17.0 | NEW: `NmxHorizontalWrap` — flexbox wrap layout (gap/align/justify props). NEW: `NmxHorizontalWrapItem` — child item (pushRight prop). |
+| @namorix/styles | 0.20.0 | NEW: `horizontal-wrap.scss` — flex-wrap layout with spacings/align/justify variants, push-right modifier. MODIFIED: Multiple component SCSS fixes (addon, badge, button, chip, pagination, select, toggle, toolbar, rail, reset, shell). Theme CSS rebuilt. |
+| frontend | 0.26.1 | MODIFIED: `App.tsx` — SignalR loading overlay shows on disconnect+reconnect (via `hasBeenConnected`), no overlay on Login page. |
 
 ### 2026-05-25 — Core migration: shared infrastructure moved to Namorix.Core, new Log pipeline, DI extensions
 
