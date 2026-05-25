@@ -1,14 +1,16 @@
-import type { WithBaseProps, WithSemanticColor } from "../types"
+import type { WithBaseProps, WithSemanticColor, WithUppercase } from "../types"
 import React from "react"
 import { cx, cxSemantic } from "../utils"
 
-interface NmxBadgeProps extends WithBaseProps, WithSemanticColor {
+interface NmxBadgeProps
+  extends WithBaseProps, WithSemanticColor, WithUppercase {
   bgEnabled?: boolean
 }
 
 export const NmxBadge: React.FC<NmxBadgeProps> = ({
   semantic = "info",
   bgEnabled = true,
+  uppercase = true,
   shouldRender = true,
   children,
   className,
@@ -24,7 +26,8 @@ export const NmxBadge: React.FC<NmxBadgeProps> = ({
       className={cx(
         "nmx-badge",
         cxSemantic("nmx-badge", semantic),
-        { "nmx-badge-bg": bgEnabled },
+        { "nmx-badge--bg": bgEnabled },
+        { "nmx-badge--uppercase": uppercase },
         className,
       )}
     >

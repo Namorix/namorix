@@ -20,7 +20,7 @@ interface NmxFormInputProps extends WithBaseProps {
 export const NmxFormInput: React.FC<NmxFormInputProps> = ({
   id,
   ref,
-  type,
+  type = "text",
   name,
   value,
   placeholder,

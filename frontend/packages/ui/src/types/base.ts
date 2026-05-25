@@ -21,3 +21,7 @@ export interface WithMuted {
 export interface WithVariant<T extends string = NmxButtonVariant> {
   variant?: T
 }
+
+export interface WithUppercase {
+  uppercase?: boolean
+}

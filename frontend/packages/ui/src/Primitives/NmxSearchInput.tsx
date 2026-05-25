@@ -135,6 +135,8 @@ export const NmxSearchInput = ({
         />
         <NmxFormInput
           ref={ref}
+          name="search_input"
+          autoComplete="search_input"
           value={resolvedValue}
           onValueChange={(value) => {
             setShowDropdown(true)
