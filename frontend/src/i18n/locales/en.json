@@ -180,6 +180,27 @@
         "error": "Failed to change password"
       },
       "save": "Save"
+    },
+    "logViewer": {
+      "allLevels": "All Levels",
+      "level": "Level",
+      "source": "Source",
+      "group": "Group",
+      "message": "Message",
+      "timestamp": "Timestamp",
+      "sourcePlaceholder": "Filter by source...",
+      "refresh": "Refresh",
+      "levels": {
+        "info": "Info",
+        "warn": "Warn",
+        "error": "Error",
+        "fatal": "Fatal"
+      },
+      "fallbacks": {
+        "loading": "Loading logs...",
+        "error": "Failed to load logs",
+        "empty": "No logs recorded yet"
+      }
     }
   }
 }

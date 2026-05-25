@@ -10,8 +10,6 @@ registerAddon(
       displayName: "Settings",
       description: "Setting system",
       icon: NmxIconSvgSymbol.APP_SETTINGS,
-      defaultWidth: 1200,
-      defaultHeight: 500,
     },
     Settings,
   ),

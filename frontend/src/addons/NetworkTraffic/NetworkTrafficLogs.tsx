@@ -52,10 +52,8 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
     if (isNewFilter) prevFilterRef.current = filterSearch
     const pg = isNewFilter ? 1 : page
 
-    console.log("Effect log")
-
     const timeout = setTimeout(() => {
-      fetchLogs(pg, filterSearch, pageSize).catch((err) => console.error(err))
+      fetchLogs(pg, filterSearch, pageSize).catch(setError)
     }, 0)
     return () => clearTimeout(timeout)
   }, [filterSearch, page, pageSize, fetchLogs])
@@ -124,6 +122,7 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
       header: t("addon.networkTraffic.logs.timestamp"),
       renderCell: (row) => formatTimestamp(row.timestamp),
       grow: 2,
+      disableEllipsisCell: true,
       hideBelow: "lg",
     },
   ]
@@ -155,8 +154,6 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
         rows={logs}
         fallbackConditions={fallbackConditions}
         className="nmx-addon-page__data-table"
-        headerClass="nmx-addon-network-traffic__data-table-header"
-        rowClass="nmx-addon-network-traffic__data-table-row"
       />
       {total > 0 && (
         <NmxPagination
@@ -168,6 +165,7 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
           pageSizeOptions={pageSizeOptions}
           onPageSizeChange={(size) => {
             setPageSize(size)
+            setError(undefined)
             setPage(1)
           }}
           className="nmx-addon-page__pagination nmx-addon-network-traffic__pagination"

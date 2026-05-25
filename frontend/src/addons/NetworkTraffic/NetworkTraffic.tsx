@@ -36,7 +36,7 @@ const TABS: NmxToolbarItemData<NetworkTrafficTab>[] = [
   },
 ]
 
-const suggestionsMeta: NmxSearchSuggestion[] = [
+const SUGGESTIONS_META: NmxSearchSuggestion[] = [
   {
     key: "m=",
     label: "addon.networkTraffic.search.m.label",
@@ -73,7 +73,7 @@ export const NetworkTraffic: React.FC = () => {
   const { t } = useTranslation()
   const [filterLogs, setFilterLogs] = useState("")
   const searchSuggestions = useMemo(() => {
-    return suggestionsMeta.map((s) => ({
+    return SUGGESTIONS_META.map((s) => ({
       key: s.key,
       label: t(s.label),
       description: t(s.description),
