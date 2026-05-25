@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useMemo, useState } from "react"
 import {
   NmxIconFontSymbol,
   type NmxToolbarItemData,
@@ -36,22 +36,49 @@ const TABS: NmxToolbarItemData<NetworkTrafficTab>[] = [
   },
 ]
 
-const searchSuggestions: NmxSearchSuggestion[] = [
-  { key: "m=", label: "method", description: "filter by HTTP method" },
-  { key: "p=", label: "path", description: "filter by URL path" },
+const suggestionsMeta: NmxSearchSuggestion[] = [
+  {
+    key: "m=",
+    label: "addon.networkTraffic.search.m.label",
+    description: "addon.networkTraffic.search.m.desc",
+  },
+  {
+    key: "p=",
+    label: "addon.networkTraffic.search.p.label",
+    description: "addon.networkTraffic.search.p.desc",
+  },
   {
     key: "s=",
-    label: "status",
-    description: "status code (200) or range (2xx)",
+    label: "addon.networkTraffic.search.s.label",
+    description: "addon.networkTraffic.search.s.desc",
   },
-  { key: "ip=", label: "IP", description: "filter by IP prefix" },
-  { key: "d=", label: "date", description: "d=>2026-06-07 or d=2026-06-07" },
-  { key: "t=", label: "time", description: "t=>11:20 or t=11:20:22" },
+  {
+    key: "ip=",
+    label: "addon.networkTraffic.search.ip.label",
+    description: "addon.networkTraffic.search.ip.desc",
+  },
+  {
+    key: "d=",
+    label: "addon.networkTraffic.search.d.label",
+    description: "addon.networkTraffic.search.d.desc",
+  },
+  {
+    key: "t=",
+    label: "addon.networkTraffic.search.t.label",
+    description: "addon.networkTraffic.search.t.desc",
+  },
 ]
 
 export const NetworkTraffic: React.FC = () => {
   const { t } = useTranslation()
   const [filterLogs, setFilterLogs] = useState("")
+  const searchSuggestions = useMemo(() => {
+    return suggestionsMeta.map((s) => ({
+      key: s.key,
+      label: t(s.label),
+      description: t(s.description),
+    }))
+  }, [t])
 
   return (
     <NmxAddonRoot className="nmx-addon-network-traffic">

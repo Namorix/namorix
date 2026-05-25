@@ -84,6 +84,14 @@
         "logs": "Logs",
         "threats": "Threats"
       },
+      "search": {
+        "m": { "label": "Method", "desc": "filter by HTTP method" },
+        "p": { "label": "Path", "desc": "filter by URL path" },
+        "s": { "label": "Status", "desc": "status code (200) or range (2xx)" },
+        "ip": { "label": "IP", "desc": "filter by IP prefix" },
+        "d": { "label": "Date", "desc": "d=>2026-06-07 or d=2026-06-07" },
+        "t": { "label": "Time", "desc": "t=>11:20 or t=11:20:22" }
+      },
       "overview": {
         "stats": {
           "totalRequests": "Total Requests",
