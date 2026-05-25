@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Namorix.Core.Config;
 using Namorix.Core.Constants;
@@ -6,7 +7,7 @@ using Namorix.Core.Responses;
 
 namespace Namorix.Core.Middleware;
 
-public class CsrfMiddleware(RequestDelegate requestDelegate, IOptions<AppConfig> appConfig)
+public class CsrfMiddleware(RequestDelegate requestDelegate, IOptions<AppConfig> appConfig, ILogger<CsrfMiddleware> logger)
 {
     private readonly AppConfig _appConfig = appConfig.Value;
     
@@ -44,6 +45,9 @@ public class CsrfMiddleware(RequestDelegate requestDelegate, IOptions<AppConfig>
             if (string.IsNullOrEmpty(headerToken) ||
                 !string.Equals(token, headerToken, StringComparison.Ordinal))
             {
+                logger.LogError("CSRF validation failed: method={Method}, path={Path}",
+                    httpContext.Request.Method, httpContext.Request.Path);
+                
                 httpContext.Response.StatusCode = StatusCodes.Status403Forbidden;
                 await httpContext.Response.WriteAsJsonAsync(
                     ApiResponse.Fail(MiddlewareErrorCodes.CsrfTokenMismatch, "CSRF validation failed"));

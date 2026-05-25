@@ -4,7 +4,7 @@ using Namorix.Core.Constants;
 
 namespace Namorix.Server.Middleware;
 
-public class AuthMiddleware(RequestDelegate requestDelegate)
+public class AuthMiddleware(RequestDelegate requestDelegate, ILogger<AuthMiddleware> logger)
 {
     public async Task InvokeAsync(HttpContext httpContext, AuthService authService)
     {
@@ -23,6 +23,10 @@ public class AuthMiddleware(RequestDelegate requestDelegate)
                 };
                 var identity = new ClaimsIdentity(claims, "nmx");
                 httpContext.User = new ClaimsPrincipal(identity);
+            }
+            else
+            {
+                logger.LogWarning("Invalid access token: path={Path}", httpContext.Request.Path);
             }
         }
 

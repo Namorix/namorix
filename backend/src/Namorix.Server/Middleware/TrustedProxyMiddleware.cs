@@ -5,7 +5,7 @@ using Namorix.Core.Responses;
 
 namespace Namorix.Server.Middleware;
 
-public class TrustedProxyMiddleware(RequestDelegate requestDelegate)
+public class TrustedProxyMiddleware(RequestDelegate requestDelegate, ILogger<TrustedProxyMiddleware> logger)
 {
     public async Task InvokeAsync(HttpContext httpContext, SettingsService settingsService)
     {
@@ -47,6 +47,9 @@ public class TrustedProxyMiddleware(RequestDelegate requestDelegate)
                                   httpContext.Request.Headers.ContainsKey(HttpHeaders.XForwardedProto);
         if (hasForwardedHeaders && !isTrusted)
         {
+            logger.LogWarning("Untrusted proxy blocked: remoteIp={RemoteIp}, path={Path}",
+                remoteIp, httpContext.Request.Path);
+
             httpContext.Items[HttpContextKeys.Validated] = true;
             httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
             httpContext.Response.ContentType = System.Net.Mime.MediaTypeNames.Application.Json;

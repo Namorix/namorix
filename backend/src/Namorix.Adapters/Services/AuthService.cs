@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Namorix.Adapters.Persistence;
@@ -13,7 +14,7 @@ using Namorix.Core.Models;
 
 namespace Namorix.Adapters.Services;
 
-public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig)
+public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig, ILogger<AuthService> logger)
 {
     private readonly JwtConfig _jwtConfig = jwtConfig.Value;
     
@@ -24,9 +25,11 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig)
             string.IsNullOrEmpty(user.Password) ||
             !BCrypt.Net.BCrypt.Verify(password, user.Password))
         {
+            logger.LogWarning("Login failed: invalid credentials for username={Username}", username);
             throw new AuthException(AuthErrors.InvalidCredentials);
         }
 
+        logger.LogInformation("Login success: userId={UserId}, username={Username}", user.Id, user.Username);
         return user;
     }
 
@@ -34,7 +37,10 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig)
     {
         var usernameExists = await dbContext.Users.AnyAsync(u => u.Username == username);
         if (usernameExists)
+        {
+            logger.LogWarning("Register failed: username={Username} already exists", username);
             throw new AuthException(AuthErrors.UsernameExists);
+        }
 
         var userCount = await dbContext.Users.CountAsync();
         var role = userCount == 0 ? UserRole.Admin : UserRole.User;
@@ -47,6 +53,7 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig)
         };
         dbContext.Users.Add(user);
         await dbContext.SaveChangesAsync();
+        logger.LogInformation("User registered: username={Username}, role={Role}", username, role);
         return user;
     }
 
@@ -162,12 +169,16 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig)
             .FirstOrDefaultAsync(rt => rt.TokenHash == tokenHash);
 
         if (storedToken == null)
+        {
+            logger.LogError("Token reuse detected: hash={Hash}", tokenHash[..12]);
             throw new AuthException(AuthErrors.TokenReuseDetected);
+        }
 
         if (storedToken.ExpiresAt < DateTime.UtcNow)
         {
             dbContext.RefreshTokens.Remove(storedToken);
             await dbContext.SaveChangesAsync();
+            logger.LogInformation("Expired token refresh attempt: userId={UserId}", storedToken.UserId);
             throw new AuthException(AuthErrors.InvalidToken);
         }
 
@@ -176,6 +187,7 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig)
             storedToken.Fingerprint != fingerprint)
         {
             await RevokeAllUserTokens(storedToken.UserId);
+            logger.LogError("Fingerprint mismatch — revoking all tokens: userId={UserId}", storedToken.UserId);
             throw new AuthException(AuthErrors.FingerprintMismatch);
         }
 
@@ -199,9 +211,11 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig)
         {
             // Token was already deleted by a concurrent request (another refresh
             // or cleanup worker). Treat as token reuse — client must re-login.
+            logger.LogError("Concurrent refresh conflict — token reuse detected: userId={UserId}", user.Id);
             throw new AuthException(AuthErrors.TokenReuseDetected);
         }
 
+        logger.LogInformation("Token refreshed: userId={UserId}", user.Id);
         return (user, newAccessToken, newRefreshToken);
     }
 
@@ -228,6 +242,7 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig)
     {
         var tokens = await dbContext.RefreshTokens
             .Where(rt => rt.UserId == userId).ToListAsync();
+        logger.LogWarning("Revoking {Count} tokens for userId={UserId}", tokens.Count, userId);
         dbContext.RefreshTokens.RemoveRange(tokens);
         await dbContext.SaveChangesAsync();
     }

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Namorix.Adapters.Persistence;
 using Namorix.Core.Constants;
 using Namorix.Core.Infrastructure;
@@ -7,7 +8,8 @@ using Namorix.Core.Models;
 
 namespace Namorix.Adapters.Services;
 
-public class SettingsService(AppDbContext dbContext, IMemoryCache memoryCache, ISystemNotifier systemNotifier)
+public class SettingsService(AppDbContext dbContext, IMemoryCache memoryCache,
+    ISystemNotifier systemNotifier, ILogger<SettingsService> logger)
 {
     public async Task<(List<string> proxies, List<string> origins, bool registerEnabled)> GetAllAsync()
     {
@@ -46,6 +48,7 @@ public class SettingsService(AppDbContext dbContext, IMemoryCache memoryCache, I
             setting.Value = enabled ? SettingValues.True : SettingValues.False;
         }
 
+        logger.LogInformation("Register toggle: {Enabled}", enabled);
         await dbContext.SaveChangesAsync();
         memoryCache.Set(SettingKeys.RegisterEnabled, enabled, Time.ExpirationRelativeToNow);
         await systemNotifier.NotifyConfigChangedAsync(SettingKeys.RegisterEnabled);
@@ -85,14 +88,20 @@ public class SettingsService(AppDbContext dbContext, IMemoryCache memoryCache, I
     public async Task<List<string>> GetTrustedProxies() =>
         await GetListAsync(SettingKeys.TrustedProxies);
 
-    public async Task SetTrustedProxies(List<string> proxies) =>
+    public async Task SetTrustedProxies(List<string> proxies)
+    {
+        logger.LogInformation("Trusted proxies updated: {Count} entries", proxies.Count);
         await SetListAsync(SettingKeys.TrustedProxies, proxies);
+    }
 
     public async Task<List<string>> GetAllowedOrigins() =>
         await GetListAsync(SettingKeys.AllowedOrigins);
 
-    public async Task SetAllowedOrigins(List<string> origins) =>
+    public async Task SetAllowedOrigins(List<string> origins)
+    {
+        logger.LogInformation("Allowed origins updated: {Count} entries", origins.Count);
         await SetListAsync(SettingKeys.AllowedOrigins, origins);
+    }
     
     public async Task<(bool needsRegister, bool registerEnabled)> GetAuthStatus()
     {

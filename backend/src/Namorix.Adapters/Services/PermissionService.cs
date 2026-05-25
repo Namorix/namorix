@@ -1,12 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Namorix.Adapters.Persistence;
 using Namorix.Core.Constants;
 using Namorix.Core.Models;
 
 namespace Namorix.Adapters.Services;
 
-public class PermissionService(AppDbContext appDbContext, IMemoryCache memoryCache)
+public class PermissionService(AppDbContext appDbContext, IMemoryCache memoryCache, ILogger<PermissionService> logger)
 {
     private const string CachePermissionPrefix = "perms:";
         
@@ -47,6 +48,8 @@ public class PermissionService(AppDbContext appDbContext, IMemoryCache memoryCac
             PermissionId = permission.Id,
             GrantedAt = DateTime.UtcNow
         });
+        
+        logger.LogInformation("Permission assigned: userId={UserId}, permissionValue={Value}", userId, permissionValue);
         await appDbContext.SaveChangesAsync();
         InvalidateUserCache(userId);
     }
