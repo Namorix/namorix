@@ -1,6 +1,4 @@
-using Namorix.Core.FlatFile;
-
-namespace Namorix.Adapters.FlatFile;
+namespace Namorix.Core.FlatFile;
 
 public class TrafficLogSerializer : IFlatFileSerializer<TrafficLogSerializer>
 {

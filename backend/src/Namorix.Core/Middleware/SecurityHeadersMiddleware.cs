@@ -1,4 +1,6 @@
-namespace Namorix.Server.Middleware;
+using Microsoft.AspNetCore.Http;
+
+namespace Namorix.Core.Middleware;
 
 public class SecurityHeadersMiddleware(RequestDelegate requestDelegate)
 {

@@ -1,11 +1,11 @@
 using System.Diagnostics;
 using System.Security.Claims;
-using Namorix.Adapters.FlatFile;
+using Microsoft.AspNetCore.Http;
 using Namorix.Core.Constants;
 using Namorix.Core.FlatFile;
 using Namorix.Core.Infrastructure;
 
-namespace Namorix.Server.Middleware;
+namespace Namorix.Core.Middleware;
 
 public class TrafficMonitorMiddleware(RequestDelegate requestDelegate)
 {

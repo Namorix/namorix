@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Namorix.Core.Constants;
 using Namorix.Core.Responses;
 
-namespace Namorix.Server.Middleware;
+namespace Namorix.Core.Middleware;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class RequireAdminAttribute : ActionFilterAttribute

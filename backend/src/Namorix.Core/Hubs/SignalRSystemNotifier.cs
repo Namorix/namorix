@@ -1,9 +1,8 @@
 using Microsoft.AspNetCore.SignalR;
 using Namorix.Core.Constants;
-using Namorix.Core.Hubs;
 using Namorix.Core.Infrastructure;
 
-namespace Namorix.Server.Hubs;
+namespace Namorix.Core.Hubs;
 
 public class SignalRSystemNotifier(IHubContext<NmxHub> hubContext): ISystemNotifier
 {

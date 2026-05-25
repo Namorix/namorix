@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Namorix.Core.Constants;
 using Namorix.Core.Responses;
 
-namespace Namorix.Server.Middleware;
+namespace Namorix.Core.Middleware;
 
 public class ExceptionMiddleware(RequestDelegate requestDelegate, ILogger<ExceptionMiddleware> logger)
 {

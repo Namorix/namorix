@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Sockets;
 
-namespace Namorix.Server.Helpers;
+namespace Namorix.Core.Helpers;
 
 public static class NetworkHelper
 {

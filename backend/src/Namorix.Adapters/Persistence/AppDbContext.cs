@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Namorix.Adapters.FlatFile;
 using Namorix.Core.Config;
 using Namorix.Core.Models;
 
@@ -18,7 +17,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IOptions<AppCo
     public DbSet<ThemeManifest> ThemeManifests { get; set; }
     public DbSet<AddonManifest> AddonManifests { get; set; }
     
-
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (!optionsBuilder.IsConfigured && _config != null)

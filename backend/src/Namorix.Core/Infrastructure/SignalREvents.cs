@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+
 namespace Namorix.Core.Infrastructure;
 
 public record TrafficLogsFlushed(
@@ -5,6 +7,13 @@ public record TrafficLogsFlushed(
     int ErrorCount,
     double AvgDurationMs,
     double AvgResponseSizeBytes
+);
+
+public record LogEntryRecord(
+    LogLevel Level,
+    string Source,
+    string Message,
+    DateTime Timestamp
 );
 
 public record ConfigChanged(string Key);

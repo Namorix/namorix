@@ -1,11 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
-using Namorix.Adapters.Services;
 using Namorix.Core.Middleware;
 using Namorix.Core.Responses;
 using Namorix.Core.Services;
-using Namorix.Server.Middleware;
 
-namespace Namorix.Server.Controllers;
+namespace Namorix.Core.Controllers;
 
 [ApiController]
 [RequireAdmin]

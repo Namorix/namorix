@@ -1,7 +1,6 @@
-using Namorix.Adapters.FlatFile;
 using Namorix.Core.FlatFile;
 
-namespace Namorix.Adapters.Filters;
+namespace Namorix.Core.Filters;
 
 public record TrafficLogFilter
 {

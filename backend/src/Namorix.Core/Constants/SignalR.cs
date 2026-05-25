@@ -9,12 +9,14 @@ public static class SignalRPath
 public static class SignalRGroups
 {
     public const string Traffic = "traffic";
+    public const string Logs = "logs";
 }
-
 public static class SignalREvents
 {
     public const string TrafficNewLogs = "traffic:new-logs";
     public const string TrafficStatsInit = "traffic:stats-init";
+    public const string LogsNewEntry = "logs:new-entry";
+    public const string LogsHistory = "logs:history";
     public const string SystemConfigChanged = "system:config-changed";
     public const string UserThemeChanged = "user:theme-changed";
 }

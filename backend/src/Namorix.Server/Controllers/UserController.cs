@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.SignalR;
 using Namorix.Adapters.Services;
 using Namorix.Core.Constants;
 using Namorix.Core.Exceptions;
+using Namorix.Core.Hubs;
 using Namorix.Core.Infrastructure;
 using Namorix.Core.Responses;
 using Namorix.Core.Validation;
 using Namorix.Core.Validation.Schemas;
-using Namorix.Server.Hubs;
 using Namorix.Server.Middleware;
 
 namespace Namorix.Server.Controllers;

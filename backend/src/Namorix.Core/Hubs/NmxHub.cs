@@ -1,9 +1,8 @@
 using Microsoft.AspNetCore.SignalR;
-using Namorix.Adapters.Services;
 using Namorix.Core.Constants;
 using Namorix.Core.Services;
 
-namespace Namorix.Server.Hubs;
+namespace Namorix.Core.Hubs;
 
 public class NmxHub(TrafficMonitorService monitorService): Hub
 {
@@ -49,5 +48,15 @@ public class NmxHub(TrafficMonitorService monitorService): Hub
     public async Task UnsubscribeTraffic()
     {
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, SignalRGroups.Traffic);
+    }
+    
+    public async Task SubscribeLogs()
+    {
+        await Groups.AddToGroupAsync(Context.ConnectionId, SignalRGroups.Logs);
+    }
+
+    public async Task UnsubscribeLogs()
+    {
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, SignalRGroups.Logs);
     }
 }

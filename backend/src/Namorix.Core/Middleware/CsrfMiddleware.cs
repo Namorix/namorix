@@ -1,9 +1,10 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Namorix.Core.Config;
 using Namorix.Core.Constants;
 using Namorix.Core.Responses;
 
-namespace Namorix.Server.Middleware;
+namespace Namorix.Core.Middleware;
 
 public class CsrfMiddleware(RequestDelegate requestDelegate, IOptions<AppConfig> appConfig)
 {
@@ -11,13 +12,7 @@ public class CsrfMiddleware(RequestDelegate requestDelegate, IOptions<AppConfig>
     
     public async Task InvokeAsync(HttpContext httpContext)
     {
-        if (!_appConfig.CsrfEnabled)
-        {
-            await requestDelegate(httpContext);
-            return;
-        }
-
-        if (httpContext.Request.Path.StartsWithSegments(SignalRPath.HubPrefix))
+        if (!_appConfig.CsrfEnabled || httpContext.Request.Path.StartsWithSegments(SignalRPath.HubPrefix))
         {
             await requestDelegate(httpContext);
             return;

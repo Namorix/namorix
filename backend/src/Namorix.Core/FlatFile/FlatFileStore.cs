@@ -1,8 +1,7 @@
 using System.Collections.Concurrent;
-using Namorix.Core.FlatFile;
 using Namorix.Core.IO;
 
-namespace Namorix.Adapters.FlatFile;
+namespace Namorix.Core.FlatFile;
 
 public class FlatFileStore(FlatFileOptions options) : IFlatFileStore
 {
@@ -57,7 +56,7 @@ public class FlatFileStore(FlatFileOptions options) : IFlatFileStore
                 if (entry == null) continue;
                 if (filter != null && !filter(entry)) continue;
 
-                if (skip.HasValue && skipped < skip.Value)
+                if (skipped < skip)
                 {
                     skipped++;
                     continue;

@@ -1,7 +1,8 @@
+using Microsoft.AspNetCore.Http;
 using Namorix.Core.Constants;
 using Namorix.Core.Responses;
 
-namespace Namorix.Server.Middleware;
+namespace Namorix.Core.Middleware;
 
 public class JsonErrorMiddleware(RequestDelegate requestDelegate)
 {

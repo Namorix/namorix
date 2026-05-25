@@ -1,12 +1,9 @@
-using System.IO;
 using Microsoft.Extensions.Hosting;
-using Namorix.Adapters.FlatFile;
-using Namorix.Adapters.Services;
 using Namorix.Core.FlatFile;
 using Namorix.Core.IO;
 using Namorix.Core.Services;
 
-namespace Namorix.Workers;
+namespace Namorix.Core.Workers;
 
 public class TrafficStatsWorker(IFlatFileStore flatFileStore,
     TrafficMonitorService monitorService,

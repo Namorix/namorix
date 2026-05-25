@@ -1,8 +1,7 @@
 using System.Threading.Channels;
-using Namorix.Adapters.FlatFile;
 using Namorix.Core.FlatFile;
 
-namespace Namorix.Adapters.Infrastructure;
+namespace Namorix.Core.Infrastructure;
 
 public static class TrafficBuffer
 {

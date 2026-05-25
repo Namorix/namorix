@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 
-namespace Namorix.Server.Hubs;
+namespace Namorix.Core.Hubs;
 
 public class NmxHubFilter(ILogger<NmxHubFilter> logger): IHubFilter
 {

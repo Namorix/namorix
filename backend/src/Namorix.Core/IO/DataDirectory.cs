@@ -66,21 +66,16 @@ public class DataDirectory(string basePath)
         var cutoff = DateTime.UtcNow.AddDays(-retentionDays);
         var catDir = Path.Combine(basePath, category);
         if (!Directory.Exists(catDir)) return 0;
-
         var deleted = 0;
-        foreach (var yearDir in Directory.GetDirectories(catDir))
+        
+        foreach (var file in Directory.GetFiles(catDir, LogPattern(category)))
         {
-            foreach (var monthDir in Directory.GetDirectories(yearDir))
-            {
-                var month = int.Parse(Path.GetFileName(monthDir));
-                var year = int.Parse(Path.GetFileName(yearDir));
-                var lastDay = DateTime.DaysInMonth(year, month);
-                if (new DateTime(year, month, lastDay) < cutoff)
-                {
-                    Directory.Delete(monthDir, true);
-                    deleted++;
-                }
-            }
+            var dateStr = DateFromFileName(file, category);
+            if (!DateTime.TryParse(dateStr, out var fileDate)
+                || fileDate >= cutoff) continue;
+            
+            File.Delete(file);
+            deleted++;
         }
         return deleted;
     }
@@ -89,21 +84,27 @@ public class DataDirectory(string basePath)
     {
         var deleted = 0;
         if (!Directory.Exists(basePath)) return Task.FromResult(0);
+        
         foreach (var catDir in Directory.GetDirectories(basePath))
         {
-            foreach (var yearDir in Directory.GetDirectories(catDir))
-            foreach (var monthDir in Directory.GetDirectories(yearDir))
+            var category = Path.GetFileName(catDir);
+            foreach (var file in Directory.GetFiles(catDir, LogPattern(category)))
             {
-                var month = int.Parse(Path.GetFileName(monthDir));
-                var year = int.Parse(Path.GetFileName(yearDir));
-                var lastDay = DateTime.DaysInMonth(year, month);
-                if (new DateTime(year, month, lastDay) >= cutoff) continue;
-                Directory.Delete(monthDir, true);
+                var dateStr = DateFromFileName(file, category);
+                if (!DateTime.TryParse(dateStr, out var fileDate)
+                    || fileDate >= cutoff) continue;
+                
+                File.Delete(file);
                 deleted++;
             }
         }
         return Task.FromResult(deleted);
     }
+    
+    private static string LogPattern(string category) => $"{category}-*.log";
+    
+    private static string DateFromFileName(string file, string category) =>
+        Path.GetFileNameWithoutExtension(file).Replace($"{category}-", "");
 }
 
 public record DataDirectoryStats(
