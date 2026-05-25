@@ -10,7 +10,6 @@ import {
   methodToSemantic,
   statusToSemantic,
 } from "./utils"
-import { NmxAddonPage } from "@namorix/ui"
 import { usePageSize } from "@namorix/core"
 
 interface NetworkTrafficLogsProps {
@@ -148,7 +147,7 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
   const totalPages = Math.ceil(total / pageSize)
 
   return (
-    <NmxAddonPage className="nmx-addon-network-traffic__logs">
+    <>
       <NmxDataTable
         columns={columns}
         rows={logs}
@@ -176,6 +175,6 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
           }}
         />
       )}
-    </NmxAddonPage>
+    </>
   )
 }

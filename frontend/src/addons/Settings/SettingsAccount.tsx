@@ -23,7 +23,6 @@ import {
   NmxSettingsRow,
 } from "@namorix/ui"
 import { settingsController } from "./settings.controller"
-import { NmxAddonPage } from "@namorix/ui"
 
 export const SettingsAccount: React.FC = () => {
   const { t } = useTranslation()
@@ -78,7 +77,7 @@ export const SettingsAccount: React.FC = () => {
   }
 
   return (
-    <NmxAddonPage className="nmx-addon-setting__account">
+    <>
       <NmxSettingsSection title={t("addon.settings.account.title")}>
         <NmxSettingsCard>
           <div className="nmx-addon-setting__profile-header">
@@ -150,6 +149,6 @@ export const SettingsAccount: React.FC = () => {
           uppercase
         />
       </NmxSettingsSection>
-    </NmxAddonPage>
+    </>
   )
 }

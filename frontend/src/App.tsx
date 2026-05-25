@@ -7,10 +7,8 @@ import {
   createRegisterGuard,
   DefaultPaths,
   GuardedRoute,
-  HttpErrorCodes,
   removeOnCloseHandler,
   useSignalRStatus,
-  useUserStore,
 } from "@namorix/core"
 import React, { useEffect, useState } from "react"
 import { Navigate, Route, Routes } from "react-router-dom"
@@ -26,11 +24,10 @@ export const App: React.FC = () => {
   const [blocked, setBlocked] = useState<ApiErrorCode | null | undefined>(null)
   const [checking, setChecking] = useState(true)
   const signalStatus = useSignalRStatus()
-  const user = useUserStore()
 
   useEffect(() => {
     const handler = () => {
-      if (user) setBlocked(HttpErrorCodes.CONNECTION_LOST)
+      console.warn("[app] signalR disconnected")
     }
 
     healthController
@@ -39,7 +36,6 @@ export const App: React.FC = () => {
         if (!result.success) {
           return setBlocked(result.code)
         }
-
         addOnCloseHandler(handler)
       })
       .catch((err) => {
@@ -87,7 +83,7 @@ export const App: React.FC = () => {
       </Routes>
       <NmxLoading
         overlay
-        shouldRender={!checking && !blocked && signalStatus === "reconnecting"}
+        shouldRender={!checking && !blocked && signalStatus !== "connected"}
       />
     </>
   )

@@ -12,7 +12,6 @@ import {
   NmxSettingsSection,
   NmxToggle,
 } from "@namorix/ui"
-import { NmxAddonPage } from "@namorix/ui"
 
 const ACCENT_COLORS: NmxAccentColorData[] = [
   { id: "blue", color: "#378ADD" },
@@ -63,7 +62,7 @@ export const SettingsAppearance: React.FC = () => {
   const [accentColor, setAccentColor] = useState("blue")
 
   return (
-    <NmxAddonPage className="nmx-addon-setting__appearance">
+    <>
       <NmxSettingsSection title={t("addon.settings.appearance.theme")}>
         <NmxSettingsCard>
           <NmxSettingsRow
@@ -150,6 +149,6 @@ export const SettingsAppearance: React.FC = () => {
           </NmxSettingsRow>
         </NmxSettingsCard>
       </NmxSettingsSection>
-    </NmxAddonPage>
+    </>
   )
 }

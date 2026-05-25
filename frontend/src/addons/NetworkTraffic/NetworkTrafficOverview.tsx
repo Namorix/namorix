@@ -3,7 +3,6 @@ import { useTrafficStatsPolling } from "./useTrafficStatsPolling"
 import { NmxStatCard } from "@namorix/ui"
 import { NmxGrid } from "@namorix/ui"
 import { useTranslation } from "react-i18next"
-import { NmxAddonPage } from "@namorix/ui"
 
 const formatPct = (v: number) => `${v.toFixed(1)}%`
 
@@ -15,10 +14,10 @@ export const NetworkTrafficOverview: React.FC = () => {
     errorRateHistory,
     latencyHistory,
     sizeHistory,
-  } = useTrafficStatsPolling(5000)
+  } = useTrafficStatsPolling()
 
   return (
-    <NmxAddonPage className="nmx-addon-network-traffic__overview">
+    <div className="nmx-addon__toolbar-content">
       <NmxGrid cols={2}>
         <NmxStatCard
           semantic="success"
@@ -58,6 +57,6 @@ export const NetworkTrafficOverview: React.FC = () => {
           sparkData={sizeHistory}
         />
       </NmxGrid>
-    </NmxAddonPage>
+    </div>
   )
 }

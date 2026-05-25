@@ -10,7 +10,6 @@ export const Desktop: React.FC = () => {
   useEffect(() => {
     const onMouseDown = (e: MouseEvent) => {
       const target = e.target as HTMLElement
-
       if (
         !target.closest(".nmx-window-frame") &&
         !target.closest(".nmx-taskbar__app-btn")
@@ -19,8 +18,14 @@ export const Desktop: React.FC = () => {
       }
     }
 
+    const preventContextMenu = (e: MouseEvent) => e.preventDefault()
+
     document.addEventListener("mousedown", onMouseDown)
-    return () => document.removeEventListener("mousedown", onMouseDown)
+    document.addEventListener("contextmenu", preventContextMenu)
+    return () => {
+      document.removeEventListener("mousedown", onMouseDown)
+      document.removeEventListener("contextmenu", preventContextMenu)
+    }
   }, [dispatch])
 
   return (

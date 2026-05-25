@@ -11,7 +11,6 @@ import {
 } from "@namorix/ui"
 import { settingsController } from "./settings.controller"
 import { useTranslation } from "react-i18next"
-import { NmxAddonPage } from "@namorix/ui"
 
 export const SettingsSystem: React.FC = () => {
   const { t } = useTranslation()
@@ -62,7 +61,7 @@ export const SettingsSystem: React.FC = () => {
   }
 
   return (
-    <NmxAddonPage className="nmx-addon-setting__system">
+    <>
       <NmxSettingsSection shouldRender={!!alert}>
         <NmxInlineAlert
           semantic={alert?.semantic}
@@ -118,6 +117,6 @@ export const SettingsSystem: React.FC = () => {
           fullWidth
         />
       </NmxSettingsSection>
-    </NmxAddonPage>
+    </>
   )
 }

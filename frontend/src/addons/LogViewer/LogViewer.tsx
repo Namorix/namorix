@@ -11,7 +11,6 @@ import {
   type LogGroup,
 } from "@namorix/core"
 import {
-  NmxAddonPage,
   NmxBadge,
   NmxDataTable,
   NmxPagination,
@@ -21,6 +20,9 @@ import {
   type NmxSemanticColor,
   NmxSearchInput,
   NmxButton,
+  NmxHorizontalWrap,
+  NmxHorizontalWrapItem,
+  NmxAddonRoot,
 } from "@namorix/ui"
 import { logController } from "./log.controller"
 import { formatTimestamp } from "../NetworkTraffic/utils"
@@ -172,33 +174,37 @@ export const LogViewer: React.FC = () => {
   const totalPages = Math.ceil(total / pageSize)
 
   return (
-    <NmxAddonPage className="nmx-addon-log-viewer">
-      <div className="nmx-addon-log-viewer__toolbar">
-        <NmxSelect
-          value={level}
-          options={LEVEL_OPTIONS.map((o) => ({
-            value: o.value,
-            label: t(o.label),
-          }))}
-          onChange={(v) => {
-            setLevel(v)
-            setPage(1)
-          }}
-        />
-        <NmxSearchInput
-          value={source}
-          onChange={(v) => {
-            setSource(v)
-            setPage(1)
-          }}
-          onSubmit={(v) => fetchLogs(1, level, v, pageSize)}
-          placeholder={t("addon.logViewer.sourcePlaceholder")}
-        />
-        <NmxButton
-          label={t("addon.logViewer.refresh")}
-          onClick={() => fetchLogs(1, level, source, pageSize)}
-        />
-      </div>
+    <NmxAddonRoot>
+      <NmxHorizontalWrap>
+        <NmxHorizontalWrapItem>
+          <NmxSelect
+            value={level}
+            options={LEVEL_OPTIONS.map((o) => ({
+              value: o.value,
+              label: t(o.label),
+            }))}
+            onChange={(v) => {
+              setLevel(v)
+              setPage(1)
+            }}
+          />
+          <NmxButton
+            label={t("addon.logViewer.refresh")}
+            onClick={() => fetchLogs(1, level, source, pageSize)}
+          />
+        </NmxHorizontalWrapItem>
+        <NmxHorizontalWrapItem pushRight>
+          <NmxSearchInput
+            value={source}
+            onChange={(v) => {
+              setSource(v)
+              setPage(1)
+            }}
+            onSubmit={(v) => fetchLogs(1, level, v, pageSize)}
+            placeholder={t("addon.logViewer.sourcePlaceholder")}
+          />
+        </NmxHorizontalWrapItem>
+      </NmxHorizontalWrap>
 
       <NmxDataTable
         columns={columns}
@@ -226,6 +232,6 @@ export const LogViewer: React.FC = () => {
           }}
         />
       )}
-    </NmxAddonPage>
+    </NmxAddonRoot>
   )
 }

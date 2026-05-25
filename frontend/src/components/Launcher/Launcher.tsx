@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect } from "react"
 import { useLauncherSearch } from "./useLauncherSearch"
 import { LauncherView } from "./LauncherView"
 import { useOpenWindow } from "../WindowFrame"
@@ -23,6 +23,16 @@ export const Launcher: React.FC = () => {
   const navigate = useNavigate()
 
   const { query, setQuery, items, searchRef } = useLauncherSearch(isOpen)
+
+  useEffect(() => {
+    if (!isOpen) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") dispatch(closeLauncher())
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [isOpen, dispatch])
 
   if (!isOpen) {
     return null
