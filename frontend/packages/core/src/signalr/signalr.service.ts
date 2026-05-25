@@ -11,6 +11,8 @@ import type { SignalRStatus } from "./types"
 let connection: HubConnection | null = null
 let onCloseHandlers: Array<(error?: Error) => void> = []
 let statusHandlers: Array<(status: SignalRStatus) => void> = []
+let reconnectTimer: ReturnType<typeof setTimeout> | null = null
+let reconnectDelay = 5000
 
 export function getConnection(): HubConnection | null {
   return connection
@@ -27,7 +29,6 @@ export async function startConnection(): Promise<void> {
 
   connection = new HubConnectionBuilder()
     .withUrl(getApiBaseUrl() + HUB_MAIN)
-    .withAutomaticReconnect([0, 2000, 10000, 30000])
     .configureLogging(LogLevel.Warning)
     .build()
 
@@ -38,6 +39,7 @@ export async function startConnection(): Promise<void> {
 
   connection.onreconnected(() => {
     console.info("[signalr] reconnected")
+    reconnectDelay = 5000
     emitStatus("connected")
   })
 
@@ -45,16 +47,43 @@ export async function startConnection(): Promise<void> {
     console.warn("[signalr] disconnected", error?.message)
     emitStatus("disconnected")
     onCloseHandlers.forEach((handler) => handler(error ?? undefined))
+    scheduleReconnect()
   })
 
   await connection.start()
+
+  reconnectDelay = 5000
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer)
+    reconnectTimer = null
+  }
+
   emitStatus("connected")
 }
 
 export async function stopConnection(): Promise<void> {
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer)
+    reconnectTimer = null
+  }
+
   if (!connection) return
   await connection.stop()
   connection = null
+}
+
+function scheduleReconnect() {
+  if (reconnectTimer) return
+  reconnectTimer = setTimeout(async () => {
+    reconnectTimer = null
+    reconnectDelay = Math.min(reconnectDelay * 2, 30000)
+    try {
+      emitStatus("reconnecting")
+      await startConnection()
+    } catch {
+      scheduleReconnect()
+    }
+  }, reconnectDelay)
 }
 
 export function addOnCloseHandler(handler: (error?: Error) => void) {
