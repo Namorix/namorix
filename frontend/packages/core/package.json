@@ -1,6 +1,6 @@
 {
   "name": "@namorix/core",
-  "version": "0.21.0",
+  "version": "0.22.0",
   "license": "GPL-3.0-only",
   "type": "module",
   "main": "./src/index.ts",
@@ -45,6 +45,7 @@
     }
   },
   "dependencies": {
+    "@namorix/ui": "workspace:*",
     "react": "19.2.6",
     "react-router-dom": "7.15.1",
     "react-i18next": "17.0.8",

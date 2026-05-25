@@ -37,6 +37,10 @@ export const ApiTrafficRoutes = {
   stats: API_TRAFFIC_BASE + "/stats",
 }
 
+export const ApiLogRoutes = {
+  logs: API_BASE + "/logs",
+}
+
 export const ApiSettingsRoutes = {
   base: API_SETTINGS_BASE,
   proxies: API_SETTINGS_BASE + "/proxies",

@@ -21,8 +21,6 @@ export const HttpMethods = {
   OPTIONS: "OPTIONS",
 } as const
 
-export type LogLevel = "trace" | "debug" | "info" | "warn" | "error" | "fatal"
-
 export const PaginationDefaults = {
   defaultPageSize: 30,
   pageSizeOptions: [10, 20, 30, 50, 100],

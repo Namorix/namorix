@@ -1,5 +1,3 @@
-import type { LogLevel } from "../constants"
-
 export const SignalRGroups = {
   Traffic: "traffic",
   Logs: "logs",
@@ -27,13 +25,6 @@ export type TrafficLogsFlushed = {
   errorCount: number
   avgDurationMs: number
   avgResponseSizeBytes: number
-}
-
-export type LogEntry = {
-  level: LogLevel
-  source: string
-  message: string
-  timestamp: string
 }
 
 export type ConfigChanged = { key: string }
