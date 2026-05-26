@@ -1,6 +1,5 @@
 <Project>
   <PropertyGroup>
-    <Version>0.31.1</Version>
     <Authors>IzeroCs</Authors>
     <Company>IzeroCs</Company>
     <Copyright>Copyright (C) 2026 IzeroCs</Copyright>
@@ -10,5 +9,6 @@
     <PackageLicenseExpression>AGPL-3.0-only</PackageLicenseExpression>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 </Project>
