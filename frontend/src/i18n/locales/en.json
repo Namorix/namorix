@@ -234,6 +234,14 @@
     "terminal": {
       "title": "Terminal",
       "description": "Command-line terminal with shell access"
+    },
+    "notificationCenter": {
+      "title": "Notification Center",
+      "description": "View and manage system notifications and alerts"
+    },
+    "packageCenter": {
+      "title": "Package Center",
+      "description": "Manage external addons and packages"
     }
   }
 }
