@@ -5,9 +5,13 @@ import {
   type NmxIconSvgSymbol,
 } from "@namorix/ui"
 import React, { memo } from "react"
+import { useTranslation } from "react-i18next"
+import { resolveAddonLocaleTitleByKey } from "../../utils"
+import type { LocaleKeys } from "@namorix/core"
 
 interface WindowTitleBarProps {
   title: string
+  localeKey?: LocaleKeys
   icon?: NmxIconSvgSymbol
   maximized: boolean
   showMaximized?: boolean
@@ -21,6 +25,7 @@ interface WindowTitleBarProps {
 export const WindowTitleBar = memo(
   ({
     title,
+    localeKey,
     icon,
     maximized,
     showMaximized,
@@ -29,74 +34,80 @@ export const WindowTitleBar = memo(
     onMaximize,
     onRestore,
     onClose,
-  }: WindowTitleBarProps) => (
-    <div
-      className="nmx-window-frame__titlebar"
-      onMouseDown={onTitleBarMouseDown}
-      onDoubleClick={(e) => {
-        e.stopPropagation()
-        if (maximized) {
-          onRestore(e.clientX, e.clientY)
-        } else {
-          onMaximize()
-        }
-      }}
-    >
-      {icon && (
-        <NmxIconSvg symbol={icon} className="nmx-window-frame__app-icon" />
-      )}
-      <span className="nmx-window-frame__title">{title}</span>
-      <div className="nmx-window-frame__actions">
-        <button
-          type="button"
-          className="nmx-window-frame__btn nmx-window-frame__btn--minimize"
-          onMouseDown={(e) => {
-            e.stopPropagation()
-            onMinimize()
-          }}
-        >
-          <NmxIconFont
-            symbol={NmxIconFontSymbol.MINIMIZE}
-            className="nmx-window-frame__btn-icon"
-          />
-        </button>
+  }: WindowTitleBarProps) => {
+    const { t } = useTranslation()
 
-        {showMaximized !== false && (
+    return (
+      <div
+        className="nmx-window-frame__titlebar"
+        onMouseDown={onTitleBarMouseDown}
+        onDoubleClick={(e) => {
+          e.stopPropagation()
+          if (maximized) {
+            onRestore(e.clientX, e.clientY)
+          } else {
+            onMaximize()
+          }
+        }}
+      >
+        {icon && (
+          <NmxIconSvg symbol={icon} className="nmx-window-frame__app-icon" />
+        )}
+        <span className="nmx-window-frame__title">
+          {resolveAddonLocaleTitleByKey(t, localeKey) ?? title}
+        </span>
+        <div className="nmx-window-frame__actions">
           <button
             type="button"
-            className="nmx-window-frame__btn nmx-window-frame--maximize"
+            className="nmx-window-frame__btn nmx-window-frame__btn--minimize"
             onMouseDown={(e) => {
               e.stopPropagation()
-              return maximized ? onRestore() : onMaximize()
+              onMinimize()
             }}
           >
             <NmxIconFont
-              symbol={
-                maximized
-                  ? NmxIconFontSymbol.RESTORE
-                  : NmxIconFontSymbol.MAXIMIZE
-              }
+              symbol={NmxIconFontSymbol.MINIMIZE}
               className="nmx-window-frame__btn-icon"
             />
           </button>
-        )}
 
-        <button
-          type="button"
-          className="nmx-window-frame__btn nmx-window-frame__btn--close"
-          onMouseDown={(e) => {
-            e.stopPropagation()
-            onClose()
-          }}
-        >
-          <NmxIconFont
-            symbol={NmxIconFontSymbol.CLOSE}
-            className="nmx-window-frame__btn-icon"
-          />
-        </button>
+          {showMaximized !== false && (
+            <button
+              type="button"
+              className="nmx-window-frame__btn nmx-window-frame--maximize"
+              onMouseDown={(e) => {
+                e.stopPropagation()
+                return maximized ? onRestore() : onMaximize()
+              }}
+            >
+              <NmxIconFont
+                symbol={
+                  maximized
+                    ? NmxIconFontSymbol.RESTORE
+                    : NmxIconFontSymbol.MAXIMIZE
+                }
+                className="nmx-window-frame__btn-icon"
+              />
+            </button>
+          )}
+
+          <button
+            type="button"
+            className="nmx-window-frame__btn nmx-window-frame__btn--close"
+            onMouseDown={(e) => {
+              e.stopPropagation()
+              onClose()
+            }}
+          >
+            <NmxIconFont
+              symbol={NmxIconFontSymbol.CLOSE}
+              className="nmx-window-frame__btn-icon"
+            />
+          </button>
+        </div>
       </div>
-    </div>
-  ),
+    )
+  },
 )
 
 WindowTitleBar.displayName = "WindowTitleBar"

@@ -10,7 +10,7 @@ import {
   type WindowRect,
 } from "../../../store"
 import { getWindowDefaults } from "../../../config"
-import { isMobile } from "@namorix/core"
+import { isMobile, type LocaleKeys } from "@namorix/core"
 
 const clamp = (min: number, val: number, max: number) =>
   Math.max(min, Math.min(val, max))
@@ -21,6 +21,7 @@ export const useOpenWindow = () => {
   return (
     id: string,
     title: string,
+    localeKey?: LocaleKeys,
     icon?: NmxIconSvgSymbol,
     originRect?: WindowRect,
     addonWidth?: number,
@@ -32,6 +33,7 @@ export const useOpenWindow = () => {
       openWindow({
         app: id,
         title,
+        localeKey,
         icon,
         defaultWidth: addonWidth,
         defaultHeight: addonHeight,

@@ -77,7 +77,8 @@
   "addon": {
     "about": {
       "title": "About",
-      "desc": "Browser-based desktop shell, self-hosted.",
+      "description": "View system information, version details, and legal notices",
+      "information": "Browser-based desktop shell, self-hosted",
       "version": "Version",
       "meta": {
         "author": "Author",
@@ -91,6 +92,7 @@
     },
     "networkTraffic": {
       "title": "Network Traffic",
+      "description": "Monitor HTTP requests and network traffic with real-time filtering and analysis",
       "searchPlaceholder": "Filter by method, path or IP...",
       "searchHelp": "Syntax: m=GET p=/api s=200 ip=192.168\n  m=       — filter by method\n  p=       — filter by path\n  ip=      — filter by IP\n  s=200    — exact status code\n  s=2xx    — status range 200-299\n  t=>2026-05-24T12:00  — after time\n  t=<2026-05-24T12:00  — before time\n  d=>2026-05-24  — after date\n  d=<2026-05-24  — before date",
       "tabs": {
@@ -136,6 +138,7 @@
     },
     "settings": {
       "title": "Settings",
+      "description": "Configure appearance, system preferences, and account settings",
       "tabs": {
         "appearance": "Appearance",
         "system": "System",
@@ -196,6 +199,8 @@
       "save": "Save"
     },
     "logViewer": {
+      "title": "Log Viewer",
+      "description": "View and filter system logs by severity level, source, and time range",
       "allLevels": "All Levels",
       "level": "Level",
       "source": "Source",
@@ -217,6 +222,10 @@
         "error": "Failed to load logs",
         "empty": "No logs recorded yet"
       }
+    },
+    "systemMonitor": {
+      "title": "System Monitor",
+      "description": "Track system resource usage, performance metrics, and running processes"
     }
   }
 }

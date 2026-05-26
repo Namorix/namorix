@@ -1,4 +1,4 @@
-import { defineAddon } from "@namorix/core"
+import { defineAddon, LocaleKeys } from "@namorix/core"
 import { registerAddon } from "../"
 import { NmxIconSvgSymbol } from "@namorix/ui"
 import { About } from "./About"
@@ -8,10 +8,12 @@ registerAddon(
     {
       id: "about",
       displayName: "About",
-      description: "About Namorix",
+      description:
+        "View system information, version details, and legal notices",
+      localeKey: LocaleKeys.about,
       icon: NmxIconSvgSymbol.APP_ABOUT,
       defaultWidth: 450,
-      defaultHeight: 610,
+      defaultHeight: 750,
     },
     About,
   ),

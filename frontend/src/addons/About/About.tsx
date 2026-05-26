@@ -13,6 +13,8 @@ declare const __APP_VERSION__: string
 declare const __CORE_VERSION__: string
 declare const __STYLES_VERSION__: string
 declare const __UI_VERSION__: string
+declare const __BACKEND_CORE_VERSION__: string
+declare const __BACKEND_SERVER_VERSION__: string
 
 export const About: React.FC = () => {
   const { t } = useTranslation()
@@ -31,7 +33,9 @@ export const About: React.FC = () => {
           </div>
         </div>
 
-        <p className="nmx-addon-about__desc">{t("addon.about.desc")}</p>
+        <p className="nmx-addon-about__information">
+          {t("addon.about.information")}
+        </p>
 
         <div className="nmx-addon-about__divider" />
 
@@ -51,6 +55,26 @@ export const About: React.FC = () => {
             value="React · .NET 8 · SQLite"
             className="nmx-addon-about__meta-item"
           />
+        </NmxMetaList>
+
+        <div className="nmx-addon-about__divider" />
+
+        <NmxMetaList className="nmx-addon-about__meta-list">
+          <NmxMetaItem
+            label="Namorix.Core"
+            value={__BACKEND_CORE_VERSION__}
+            className="nmx-addon-about__meta-item"
+          />
+          <NmxMetaItem
+            label="Namorix.Server"
+            value={__BACKEND_SERVER_VERSION__}
+            className="nmx-addon-about__meta-item"
+          />
+        </NmxMetaList>
+
+        <div className="nmx-addon-about__divider" />
+
+        <NmxMetaList className="nmx-addon-about__meta-list">
           <NmxMetaItem
             label="@namorix/core"
             value={__CORE_VERSION__}

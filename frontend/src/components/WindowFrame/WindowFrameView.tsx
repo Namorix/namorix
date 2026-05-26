@@ -64,6 +64,7 @@ export const WindowFrameView: React.FC<WindowFrameViewProps> = ({
     >
       <WindowTitleBar
         title={win.title}
+        localeKey={win.localeKey}
         icon={win.icon}
         maximized={win.maximized}
         showMaximized={!isMobile()}

@@ -1,4 +1,5 @@
 import type { NmxIconSvgSymbol } from "@namorix/ui"
+import type { LocaleKeys } from "@namorix/core"
 
 export type WindowId = string
 
@@ -22,6 +23,7 @@ export interface WindowData extends WindowRect {
   id: WindowId
   app: string
   title: string
+  localeKey?: LocaleKeys
   icon?: NmxIconSvgSymbol
   minimized: boolean
   maximized: boolean

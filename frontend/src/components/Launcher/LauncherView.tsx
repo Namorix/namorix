@@ -8,6 +8,7 @@ import {
 import type { AddonItem, OnOpenApp } from "../../types"
 import { type User } from "@namorix/core"
 import { useTranslation } from "react-i18next"
+import { resolveAddonLocaleTitle } from "../../utils"
 
 interface LauncherViewProps {
   items: AddonItem[]
@@ -56,6 +57,7 @@ export const LauncherView: React.FC<
                   onOpenApp(
                     item.id,
                     item.displayName,
+                    item.localeKey,
                     item.icon,
                     rect,
                     item.defaultWidth,
@@ -65,7 +67,9 @@ export const LauncherView: React.FC<
                 }}
               >
                 <NmxIconSvg symbol={item.icon} className="nmx-launcher__icon" />
-                <span className="nmx-launcher__label">{item.displayName}</span>
+                <span className="nmx-launcher__label">
+                  {resolveAddonLocaleTitle(t, item) ?? item.displayName}
+                </span>
               </button>
             ))
           ) : (

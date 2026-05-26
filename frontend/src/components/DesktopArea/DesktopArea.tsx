@@ -14,6 +14,7 @@ export const DesktopArea: React.FC = () => {
   const handleOpenApp: OnOpenApp = (
     id,
     displayName,
+    localeKey,
     icon,
     rect,
     defaultWidth,
@@ -27,6 +28,7 @@ export const DesktopArea: React.FC = () => {
     openWindow(
       id,
       displayName,
+      localeKey,
       icon,
       rectToOrigin(rect),
       defaultWidth,

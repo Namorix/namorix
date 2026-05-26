@@ -2,8 +2,11 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { addonToItems, listAddons } from "../../addons"
 import type { AddonItem } from "../../types"
 import { useUserStore } from "@namorix/core"
+import { resolveAddonLocaleTitle } from "../../utils"
+import { useTranslation } from "react-i18next"
 
 export const useLauncherSearch = (isOpen: boolean) => {
+  const { t } = useTranslation()
   const [query, setQuery] = useState("")
   const user = useUserStore()
   const searchRef = useRef<HTMLInputElement>(null)
@@ -19,10 +22,11 @@ export const useLauncherSearch = (isOpen: boolean) => {
       return all
     }
 
-    return all.filter((addon) =>
-      addon.displayName.toLowerCase().includes(query.toLowerCase()),
-    )
-  }, [query, user?.role])
+    return all.filter((addon) => {
+      const title = resolveAddonLocaleTitle(t, addon) ?? addon.displayName
+      return title.toLowerCase().includes(query.toLowerCase())
+    })
+  }, [query, t, user?.role])
 
   return { query, setQuery, items, searchRef }
 }

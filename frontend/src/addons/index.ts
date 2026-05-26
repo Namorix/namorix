@@ -12,6 +12,8 @@ import "./NetworkTraffic/NetworkTraffic.addon"
 export const addonToItems = (addon: AddonModule): AddonItem => ({
   id: addon.manifest.id,
   displayName: addon.manifest.displayName,
+  description: addon.manifest.description,
+  localeKey: addon.manifest.localeKey,
   icon: addon.manifest.icon,
   defaultWidth: addon.manifest.defaultWidth,
   defaultHeight: addon.manifest.defaultHeight,

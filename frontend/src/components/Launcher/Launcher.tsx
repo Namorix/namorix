@@ -43,6 +43,7 @@ export const Launcher: React.FC = () => {
   const handleOpenApp: OnOpenApp = (
     id,
     displayName,
+    localeKey,
     icon,
     rect,
     defaultWidth,
@@ -56,6 +57,7 @@ export const Launcher: React.FC = () => {
     openWindow(
       id,
       displayName,
+      localeKey,
       icon,
       originRect,
       defaultWidth,

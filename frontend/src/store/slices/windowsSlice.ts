@@ -1,5 +1,6 @@
 import type { AnimState, WindowData, WindowId, WindowRect } from "../types"
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
+import type { LocaleKeys } from "@namorix/core"
 
 export interface WindowsState {
   byId: Record<WindowId, WindowData>
@@ -54,6 +55,7 @@ export const windowsSlice = createSlice({
       prepare(payload: {
         app: string
         title: string
+        localeKey?: LocaleKeys
         icon?: WindowData["icon"]
         defaultWidth?: number
         defaultHeight?: number
@@ -64,6 +66,7 @@ export const windowsSlice = createSlice({
           id,
           app: payload.app,
           title: payload.title,
+          localeKey: payload.localeKey,
           icon: payload.icon,
           minimized: false,
           maximized: false,
