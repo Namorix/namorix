@@ -5,6 +5,8 @@ export const NmxIconSvgSymbol = {
   APP_SETTINGS: "app-settings",
   APP_SYSTEM_MONITOR: "app-system-monitor",
   APP_NETWORK_TRAFFIC: "app-network-traffic",
+  APP_FILE_MANAGER: "app-file-manager",
+  APP_TERMINAL: "app-terminal",
 } as const
 
 export type NmxIconSvgSymbol =
