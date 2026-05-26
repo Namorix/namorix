@@ -39,8 +39,13 @@ export const TaskbarView = memo<TaskViewProps>(
 
           <div className="nmx-taskbar__tray">
             <NmxIconFont
+              symbol={NmxIconFontSymbol.NOTIFICATION}
+              className="nmx-taskbar__icon-notification"
+            />
+
+            <NmxIconFont
               symbol={NmxIconFontSymbol.LINK}
-              className={`nmx-taskbar__signal nmx-taskbar__signal--${signalStatus}`}
+              className={`nmx-taskbar__icon-signal nmx-taskbar__icon-signal--${signalStatus}`}
             />
 
             <div className="nmx-taskbar__clock">
