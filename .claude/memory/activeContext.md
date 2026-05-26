@@ -25,6 +25,16 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 ## Recent Changes
 
+### 2026-05-26 (latest) — About system addon (+ Vite version defines, i18n)
+
+- **@namorix/styles (0.21.0 → 0.22.0)**: NEW `app-about.svg` icon. NEW `about.scss` — full About layout SCSS (logo, header, version, desc, meta-list, links, copyright). NEW icon token for about. Theme CSS rebuilt.
+- **@namorix/ui (0.18.0 → 0.18.1)**: MODIFIED `NmxIconSvg.types.ts` — added `APP_ABOUT` SVG icon symbol.
+- **frontend (0.27.0 → 0.28.0)**: NEW About addon — `About.tsx` + `About.addon.tsx` using NmxAddonRoot, NmxMetaList/NmxMetaItem, NmxButton variant="outline". NEW i18n keys (`addon.about.*`). NEW Vite `define` block — auto-injects `__APP_VERSION__`, `__CORE_VERSION__`, `__STYLES_VERSION__`, `__UI_VERSION__` from package.json files at build time.
+
+### 2026-05-26 — MSBuild central config, CPM migration
+
+- **backend (0.31.0 → 0.31.1)**: NEW `Directory.Build.props` — centralized MSBuild properties (version, authors, repo, Nullable, ImplicitUsings). NEW `Directory.Packages.props` — Central Package Management with 6 packages. MODIFIED 4 csproj files — removed duplicate properties, removed PackageReference Version attributes (managed centrally). REMOVED unused packages (Microsoft.AspNetCore.OpenApi, Swashbuckle.AspNetCore). DOWNGRADED Microsoft.Extensions.Caching.Memory 10.0.8 → 8.0.1.
+
 ### 2026-05-26 — LogViewer chip filter, NmxChipFilter, multi-level filter, blurry window fix, ValidationFilter
 
 - **@namorix/styles (0.20.0 → 0.21.0)**: NEW `select-multiple.scss`, `log-viewer.scss`. NEW palette colors (slate, violet, rose). NEW `$nmx-font-sizes` map + `sizes()` mixin. MODIFIED `chip.scss` — NmxChipFilter variant (role="checkbox", checkmark), `maps.scss` — semantic-colors extended (trace/debug/fatal), `window.scss` — animation fixes, `reset.scss` — overflow hidden. Theme CSS rebuilt.

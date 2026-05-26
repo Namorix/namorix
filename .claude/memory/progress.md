@@ -97,6 +97,7 @@
 - [x] WindowFrame addon mounting (useEffect + registry)
 - [x] Launcher + DesktopArea dùng listAddons() từ registry
 - [x] Internal addon: Log Viewer (LogViewer component + mount/unmount lifecycle)
+- [x] Internal addon: About (About Namorix — version, meta, GitHub links)
 - [x] Theme system: types (`@namorix/core`), theme loader/registry (frontend), backend theme repository API
 - [x] **Zustand → Redux migration** (4 stores → 3 slices, normalized state, memoized selectors, 10 component files rewritten)
 - [x] **NetworkTraffic backend Phase 1** — models, middleware, service, controller, workers, DI
@@ -124,11 +125,11 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.27.0 | M3 (chip filter, live/pause, select-multiple, useLayoutEffect blurry fix, i18n) |
+| frontend | 0.28.0 | M3 (About addon, i18n, Vite version defines) |
 | @namorix/core | 0.23.1 | M3 (SignalR auth-expired status support) |
-| @namorix/styles | 0.21.0 | M3 (trace/debug/fatal tokens, select-multiple, log-viewer, sizes() mixin, chip filter variant) |
-| @namorix/ui | 0.18.0 | M3 (NmxChipFilter, NmxSelectMultiple, NmxButtonLive/Refresh, NmxSemanticColor extended) |
-| backend | 0.31.0 | M3 (ValidationFilter, LogQueryRequest, LogEntrySerializer LevelValue, multi-level filter) |
+| @namorix/styles | 0.22.0 | M3 (app-about.svg, about.scss, new icon token) |
+| @namorix/ui | 0.18.1 | M3 (APP_ABOUT icon symbol) |
+| backend | 0.31.1 | M3 (MSBuild central config, CPM migration) |
 
 ## Version Rules
 
@@ -166,6 +167,20 @@
 | @namorix/ui | 0.17.0 | NEW: `NmxHorizontalWrap` — flexbox wrap layout (gap/align/justify props). NEW: `NmxHorizontalWrapItem` — child item (pushRight prop). |
 | @namorix/styles | 0.20.0 | NEW: `horizontal-wrap.scss` — flex-wrap layout with spacings/align/justify variants, push-right modifier. MODIFIED: Multiple component SCSS fixes (addon, badge, button, chip, pagination, select, toggle, toolbar, rail, reset, shell). Theme CSS rebuilt. |
 | frontend | 0.26.1 | MODIFIED: `App.tsx` — SignalR loading overlay shows on disconnect+reconnect (via `hasBeenConnected`), no overlay on Login page. |
+
+### 2026-05-26 (later) — About system addon (+ Vite version defines, i18n)
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/styles | 0.21.0 → 0.22.0 | NEW: `base/icons/app-about.svg`. NEW: `base/shell/addon/about.scss` — full About layout with BEM (logo, header, version, desc, meta-list, links, copyright). MODIFIED: `base/tokens/icons.scss` — new about icon token. MODIFIED: `base/shell/addon/index.scss` — forward about.scss. Theme CSS rebuilt (default + dark). |
+| @namorix/ui | 0.18.0 → 0.18.1 | MODIFIED: `NmxIconSvg.types.ts` — added `APP_ABOUT` icon symbol. |
+| frontend | 0.27.0 → 0.28.0 | NEW: `addons/About/About.tsx` + `About.addon.tsx` — About system addon (defineAddon + registerAddon, NmxAddonRoot, NmxIconSvg LOGO, NmxMetaList/NmxMetaItem, NmxButton variant="outline" fullWidth for GitHub/Issues links). NEW: `i18n/locales/en.json` — `addon.about.*` keys (title, desc, version, meta.author/license/stack, links.github/issues). NEW: `vite.config.ts` — `define` block auto-injecting `__APP_VERSION__`, `__CORE_VERSION__`, `__STYLES_VERSION__`, `__UI_VERSION__` from package.json files. MODIFIED: `addons/index.ts` — import About.addon. |
+
+### 2026-05-26 — MSBuild central config, CPM migration
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| backend | 0.31.0 → 0.31.1 | NEW: `Directory.Build.props` — shared MSBuild properties (Version, Authors, RepositoryUrl, Nullable, ImplicitUsings) for all 4 projects. NEW: `Directory.Packages.props` — Central Package Management with 6 PackageVersion entries (BCrypt.Net-Next 4.2.0, EF Core 8.0.0, EF Core.Sqlite 8.0.0, EF Core.Design 8.0.0, Microsoft.Extensions.Caching.Memory 8.0.1, System.IdentityModel.Tokens.Jwt 8.18.0). MODIFIED: 4 csproj files — removed version attributes, removed Nullable/ImplicitUsings (now shared via Directory.Build.props), removed PackageReference Version (managed centrally via CPM). REMOVED: unused packages (Microsoft.AspNetCore.OpenApi, Swashbuckle.AspNetCore). DOWNGRADED: Microsoft.Extensions.Caching.Memory 10.0.8 → 8.0.1 (net8.0 compat). |
 
 ### 2026-05-26 — LogViewer chip filter, NmxChipFilter, multi-level filter, blurry window fix, ValidationFilter
 

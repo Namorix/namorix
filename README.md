@@ -94,6 +94,7 @@ namorix/
 │   └── src/
 │       ├── addons/           # Built-in addon registry + implementations
 │       │   ├── registry.ts   # registerAddon, resolveAddon, listAddons
+│       │   ├── About/           # About Namorix (version, meta, GitHub links)
 │       │   ├── LogViewer/       # Level filter chips + multi-select, paginated table
 │       │   ├── NetworkTraffic/  # Overview/Logs with SignalR + flat file backend
 │       │   ├── Settings/       # Appearance, System, Account tabs
@@ -231,6 +232,6 @@ Addon có 3 mode tích hợp:
 
 1. **M1** — Static shell UI + mock auth page ✅
 2. **M2** — Full auth backend (login/register/logout/refresh/session, decorators, i18n, validation) ✅
-3. **M3** — System Addons (Built-in): addon contract + registry, Log Viewer, NetworkTraffic (SignalR + flat file storage + filter chips), SystemMonitor, Settings (Appearance/System/Account), theme system (hot swap CSS, localStorage+DB), File Manager 🔜, Terminal 🔜
+3. **M3** — System Addons (Built-in): addon contract + registry, About, Log Viewer, NetworkTraffic (SignalR + flat file storage + filter chips), SystemMonitor, Settings (Appearance/System/Account), theme system (hot swap CSS, localStorage+DB), File Manager 🔜, Terminal 🔜
 4. **M4** — External addon system (Docker lifecycle, addon manager)
 5. **M5** — @namorix/core publish npm + addon integration guide
