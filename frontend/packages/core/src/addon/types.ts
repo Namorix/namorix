@@ -10,6 +10,8 @@ export const LocaleKeys = {
   settings: "settings",
   systemMonitor: "systemMonitor",
   networkTraffic: "networkTraffic",
+  fileManager: "fileManager",
+  terminal: "terminal",
 } as const
 
 export type LocaleKeys = (typeof LocaleKeys)[keyof typeof LocaleKeys]
