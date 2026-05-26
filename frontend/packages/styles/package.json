@@ -1,7 +1,16 @@
 {
   "name": "@namorix/styles",
-  "version": "0.20.0",
-  "license": "GPL-3.0-only",
+  "version": "0.21.0",
+  "license": "AGPL-3.0-only",
+  "author": "IzeroCs",
+  "keywords": ["namorix", "scss", "tokens", "design-system", "themes"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Namorix/namorix.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Namorix/namorix/issues"
+  },
   "type": "module",
   "main": "src/index.scss",
   "scripts": {

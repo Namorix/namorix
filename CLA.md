@@ -16,7 +16,7 @@ If you initiate patent litigation against any entity alleging that the Project o
 
 You acknowledge and agree that the copyright holder may:
 
-- distribute the Project under **GPL v3**, and
+- distribute the Project under **AGPL v3**, and
 - offer the Project under an alternative **commercial license**,
 
 including re-licensing contributions under either license, provided the copyright holder remains the owner (or has sufficient rights) to do so.

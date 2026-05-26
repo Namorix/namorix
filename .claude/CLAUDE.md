@@ -600,7 +600,7 @@ const COOKIE_NAME = "nmx_access"
 ## Meta Rules
 
 ## Skip LICENSE File
-Do not read file `LICENSE` — it's GPLv3 license text, not needed for development tasks.
+Do not read file `LICENSE` — it's AGPLv3 license text, not needed for development tasks.
 
 ## Version Notation
 Use Semantic Versioning `MAJOR.MINOR.PATCH` (no leading `v`).

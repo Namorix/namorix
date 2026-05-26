@@ -1,8 +1,17 @@
 {
   "name": "@namorix/frontend",
   "private": true,
-  "version": "0.26.1",
-  "license": "GPL-3.0-only",
+  "version": "0.27.0",
+  "license": "AGPL-3.0-only",
+  "author": "IzeroCs",
+  "keywords": ["namorix", "desktop", "shell", "react", "vite"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Namorix/namorix.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Namorix/namorix/issues"
+  },
   "type": "module",
   "scripts": {
     "dev": "pnpm --parallel -r --filter @namorix/styles dev & vite",
