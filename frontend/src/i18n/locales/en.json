@@ -191,6 +191,8 @@
       "sourcePlaceholder": "Filter by source...",
       "refresh": "Refresh",
       "levels": {
+        "trace": "Trace",
+        "debug": "Debug",
         "info": "Info",
         "warn": "Warn",
         "error": "Error",

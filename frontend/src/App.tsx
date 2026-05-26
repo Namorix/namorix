@@ -7,6 +7,7 @@ import {
   createRegisterGuard,
   DefaultPaths,
   GuardedRoute,
+  isHasBeenConnected,
   removeOnCloseHandler,
   useSignalRStatus,
 } from "@namorix/core"
@@ -24,6 +25,8 @@ export const App: React.FC = () => {
   const [blocked, setBlocked] = useState<ApiErrorCode | null | undefined>(null)
   const [checking, setChecking] = useState(true)
   const signalStatus = useSignalRStatus()
+  const shouldShowReconnecting =
+    isHasBeenConnected() && signalStatus !== "connected"
 
   useEffect(() => {
     const handler = () => {
@@ -53,7 +56,6 @@ export const App: React.FC = () => {
 
   return (
     <>
-      {" "}
       <Routes>
         <Route
           path={DefaultPaths.LOGIN}
@@ -83,7 +85,7 @@ export const App: React.FC = () => {
       </Routes>
       <NmxLoading
         overlay
-        shouldRender={!checking && !blocked && signalStatus !== "connected"}
+        shouldRender={!checking && !blocked && shouldShowReconnecting}
       />
     </>
   )

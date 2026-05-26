@@ -93,6 +93,7 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
       header: t("addon.networkTraffic.logs.path"),
       renderCell: (row) => row?.path ?? "-",
       grow: 3,
+      enableUserSelectCell: true,
     },
     {
       header: t("addon.networkTraffic.logs.duration"),
@@ -116,6 +117,7 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
       header: t("addon.networkTraffic.logs.ip"),
       renderCell: (row) => row?.ip ?? "-",
       grow: 2,
+      enableUserSelectCell: true,
     },
     {
       header: t("addon.networkTraffic.logs.timestamp"),

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import { useLayoutEffect, useRef } from "react"
 import { resolveAddon } from "../../../addons"
 import { type AddonContext, nmxStore } from "@namorix/core"
 import type { WindowId } from "../../../store"
@@ -6,7 +6,7 @@ import type { WindowId } from "../../../store"
 export const useAddonMount = (appId: WindowId) => {
   const mountRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const container = mountRef.current
     const addon = resolveAddon(appId)
     if (!addon || !container) return

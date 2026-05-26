@@ -9,24 +9,31 @@ interface DesktopIconProps {
 
 export const DesktopIcon: React.FC<DesktopIconProps> = ({ addon, onOpen }) => {
   const btnRef = useRef<HTMLButtonElement>(null)
+  const lastTap = useRef(0)
+
+  const handleClick = () => {
+    const now = Date.now()
+    if (now - lastTap.current < 300) {
+      const rect = btnRef.current?.getBoundingClientRect()
+      onOpen(
+        addon.id,
+        addon.displayName,
+        addon.icon,
+        rect,
+        addon.defaultWidth,
+        addon.defaultHeight,
+        addon.preferFullSize,
+      )
+    }
+    lastTap.current = now
+  }
 
   return (
     <button
       ref={btnRef}
       className="nmx-desktop-area__item"
       type="button"
-      onDoubleClick={() => {
-        const rect = btnRef.current?.getBoundingClientRect()
-        onOpen(
-          addon.id,
-          addon.displayName,
-          addon.icon,
-          rect,
-          addon.defaultWidth,
-          addon.defaultHeight,
-          addon.preferFullSize,
-        )
-      }}
+      onClick={handleClick}
     >
       <NmxIconSvg symbol={addon.icon} className="nmx-desktop-area__icon" />
       <span className="nmx-desktop-area__icon-label">{addon.displayName}</span>
