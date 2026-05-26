@@ -7,7 +7,7 @@
    version="1.1"
    id="svg1"
    sodipodi:docname="app-settings.svg"
-   inkscape:version="1.4.3 (fcd0343856, 2026-01-01)"
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -50,13 +50,13 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="1.1593605"
-     inkscape:cx="136.7133"
+     inkscape:cx="136.28203"
      inkscape:cy="163.45218"
-     inkscape:window-width="1033"
+     inkscape:window-width="1920"
      inkscape:window-height="995"
-     inkscape:window-x="515"
+     inkscape:window-x="0"
      inkscape:window-y="0"
-     inkscape:window-maximized="0"
+     inkscape:window-maximized="1"
      inkscape:current-layer="svg1" />
   <metadata
      id="Namorix-Metadata-Block">
@@ -88,7 +88,7 @@
      style="fill-opacity:1;fill:url(#linearGradient2)" />
   <g
      id="g1"
-     transform="matrix(1.6766826,0,0,1.5333786,-123.11885,-64.006122)">
+     transform="matrix(1.6688357,0,0,1.6386265,-121.98105,-76.635917)">
     <path
        id="nmx-glyph-fixed-1"
        d="M 111.25,109.163 V 130.8 c 0,7.95 0,7.95 7.5,13.013 l 20.625,11.925 c 3.112,1.8 8.175,1.8 11.25,0 l 20.625,-11.925 c 7.5,-5.063 7.5,-5.063 7.5,-12.975 v -21.675 c 0,-7.913 0,-7.913 -7.5,-12.9751 l -20.625,-11.925 c -3.075,-1.8 -8.138,-1.8 -11.25,0 l -20.625,11.925 c -7.5,5.0621 -7.5,5.0621 -7.5,12.9751 z"

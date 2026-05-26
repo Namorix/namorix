@@ -2,6 +2,8 @@ export * from "./registry"
 
 import type { AddonModule } from "@namorix/core"
 import type { AddonItem } from "../types"
+
+import "./About/About.addon"
 import "./LogViewer/LogViewer.addon"
 import "./Settings/Settings.addon"
 import "./SystemMonitor/SystemMonitor.addon"

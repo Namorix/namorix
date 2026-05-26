@@ -1,7 +1,23 @@
 import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react"
+import { readFileSync } from "node:fs"
+
+const pkg = JSON.parse(readFileSync("./package.json", "utf-8"))
+const corePkg = JSON.parse(
+  readFileSync("./packages/core/package.json", "utf-8"),
+)
+const stylesPkg = JSON.parse(
+  readFileSync("./packages/styles/package.json", "utf-8"),
+)
+const uiPkg = JSON.parse(readFileSync("./packages/ui/package.json", "utf-8"))
 
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+    __CORE_VERSION__: JSON.stringify(corePkg.version),
+    __STYLES_VERSION__: JSON.stringify(stylesPkg.version),
+    __UI_VERSION__: JSON.stringify(uiPkg.version),
+  },
   server: {
     host: "0.0.0.0",
     port: 5174,

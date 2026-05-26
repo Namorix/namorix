@@ -75,6 +75,20 @@
     "searchPlaceholder": "Search app..."
   },
   "addon": {
+    "about": {
+      "title": "About",
+      "desc": "Browser-based desktop shell, self-hosted.",
+      "version": "Version",
+      "meta": {
+        "author": "Author",
+        "license": "License",
+        "stack": "Stack"
+      },
+      "links": {
+        "github": "GitHub",
+        "issues": "Issues"
+      }
+    },
     "networkTraffic": {
       "title": "Network Traffic",
       "searchPlaceholder": "Filter by method, path or IP...",

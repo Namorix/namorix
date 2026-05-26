@@ -1,0 +1,84 @@
+@use "../../abstract/mixins" as *;
+
+.nmx-addon-about-wrap {
+  overflow: auto;
+
+  @include scrollbar();
+}
+
+.nmx-addon-about {
+  color: var(--nmx-color-on-surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 520px;
+  margin: 0 auto;
+  width: 100%;
+  padding: var(--nmx-spacing-2xl) var(--nmx-spacing-xl);
+
+  &__logo {
+    font-size: var(--nmx-font-size-7xl);
+  }
+
+  &__header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--nmx-spacing-md);
+    margin-bottom: var(--nmx-spacing-xl);
+  }
+
+  &__name {
+    font-size: var(--nmx-font-size-3xl);
+    font-weight: 480;
+    color: var(--nmx-color-text);
+  }
+
+  &__version {
+    font-size: var(--nmx-font-size-sm);
+    color: var(--nmx-color-on-surface-variant);
+    font-family: var(--nmx-font-mono), monospace;
+  }
+
+  &__desc {
+    font-size: var(--nmx-font-size-sm);
+    text-align: center;
+    color: var(--nmx-color-on-surface);
+    line-height: var(--nmx-line-height-base);
+    margin-bottom: var(--nmx-spacing-3xl);
+  }
+
+  &__divider {
+    width: 100%;
+    height: 1px;
+    background: var(--nmx-color-surface-low);
+    margin-bottom: var(--nmx-spacing-2xl);
+  }
+
+  &__meta-list {
+    margin-bottom: var(--nmx-spacing-2xl);
+    width: 100%;
+  }
+
+  &__meta-item {
+    font-size: var(--nmx-font-size-sm);
+  }
+
+  &__links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--nmx-spacing-xl);
+    margin-bottom: var(--nmx-spacing-2xl);
+    width: 100%;
+  }
+
+  &__button {
+    padding: var(--nmx-spacing-sm);
+  }
+
+  &__copyright {
+    font-size: var(--nmx-font-size-sm);
+    color: var(--nmx-color-on-surface-variant);
+  }
+}
