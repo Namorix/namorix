@@ -2,11 +2,13 @@ using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Namorix.Core.Constants;
+using Namorix.Core.Filters;
 using Namorix.Core.FlatFile;
 using Namorix.Core.Hubs;
 using Namorix.Core.Infrastructure;
@@ -81,10 +83,18 @@ public static class ServiceCollectionExtensions
             };
         });
         
-        services.AddControllers().AddJsonOptions(options =>
+        services.Configure<ApiBehaviorOptions>(options =>
+        {
+            options.SuppressModelStateInvalidFilter = true;
+        });
+        
+        services.AddControllers(options =>
+        {
+            options.Filters.Add<ValidationFilter>();
+        }).AddJsonOptions(options =>
         {
             options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-            options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         });
         
         services.AddCors();

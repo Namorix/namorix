@@ -31,9 +31,11 @@ public class JsonErrorMiddleware(RequestDelegate requestDelegate)
 
         await requestDelegate(httpContext);
 
+
         if (httpContext.Response.StatusCode is StatusCodes.Status400BadRequest &&
             !httpContext.Items.ContainsKey(HttpContextKeys.Validated))
         {
+            if (httpContext.Response.HasStarted) return;
             httpContext.Response.ContentType = System.Net.Mime.MediaTypeNames.Application.Json;
             await httpContext.Response.WriteAsJsonAsync(
                 ApiResponse.Fail(MiddlewareErrorCodes.InvalidRequestBody));

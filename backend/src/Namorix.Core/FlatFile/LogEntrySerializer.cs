@@ -6,7 +6,12 @@ namespace Namorix.Core.FlatFile;
 
 public class LogEntrySerializer : IFlatFileSerializer<LogEntrySerializer>
 {
+    [JsonIgnore]
     public LogLevel Level { get; init; }
+
+    [JsonPropertyName("level")]
+    public int LevelValue => (int)Level;
+    
     public string Source { get; init; } = "";
     public string Message { get; init; } = "";
     public DateTime Timestamp { get; init; } = DateTime.UtcNow;
