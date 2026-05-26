@@ -12,6 +12,8 @@ export const LocaleKeys = {
   networkTraffic: "networkTraffic",
   fileManager: "fileManager",
   terminal: "terminal",
+  notificationCenter: "notificationCenter",
+  packageCenter: "packageCenter",
 } as const
 
 export type LocaleKeys = (typeof LocaleKeys)[keyof typeof LocaleKeys]
