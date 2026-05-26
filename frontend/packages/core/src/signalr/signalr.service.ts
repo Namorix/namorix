@@ -9,6 +9,7 @@ import { HUB_MAIN } from "../apiRoutes"
 import type { SignalRStatus } from "./types"
 
 let connection: HubConnection | null = null
+let hasBeenConnected: boolean = false
 let onCloseHandlers: Array<(error?: Error) => void> = []
 let statusHandlers: Array<(status: SignalRStatus) => void> = []
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null
@@ -16,6 +17,14 @@ let reconnectDelay = 5000
 
 export function getConnection(): HubConnection | null {
   return connection
+}
+
+export function isHasBeenConnected(): boolean {
+  return hasBeenConnected
+}
+
+export function setHasBeenConnected(hasBeen: boolean) {
+  hasBeenConnected = hasBeen
 }
 
 export function getConnectionState(): HubConnectionState {
@@ -50,7 +59,10 @@ export async function startConnection(): Promise<void> {
     scheduleReconnect()
   })
 
-  await connection.start()
+  await connection.start().then(() => {
+    if (connection?.state === HubConnectionState.Connected)
+      hasBeenConnected = true
+  })
 
   reconnectDelay = 5000
   if (reconnectTimer) {
