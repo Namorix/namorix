@@ -125,10 +125,10 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.28.0 | M3 (About addon, i18n, Vite version defines) |
-| @namorix/core | 0.23.1 | M3 (SignalR auth-expired status support) |
-| @namorix/styles | 0.22.0 | M3 (app-about.svg, about.scss, new icon token) |
-| @namorix/ui | 0.18.1 | M3 (APP_ABOUT icon symbol) |
+| frontend | 0.29.0 | M3 (File Manager + Terminal addons, localeKey i18n) |
+| @namorix/core | 0.24.0 | M3 (LocaleKeys: fileManager, terminal) |
+| @namorix/styles | 0.23.0 | M3 (app-file-manager, app-terminal SVG icons + tokens) |
+| @namorix/ui | 0.18.2 | M3 (APP_FILE_MANAGER, APP_TERMINAL icon symbols) |
 | Namorix.Core | 0.31.1 | M3 (NuGet publish, centralized version) |
 | Namorix.Server | 0.31.1 | M3 (App server, centralized version) |
 
@@ -150,6 +150,15 @@
 | Namorix.Server | Bug fixes, config tweaks | New endpoint, new middleware, auth feature |
 
 ## Version History
+
+### 2026-05-26 (latest) — File Manager + Terminal addon scaffold, localeKey i18n, icon tokens
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.23.1 → 0.24.0 | MODIFIED: `addon/types.ts` — added `fileManager` and `terminal` to `LocaleKeys` const. |
+| @namorix/styles | 0.22.0 → 0.23.0 | NEW: `base/icons/app-file-manager.svg`, `app-terminal.svg` icons. MODIFIED: 4 existing SVGs (about, logs, settings, system-monitor) — minor tweaks. MODIFIED: `base/tokens/icons.scss` — new icon tokens for file-manager and terminal. Theme CSS rebuilt (default + dark). |
+| @namorix/ui | 0.18.1 → 0.18.2 | MODIFIED: `NmxIconSvg.types.ts` — added `APP_FILE_MANAGER`, `APP_TERMINAL` icon symbols. |
+| frontend | 0.28.0 → 0.29.0 | NEW: `addons/FileManager/` — `FileManager.tsx` + `FileManager.addon.tsx` (defineAddon + registerAddon, id: "file-manager", APP_FILE_MANAGER icon). NEW: `addons/Terminal/` — `Terminal.tsx` + `Terminal.addon.tsx` (same pattern, id: "terminal", APP_TERMINAL icon). MODIFIED: `addons/index.ts` — import both new addons. MODIFIED: `i18n/locales/en.json` — `addon.fileManager.*` and `addon.terminal.*` keys (title + description). |
 
 ### 2026-05-25 (later) — LogGroup splitting, DataDirectory fixes, LogViewer rewrite with real API + SignalR
 

@@ -25,7 +25,14 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 ## Recent Changes
 
-### 2026-05-26 (latest) — About system addon (+ Vite version defines, i18n)
+### 2026-05-26 (latest) — File Manager + Terminal addon scaffold, localeKey i18n, icon tokens
+
+- **@namorix/core (0.23.1 → 0.24.0)**: MODIFIED `addon/types.ts` — added `fileManager` and `terminal` to LocaleKeys const.
+- **@namorix/styles (0.22.0 → 0.23.0)**: NEW `app-file-manager.svg`, `app-terminal.svg` icons. MODIFIED 4 existing SVG icons + `icons.scss` — new tokens. Theme CSS rebuilt.
+- **@namorix/ui (0.18.1 → 0.18.2)**: MODIFIED `NmxIconSvg.types.ts` — added `APP_FILE_MANAGER`, `APP_TERMINAL` icon symbols.
+- **frontend (0.28.0 → 0.29.0)**: NEW `addons/FileManager/` + `addons/Terminal/` — addon components (scaffold). MODIFIED `addons/index.ts`, `en.json`.
+
+### 2026-05-26 (later) — About system addon (+ Vite version defines, i18n)
 
 - **@namorix/styles (0.21.0 → 0.22.0)**: NEW `app-about.svg` icon. NEW `about.scss` — full About layout SCSS (logo, header, version, desc, meta-list, links, copyright). NEW icon token for about. Theme CSS rebuilt.
 - **@namorix/ui (0.18.0 → 0.18.1)**: MODIFIED `NmxIconSvg.types.ts` — added `APP_ABOUT` SVG icon symbol.
