@@ -8,6 +8,8 @@ import "./LogViewer/LogViewer.addon"
 import "./Settings/Settings.addon"
 import "./SystemMonitor/SystemMonitor.addon"
 import "./NetworkTraffic/NetworkTraffic.addon"
+import "./FileManager/FileManager.addon"
+import "./Terminal/Terminal.addon"
 
 export const addonToItems = (addon: AddonModule): AddonItem => ({
   id: addon.manifest.id,

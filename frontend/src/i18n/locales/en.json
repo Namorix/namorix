@@ -226,6 +226,14 @@
     "systemMonitor": {
       "title": "System Monitor",
       "description": "Track system resource usage, performance metrics, and running processes"
+    },
+    "fileManager": {
+      "title": "File Manager",
+      "description": "Browse and manage files and directories on the server"
+    },
+    "terminal": {
+      "title": "Terminal",
+      "description": "Command-line terminal with shell access"
     }
   }
 }
