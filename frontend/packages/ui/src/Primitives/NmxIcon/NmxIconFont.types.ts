@@ -24,6 +24,7 @@ export const NmxIconFontSymbol = {
   PLAY: "ic-play",
   PAUSE: "ic-pause",
   CHECK: "ic-check",
+  NOTIFICATION: "ic-notification",
 } as const
 
 export type NmxIconFontSymbol =
