@@ -125,10 +125,10 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.29.0 | M3 (File Manager + Terminal addons, localeKey i18n) |
-| @namorix/core | 0.24.0 | M3 (LocaleKeys: fileManager, terminal) |
-| @namorix/styles | 0.23.0 | M3 (app-file-manager, app-terminal SVG icons + tokens) |
-| @namorix/ui | 0.18.2 | M3 (APP_FILE_MANAGER, APP_TERMINAL icon symbols) |
+| frontend | 0.30.0 | M3 (Notification Center + Package Center addons) |
+| @namorix/core | 0.25.0 | M3 (LocaleKeys: notificationCenter, packageCenter) |
+| @namorix/styles | 0.24.0 | M3 (notification-center, package-center SVG icons + tokens) |
+| @namorix/ui | 0.18.3 | M3 (APP_NOTIFICATION_CENTER, APP_PACKAGE_CENTER icon symbols) |
 | Namorix.Core | 0.31.1 | M3 (NuGet publish, centralized version) |
 | Namorix.Server | 0.31.1 | M3 (App server, centralized version) |
 
@@ -150,6 +150,15 @@
 | Namorix.Server | Bug fixes, config tweaks | New endpoint, new middleware, auth feature |
 
 ## Version History
+
+### 2026-05-26 (even later) — Notification Center + Package Center addon scaffold
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.24.0 → 0.25.0 | MODIFIED: `addon/types.ts` — added `notificationCenter` and `packageCenter` to `LocaleKeys` const. |
+| @namorix/styles | 0.23.0 → 0.24.0 | NEW: `base/icons/app-notification-center.svg`, `app-package-center.svg` icons. MODIFIED: `base/tokens/icons.scss` — new icon tokens. MODIFIED: icomoon rebuilt, `desktop.scss` layout fix, `taskbar.scss` notification area. Theme CSS rebuilt (default + dark). |
+| @namorix/ui | 0.18.2 → 0.18.3 | MODIFIED: `NmxIconSvg.types.ts` — added `APP_NOTIFICATION_CENTER`, `APP_PACKAGE_CENTER` icon symbols. MODIFIED: `NmxIconFont.types.ts` — new font icon symbol. |
+| frontend | 0.29.0 → 0.30.0 | NEW: `addons/NotificationCenter/` — `NotificationCenter.tsx` + `NotificationCenter.addon.tsx` (id: "notification-center", APP_NOTIFICATION_CENTER icon). NEW: `addons/PackageCenter/` — `PackageCenter.tsx` + `PackageCenter.addon.tsx` (id: "package-center", APP_PACKAGE_CENTER icon). MODIFIED: `addons/index.ts` — import both new addons. MODIFIED: `i18n/locales/en.json` — `addon.notificationCenter.*` and `addon.packageCenter.*` keys. MODIFIED: `TaskbarView.tsx` — notification center integration. |
 
 ### 2026-05-26 (latest) — File Manager + Terminal addon scaffold, localeKey i18n, icon tokens
 

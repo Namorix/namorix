@@ -25,6 +25,13 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 ## Recent Changes
 
+### 2026-05-26 (now) — Notification Center + Package Center addon scaffold
+
+- **@namorix/core (0.24.0 → 0.25.0)**: MODIFIED `addon/types.ts` — added `notificationCenter` and `packageCenter` to LocaleKeys const.
+- **@namorix/styles (0.23.0 → 0.24.0)**: NEW `app-notification-center.svg`, `app-package-center.svg` icons. MODIFIED `icons.scss` — new tokens. MODIFIED `desktop.scss` — height layout fix (`calc(100vh - taskbar-height)`). MODIFIED `taskbar.scss` — notification area. Icomoon rebuilt, theme CSS rebuilt.
+- **@namorix/ui (0.18.2 → 0.18.3)**: MODIFIED `NmxIconSvg.types.ts` — added `APP_NOTIFICATION_CENTER`, `APP_PACKAGE_CENTER`. MODIFIED `NmxIconFont.types.ts` — new glyph.
+- **frontend (0.29.0 → 0.30.0)**: NEW `addons/NotificationCenter/` + `addons/PackageCenter/` — addon components. MODIFIED `addons/index.ts`, `en.json`, `TaskbarView.tsx`.
+
 ### 2026-05-26 (latest) — File Manager + Terminal addon scaffold, localeKey i18n, icon tokens
 
 - **@namorix/core (0.23.1 → 0.24.0)**: MODIFIED `addon/types.ts` — added `fileManager` and `terminal` to LocaleKeys const.

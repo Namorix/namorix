@@ -7,7 +7,7 @@ Browser-based desktop shell, self-hosted.
 ## Features
 
 - **Desktop Shell** — Window manager, taskbar, launcher, desktop icon shortcuts
-- **System Addons** — Built-in addons (NetworkTraffic, Log Viewer, Settings, SystemMonitor) via addon contract
+- **System Addons** — Built-in addons (About, NetworkTraffic, Log Viewer, Settings, SystemMonitor, File Manager, Terminal, Notification Center, Package Center) via addon contract
 - **External Addons** — Docker-based addons with 3 modes: widget DOM slot, full app via window.open, direct URL
 - **Centralized Auth** — Single auth server for shell and addons
 
@@ -95,10 +95,14 @@ namorix/
 │       ├── addons/           # Built-in addon registry + implementations
 │       │   ├── registry.ts   # registerAddon, resolveAddon, listAddons
 │       │   ├── About/           # About Namorix (version, meta, GitHub links)
+│       │   ├── FileManager/     # File browser scaffold
 │       │   ├── LogViewer/       # Level filter chips + multi-select, paginated table
 │       │   ├── NetworkTraffic/  # Overview/Logs with SignalR + flat file backend
+│       │   ├── NotificationCenter/ # System notifications scaffold
+│       │   ├── PackageCenter/   # External addon management scaffold
 │       │   ├── Settings/       # Appearance, System, Account tabs
-│       │   └── SystemMonitor/
+│       │   ├── SystemMonitor/
+│       │   └── Terminal/       # Terminal emulator scaffold
 │       ├── components/
 │       │   ├── AuthView.tsx  # Hero + form panel layout
 │       │   ├── DesktopArea/  # Desktop icon shortcuts, grid layout
@@ -232,6 +236,6 @@ Addon có 3 mode tích hợp:
 
 1. **M1** — Static shell UI + mock auth page ✅
 2. **M2** — Full auth backend (login/register/logout/refresh/session, decorators, i18n, validation) ✅
-3. **M3** — System Addons (Built-in): addon contract + registry, About, Log Viewer, NetworkTraffic (SignalR + flat file storage + filter chips), SystemMonitor, Settings (Appearance/System/Account), theme system (hot swap CSS, localStorage+DB), File Manager 🔜, Terminal 🔜
+3. **M3** — System Addons (Built-in): addon contract + registry, About, Log Viewer, NetworkTraffic (SignalR + flat file storage + filter chips), SystemMonitor, Settings (Appearance/System/Account), theme system (hot swap CSS, localStorage+DB), File Manager, Terminal, Notification Center, Package Center (scaffold)
 4. **M4** — External addon system (Docker lifecycle, addon manager)
 5. **M5** — @namorix/core publish npm + addon integration guide
