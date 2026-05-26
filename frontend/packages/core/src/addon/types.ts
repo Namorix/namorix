@@ -4,10 +4,21 @@ import type { UserRole } from "../types"
 
 export type NmxAddonIconType = NmxIconSvgSymbol
 
+export const LocaleKeys = {
+  about: "about",
+  logViewer: "logViewer",
+  settings: "settings",
+  systemMonitor: "systemMonitor",
+  networkTraffic: "networkTraffic",
+} as const
+
+export type LocaleKeys = (typeof LocaleKeys)[keyof typeof LocaleKeys]
+
 export interface NmxAddonManifest {
   id: string
   displayName: string
   description?: string
+  localeKey?: LocaleKeys
   icon?: NmxAddonIconType
   defaultWidth?: number
   defaultHeight?: number
