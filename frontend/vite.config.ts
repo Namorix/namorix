@@ -2,21 +2,31 @@ import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react"
 import { readFileSync } from "node:fs"
 
-const pkg = JSON.parse(readFileSync("./package.json", "utf-8"))
-const corePkg = JSON.parse(
-  readFileSync("./packages/core/package.json", "utf-8"),
-)
-const stylesPkg = JSON.parse(
-  readFileSync("./packages/styles/package.json", "utf-8"),
-)
-const uiPkg = JSON.parse(readFileSync("./packages/ui/package.json", "utf-8"))
+const pkg = "./package.json"
+const corePkg = "./packages/core/package.json"
+const stylesPkg = "./packages/styles/package.json"
+const uiPkg = "./packages/ui/package.json"
+
+const backendCore = "../backend/src/Namorix.Core/Directory.Build.props"
+const backendServer = "../backend/src/Namorix.Server/Directory.Build.props"
+const matchVersion = (xml: string) =>
+  xml.match(/<Version>(.*?)<\/Version>/)?.[1]
+
+const getFrontendVersionJSON = (path: string): string =>
+  JSON.stringify(JSON.parse(readFileSync(path, "utf-8")).version) ?? "0.0.0"
+
+const getBackendVersionXML = (path: string): string =>
+  JSON.stringify(matchVersion(readFileSync(path, "utf-8"))) ?? "0.0.0"
 
 export default defineConfig({
   define: {
-    __APP_VERSION__: JSON.stringify(pkg.version),
-    __CORE_VERSION__: JSON.stringify(corePkg.version),
-    __STYLES_VERSION__: JSON.stringify(stylesPkg.version),
-    __UI_VERSION__: JSON.stringify(uiPkg.version),
+    __APP_VERSION__: getFrontendVersionJSON(pkg),
+    __CORE_VERSION__: getFrontendVersionJSON(corePkg),
+    __STYLES_VERSION__: getFrontendVersionJSON(stylesPkg),
+    __UI_VERSION__: getFrontendVersionJSON(uiPkg),
+
+    __BACKEND_CORE_VERSION__: getBackendVersionXML(backendCore),
+    __BACKEND_SERVER_VERSION__: getBackendVersionXML(backendServer),
   },
   server: {
     host: "0.0.0.0",
