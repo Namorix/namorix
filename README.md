@@ -1,5 +1,7 @@
 # Namorix
 
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPLv3-blue.svg)](LICENSE)
+
 Browser-based desktop shell, self-hosted.
 
 ## Features
@@ -17,7 +19,7 @@ Browser-based desktop shell, self-hosted.
 | Backend | ASP.NET Core 8 |
 | Database | SQLite + EF Core |
 | Auth | JWT (access + refresh) with HttpOnly cookies |
-| Terminal | xterm.js |
+| Terminal | xterm.js (planned) |
 | Realtime | SignalR |
 | Server-to-server | gRPC (planned) |
 | Docker | Docker.DotNet.Enhanced (planned) |
@@ -35,7 +37,7 @@ cd frontend && pnpm install
 # Run development (2 terminals)
 cd backend && dotnet watch run  # Backend C# (port 3000)
 # or: cd backend && dotnet run
-cd frontend && pnpm dev         # Frontend (Vite port 5173)
+cd frontend && pnpm dev         # Frontend (Vite port 5174)
 ```
 
 ## Repository Structure
@@ -43,7 +45,7 @@ cd frontend && pnpm dev         # Frontend (Vite port 5173)
 ```
 namorix/
 ├── frontend/
-│   ├── package.json          # pnpm workspace root (port 5173)
+│   ├── package.json          # pnpm workspace root (port 5174)
 │   ├── pnpm-workspace.yaml   # workspace config
 │   ├── tsconfig.base.json    # shared TypeScript config
 │   ├── public/themes/        # Compiled theme CSS (default, dark)
@@ -55,11 +57,11 @@ namorix/
 │   │   │       ├── cache/    # useTabCache, Show component
 │   │   │       ├── env/      # Dev/prod config via package.json exports
 │   │   │       ├── fingerprint/ # FingerprintComponents, generateFingerprint()
-│   │   │       ├── hooks/    # usePageSize
+│   │   │       ├── hooks/    # usePageSize, useLocalStorage
 │   │   │       ├── http/     # ApiError, http client with auto-refresh + CSRF
 │   │   │       ├── i18n/     # NmxI18n, ValidationRunner, validation-messages
 │   │   │       ├── router/   # GuardedRoute, createAuthGuard/LoginGuard/RegisterGuard
-│   │   │       ├── signalr/  # SignalR service, hooks (useSignalR, useSignalREvent, useSignalRGroup), constants
+│   │   │       ├── signalr/  # SignalR service, hooks (useSignalR, useSignalREvent, useSignalRGroup, useSignalRStatus), constants
 │   │   │       ├── store/    # nmxStore observable singleton, accessors
 │   │   │       ├── theme/    # ThemeManifest types, loader (hot swap CSS), registry
 │   │   │       ├── types/    # ApiResponse, ValidationErrorMeta, error codes
@@ -69,30 +71,34 @@ namorix/
 │   │   │       └── constants.ts
 │   │   ├── styles/           # @namorix/styles — SCSS tokens, reset, fonts
 │   │   │   └── src/
-│   │   │       ├── base/     # Components, layouts, icomoon icons, abstract (vars/mixins)
-│   │   │       └── themes/   # Default + dark theme SCSS (compiled to public/themes/)
+│   │   │       ├── base/     # Abstract (vars/mixins/maps/palette), components, layouts,
+│   │   │       │               # icons (SVG), icomoon, shell (addon/components), tokens
+│   │   │       ├── themes/   # Default + dark theme SCSS (compiled to public/themes/)
+│   │   │       ├── shell.scss    # Shell-specific SCSS (window, taskbar, launcher, addon)
+│   │   │       └── index.scss
 │   │   └── ui/               # @namorix/ui — React components
 │   │       └── src/
 │   │           ├── Primitives/    # Self-contained: NmxButton, NmxForm, NmxIcon, NmxInlineAlert,
-│   │           │                   # NmxToggle, NmxSelect, NmxSlider, NmxSegmentedGroup, NmxBadge,
-│   │           │                   # NmxChip, NmxLoading, NmxPagination, NmxPulseDot, NmxSearchInput,
+│   │           │                   # NmxToggle, NmxSelect, NmxSelectMultiple, NmxSlider,
+│   │           │                   # NmxSegmentedGroup, NmxBadge, NmxChip, NmxLoading,
+│   │           │                   # NmxPagination, NmxPulseDot, NmxSearchInput,
 │   │           │                   # NmxStatCard, NmxTagInput
 │   │           ├── Components/    # Composite: NmxCard, NmxDataTable, NmxMetaList, NmxRail,
-│   │           │                   # NmxSettings, NmxToolbar, NmxAddon
+│   │           │                   # NmxSettings, NmxToolbar, NmxAddon, NmxTabContext,
+│   │           │                   # NmxTabProvider
 │   │           ├── hooks/         # useHorizontalDrag
 │   │           ├── context/       # NmxHostContext, useIsWindowed
-│   │           ├── Layouts/       # (future) NmxGrid
+│   │           ├── Layouts/       # NmxHorizontalWrap, NmxGrid
 │   │           ├── types/         # Base, primitives shared types
 │   │           └── utils/         # cx helpers (cx, cxSize, cxSemantic, cxVariant)
 │   └── src/
 │       ├── addons/           # Built-in addon registry + implementations
 │       │   ├── registry.ts   # registerAddon, resolveAddon, listAddons
-│       │   ├── LogViewer/
+│       │   ├── LogViewer/       # Level filter chips + multi-select, paginated table
 │       │   ├── NetworkTraffic/  # Overview/Logs with SignalR + flat file backend
 │       │   ├── Settings/       # Appearance, System, Account tabs
 │       │   └── SystemMonitor/
 │       ├── components/
-│       │   ├── Auth/         # AuthPage styled wrapper
 │       │   ├── AuthView.tsx  # Hero + form panel layout
 │       │   ├── DesktopArea/  # Desktop icon shortcuts, grid layout
 │       │   ├── Launcher/     # Start menu with search + system app list
@@ -100,7 +106,6 @@ namorix/
 │       │   ├── WindowFrame/  # Draggable, resizable window chrome (6 hooks)
 │       │   └── WindowManager.tsx  # Render all open windows by zOrder
 │       ├── config/windowDefaults.ts # CSS token cache (read from --nmx-*)
-│       ├── constants/        # App-level constants
 │       ├── controllers/      # auth.controller, health.controller
 │       ├── hooks/            # useTaskbarClock
 │       ├── i18n/locales/     # en.json, vi.json
@@ -117,22 +122,26 @@ namorix/
     ├── Namorix.sln            # Solution file
     └── src/
         ├── Namorix.Core/      # Shared infrastructure (FlatFile, Hubs, Middleware, Workers, Services,
-        │                       # Extensions, Logger, Infrastructure, Constants, Config, Responses, Validation)
+        │                       # Extensions, Logger, Infrastructure, Constants, Config, Responses, Validation, Filters,
+        │                       # Attributes, Helpers, IO)
         ├── Namorix.Adapters/  # Persistence (AppDbContext, SQLite migrations),
         │                       # Services (Auth, Permission, Settings, Theme, User)
-        ├── Namorix.Server/    # Controllers, Middleware (Auth/TrustedProxy/RequirePermission),
+        ├── Namorix.Server/    # Controllers (Auth, Health, Permission, Settings, Theme, User),
+        │                       # Middleware (Auth, TrustedProxy, RequirePermission, Csrf, Exception,
+        │                       # JsonError, NotFound, SecurityHeaders, TrafficMonitor),
         │                       # Extensions, Program.cs
-        └── Namorix.Workers/   # TokenCleanupWorker
+        └── Namorix.Workers/   # TokenCleanupWorker, LogFlushWorker, TrafficCleanupWorker,
+                                # TrafficFlushWorker, TrafficStatsWorker
 ```
 
 ## Packages
 
 | Package | Purpose | Importable By |
 |---------|---------|---------------|
-| `@namorix/core` | Types, auth guards, http client with auto-refresh + CSRF, `ApiError`, i18n (NmxI18n, ValidationRunner), SignalR hooks, store (nmxStore), theme, addon contract, fingerprint, cache (useTabCache, Show), hooks (usePageSize) | frontend, @namorix/ui, external addons |
-| `@namorix/styles` | SCSS tokens, reset, fonts, icomoon icons, component/layout SCSS (shared by all themes) | frontend, @namorix/ui, external addons |
-| `@namorix/ui` | Primitives (NmxButton, NmxForm, NmxInlineAlert, NmxToggle, NmxSelect, NmxSlider, NmxSegmentedGroup, NmxBadge, NmxChip, NmxLoading, NmxPagination, NmxPulseDot, NmxSearchInput, NmxStatCard, NmxTagInput) + Composite (NmxCard, NmxDataTable, NmxMetaList, NmxRail, NmxSettings, NmxToolbar, NmxAddon) + NmxTabContext + NmxHostContext | frontend |
-| `backend` | ASP.NET Core 8 API server (SignalR, flat file traffic + logs, SQLite, Log pipeline, FileLogger) | - |
+| `@namorix/core` | Types, auth guards, http client with auto-refresh + CSRF, `ApiError`, i18n (NmxI18n, ValidationRunner), SignalR hooks (useSignalR, useSignalREvent, useSignalRGroup, useSignalRStatus), store (nmxStore), theme, addon contract, fingerprint, cache (useTabCache, Show), hooks (usePageSize, useLocalStorage) | frontend, @namorix/ui, external addons |
+| `@namorix/styles` | SCSS tokens, reset, fonts, icomoon icons, component/layout SCSS (shared by all themes), shell-specific SCSS | frontend, @namorix/ui, external addons |
+| `@namorix/ui` | Primitives (NmxButton, NmxForm, NmxIcon, NmxInlineAlert, NmxToggle, NmxSelect, NmxSelectMultiple, NmxSlider, NmxSegmentedGroup, NmxBadge, NmxChip, NmxLoading, NmxPagination, NmxPulseDot, NmxSearchInput, NmxStatCard, NmxTagInput) + Composite (NmxCard, NmxDataTable, NmxMetaList, NmxRail, NmxSettings, NmxToolbar, NmxAddon, NmxTabContext, NmxTabProvider) + NmxHostContext + Layouts (NmxHorizontalWrap, NmxGrid) | frontend |
+| `backend` | ASP.NET Core 8 API server (SignalR, flat file traffic + logs, SQLite, Log pipeline, FileLogger, ValidationFilter, SecurityHeaders, CSRF, CORS) | - |
 | `frontend` | Vite React shell (Redux Toolkit, SignalR client, addon system) | - |
 
 ## Auth Architecture
@@ -143,11 +152,11 @@ Frontend uses controller pattern for API calls:
 
 ```typescript
 // frontend/src/controllers/auth.controller.ts
-import { http, getApiBaseUrl, ApiError, ApiAuthRoutes } from "@namorix/core"
+import { nmxHttp, getApiBaseUrl, ApiError, ApiAuthRoutes } from "@namorix/core"
 
 export const authController = {
   register: async (username: string, password: string) => {
-    const data = await http
+    const data = await nmxHttp
       .url(getApiBaseUrl() + ApiAuthRoutes.register)
       .post({ username, password })
       .json()
@@ -214,13 +223,14 @@ Addon có 3 mode tích hợp:
 | `JWT__RefreshTokenExpirationDays` | Jwt.RefreshTokenExpirationDays | 7 | Refresh token TTL |
 | `JWT__RefreshTokenExpirationDaysRemember` | Jwt.RefreshTokenExpirationDaysRemember | 90 | Remember-me TTL |
 | `ConnectionStrings__DefaultConnection` | ConnectionStrings.DefaultConnection | `Data Source=namorix.db` | SQLite connection string |
+| `AppConfig__CsrfEnabled` | AppConfig.CsrfEnabled | false | Enable CSRF protection (`true` = CSRF check enabled; default false disables it) |
 | `SECURE_COOKIE` | AppConfig.SecureCookie | false | Set true for HTTPS |
-| `CSRF_DISABLE` | AppConfig.CsrfEnabled | false | Set true to disable CSRF |
+| `ALLOWED_ORIGINS` | AppConfig.AllowedOrigins | (empty) | Comma-separated CORS origins; empty = allow all (trusted proxy mode) |
 
 ## Milestones
 
 1. **M1** — Static shell UI + mock auth page ✅
 2. **M2** — Full auth backend (login/register/logout/refresh/session, decorators, i18n, validation) ✅
-3. **M3** — System Addons (Built-in): addon contract + registry, Log Viewer, NetworkTraffic (SignalR + flat file storage), SystemMonitor, Settings (Appearance/System/Account), theme system (hot swap CSS, localStorage+DB), File Manager 🔜, Terminal 🔜
+3. **M3** — System Addons (Built-in): addon contract + registry, Log Viewer, NetworkTraffic (SignalR + flat file storage + filter chips), SystemMonitor, Settings (Appearance/System/Account), theme system (hot swap CSS, localStorage+DB), File Manager 🔜, Terminal 🔜
 4. **M4** — External addon system (Docker lifecycle, addon manager)
 5. **M5** — @namorix/core publish npm + addon integration guide

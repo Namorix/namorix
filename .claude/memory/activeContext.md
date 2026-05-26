@@ -25,6 +25,14 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 ## Recent Changes
 
+### 2026-05-26 — LogViewer chip filter, NmxChipFilter, multi-level filter, blurry window fix, ValidationFilter
+
+- **@namorix/styles (0.20.0 → 0.21.0)**: NEW `select-multiple.scss`, `log-viewer.scss`. NEW palette colors (slate, violet, rose). NEW `$nmx-font-sizes` map + `sizes()` mixin. MODIFIED `chip.scss` — NmxChipFilter variant (role="checkbox", checkmark), `maps.scss` — semantic-colors extended (trace/debug/fatal), `window.scss` — animation fixes, `reset.scss` — overflow hidden. Theme CSS rebuilt.
+- **@namorix/ui (0.17.0 → 0.18.0)**: NEW `NmxChipFilter` — filter chip with checkbox role + inline SVG checkmark. NEW `NmxSelectMultiple` — multi-select dropdown. NEW `NmxButtonLive`, `NmxButtonRefresh` — dedicated buttons wrapping NmxButton. MODIFIED `NmxButton` — added `active`, `title` props. MODIFIED `NmxSemanticColor` — added `trace`, `debug`, `fatal`. MODIFIED `NmxChip` — semantic color support.
+- **@namorix/core (0.23.0 → 0.23.1)**: MODIFIED `signalr.service.ts` — auth-expired status for reconnect detection.
+- **frontend (0.26.1 → 0.27.0)**: NEW LogViewer — chip multi-level filter (NmxChipFilter), live/pause (NmxButtonLive), select-multiple. FIX `useAddonMount` — `useEffect` → `useLayoutEffect` (blurry window when opening from desktop/launcher). MODIFIED `DesktopIcon` — double-click open. MODIFIED `log.controller.ts` — `Levels[]`. NEW i18n keys.
+- **backend (0.30.1 → 0.31.0)**: NEW `ValidationFilter` — global action filter (replaces auto-400 model binding). NEW `LogQueryRequest` pattern. MODIFIED `LogController` — multi-level `Levels` parsing. MODIFIED `LogService` — `Levels` filter. MODIFIED `LogEntrySerializer` — `[JsonIgnore]` Level + computed int `LevelValue`. MODIFIED `ServiceCollectionExtensions` — `SuppressModelStateInvalidFilter` + `ValidationFilter`. MODIFIED `JsonErrorMiddleware` — headers fix.
+
 ### 2026-05-25 — ILogger injection across services/middleware, SignalR reconnect loop, NmxHorizontalWrap, RequireAdmin
 
 - **backend (0.30.0 → 0.30.1)**: NEW `HubContextExtensions.RequireAdmin()` — extension method với ILogger warning log khi non-admin gọi SignalR methods. MODIFIED `NmxHub` — ILogger injection, full logging (connect/disconnect/subscribe/unsubscribe). MODIFIED 7 services/middleware files — ILogger injection với 20+ log points across auth operations (login, register, token reuse detection, fingerprint mismatch revoke, CSRF mismatch, untrusted proxy blocked).

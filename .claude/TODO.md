@@ -11,10 +11,24 @@
 
 **Related**: Liên quan tới addon external (SignalR groups), xử lý sau khi làm M4.
 
+## SignalR — Auth check when reconnect fails
+
+**Context**: `scheduleReconnect()` retry vô hạn, nếu JWT expired → loading/reconnect mãi. Cần check session auth sau N lần failed, nếu expired thì redirect về login, không retry tiếp.
+
+**Approach**: 
+- Thêm `"auth-expired"` vào `SignalRStatus`
+- Trong `scheduleReconnect()`, sau 3 attempts (~35s), gọi `GET /api/auth/session` bằng fetch với `credentials: "include"`
+- Nếu session expired → `emitStatus("auth-expired")` → App.tsx redirect `window.location.href = DefaultPaths.LOGIN`
+- Reset `reconnectAttempts` khi connect thành công
+
+**Files**:
+- `frontend/packages/core/src/signalr/types.ts` — thêm `"auth-expired"`
+- `frontend/packages/core/src/signalr/signalr.service.ts` — `reconnectAttempts`, `isSessionExpired()`, auth check trong `scheduleReconnect()`
+- `frontend/src/App.tsx` — effect redirect + sửa `shouldShowReconnecting`
+
+**Note**: Không dùng `nmxHttp` để tránh circular dependency, dùng `fetch` trực tiếp.
+
 ---
 
-## ESC to close launcher
-- `frontend/src/App.tsx` hoặc Desktop — keydown Escape → đóng launcher
 
-## Disable right-click global
-- Desktop.tsx — `contextmenu` event listener prevent default
+

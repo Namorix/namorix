@@ -124,12 +124,11 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.26.0 | M3 (LogViewer rewrite: real API + SignalR, NmxDataTable, i18n keys) |
-| frontend | 0.26.1 | M3 (SignalR loading overlay + hasBeenConnected, various pages fixes) |
-| @namorix/core | 0.23.0 | M3 (SignalR reconnection loop with exponential backoff, scheduleReconnect) |
-| @namorix/styles | 0.20.0 | M3 (new horizontal-wrap.scss layout, various SCSS fixes across components, theme CSS rebuilt) |
-| @namorix/ui | 0.17.0 | M3 (New NmxHorizontalWrap layout component + NmxHorizontalWrapItem, various component fixes) |
-| backend | 0.30.1 | M3 (ILogger injection across auth/services/middleware, new HubContextExtensions.RequireAdmin, NmxHub logging) |
+| frontend | 0.27.0 | M3 (chip filter, live/pause, select-multiple, useLayoutEffect blurry fix, i18n) |
+| @namorix/core | 0.23.1 | M3 (SignalR auth-expired status support) |
+| @namorix/styles | 0.21.0 | M3 (trace/debug/fatal tokens, select-multiple, log-viewer, sizes() mixin, chip filter variant) |
+| @namorix/ui | 0.18.0 | M3 (NmxChipFilter, NmxSelectMultiple, NmxButtonLive/Refresh, NmxSemanticColor extended) |
+| backend | 0.31.0 | M3 (ValidationFilter, LogQueryRequest, LogEntrySerializer LevelValue, multi-level filter) |
 
 ## Version Rules
 
@@ -167,6 +166,16 @@
 | @namorix/ui | 0.17.0 | NEW: `NmxHorizontalWrap` — flexbox wrap layout (gap/align/justify props). NEW: `NmxHorizontalWrapItem` — child item (pushRight prop). |
 | @namorix/styles | 0.20.0 | NEW: `horizontal-wrap.scss` — flex-wrap layout with spacings/align/justify variants, push-right modifier. MODIFIED: Multiple component SCSS fixes (addon, badge, button, chip, pagination, select, toggle, toolbar, rail, reset, shell). Theme CSS rebuilt. |
 | frontend | 0.26.1 | MODIFIED: `App.tsx` — SignalR loading overlay shows on disconnect+reconnect (via `hasBeenConnected`), no overlay on Login page. |
+
+### 2026-05-26 — LogViewer chip filter, NmxChipFilter, multi-level filter, blurry window fix, ValidationFilter
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/styles | 0.20.0 → 0.21.0 | NEW: `select-multiple.scss`, `log-viewer.scss`. NEW: palette colors (slate, violet, rose for trace/debug/fatal). NEW: `$nmx-font-sizes` map, `sizes()` mixin. MODIFIED: `chip.scss` — NmxChipFilter variant, `maps.scss` — semantic-colors extended with trace/debug/fatal, `button.scss` — refresh/live variants, `reset.scss` — overflow hidden, `window.scss` — will-change fix. Theme CSS rebuilt. |
+| @namorix/ui | 0.17.0 → 0.18.0 | NEW: `NmxChipFilter` — filter chip with checkbox role, inline SVG checkmark. NEW: `NmxSelectMultiple` — multi-select dropdown. NEW: `NmxButtonLive`, `NmxButtonRefresh` — dedicated button components. MODIFIED: `NmxButton` — added `active`, `title` props. MODIFIED: `NmxSemanticColor` type — added `trace`, `debug`, `fatal`. MODIFIED: `NmxChip` — added `semantic` color support. |
+| @namorix/core | 0.23.0 → 0.23.1 | MODIFIED: `signalr.service.ts` — auth-expired status support. |
+| frontend | 0.26.1 → 0.27.0 | NEW: `LogViewer` — chip-based multi-level filter (NmxChipFilter), live/pause toggle (NmxButtonLive). NEW: `NmxSelectMultiple` in LogViewer toolbar. MODIFIED: `useAddonMount` — `useEffect` → `useLayoutEffect` (fix blurry window on open). MODIFIED: `DesktopIcon` — double-click open pattern. MODIFIED: `log.controller.ts` — `Levels[]` query param. MODIFIED: `i18n/locales/en.json` — new translation keys. |
+| backend | 0.30.1 → 0.31.0 | NEW: `ValidationFilter` — global action filter thay thế auto-400 model binding. MODIFIED: `LogController` — `LogQueryRequest` pattern, multi-level `Levels` parsing. MODIFIED: `LogService` — `Levels` property thay `Level` (int[] multi-filter). MODIFIED: `LogEntrySerializer` — `[JsonIgnore]` on `Level`, new `LevelValue` computed int property. MODIFIED: `ServiceCollectionExtensions` — `SuppressModelStateInvalidFilter` + `ValidationFilter` registration. MODIFIED: `JsonErrorMiddleware` — headers fix. |
 
 ### 2026-05-25 — Core migration: shared infrastructure moved to Namorix.Core, new Log pipeline, DI extensions
 
