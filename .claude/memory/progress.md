@@ -129,7 +129,8 @@
 | @namorix/core | 0.23.1 | M3 (SignalR auth-expired status support) |
 | @namorix/styles | 0.22.0 | M3 (app-about.svg, about.scss, new icon token) |
 | @namorix/ui | 0.18.1 | M3 (APP_ABOUT icon symbol) |
-| backend | 0.31.1 | M3 (MSBuild central config, CPM migration) |
+| Namorix.Core | 0.31.1 | M3 (NuGet publish, centralized version) |
+| Namorix.Server | 0.31.1 | M3 (App server, centralized version) |
 
 ## Version Rules
 
@@ -145,7 +146,8 @@
 | @namorix/core | Bug fixes | New type, new module, breaking change |
 | @namorix/styles | Token fixes | New token, new variable, new export |
 | @namorix/ui | Bug fixes | New component, component breaking change |
-| backend | Bug fixes, C# config tweaks | New endpoint, new service, auth feature |
+| Namorix.Core | Bug fixes, internal refactor | New public API, new module, breaking change |
+| Namorix.Server | Bug fixes, config tweaks | New endpoint, new middleware, auth feature |
 
 ## Version History
 
