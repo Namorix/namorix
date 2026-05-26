@@ -88,20 +88,23 @@
      style="fill-opacity:1;fill:url(#linearGradient2)" />
   <g
      id="g1"
-     transform="matrix(1.6688357,0,0,1.6386265,-121.98105,-76.635917)">
+     transform="matrix(1.6688357,0,0,1.6386265,-121.98105,-76.635917)"
+     style="stroke-width:1.00020432;stroke-dasharray:none">
     <path
        id="nmx-glyph-fixed-1"
        d="M 111.25,109.163 V 130.8 c 0,7.95 0,7.95 7.5,13.013 l 20.625,11.925 c 3.112,1.8 8.175,1.8 11.25,0 l 20.625,-11.925 c 7.5,-5.063 7.5,-5.063 7.5,-12.975 v -21.675 c 0,-7.913 0,-7.913 -7.5,-12.9751 l -20.625,-11.925 c -3.075,-1.8 -8.138,-1.8 -11.25,0 l -20.625,11.925 c -7.5,5.0621 -7.5,5.0621 -7.5,12.9751 z"
        stroke="#ffffff"
        stroke-width="10"
        stroke-linecap="round"
-       stroke-linejoin="round" />
+       stroke-linejoin="round"
+       style="stroke-width:7.64182711;stroke-dasharray:none" />
     <path
        id="nmx-glyph-fixed-2"
        d="m 145,131.25 c 6.213,0 11.25,-5.037 11.25,-11.25 0,-6.213 -5.037,-11.25 -11.25,-11.25 -6.213,0 -11.25,5.037 -11.25,11.25 0,6.213 5.037,11.25 11.25,11.25 z"
        stroke="#ffffff"
        stroke-width="10"
        stroke-linecap="round"
-       stroke-linejoin="round" />
+       stroke-linejoin="round"
+       style="stroke-width:7.64182711;stroke-dasharray:none" />
   </g>
 </svg>
