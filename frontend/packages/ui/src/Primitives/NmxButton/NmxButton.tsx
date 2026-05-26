@@ -1,10 +1,12 @@
 import React from "react"
-import type { WithBaseProps, WithVariant, WithSemanticColor } from "../types"
-import { cx, cxSemantic, cxVariant } from "../utils"
+import type { WithBaseProps, WithVariant, WithSemanticColor } from "../../types"
+import { cx, cxSemantic, cxVariant } from "../../utils"
 
 interface NmxButtonProps extends WithBaseProps, WithVariant, WithSemanticColor {
   type?: "button" | "submit" | "reset"
   label?: string
+  title?: string
+  active?: boolean
   disabled?: boolean
   fullWidth?: boolean
   uppercase?: boolean
@@ -16,6 +18,8 @@ export const NmxButton: React.FC<NmxButtonProps> = ({
   semantic = "primary",
   type = "button",
   label,
+  title,
+  active = false,
   disabled = false,
   fullWidth = false,
   uppercase = false,
@@ -33,9 +37,11 @@ export const NmxButton: React.FC<NmxButtonProps> = ({
     <button
       {...rest}
       type={type}
+      title={title}
       disabled={disabled}
       className={cx(
         "nmx-button",
+        { "nmx-button--active": active },
         { "nmx-button--full-width": fullWidth },
         { "nmx-button--upper-case": uppercase },
         cxVariant("nmx-button", variant),

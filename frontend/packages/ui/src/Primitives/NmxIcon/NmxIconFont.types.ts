@@ -20,6 +20,10 @@ export const NmxIconFontSymbol = {
   LINK: "ic-link",
   EXIT: "ic-exit",
   ENTER: "ic-enter",
+  REFRESH: "ic-refresh",
+  PLAY: "ic-play",
+  PAUSE: "ic-pause",
+  CHECK: "ic-check",
 } as const
 
 export type NmxIconFontSymbol =

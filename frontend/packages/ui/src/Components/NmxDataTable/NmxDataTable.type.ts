@@ -14,6 +14,7 @@ export interface NmxDataTableColumn<T = unknown> {
   alignCell?: NmxDataTableAlignType
   disableEllipsisHeader?: boolean
   disableEllipsisCell?: boolean
+  enableUserSelectCell?: boolean
 }
 
 export interface NmxDataTableFallback {

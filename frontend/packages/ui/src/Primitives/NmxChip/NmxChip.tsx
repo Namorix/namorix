@@ -1,6 +1,6 @@
-import type { WithBaseProps, WithSemanticColor } from "../types"
+import type { WithBaseProps, WithSemanticColor } from "../../types"
 import React from "react"
-import { cx, cxSemantic } from "../utils"
+import { cx, cxSemantic } from "../../utils"
 
 interface NmxChipProps extends WithBaseProps, WithSemanticColor {
   active?: boolean

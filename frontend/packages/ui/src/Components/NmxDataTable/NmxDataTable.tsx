@@ -172,6 +172,10 @@ export const NmxDataTable = <T extends object>({
                           "nmx-data-table--ellipsis-disabled":
                             col.disableEllipsisCell === true,
                         },
+                        {
+                          "nmx-data-table--user-select":
+                            col.enableUserSelectCell === true,
+                        },
                       )}
                     >
                       {col.renderCell(row, rowIndex)}
