@@ -10,6 +10,12 @@
   box-sizing: border-box;
 }
 
+#root {
+  overflow: hidden;
+  height: 100%;
+  contain: strict;
+}
+
 html,
 body {
   height: 100%;
@@ -25,6 +31,7 @@ body {
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
+  overflow: hidden;
 
   @include no-user-select;
 }

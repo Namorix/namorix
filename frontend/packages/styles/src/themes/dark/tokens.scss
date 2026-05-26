@@ -17,10 +17,12 @@
   --nmx-color-on-primary: #ffffff;
 
   /* Semantic */
-  --nmx-color-error: var(--nmx-color-red-500);
-  --nmx-color-success: var(--nmx-color-green-500);
-  --nmx-color-warning: var(--nmx-color-amber-500);
+  --nmx-color-trace: var(--nmx-color-slate-400);
+  --nmx-color-debug: var(--nmx-color-violet-500);
   --nmx-color-info: var(--nmx-color-blue-500);
+  --nmx-color-warning: var(--nmx-color-amber-500);
+  --nmx-color-error: var(--nmx-color-red-500);
+  --nmx-color-fatal: var(--nmx-color-rose-600);
 
   --nmx-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2), 0 1px 4px rgba(0, 0, 0, 0.16);
 

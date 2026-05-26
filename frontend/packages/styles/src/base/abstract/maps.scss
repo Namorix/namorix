@@ -1,9 +1,12 @@
 $nmx-semantic-colors: (
   "primary": var(--nmx-color-primary),
-  "error": var(--nmx-color-error),
-  "warning": var(--nmx-color-warning),
-  "success": var(--nmx-color-success),
+  "trace": var(--nmx-color-trace),
+  "debug": var(--nmx-color-debug),
   "info": var(--nmx-color-info),
+  "warning": var(--nmx-color-warning),
+  "error": var(--nmx-color-error),
+  "fatal": var(--nmx-color-fatal),
+  "success": var(--nmx-color-success),
 );
 
 $nmx-spacings: (
@@ -12,4 +15,12 @@ $nmx-spacings: (
   "md": var(--nmx-spacing-md),
   "lg": var(--nmx-spacing-lg),
   "xl": var(--nmx-spacing-xl),
+);
+
+$nmx-font-sizes: (
+  "xs": var(--nmx-font-size-xs),
+  "sm": var(--nmx-font-size-sm),
+  "md": var(--nmx-font-size-md),
+  "lg": var(--nmx-font-size-lg),
+  "xl": var(--nmx-font-size-xl),
 );

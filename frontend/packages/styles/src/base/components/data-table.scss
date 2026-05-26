@@ -76,6 +76,10 @@
     }
   }
 
+  &--user-select {
+    @include user-select;
+  }
+
   &__row-cell {
     color: var(--nmx-color-on-surface);
     font-size: var(--nmx-font-size-sm);

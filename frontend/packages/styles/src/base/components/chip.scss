@@ -3,16 +3,19 @@
 .nmx-chip {
   display: inline-flex;
   align-items: center;
-  gap: var(--nmx-spacing-sm);
-  padding: var(--nmx-spacing-sm) var(--nmx-spacing-md);
-  border-radius: var(--nmx-radius-full);
-  font-size: var(--nmx-font-size-xs);
+  gap: var(--nmx-chip-spacing, var(--nmx-spacing-sm));
+  padding: var(--nmx-chip-py, var(--nmx-spacing-sm))
+    var(--nmx-chip-px, var(--nmx-spacing-md));
+  border-radius: var(--nmx-radius-md);
+  font-size: var(--nmx-chip-font, var(--nmx-font-size-xs));
   font-weight: var(--nmx-font-weight-medium);
   font-family: var(--nmx-font-sans), serif;
   letter-spacing: var(--nmx-letter-spacing-normal);
   cursor: pointer;
   white-space: nowrap;
   transition: opacity 0.15s;
+
+  @include sizes("nmx-chip", spacing, font, padding);
 
   background: color-mix(
     in oklab,
@@ -34,4 +37,21 @@
   }
 
   @include semantic-variants("nmx-chip", true, true);
+}
+
+.nmx-chip--filter {
+  display: inline-flex;
+  align-items: center;
+
+  .nmx-chip-filter__check {
+    display: none;
+    font-size: calc(var(--nmx-chip-font) * 0.8);
+  }
+
+  &.nmx-chip--active {
+    .nmx-chip-filter__check {
+      display: inline-flex;
+      align-items: center;
+    }
+  }
 }

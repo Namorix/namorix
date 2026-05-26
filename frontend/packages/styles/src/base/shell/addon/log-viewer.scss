@@ -1,0 +1,18 @@
+@use "../../abstract/variables" as *;
+
+.nmx-addon-log-viewer__horizontal-wrap {
+  container-type: inline-size;
+  container-name: log-view-horizontal;
+}
+
+.nmx-addon-log-viewer__actions {
+  display: flex;
+  gap: var(--nmx-spacing-md);
+}
+
+@container log-view-horizontal (max-width: #{$nmx-breakpoint-sm}) {
+  .nmx-addon-log-viewer__search,
+  .nmx-addon-log-viewer__log-level {
+    width: 100%;
+  }
+}

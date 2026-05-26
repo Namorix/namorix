@@ -1,4 +1,5 @@
 @use "maps" as *;
+@use "sass:list";
 
 @mixin no-user-select {
   -webkit-user-select: none;
@@ -6,8 +7,8 @@
 }
 
 @mixin user-select {
-  -webkit-user-select: auto;
-  user-select: auto;
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 @mixin truncate {
@@ -86,6 +87,28 @@
   @each $name, $spacing in $nmx-spacings {
     &--#{$name} {
       --#{$prefix}-spacing: #{$spacing};
+    }
+  }
+}
+
+@mixin sizes($prefix, $properties...) {
+  $all: list.length($properties) == 0;
+  @each $name, $size in $nmx-spacings {
+    &--#{$name} {
+      @if $all or list.index($properties, spacing) {
+        --#{$prefix}-spacing: #{$size};
+      }
+      @if $all or list.index($properties, padding) {
+        --#{$prefix}-py: #{$size};
+        --#{$prefix}-px: #{$size};
+      }
+    }
+  }
+  @each $name, $font in $nmx-font-sizes {
+    &--#{$name} {
+      @if $all or list.index($properties, font) {
+        --#{$prefix}-font: #{$font};
+      }
     }
   }
 }

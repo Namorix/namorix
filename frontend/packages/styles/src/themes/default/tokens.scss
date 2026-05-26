@@ -17,8 +17,10 @@
   --nmx-color-on-primary: #ffffff;
 
   /* Semantic */
-  --nmx-color-error: var(--nmx-color-red-600);
-  --nmx-color-success: var(--nmx-color-green-600);
-  --nmx-color-warning: var(--nmx-color-amber-600);
+  --nmx-color-trace: var(--nmx-color-slate-500);
+  --nmx-color-debug: var(--nmx-color-violet-600);
   --nmx-color-info: var(--nmx-color-blue-600);
+  --nmx-color-warning: var(--nmx-color-amber-600);
+  --nmx-color-error: var(--nmx-color-red-600);
+  --nmx-color-fatal: var(--nmx-color-rose-700);
 }

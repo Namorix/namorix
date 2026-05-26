@@ -31,8 +31,9 @@
   appearance: none;
   -webkit-appearance: none;
   font-size: var(--nmx-font-size-sm);
-  padding: var(--nmx-spacing-lg);
+  padding: var(--nmx-spacing-md);
   padding-right: calc(var(--nmx-spacing-md) * 3);
+  line-height: var(--nmx-line-height-normal);
   border-color: transparent;
   border-radius: var(--nmx-radius-md);
   background: var(--nmx-color-surface-lowest);
