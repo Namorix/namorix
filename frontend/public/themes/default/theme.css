@@ -1944,6 +1944,16 @@ textarea,
   opacity: 1;
 }
 :root {
+  /* Semantic */
+  --nmx-color-trace: var(--nmx-color-slate-500);
+  --nmx-color-debug: var(--nmx-color-violet-600);
+  --nmx-color-info: var(--nmx-color-blue-600);
+  --nmx-color-success: var(--nmx-color-green-600);
+  --nmx-color-warning: var(--nmx-color-amber-600);
+  --nmx-color-error: var(--nmx-color-red-600);
+  --nmx-color-fatal: var(--nmx-color-rose-700);
+}
+:root {
   --nmx-duration-instant: 0ms;
   --nmx-duration-fast: 100ms;
   --nmx-duration-normal: 200ms;
@@ -2078,11 +2088,4 @@ textarea,
   --nmx-color-on-surface-variant: #6b7280;
   --nmx-color-primary: #2563eb;
   --nmx-color-on-primary: #ffffff;
-  /* Semantic */
-  --nmx-color-trace: var(--nmx-color-slate-500);
-  --nmx-color-debug: var(--nmx-color-violet-600);
-  --nmx-color-info: var(--nmx-color-blue-600);
-  --nmx-color-warning: var(--nmx-color-amber-600);
-  --nmx-color-error: var(--nmx-color-red-600);
-  --nmx-color-fatal: var(--nmx-color-rose-700);
 }
