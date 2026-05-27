@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
+    <Version>0.31.2</Version>
     <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>Namorix.Server</RootNamespace>
     <UseRazorBuildServer>false</UseRazorBuildServer>
