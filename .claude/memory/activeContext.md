@@ -25,6 +25,13 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 ## Recent Changes
 
+### 2026-05-27 — TrafficMonitorFilter, FlatFileStore sort fix, LogViewer live/refresh, SearchInput suggestion fix
+
+- **Namorix.Core (0.31.2 → 0.31.3)**: NEW `TrafficMonitorFilter` (IAsyncActionFilter) — checks `[TrafficMonitor]` attribute on endpoint metadata, only logs controllers with the attribute. Replaces `TrafficMonitorMiddleware` (deleted). FIX `FlatFileStore.QueryAsync` — entries now sorted by timestamp DESC across all subdirectories instead of grouped by file path order (fixes log interleaving in LogViewer). MODIFIED `ServiceCollectionExtensions` — register filter globally. MODIFIED `ApplicationBuilderExtensions` — removed `UseTrafficMonitor()`, changed middleware helper methods to `private static`.
+- **@namorix/ui (0.18.3 → 0.18.4)**: FIX `NmxSearchInput` — suggestion key conflict (`p=` prefix matched both `p=` and `ip=`).
+- **@namorix/styles (0.24.0 → 0.24.1)**: search-input.scss fixes, theme CSS rebuilt.
+- **frontend (0.30.0 → 0.31.0)**: `LogViewer.tsx` — wired `NmxButtonRefresh` (onClick → refreshKey) and `NmxButtonLive` (live toggle state, SignalR group conditional on live). Added `live` + `refreshKey` state, guard `useSignalREvent` handler with `if (!live)`. `NetworkTraffic.tsx` + `NetworkTrafficLogs.tsx` — feature updates.
+
 ### 2026-05-27 — Backend build fix (Directory.Build.props blocking ImplicitUsings)
 
 - **backend (0.31.1 → 0.31.2)**: FIX build error — untracked `Namorix.Server/Directory.Build.props` overriding parent, blocking `ImplicitUsings` + `Nullable` (47 CS0246 errors). Deleted local file, moved `<Version>` to csproj. Added `<ImplicitUsings>` + `<Nullable>` directly to `Namorix.Core.csproj` (same root cause from local `Namorix.Core/Directory.Build.props`).

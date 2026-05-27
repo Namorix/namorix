@@ -125,11 +125,11 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.30.0 | M3 (Notification Center + Package Center addons) |
+| frontend | 0.31.0 | M3 (LogViewer live/refresh + NetworkTraffic features) |
 | @namorix/core | 0.25.0 | M3 (LocaleKeys: notificationCenter, packageCenter) |
-| @namorix/styles | 0.24.0 | M3 (notification-center, package-center SVG icons + tokens) |
-| @namorix/ui | 0.18.3 | M3 (APP_NOTIFICATION_CENTER, APP_PACKAGE_CENTER icon symbols) |
-| Namorix.Core | 0.31.2 | M3 (fix Directory.Build.props blocking ImplicitUsings) |
+| @namorix/styles | 0.24.1 | M3 (search-input.scss fixes) |
+| @namorix/ui | 0.18.4 | M3 (NmxButtonLive fix, NmxSearchInput suggestion key fix) |
+| Namorix.Core | 0.31.3 | M3 (TrafficMonitorFilter replaces middleware, FlatFileStore sort fix) |
 | Namorix.Server | 0.31.2 | M3 (fix SDK type + Directory.Build.props build error) |
 
 ## Version Rules
@@ -150,6 +150,15 @@
 | Namorix.Server | Bug fixes, config tweaks | New endpoint, new middleware, auth feature |
 
 ## Version History
+
+### 2026-05-27 — TrafficMonitorFilter, FlatFileStore sort fix, LogViewer live/refresh, SearchInput suggestion fix
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| Namorix.Core | 0.31.2 → 0.31.3 | NEW: `TrafficMonitorFilter` (IAsyncActionFilter) — replaces `TrafficMonitorMiddleware`, only logs endpoints with `[TrafficMonitor]` attribute. FIX: `FlatFileStore.QueryAsync` — sort entries by timestamp DESC instead of file path order (fix log grouping by category). MODIFIED: `ServiceCollectionExtensions` — register filter globally. MODIFIED: `ApplicationBuilderExtensions` — removed `UseTrafficMonitor()`, changed methods to private. REMOVED: `TrafficMonitorMiddleware.cs`. |
+| @namorix/ui | 0.18.3 → 0.18.4 | FIX: `NmxButtonLive` — minor fix. FIX: `NmxSearchInput` — suggestion key prefix conflict (`p=` vs `ip=`). |
+| @namorix/styles | 0.24.0 → 0.24.1 | FIX: `search-input.scss` — suggestion dropdown styling adjustments. Theme CSS rebuilt. |
+| frontend | 0.30.0 → 0.31.0 | NEW: `LogViewer.tsx` — wired `NmxButtonRefresh` + `NmxButtonLive` (live toggle, SignalR group subscribe conditional on live state, refreshKey re-fetch). MODIFIED: `NetworkTraffic.tsx` + `NetworkTrafficLogs.tsx` — feature updates. |
 
 ### 2026-05-27 — Backend build fix (Directory.Build.props blocking ImplicitUsings)
 
