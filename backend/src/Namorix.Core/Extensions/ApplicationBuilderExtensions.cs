@@ -16,7 +16,6 @@ public static class ApplicationBuilderExtensions
     
         configurePipeline?.Invoke(app); // CORS → Auth → TrustedProxy
     
-        app.UseTrafficMonitor();
         app.UseNotFoundHandler();
         app.UseCsrfProtection();
         app.UseRouting();
@@ -29,30 +28,25 @@ public static class ApplicationBuilderExtensions
     
         return app;
     }
-    
-    public static void UseApiErrorHandling(this IApplicationBuilder applicationBuilder)
+
+    private static void UseApiErrorHandling(this IApplicationBuilder applicationBuilder)
     {
         applicationBuilder.UseMiddleware<ExceptionMiddleware>();
         applicationBuilder.UseMiddleware<JsonErrorMiddleware>();
     }
-    
-    public static void UseCsrfProtection(this IApplicationBuilder applicationBuilder)
+
+    private static void UseCsrfProtection(this IApplicationBuilder applicationBuilder)
     {
         applicationBuilder.UseMiddleware<CsrfMiddleware>();
     }
 
-    public static void UseSecurityHeaders(this IApplicationBuilder applicationBuilder)
+    private static void UseSecurityHeaders(this IApplicationBuilder applicationBuilder)
     {
         applicationBuilder.UseMiddleware<SecurityHeadersMiddleware>();
     }
-    
-    public static void UseNotFoundHandler(this IApplicationBuilder applicationBuilder)
+
+    private static void UseNotFoundHandler(this IApplicationBuilder applicationBuilder)
     {
         applicationBuilder.UseMiddleware<NotFoundMiddleware>();
-    }
-    
-    public static void UseTrafficMonitor(this IApplicationBuilder applicationBuilder)
-    {
-        applicationBuilder.UseMiddleware<TrafficMonitorMiddleware>();
     }
 }

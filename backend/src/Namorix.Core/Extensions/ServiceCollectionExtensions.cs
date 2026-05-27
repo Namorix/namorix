@@ -91,6 +91,7 @@ public static class ServiceCollectionExtensions
         services.AddControllers(options =>
         {
             options.Filters.Add<ValidationFilter>();
+            options.Filters.Add<TrafficMonitorFilter>();
         }).AddJsonOptions(options =>
         {
             options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;

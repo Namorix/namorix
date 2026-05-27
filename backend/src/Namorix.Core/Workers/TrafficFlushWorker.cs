@@ -35,7 +35,7 @@ public class TrafficFlushWorker(IFlatFileStore flatFileStore,
             {
                 foreach (var log in batch)
                     await flatFileStore.AppendAsync(log);
-                
+
                 monitorService.Accumulate(batch); 
                 using var scope = scopeFactory.CreateScope();
                 var notifier = scope.ServiceProvider.GetRequiredService<ITrafficNotifier>();

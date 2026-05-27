@@ -57,35 +57,22 @@ public class FlatFileStore(FlatFileOptions options) : IFlatFileStore
         where T : class, IFlatFileSerializer<T>
     {
         await Task.Yield();
-        
-        var files = GetFilesForCategory<T>().Reverse(); // newest first
-        var skipped = 0;
-        var taken = 0;
 
-        foreach (var file in files)
-        {
-            if (taken >= take) yield break;
+        var query = GetFilesForCategory<T>()
+            .Reverse()
+            .SelectMany(file => File.ReadLines(file).Reverse())
+            .Where(line => !string.IsNullOrWhiteSpace(line))
+            .Select(line => T.Deserialize(line, T.Category))
+            .Where(entry => entry != null && (filter == null || filter(entry)))
+            .Select(entry => (entry: entry!, ts: T.GetTimestamp(entry!)))
+            .OrderByDescending(x => x.ts)
+            .Skip(skip ?? 0);
 
-            foreach (var line in File.ReadLines(file).Reverse())
-            {
-                if (string.IsNullOrWhiteSpace(line)) continue;
+        if (take.HasValue)
+            query = query.Take(take.Value);
 
-                var entry = T.Deserialize(line, T.Category);
-                if (entry == null) continue;
-                if (filter != null && !filter(entry)) continue;
-
-                if (skipped < skip)
-                {
-                    skipped++;
-                    continue;
-                }
-
-                yield return entry;
-                taken++;
-
-                if (taken >= take) yield break;
-            }
-        }
+        foreach (var (entry, _) in query)
+            yield return entry;
     }
 
     public async Task<long> CountAsync<T>(Func<T, bool>? filter = null)
