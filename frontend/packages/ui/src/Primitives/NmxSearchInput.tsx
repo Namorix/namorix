@@ -158,18 +158,18 @@ export const NmxSearchInput = ({
             }
           }}
         />
-        {resolvedValue && (
-          <button
-            type="button"
-            className="nmx-search-input__clear"
-            onClick={() => {
-              setShowDropdown(false)
-              handleChange("")
-            }}
-          >
-            <NmxIconFont symbol={NmxIconFontSymbol.CLOSE} />
-          </button>
-        )}
+        <button
+          type="button"
+          className={cx("nmx-search-input__clear", {
+            "nmx-search-input__clear-hidden": !resolvedValue,
+          })}
+          onClick={() => {
+            setShowDropdown(false)
+            handleChange("")
+          }}
+        >
+          <NmxIconFont symbol={NmxIconFontSymbol.CLOSE} />
+        </button>
         {showDropdown && (
           <div
             className="nmx-search-input__dropdown"

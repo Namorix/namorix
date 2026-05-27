@@ -18,7 +18,7 @@ export const NmxButtonLive: React.FC<NmxButtonLiveProps> = ({
     className="nmx-button__live"
   >
     <NmxIconFont
-      symbol={live ? NmxIconFontSymbol.PLAY : NmxIconFontSymbol.PAUSE}
+      symbol={!live ? NmxIconFontSymbol.PLAY : NmxIconFontSymbol.PAUSE}
     />
   </NmxButton>
 )
