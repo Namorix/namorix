@@ -25,6 +25,10 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 ## Recent Changes
 
+### 2026-05-27 — Backend build fix (Directory.Build.props blocking ImplicitUsings)
+
+- **backend (0.31.1 → 0.31.2)**: FIX build error — untracked `Namorix.Server/Directory.Build.props` overriding parent, blocking `ImplicitUsings` + `Nullable` (47 CS0246 errors). Deleted local file, moved `<Version>` to csproj. Added `<ImplicitUsings>` + `<Nullable>` directly to `Namorix.Core.csproj` (same root cause from local `Namorix.Core/Directory.Build.props`).
+
 ### 2026-05-26 (now) — Notification Center + Package Center addon scaffold
 
 - **@namorix/core (0.24.0 → 0.25.0)**: MODIFIED `addon/types.ts` — added `notificationCenter` and `packageCenter` to LocaleKeys const.

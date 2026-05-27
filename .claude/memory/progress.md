@@ -129,8 +129,8 @@
 | @namorix/core | 0.25.0 | M3 (LocaleKeys: notificationCenter, packageCenter) |
 | @namorix/styles | 0.24.0 | M3 (notification-center, package-center SVG icons + tokens) |
 | @namorix/ui | 0.18.3 | M3 (APP_NOTIFICATION_CENTER, APP_PACKAGE_CENTER icon symbols) |
-| Namorix.Core | 0.31.1 | M3 (NuGet publish, centralized version) |
-| Namorix.Server | 0.31.1 | M3 (App server, centralized version) |
+| Namorix.Core | 0.31.2 | M3 (fix Directory.Build.props blocking ImplicitUsings) |
+| Namorix.Server | 0.31.2 | M3 (fix SDK type + Directory.Build.props build error) |
 
 ## Version Rules
 
@@ -150,6 +150,12 @@
 | Namorix.Server | Bug fixes, config tweaks | New endpoint, new middleware, auth feature |
 
 ## Version History
+
+### 2026-05-27 — Backend build fix (Directory.Build.props blocking ImplicitUsings)
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| backend | 0.31.1 → 0.31.2 | FIX: `Namorix.Server/Directory.Build.props` (untracked) đã override `src/Directory.Build.props`, chặn `ImplicitUsings` + `Nullable` → 47 lỗi build. Đã xóa file local, chuyển `<Version>` vào csproj. FIX: `Namorix.Core.csproj` — thêm trực tiếp `<ImplicitUsings>` + `<Nullable>` (cũng bị local Directory.Build.props chặn). |
 
 ### 2026-05-26 (even later) — Notification Center + Package Center addon scaffold
 
