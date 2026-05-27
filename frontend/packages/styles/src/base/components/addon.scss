@@ -32,7 +32,7 @@
   color: var(--nmx-color-on-surface);
 }
 
-.nmx-addon-form {
+.nmx-addon__form {
   width: 100%;
   padding: var(--nmx-spacing-3xl);
 
@@ -41,4 +41,8 @@
     margin: auto;
     width: 100%;
   }
+}
+
+.nmx-addon__data-table {
+  height: 100%;
 }

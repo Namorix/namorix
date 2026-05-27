@@ -494,14 +494,17 @@ textarea,
   font-size: var(--nmx-font-size-lg);
   color: var(--nmx-color-on-surface);
 }
-.nmx-addon-form {
+.nmx-addon__form {
   width: 100%;
   padding: var(--nmx-spacing-3xl);
 }
-.nmx-addon-form__content {
+.nmx-addon__form__content {
   max-width: var(--nmx-content-width-xs);
   margin: auto;
   width: 100%;
+}
+.nmx-addon__data-table {
+  height: 100%;
 }
 .nmx-card {
   background: var(--nmx-color-surface-low);
@@ -1753,9 +1756,13 @@ textarea,
   cursor: pointer;
   color: var(--nmx-color-on-surface-variant);
   flex-shrink: 0;
+  opacity: 1;
 }
 .nmx-search-input__clear:hover {
   color: var(--nmx-color-error);
+}
+.nmx-search-input__clear-hidden {
+  opacity: 0;
 }
 .nmx-search-input__submit {
   display: flex;
