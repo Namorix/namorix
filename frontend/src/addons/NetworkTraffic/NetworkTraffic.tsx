@@ -10,6 +10,8 @@ import {
   NmxToolbarActions,
   NmxSearchInput,
   type NmxSearchSuggestion,
+  NmxButtonRefresh,
+  NmxButtonLive,
 } from "@namorix/ui"
 import { NetworkTrafficOverview } from "./NetworkTrafficOverview"
 import { useTranslation } from "react-i18next"
@@ -72,6 +74,8 @@ const SUGGESTIONS_META: NmxSearchSuggestion[] = [
 export const NetworkTraffic: React.FC = () => {
   const { t } = useTranslation()
   const [filterLogs, setFilterLogs] = useState("")
+  const [live, setLive] = useState(true)
+  const [refreshKey, setRefreshKey] = useState(0)
   const searchSuggestions = useMemo(() => {
     return SUGGESTIONS_META.map((s) => ({
       key: s.key,
@@ -81,14 +85,11 @@ export const NetworkTraffic: React.FC = () => {
   }, [t])
 
   return (
-    <NmxAddonRoot className="nmx-addon-network-traffic">
+    <NmxAddonRoot>
       <NmxToolbar<NetworkTrafficTab> defaultTab="overview">
-        <NmxToolbarHeader className="nmx-addon-network-traffic__toolbar-header">
+        <NmxToolbarHeader>
           <NmxToolbarList items={TABS} t={t} />
-          <NmxToolbarActions
-            tabKeys={["logs"]}
-            className="nmx-addon-network-traffic__toolbar-actions"
-          >
+          <NmxToolbarActions tabKeys={["logs"]}>
             <NmxSearchInput
               onChange={(filter) => {
                 if (filter.length <= 0 && filter !== filterLogs)
@@ -98,13 +99,19 @@ export const NetworkTraffic: React.FC = () => {
               placeholder={t("addon.networkTraffic.searchPlaceholder")}
               suggestions={searchSuggestions}
             />
+            <NmxButtonRefresh onClick={() => setRefreshKey((k) => k + 1)} />
+            <NmxButtonLive live={live} onToggle={() => setLive((l) => !l)} />
           </NmxToolbarActions>
         </NmxToolbarHeader>
         <NmxToolbarContent<NetworkTrafficTab> tabKey="overview">
           <NetworkTrafficOverview />
         </NmxToolbarContent>
         <NmxToolbarContent<NetworkTrafficTab> tabKey="logs">
-          <NetworkTrafficLogs filterSearch={filterLogs} />
+          <NetworkTrafficLogs
+            filterSearch={filterLogs}
+            refreshKey={refreshKey}
+            live={live}
+          />
         </NmxToolbarContent>
         <NmxToolbarContent<NetworkTrafficTab> tabKey="threats">
           <NetworkTrafficThreats />

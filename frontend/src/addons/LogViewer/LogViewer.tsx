@@ -81,8 +81,8 @@ export const LogViewer: React.FC = () => {
   )
   const [source, setSource] = useState("")
   const prevFilterRef = useRef("")
-
-  useSignalRGroup(SignalRGroups.Logs, true)
+  const [live, setLive] = useState(true)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   const fetchLogs = useCallback(
     async (pg: number, lvls: string[], src: string, size: number) => {
@@ -100,13 +100,6 @@ export const LogViewer: React.FC = () => {
     [],
   )
 
-  // const toggleLevel = (v: string) => {
-  //   setLevels((prev) =>
-  //     prev.includes(v) ? prev.filter((l) => l !== v) : [...prev, v],
-  //   )
-  //   setPage(1)
-  // }
-
   useEffect(() => {
     const isNewFilter = prevFilterRef.current !== source
     if (isNewFilter) prevFilterRef.current = source
@@ -116,9 +109,12 @@ export const LogViewer: React.FC = () => {
       fetchLogs(pg, levels, source, pageSize).catch(setError)
     }, 0)
     return () => clearTimeout(timeout)
-  }, [source, page, pageSize, levels, fetchLogs])
+  }, [source, page, pageSize, levels, live, refreshKey, fetchLogs])
+
+  useSignalRGroup(SignalRGroups.Logs, live)
 
   useSignalREvent<LogEntry[]>(SignalREvent.LogsNewEntry, (newEntries) => {
+    if (!live) return
     setEntries((prev) => [...newEntries, ...prev].slice(0, pageSize))
     setTotal((prev) => prev + newEntries.length)
   })
@@ -209,8 +205,8 @@ export const LogViewer: React.FC = () => {
             placeholder={t("addon.logViewer.allLevels")}
             className="nmx-addon-log-viewer__log-level"
           />
-          <NmxButtonRefresh />
-          <NmxButtonLive live={true} />
+          <NmxButtonRefresh onClick={() => setRefreshKey((k) => k + 1)} />
+          <NmxButtonLive live={live} onToggle={() => setLive((v) => !v)} />
         </NmxHorizontalWrapItem>
         <NmxHorizontalWrapItem
           pushRight
@@ -229,9 +225,14 @@ export const LogViewer: React.FC = () => {
       </NmxHorizontalWrap>
 
       <NmxDataTable
+        className="nmx-addon__data-table"
         columns={columns}
         rows={entries}
         fallbackConditions={fallbackConditions}
+        clickableRows={true}
+        onRowClick={(row) => {
+          console.log(row)
+        }}
       />
 
       {total > 0 && (

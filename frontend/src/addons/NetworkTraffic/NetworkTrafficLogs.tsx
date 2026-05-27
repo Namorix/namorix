@@ -10,14 +10,24 @@ import {
   methodToSemantic,
   statusToSemantic,
 } from "./utils"
-import { usePageSize } from "@namorix/core"
+import {
+  SignalREvent,
+  SignalRGroups,
+  usePageSize,
+  useSignalREvent,
+  useSignalRGroup,
+} from "@namorix/core"
 
 interface NetworkTrafficLogsProps {
   filterSearch?: string
+  refreshKey?: number
+  live?: boolean
 }
 
 export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
   filterSearch,
+  refreshKey,
+  live,
 }) => {
   const { t } = useTranslation()
   const { pageSize, setPageSize, options: pageSizeOptions } = usePageSize()
@@ -55,7 +65,15 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
       fetchLogs(pg, filterSearch, pageSize).catch(setError)
     }, 0)
     return () => clearTimeout(timeout)
-  }, [filterSearch, page, pageSize, fetchLogs])
+  }, [filterSearch, page, live, pageSize, refreshKey, fetchLogs])
+
+  useSignalRGroup(SignalRGroups.Traffic, !!live)
+
+  useSignalREvent(SignalREvent.TrafficNewLogs, () => {
+    if (live) {
+      fetchLogs(1, filterSearch, pageSize).catch(setError)
+    }
+  })
 
   const columns: NmxDataTableColumn<TrafficLog>[] = [
     {
