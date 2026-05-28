@@ -42,9 +42,8 @@ export const ApiLogRoutes = {
 }
 
 export const ApiSettingsRoutes = {
-  base: API_SETTINGS_BASE,
-  proxies: API_SETTINGS_BASE + "/proxies",
-  origins: API_SETTINGS_BASE + "/origins",
+  system: API_SETTINGS_BASE + "/system",
+  appearanceOptions: API_SETTINGS_BASE + "/appearance/options",
 }
 
 export const ThemeRoutes = {
