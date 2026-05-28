@@ -125,12 +125,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.31.0 | M3 (LogViewer live/refresh + NetworkTraffic features) |
-| @namorix/core | 0.25.0 | M3 (LocaleKeys: notificationCenter, packageCenter) |
-| @namorix/styles | 0.24.1 | M3 (search-input.scss fixes) |
-| @namorix/ui | 0.18.4 | M3 (NmxButtonLive fix, NmxSearchInput suggestion key fix) |
-| Namorix.Core | 0.31.3 | M3 (TrafficMonitorFilter replaces middleware, FlatFileStore sort fix) |
-| Namorix.Server | 0.31.2 | M3 (fix SDK type + Directory.Build.props build error) |
+| frontend | 0.32.0 | M3 (Settings appearance 3-layer cascade, settings.controller refactor) |
+| @namorix/core | 0.25.1 | M3 (apiRoutes: appearanceOptions route) |
+| @namorix/styles | 0.25.0 | M3 (new dialog.scss, button/data-table/settings SCSS updates) |
+| @namorix/ui | 0.19.0 | M3 (new NmxDialog + NmxAlertDialog composite components) |
+| Namorix.Core | 0.32.0 | M3 (new AppearanceOptionsData, enhanced RequireAdminAttribute logging) |
+| Namorix.Server | 0.32.0 | M3 (SettingsController refactor: consolidated endpoints, auth class-level) |
 
 ## Version Rules
 
@@ -150,6 +150,17 @@
 | Namorix.Server | Bug fixes, config tweaks | New endpoint, new middleware, auth feature |
 
 ## Version History
+
+### 2026-05-28 — Settings appearance 3-layer cascade, NmxDialog + NmxAlertDialog, SettingsController refactor
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/ui | 0.18.4 → 0.19.0 | NEW: `NmxDialog` (composite with Header/Body/Footer, React Portal, size variants, dismissable). NEW: `NmxAlertDialog` (confirm/cancel dialog with NmxInlineAlert + NmxButton). MODIFIED: `Components/index.ts` — barrel exports for both. |
+| @namorix/styles | 0.24.1 → 0.25.0 | NEW: `dialog.scss` — full dialog SCSS (overlay, panel, sizes, header/close button, body, footer). MODIFIED: `button.scss`, `data-table.scss`, `settings.scss`, `index.scss`. Theme CSS rebuilt. |
+| @namorix/core | 0.25.0 → 0.25.1 | MODIFIED: `apiRoutes.ts` — added `ApiSettingsRoutes.appearanceOptions`. |
+| frontend | 0.31.0 → 0.32.0 | REWRITE: `SettingsAppearance.tsx` — 3-layer cascade (user override → system default → hardcoded), fetches options from API. MODIFIED: `settings.controller.ts` — added `getAppearanceOptions()`, renamed `getAll()` → `getSystem()`, `setAll()` → `setSystem()`. MODIFIED: `SettingsSystem.tsx` — updated method names. MODIFIED: `en.json` — new translation keys. |
+| Namorix.Core | 0.31.2 → 0.32.0 | NEW: `Data/AppearanceOptionsData.cs` — static data class (AccentColors, FontFamilies, Densities, FontSizes, Languages, DateFormats). ENHANCED: `Middleware/RequireAdminAttribute.cs` — ILogger injection, user ID/username logging on forbidden. |
+| Namorix.Server | 0.31.2 → 0.32.0 | REFACTOR: `SettingsController.cs` — changed from `[RequireAdmin]` class-level to `[RequireAuth]` + per-method `[RequireAdmin]`, consolidated endpoints to `GET/PUT "system"`. NEW: `GET "appearance/options"` endpoint (public, no admin required). |
 
 ### 2026-05-27 — TrafficMonitorFilter, FlatFileStore sort fix, LogViewer live/refresh, SearchInput suggestion fix
 

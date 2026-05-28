@@ -25,6 +25,14 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 ## Recent Changes
 
+### 2026-05-28 — Settings appearance 3-layer cascade, NmxDialog + NmxAlertDialog, SettingsController refactor
+
+- **@namorix/ui (0.18.4 → 0.19.0)**: NEW `NmxDialog` — composite component using React Portal (Header/Body/Footer), size variants (sm/md/lg/full), aria-modal, dismissable. NEW `NmxAlertDialog` — confirm/cancel dialog using NmxDialog + NmxInlineAlert + NmxButton.
+- **@namorix/styles (0.24.1 → 0.25.0)**: NEW `dialog.scss` — overlay, panel, sizes, header/body/footer, close button. Theme CSS rebuilt.
+- **@namorix/core (0.25.0 → 0.25.1)**: MODIFIED `apiRoutes.ts` — added `ApiSettingsRoutes.appearanceOptions`.
+- **frontend (0.31.0 → 0.32.0)**: REWRITE `SettingsAppearance.tsx` — 3-layer cascade, options fetched from API. MODIFIED `settings.controller.ts` — added `getAppearanceOptions()`, renamed methods. Updated `SettingsSystem.tsx`. New i18n keys.
+- **backend (0.31.2 → 0.32.0)**: NEW `AppearanceOptionsData.cs` (static data class). ENHANCED `RequireAdminAttribute` (ILogger, user logging). REFACTOR `SettingsController` (`[RequireAuth]` class-level, consolidated endpoints, new `appearance/options` endpoint).
+
 ### 2026-05-27 — TrafficMonitorFilter, FlatFileStore sort fix, LogViewer live/refresh, SearchInput suggestion fix
 
 - **Namorix.Core (0.31.2 → 0.31.3)**: NEW `TrafficMonitorFilter` (IAsyncActionFilter) — checks `[TrafficMonitor]` attribute on endpoint metadata, only logs controllers with the attribute. Replaces `TrafficMonitorMiddleware` (deleted). FIX `FlatFileStore.QueryAsync` — entries now sorted by timestamp DESC across all subdirectories instead of grouped by file path order (fixes log interleaving in LogViewer). MODIFIED `ServiceCollectionExtensions` — register filter globally. MODIFIED `ApplicationBuilderExtensions` — removed `UseTrafficMonitor()`, changed middleware helper methods to `private static`.
