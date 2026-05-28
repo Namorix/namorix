@@ -21,6 +21,7 @@
     grid-template-rows: auto minmax(0, 1fr);
     font-size: var(--nmx-font-size-sm);
     text-align: start;
+    contain: layout paint style;
   }
 
   &__header-row {
