@@ -6,7 +6,6 @@ interface NmxButtonProps extends WithBaseProps, WithVariant, WithSemanticColor {
   type?: "button" | "submit" | "reset"
   label?: string
   title?: string
-  active?: boolean
   disabled?: boolean
   fullWidth?: boolean
   uppercase?: boolean
@@ -19,7 +18,6 @@ export const NmxButton: React.FC<NmxButtonProps> = ({
   type = "button",
   label,
   title,
-  active = false,
   disabled = false,
   fullWidth = false,
   uppercase = false,
@@ -41,7 +39,6 @@ export const NmxButton: React.FC<NmxButtonProps> = ({
       disabled={disabled}
       className={cx(
         "nmx-button",
-        { "nmx-button--active": active },
         { "nmx-button--full-width": fullWidth },
         { "nmx-button--upper-case": uppercase },
         cxVariant("nmx-button", variant),
