@@ -24,7 +24,7 @@ export const SettingsSystem: React.FC = () => {
   } | null>(null)
 
   useEffect(() => {
-    settingsController.getAll().then((data) => {
+    settingsController.getSystem().then((data) => {
       setProxies(data.proxies)
       setOrigins(data.origins)
       setRegisterEnabled(data.registerEnabled)
@@ -36,18 +36,17 @@ export const SettingsSystem: React.FC = () => {
     setAlert(null)
     setBusy(true)
 
-    const ok = await settingsController.setAll({
+    const ok = await settingsController.setSystem({
       proxies,
       origins,
       registerEnabled,
     })
 
     if (!ok) {
-      const data = await settingsController.getAll()
+      const data = await settingsController.getSystem()
       setProxies(data.proxies)
       setOrigins(data.origins)
       setRegisterEnabled(data.registerEnabled)
-      console.log(data)
     }
 
     setAlert({

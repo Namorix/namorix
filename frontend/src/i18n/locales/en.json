@@ -196,7 +196,9 @@
         "mismatch": "Passwords do not match",
         "error": "Failed to change password"
       },
-      "save": "Save"
+      "save": "Save",
+      "saveForMySelf": "Save for myself",
+      "saveAsSystemDefault": "Save as system default"
     },
     "logViewer": {
       "title": "Log Viewer",
