@@ -3,6 +3,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Namorix.Adapters.Persistence;
 using Namorix.Core.Constants;
+using Namorix.Core.Data;
 using Namorix.Core.Infrastructure;
 using Namorix.Core.Models;
 
@@ -108,5 +109,10 @@ public class SettingsService(AppDbContext dbContext, IMemoryCache memoryCache,
         var userCount = await dbContext.Users.CountAsync();
         var registerEnabled = await IsRegisterEnabled();
         return (userCount == 0, registerEnabled);
+    }
+    
+    public AppearanceOptionsData GetAppearanceOptions()
+    {
+        return AppearanceOptionsData.Default;
     }
 }
