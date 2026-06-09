@@ -1,8 +1,12 @@
+@use "../../abstract/mixins" as *;
+
 .nmx-auth-view {
   position: absolute;
   height: 100%;
   width: 100%;
   overflow: auto;
+
+  @include scrollbar;
 }
 
 .nmx-auth-view__secondary-link {
