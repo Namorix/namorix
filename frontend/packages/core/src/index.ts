@@ -16,5 +16,6 @@ export * from "./theme"
 export * from "./signalr"
 export * from "./store"
 export * from "./hooks"
+export * from "./toast"
 
 initStores()

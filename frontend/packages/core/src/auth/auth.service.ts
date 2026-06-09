@@ -3,7 +3,11 @@ import { getApiBaseUrl } from "../config"
 import { nmxHttp } from "../http"
 import { ApiAuthRoutes } from "../apiRoutes"
 import type { AuthStatus, User } from "../types"
-import { setRegisterEnabledStore, setUserStore } from "../store"
+import {
+  setNeedsRegisterStore,
+  setRegisterEnabledStore,
+  setUserStore,
+} from "../store"
 
 async function getAuthStatus(): Promise<AuthStatus> {
   const data = await nmxHttp
@@ -16,6 +20,7 @@ async function getAuthStatus(): Promise<AuthStatus> {
   }
 
   setRegisterEnabledStore(data.data.registerEnabled)
+  setNeedsRegisterStore(data.data.needsRegister)
   return data.data
 }
 

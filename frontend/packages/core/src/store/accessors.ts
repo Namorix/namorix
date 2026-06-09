@@ -23,3 +23,10 @@ export const setRegisterEnabledStore = (v: boolean) =>
   nmxStore.set(NmxStoreKeys.registerEnabled, v)
 export const useRegisterEnabledStore = () =>
   useNmxStore(NmxStoreKeys.registerEnabled)
+
+export const getNeedsRegisterStore = () =>
+  nmxStore.get(NmxStoreKeys.needsRegister)
+export const setNeedsRegisterStore = (v: boolean) =>
+  nmxStore.set(NmxStoreKeys.needsRegister, v)
+export const useNeedsRegisterStore = () =>
+  useNmxStore(NmxStoreKeys.needsRegister)

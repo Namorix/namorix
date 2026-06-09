@@ -6,6 +6,7 @@ export interface NmxStoreValue {
   theme: string | null
   connectionStatus: SignalRStatus
   registerEnabled: boolean
+  needsRegister: boolean,
   config: Record<string, unknown>
 }
 
@@ -16,5 +17,6 @@ export const NmxStoreKeys: { [K in NmxStoreKey]: K } = {
   theme: "theme",
   connectionStatus: "connectionStatus",
   registerEnabled: "registerEnabled",
+  needsRegister: "needsRegister",
   config: "config",
 }
