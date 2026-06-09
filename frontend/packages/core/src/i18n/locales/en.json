@@ -35,6 +35,10 @@
     "pagination": {
       "showing": "Showing {{from}}-{{to}} of {{total}}",
       "elapsed": " · {{ms}}ms"
+    },
+    "alertDialog": {
+      "confirm": "Confirm",
+      "cancel": "Cancel"
     }
   },
   "addon": {

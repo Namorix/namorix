@@ -59,3 +59,4 @@ export class NmxI18n {
 export * from "./types"
 export * from "./validation-messages"
 export * from "./validation-runner"
+export { useTranslation } from "react-i18next"
