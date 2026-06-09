@@ -4,6 +4,7 @@ import {
   NmxAccentColorPicker,
   NmxAlertDialog,
   NmxButton,
+  NmxIconFontSymbol,
   NmxSegmentedGroup,
   NmxSelect,
   type NmxSelectData,
@@ -50,12 +51,26 @@ export const SettingsAppearance: React.FC = () => {
     settingsController.getAppearanceOptions().then(setOptions)
   }, [])
 
+  const densityIconMap : Record<string, NmxIconFontSymbol> = {
+    compact: NmxIconFontSymbol.DENSITY_COMPACT,
+    default: NmxIconFontSymbol.DENSITY_DEFAULT,
+    spacious: NmxIconFontSymbol.DENSITY_SPACIOUS
+  }
+
+  const fontSizeValueMap: Record<string, string> = {
+    sm: "--nmx-font-size-preview-sm",
+    md: "--nmx-font-size-preview-md",
+    lg: "--nmx-font-size-preview-lg",
+  }
+
   const accentColors = options?.accentColors ?? []
   const fontFamilies = options?.fontFamilies ?? []
-  const densities = options?.densities ?? []
   const fontSizes = options?.fontSizes ?? []
   const languages = options?.languages ?? []
   const dateFormats = options?.dateFormats ?? []
+  const densities = (options?.densities ?? []).map(d => ({
+    ...d, label: "", icon: densityIconMap[d.value]
+  }))
 
   return (
     <>
@@ -124,6 +139,16 @@ export const SettingsAppearance: React.FC = () => {
               value={fontSize}
               options={fontSizes}
               onChange={setFontSize}
+              renderItem={(opt) => (
+                <span
+                  style={{
+                    fontSize: `var(${fontSizeValueMap[opt.value]})`,
+                    lineHeight: 1,
+                  }}
+                >
+                  {opt.label}
+                </span>
+              )}
             />
           </NmxSettingsRow>
         </NmxSettingsCard>
@@ -175,10 +200,11 @@ export const SettingsAppearance: React.FC = () => {
       </NmxSettingsSection>
       <NmxAlertDialog
         open={dialogOpen}
-        title="Confirm save"
-        description="Are you sure you want to update system settings?"
-        confirmLabel="Save"
-        cancelLabel="Cancel"
+        title={t("addon.settings.appearance.dialogConfirmSaveTitle")}
+        description={t(
+          "addon.settings.appearance.dialogConfirmSaveDescription",
+        )}
+        confirmLabel={t("addon.settings.save")}
         onConfirm={handleConfirm}
         onCancel={() => setDialogOpen(false)}
         loading={busy}

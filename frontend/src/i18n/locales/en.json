@@ -166,7 +166,9 @@
         "language": "Language",
         "languageDesc": "Select your preferred display language",
         "dateFormat": "Date format",
-        "dateFormatDesc": "Choose date display format"
+        "dateFormatDesc": "Choose date display format",
+        "dialogConfirmSaveTitle": "Confirm save",
+        "dialogConfirmSaveDescription": "Are you sure you want to update system settings?"
       },
       "system": {
         "title": "System",
@@ -197,8 +199,8 @@
         "error": "Failed to change password"
       },
       "save": "Save",
-      "saveForMySelf": "Save for myself",
-      "saveAsSystemDefault": "Save as system default"
+      "saveForMySelf": "Save",
+      "saveAsSystemDefault": "Set as default"
     },
     "logViewer": {
       "title": "Log Viewer",

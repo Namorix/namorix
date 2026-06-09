@@ -1,10 +1,16 @@
 {
   "name": "@namorix/frontend",
   "private": true,
-  "version": "0.32.0",
+  "version": "0.33.0",
   "license": "AGPL-3.0-only",
   "author": "IzeroCs",
-  "keywords": ["namorix", "desktop", "shell", "react", "vite"],
+  "keywords": [
+    "namorix",
+    "desktop",
+    "shell",
+    "react",
+    "vite"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Namorix/namorix.git"
@@ -14,24 +20,24 @@
   },
   "type": "module",
   "scripts": {
-    "dev": "pnpm --parallel -r --filter @namorix/styles dev & vite",
+    "dev": "concurrently \"pnpm --parallel -r --filter @namorix/styles dev\" \"vite\"",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@microsoft/signalr": "10.0.0",
     "@namorix/core": "workspace:*",
     "@namorix/styles": "workspace:*",
     "@namorix/ui": "workspace:*",
+    "@reduxjs/toolkit": "2.12.0",
     "i18next": "26.2.0",
     "i18next-browser-languagedetector": "8.2.1",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "react-i18next": "17.0.8",
-    "react-router-dom": "7.15.1",
-    "@reduxjs/toolkit": "2.12.0",
     "react-redux": "9.3.0",
-    "@microsoft/signalr": "10.0.0"
+    "react-router-dom": "7.15.1"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
@@ -39,6 +45,7 @@
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "6.0.2",
+    "concurrently": "10.0.3",
     "eslint": "10.3.0",
     "eslint-plugin-react-hooks": "7.1.1",
     "eslint-plugin-react-refresh": "0.5.2",
