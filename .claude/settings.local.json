@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rtk git *)",
+      "Bash(pnpm typecheck *)",
+      "Bash(pnpm build *)",
+      "Bash(rtk grep *)",
+      "Bash(node -e \"console.log\\('core:', require\\('./frontend/packages/core/package.json'\\).version\\); console.log\\('styles:', require\\('./frontend/packages/styles/package.json'\\).version\\); console.log\\('ui:', require\\('./frontend/packages/ui/package.json'\\).version\\); console.log\\('frontend:', require\\('./frontend/package.json'\\).version\\)\")"
+    ]
+  }
+}

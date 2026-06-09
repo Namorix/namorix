@@ -13,6 +13,7 @@
       "username": "Username",
       "password": "Password",
       "email": "Email",
+      "name": "Name",
       "confirmPassword": "Confirm password",
       "currentPassword": "Current password",
       "newPassword": "New password"
@@ -21,6 +22,8 @@
       "errors": {
         "invalidCredentials": "Invalid username or password",
         "usernameExists": "This username is already taken",
+        "emailExists": "This email is already registered",
+        "nameExists": "This name is already taken",
         "unauthorized": "Unauthorized. Please login again",
         "registerClosed": "Registration is currently closed",
         "incorrectPassword": "Current password is incorrect",

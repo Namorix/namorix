@@ -1,4 +1,4 @@
-import type { User } from "../types"
+import type { AppearanceSettings, User } from "../types"
 import type { SignalRStatus } from "../signalr"
 
 export interface NmxStoreValue {
@@ -6,8 +6,9 @@ export interface NmxStoreValue {
   theme: string | null
   connectionStatus: SignalRStatus
   registerEnabled: boolean
-  needsRegister: boolean,
+  needsRegister: boolean
   config: Record<string, unknown>
+  appearance: AppearanceSettings | null
 }
 
 export type NmxStoreKey = keyof NmxStoreValue
@@ -19,4 +20,5 @@ export const NmxStoreKeys: { [K in NmxStoreKey]: K } = {
   registerEnabled: "registerEnabled",
   needsRegister: "needsRegister",
   config: "config",
+  appearance: "appearance",
 }

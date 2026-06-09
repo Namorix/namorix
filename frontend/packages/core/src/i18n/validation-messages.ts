@@ -143,6 +143,12 @@ export function resolveAuthError(err: ApiError): ValidationMessage | null {
     case AuthErrorCodes.USERNAME_EXISTS:
       key = "common.auth.errors.usernameExists"
       break
+    case AuthErrorCodes.EMAIL_EXISTS:
+      key = "common.auth.errors.emailExists"
+      break
+    case AuthErrorCodes.NAME_EXISTS:
+      key = "common.auth.errors.nameExists"
+      break
     case AuthErrorCodes.UNAUTHORIZED:
       key = "common.auth.errors.unauthorized"
       break

@@ -11,8 +11,9 @@ export const ValidationFields = {
   CONFIRM_PASSWORD: "confirmPassword",
   CURRENT_PASSWORD: "currentPassword",
   NEW_PASSWORD: "newPassword",
+  EMAIL: "email",
+  NAME: "name",
 } as const
-
 export type ValidationFields =
   (typeof ValidationFields)[keyof typeof ValidationFields]
 

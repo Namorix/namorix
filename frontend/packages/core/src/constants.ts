@@ -9,6 +9,8 @@ export const NMX_THEME_CSS_PATH_KEY = "nmx-themes-css-url"
 export const AuthConstraints = {
   username: { minLength: 1, maxLength: 32 },
   password: { minLength: 8 },
+  email: { maxLength: 254 },
+  name: { minLength: 1, maxLength: 100 },
 }
 
 export const HttpMethods = {

@@ -1,6 +1,7 @@
 import type { User } from "../types/user"
 import { nmxStore, NmxStoreKeys, useNmxStore } from "."
 import { NMX_THEME_CSS_PATH_KEY, NMX_THEME_STORAGE_KEY } from "../constants"
+import type { AppearanceSettings } from "../types"
 
 export const getUserStore = () => nmxStore.get(NmxStoreKeys.user)
 export const setUserStore = (user: User | null) =>
@@ -30,3 +31,8 @@ export const setNeedsRegisterStore = (v: boolean) =>
   nmxStore.set(NmxStoreKeys.needsRegister, v)
 export const useNeedsRegisterStore = () =>
   useNmxStore(NmxStoreKeys.needsRegister)
+
+export const setAppearanceStore = (v: AppearanceSettings) =>
+  nmxStore.set(NmxStoreKeys.appearance, v)
+export const useAppearanceStore = () =>
+  useNmxStore(NmxStoreKeys.appearance) as AppearanceSettings | null

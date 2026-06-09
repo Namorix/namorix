@@ -17,7 +17,8 @@ export const ApiAuthRoutes = {
 }
 
 export const ApiUserRoutes = {
-  theme: API_USER_BASE + "/theme",
+  settings: API_USER_BASE + "/settings",
+  profile: API_USER_BASE + "/profile",
   password: API_USER_BASE + "/password",
 }
 
@@ -32,7 +33,6 @@ export const ApiThemeRoutes = {
 export const ApiTrafficRoutes = {
   base: API_TRAFFIC_BASE,
   endpoints: API_TRAFFIC_BASE + "/endpoints",
-  endpoint: (id: number) => `${API_TRAFFIC_BASE}/endpoints/${id}`,
   logs: API_TRAFFIC_BASE + "/logs",
   stats: API_TRAFFIC_BASE + "/stats",
 }
@@ -44,6 +44,7 @@ export const ApiLogRoutes = {
 export const ApiSettingsRoutes = {
   system: API_SETTINGS_BASE + "/system",
   appearanceOptions: API_SETTINGS_BASE + "/appearance/options",
+  appearanceDefaults: API_SETTINGS_BASE + "/appearance",
 }
 
 export const ThemeRoutes = {

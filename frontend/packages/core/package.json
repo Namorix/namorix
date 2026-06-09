@@ -1,6 +1,6 @@
 {
   "name": "@namorix/core",
-  "version": "0.26.0",
+  "version": "0.27.0",
   "license": "AGPL-3.0-only",
   "author": "IzeroCs",
   "keywords": ["namorix", "desktop", "shell", "types", "auth"],
