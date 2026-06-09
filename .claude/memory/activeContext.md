@@ -25,6 +25,13 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 ## Recent Changes
 
+### 2026-06-09 — Density icons, font-size preview, button variants, NmxAlertDialog i18n
+
+- **@namorix/styles (0.25.0 → 0.26.0)**: NEW button variants (outline/ghost/text SCSS). NEW maps — "default" semantic color. NEW dialog scrim token. NEW preview font-size tokens (--nmx-font-size-preview-*). NEW icomoon density icons (compact/default/spacious). Theme CSS rebuilt.
+- **@namorix/ui (0.19.0 → 0.20.0)**: NEW NmxSegmentedGroup icon support + renderItem prop. NEW NmxAlertDialog i18n — uses useTranslation from @namorix/core. NEW NmxSemanticColor "default". NEW density icon symbols.
+- **@namorix/core (0.25.1 → 0.25.2)**: Re-export useTranslation from react-i18next. New dialog i18n keys.
+- **frontend (0.32.0 → 0.33.0)**: SettingsAppearance — density icons (icon-only SegmentedGroup), font-size preview (renderItem with sized "Aa").
+
 ### 2026-05-28 — Settings appearance 3-layer cascade, NmxDialog + NmxAlertDialog, SettingsController refactor
 
 - **@namorix/ui (0.18.4 → 0.19.0)**: NEW `NmxDialog` — composite component using React Portal (Header/Body/Footer), size variants (sm/md/lg/full), aria-modal, dismissable. NEW `NmxAlertDialog` — confirm/cancel dialog using NmxDialog + NmxInlineAlert + NmxButton.

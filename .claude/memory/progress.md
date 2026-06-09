@@ -125,10 +125,10 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.32.0 | M3 (Settings appearance 3-layer cascade, settings.controller refactor) |
-| @namorix/core | 0.25.1 | M3 (apiRoutes: appearanceOptions route) |
-| @namorix/styles | 0.25.0 | M3 (new dialog.scss, button/data-table/settings SCSS updates) |
-| @namorix/ui | 0.19.0 | M3 (new NmxDialog + NmxAlertDialog composite components) |
+| frontend | 0.33.0 | M3 (Settings density icons + font-size preview) |
+| @namorix/core | 0.25.2 | M3 (export useTranslation, dialog i18n keys) |
+| @namorix/styles | 0.26.0 | M3 (new button variants, scrim/default tokens, preview font-size, density icons) |
+| @namorix/ui | 0.20.0 | M3 (SegmentedGroup renderItem + icon, NmxAlertDialog i18n, "default" semantic) |
 | Namorix.Core | 0.32.0 | M3 (new AppearanceOptionsData, enhanced RequireAdminAttribute logging) |
 | Namorix.Server | 0.32.0 | M3 (SettingsController refactor: consolidated endpoints, auth class-level) |
 
@@ -150,6 +150,15 @@
 | Namorix.Server | Bug fixes, config tweaks | New endpoint, new middleware, auth feature |
 
 ## Version History
+
+### 2026-06-09 — Density icons, font-size preview, button variants, NmxAlertDialog i18n
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/styles | 0.25.0 → 0.26.0 | NEW: `button.scss` — variant styles (outline, ghost, text). NEW: `maps.scss` — added "default" semantic color. NEW: `dialog.scss` — scrim token, styling updates. NEW: `segmented-group.scss` — renderItem style. NEW: `tokens/typography.scss` — preview font-size tokens. NEW: `themes/` — scrim, default color tokens. NEW: icomoon — 3 density icons. |
+| @namorix/ui | 0.19.0 → 0.20.0 | NEW: `NmxSegmentedGroup` — icon support + renderItem prop. NEW: `NmxAlertDialog` — i18n integration (useTranslation from core). NEW: `NmxIconFont.types.ts` — 3 density icon symbols. MODIFIED: `primitives.ts` — added "default" to NmxSemanticColor. |
+| @namorix/core | 0.25.1 → 0.25.2 | NEW: `i18n/index.ts` — re-export useTranslation from react-i18next. MODIFIED: `i18n/locales/en.json` — dialog i18n keys. |
+| frontend | 0.32.0 → 0.33.0 | NEW: `SettingsAppearance.tsx` — density icons (SegmentedGroup icon), font-size preview (renderItem with "Aa" per size). MODIFIED: `i18n/locales/en.json` — new keys. |
 
 ### 2026-05-28 — Settings appearance 3-layer cascade, NmxDialog + NmxAlertDialog, SettingsController refactor
 
