@@ -125,12 +125,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.34.0 | M3 (toast notification, register/login form refactor, needsRegister store) |
-| @namorix/core | 0.26.0 | M3 (new toast module, needsRegister store, ic-warning/info icons) |
-| @namorix/styles | 0.27.0 | M3 (new toast.scss, ic-warning/info icon fonts) |
-| @namorix/ui | 0.21.0 | M3 (new NmxToastProvider, NmxAlertDialog i18n fix) |
-| Namorix.Core | 0.32.0 | M3 (new AppearanceOptionsData, enhanced RequireAdminAttribute logging) |
-| Namorix.Server | 0.32.0 | M3 (SettingsController refactor: consolidated endpoints, auth class-level) |
+| frontend | 0.35.0 | M3 (UserSettings, appearance settings load/save, profile section) |
+| @namorix/core | 0.27.0 | M3 (AppearanceSettings type, store, Email/Name fields for User) |
+| @namorix/styles | 0.27.1 | M3 (auth.scss fixes) |
+| @namorix/ui | 0.21.1 | M3 (NmxButtonLive — active prop → semantic) |
+| Namorix.Core | 0.33.0 | M3 (UserSetting model, Email/Name on User, FormatValidationRule extended) |
+| Namorix.Server | 0.33.0 | M3 (UserSettings API, UpdateProfile, UpdateProfileSchema) |
 
 ## Version Rules
 
@@ -150,6 +150,17 @@
 | Namorix.Server | Bug fixes, config tweaks | New endpoint, new middleware, auth feature |
 
 ## Version History
+
+### 2026-06-09 — Email/Name on User, UserSettings store, Appearance settings save
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.26.0 → 0.27.0 | NEW: `types/appearance.ts` — `AppearanceSettings` interface. NEW: `store` — `appearance` key + `setAppearanceStore`, `useAppearanceStore`. MODIFIED: `types/user.ts` — `email`, `name` fields. `types/error.ts` — `EMAIL_EXISTS`, `NAME_EXISTS`. `constants.ts` — `AppearanceDefaults`, `AppearanceKeys`. `apiRoutes.ts` — `UserSettings` + `appearanceDefaults`. `i18n/validation-runner.ts` — +EMAIL, NAME. `i18n/validation-messages.ts` — resolve email/name errors. |
+| @namorix/styles | 0.27.0 → 0.27.1 | MODIFIED: `auth.scss` — minor fixes. |
+| @namorix/ui | 0.21.0 → 0.21.1 | MODIFIED: `NmxButtonLive` — `active` → `semantic` prop. |
+| frontend | 0.34.0 → 0.35.0 | NEW: `Register.tsx` — email + name fields. REWRITE: `SettingsAccount.tsx` — split Profile/Password sections, email/name editable. REWRITE: `SettingsAppearance.tsx` — load/save via UserSettings API, 2 save modes (self / system default). NEW: `settings.controller.ts` — `getUserSettings`, `saveUserSettings`, `setAppearanceDefaults`. MODIFIED: `auth.controller.ts` — `loadAppearance()` after login/session restore. MODIFIED: `Desktop.tsx` — loadAppearance on mount. NEW i18n keys. |
+| Namorix.Core | 0.32.0 → 0.33.0 | NEW: `Models/UserSetting.cs`, `Validation/Schemas/UpdateProfileSchema.cs`. MODIFIED: `Models/User.cs` — +Email, Name, UserSettings. `ValidationRule.cs` — FormatValidationRule +MinLength/MaxLength. `Constants/Auth.cs` — +EmailPattern, EmailMaxLength, Name constants. `Constants/Error.cs` — +EmailExists, NameExists. `Constants/Settings.cs` — +AppearanceSettingKeys. `Data/AppearanceOptionsData.cs` — removed Inter/Geist/JetBrains Mono. `Responses/ApiResponse.cs` — UserResponse +Email, Name. |
+| Namorix.Server | 0.32.0 → 0.33.0 | NEW: `UserSettingsService.cs`, `GET/PUT /api/user/settings`, `PUT /api/user/profile`, `PUT /api/settings/appearance`. MODIFIED: `AuthService.cs` — Register nhận email, name, check duplicates. `UserController.cs` — +profile, settings. `SettingsController.cs` — +PUT appearance. `AppDbContext.cs` — +UserSetting DbSet, unique indexes. `AuthController.cs` — catch EmailExists/NameExists. New migration. |
 
 ### 2026-06-09 — Toast notification system, form refactor, needsRegister store
 

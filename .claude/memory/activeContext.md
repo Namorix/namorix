@@ -25,6 +25,14 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 ## Recent Changes
 
+### 2026-06-09 — Email/Name on User, UserSettings store, Appearance settings save
+
+- **@namorix/core (0.26.0 → 0.27.0)**: NEW `types/appearance.ts` — AppearanceSettings interface. NEW store key `appearance` + accessors. MODIFIED `types/user.ts` — +email, name. `types/error.ts` — +EMAIL_EXISTS, NAME_EXISTS. `constants.ts` — +AppearanceDefaults. `apiRoutes.ts` — +UserSettings routes. `i18n` — +EMAIL, NAME validation fields + error messages.
+- **@namorix/styles (0.27.0 → 0.27.1)**: Minor auth.scss fixes.
+- **@namorix/ui (0.21.0 → 0.21.1)**: NmxButtonLive — active prop → semantic prop.
+- **frontend (0.34.0 → 0.35.0)**: Register — +email, name fields. SettingsAccount — split Profile + Password sections, email/name editable. SettingsAppearance — load/save UserSettings, 2 save modes. New settings.controller methods. auth.controller + Desktop — loadAppearance on login/mount. New i18n keys.
+- **backend (0.32.0 → 0.33.0)**: NEW UserSetting model + service + API. User +Email, +Name fields. FormatValidationRule +MinLength/MaxLength. UpdateProfileSchema + endpoint. AuthService register +email, name, duplicate checks. SettingsService +SetAppearanceDefaultsAsync. New migration (UserSetting table, unique indexes).
+
 ### 2026-06-09 (later) — Toast notification system, form refactor, needsRegister store
 
 - **@namorix/core (0.25.2 → 0.26.0)**: NEW `toast/` module — NmxToastBus event emitter, nmxToast singleton (.long/.short/.success/.error/.warning/.info). NEW needsRegister store key + accessors. Auth persistence for needsRegister from getAuthStatus(). NEW ic-warning, ic-info icon symbols.

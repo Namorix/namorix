@@ -90,6 +90,21 @@
 
 ---
 
+## Email encryption
+
+**Context**: Email trong DB đang lưu plaintext, cần mã hóa trước khi persist.
+
+**Approach**: Dùng AES-256 encryption ở service layer — encrypt khi write `User.Email`, decrypt khi read. Hoặc dùng hashing nếu chỉ cần check uniqueness + không cần đọc lại email gốc.
+
+**Files**:
+- `backend/src/Namorix.Adapters/Services/AuthService.cs` — encrypt trước `SaveChangesAsync`
+- `backend/src/Namorix.Adapters/Services/UserService.cs` — decrypt khi read email
+- Có thể tạo helper class `EmailEncryption` ở `Namorix.Core/Helpers/`
+
+**Note**: Không urgent — làm khi cần compliance hoặc user request.
+
+---
+
 ## Appearance Settings — 3-layer cascade (Cách 2)
 
 **Context**: SettingsAppearance UI có 8 mục (theme, accent color, collapsed, density, font family, size, language, date format) nhưng backend chỉ có `User.ThemeId`. Cần hệ thống settings hoàn chỉnh với 3-layer cascade: **user override → system default (admin set) → hardcoded default (code)**.
@@ -152,4 +167,18 @@ public class AppearanceSettingsData
 - User đã override → không bị ảnh hưởng bởi admin thay đổi
 
 ---
+
+## Login — hỗ trợ email hoặc username
+
+**Context**: Hiện tại `AuthService.Login()` chỉ check `Username`. Cần cho phép login bằng email.
+
+**Approach**:
+- Backend `AuthService.Login()` — check `u.Username == input || u.Email == input`
+- Frontend `Login.tsx` — đổi label từ "Username" thành "Username or Email"
+- `LoginSchema` — giữ nguyên validation (không đổi tên field)
+
+**Files**:
+- `backend/src/Namorix.Adapters/Services/AuthService.cs` — sửa `Login()`
+- `frontend/src/i18n/locales/en.json` + `vi.json` — sửa label
+- `frontend/packages/core/src/i18n/locales/en.json` — sửa `common.fields.username` label
 
