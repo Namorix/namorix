@@ -1,6 +1,8 @@
 @use "../abstract/mixins" as *;
 
 .nmx-button {
+  --nmx-button-text: var(--nmx-color-on-default);
+
   display: inline-flex;
   border-radius: var(--nmx-radius-md);
   align-items: center;
@@ -16,6 +18,8 @@
   box-shadow: var(--nmx-shadow-sm);
   line-height: var(--nmx-line-height-normal);
   white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
   cursor: pointer;
   outline: 0;
   transition:
@@ -57,4 +61,38 @@
 .nmx-button__refresh {
   padding: var(--nmx-spacing-md);
   font-size: var(--nmx-font-size-lg);
+}
+
+.nmx-button--outline {
+  --nmx-button-bg: transparent;
+  border-color: var(--nmx-button-text, var(--nmx-color-outline));
+  color: var(--nmx-button-text);
+
+  &:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--nmx-button-text) 8%, transparent);
+  }
+}
+
+.nmx-button--ghost {
+  --nmx-button-bg: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--nmx-button-text);
+
+  &:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--nmx-button-text) 8%, transparent);
+  }
+}
+
+.nmx-button--text {
+  --nmx-button-bg: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--nmx-button-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover:not(:disabled) {
+    opacity: 0.8;
+  }
 }

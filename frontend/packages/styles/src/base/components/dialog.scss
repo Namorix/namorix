@@ -6,19 +6,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: var(--nmx-z-dialog, 1000);
+  z-index: var(--nmx-z-dialog);
 
   &__overlay {
     position: absolute;
     inset: 0;
-    background: var(--nmx-color-scrim, rgba(0, 0, 0, 0.5));
+    background: var(--nmx-color-scrim);
   }
 
   &__panel {
     position: relative;
     background: var(--nmx-color-surface);
     border-radius: var(--nmx-radius-lg);
-    box-shadow: var(--nmx-dialog-shadow, var(--nmx-shadow-lg));
+    box-shadow: var(--nmx-shadow-lg);
     width: 90%;
     max-height: 85vh;
     display: flex;
@@ -28,9 +28,11 @@
     &--sm {
       max-width: 360px;
     }
+
     &--md {
       max-width: 480px;
     }
+
     &--lg {
       max-width: 640px;
     }
@@ -52,11 +54,10 @@
     align-items: center;
     justify-content: space-between;
     padding: var(--nmx-spacing-lg) var(--nmx-spacing-xl);
-    border-bottom: 1px solid var(--nmx-color-surface-mid);
   }
 
   &__title {
-    font-size: var(--nmx-font-size-lg);
+    font-size: var(--nmx-font-size-xl);
     font-weight: var(--nmx-font-weight-bold);
     color: var(--nmx-color-on-surface);
     margin: 0;
@@ -67,14 +68,14 @@
     border: none;
     color: var(--nmx-color-on-surface-variant);
     cursor: pointer;
-    padding: var(--nmx-spacing-xs);
+    padding: var(--nmx-spacing-sm);
     border-radius: var(--nmx-radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
 
     &:hover {
-      color: var(--nmx-color-on-surface);
+      color: var(--nmx-color-error);
       background: var(--nmx-color-surface-high);
     }
   }
@@ -83,14 +84,16 @@
     flex: 1;
     overflow-y: auto;
     padding: var(--nmx-spacing-xl);
+    color: var(--nmx-color-on-surface);
+    font-size: var(--nmx-font-size-sm);
   }
 
   &__footer {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: var(--nmx-spacing-sm);
+    gap: var(--nmx-spacing-md);
     padding: var(--nmx-spacing-lg) var(--nmx-spacing-xl);
-    border-top: 1px solid var(--nmx-color-surface-mid);
+    padding-top: var(--nmx-spacing-3xl);
   }
 }

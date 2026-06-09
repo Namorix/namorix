@@ -29,4 +29,10 @@
       pointer-events: none;
     }
   }
+
+  &__icon {
+    margin-right: var(--nmx-spacing-xs);
+    font-size: var(--nmx-font-size-md);
+  }
 }
+
