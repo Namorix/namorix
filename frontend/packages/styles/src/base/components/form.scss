@@ -45,15 +45,16 @@
   line-height: var(--nmx-line-height-normal);
   color: var(--nmx-color-on-surface-variant);
   background: var(--nmx-color-surface-lowest);
-  border: 0;
+  border: 1px solid var(--nmx-color-surface-lowest);
   font-family: var(--nmx-font-sans), serif;
   transition: border-color 0.15s;
   outline: none;
+  appearance: none;
 
   &:-webkit-autofill,
   &:-webkit-autofill:active {
     -webkit-text-fill-color: var(--nmx-color-on-surface-variant);
-    -webkit-box-shadow: 0 0 0px 1000px var(--nmx-color-surface-lowest) inset;
+    -webkit-box-shadow: 0 0 0 1000px var(--nmx-color-surface-lowest) inset;
     caret-color: var(--nmx-color-on-surface-variant);
     transition: background-color 5000s ease-in-out 0s;
   }
@@ -69,6 +70,7 @@
     -webkit-text-fill-color: var(--nmx-color-on-surface);
     -webkit-box-shadow: 0 0 0 1000px var(--nmx-color-surface-mid) inset;
     caret-color: var(--nmx-color-on-surface);
+    border: 1px solid var(--nmx-color-surface-mid);
   }
 
   &:disabled {
