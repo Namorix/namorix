@@ -23,9 +23,6 @@ public class AppearanceOptionsData
         ],
         FontFamilies =
         [
-            new SelectOptionData { Value = "Inter", Label = "Inter" },
-            new SelectOptionData { Value = "Geist", Label = "Geist" },
-            new SelectOptionData { Value = "JetBrains Mono", Label = "JetBrains Mono" },
             new SelectOptionData { Value = "system", Label = "System default" },
         ],
         Densities =

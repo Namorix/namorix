@@ -1,4 +1,3 @@
-using System.Reflection.Emit;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Namorix.Adapters.Services;
@@ -55,7 +54,7 @@ public class AuthController(AuthService authService, SettingsService settingsSer
 
         try
         {
-            var user = await authService.Register(request.Username, request.Password);
+            var user = await authService.Register(request.Username, request.Password, request.Email, request.Name);
 
             var status = await settingsService.GetAuthStatus();
             if (!status.needsRegister)
@@ -64,6 +63,14 @@ public class AuthController(AuthService authService, SettingsService settingsSer
             return UserOk(user);
         }
         catch (AuthException ex) when (ex.Code == AuthErrors.UsernameExists)
+        {
+            return Conflict(ApiResponse.Fail(ex.Code));
+        }
+        catch (AuthException ex) when (ex.Code == AuthErrors.EmailExists)
+        {
+            return Conflict(ApiResponse.Fail(ex.Code));
+        }
+        catch (AuthException ex) when (ex.Code == AuthErrors.NameExists)
         {
             return Conflict(ApiResponse.Fail(ex.Code));
         }
@@ -144,6 +151,8 @@ public class AuthController(AuthService authService, SettingsService settingsSer
         {
             Id = user.Id,
             Username = user.Username,
+            Email = user.Email,
+            Name = user.Name,
             Role = user.Role
         }));
     
@@ -233,5 +242,7 @@ public class RegisterRequest
 {
     public string Username { get; init; } = string.Empty;
     public string Password { get; init; } = string.Empty;
-    
+    public string Email { get; init; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
+
 }

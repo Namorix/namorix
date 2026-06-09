@@ -1,10 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 using Namorix.Adapters.Services;
 using Namorix.Core.Constants;
 using Namorix.Core.Exceptions;
-using Namorix.Core.Hubs;
-using Namorix.Core.Infrastructure;
 using Namorix.Core.Responses;
 using Namorix.Core.Validation;
 using Namorix.Core.Validation.Schemas;
@@ -17,34 +14,30 @@ namespace Namorix.Server.Controllers;
 [Route("api/user")]
 public class UserController : ControllerBase
 {
-    [HttpGet("theme")]
-    public async Task<IActionResult> GetTheme([FromServices] UserService userService)
+    [HttpPut("profile")]
+    [Validate(typeof(UpdateProfileSchema))]
+    public async Task<IActionResult> UpdateProfile(
+        [FromBody] UpdateProfileRequest request,
+        [FromServices] UserService userService)
     {
         var userId = GetUserId();
         if (userId == null)
             return Unauthorized(ApiResponse.Fail(AuthErrors.Unauthorized));
-
-        var themeId = await userService.GetThemeAsync(userId.Value);
-        return Ok(ApiResponse<object>.Ok(new { themeId }));
+        try
+        {
+            await userService.UpdateProfileAsync(userId.Value, request.Email, request.Name);
+            return Ok(ApiResponse.Ok());
+        }
+        catch (AuthException ex) when (ex.Code == AuthErrors.EmailExists)
+        {
+            return Conflict(ApiResponse.Fail(ex.Code));
+        }
+        catch (AuthException ex) when (ex.Code == AuthErrors.NameExists)
+        {
+            return Conflict(ApiResponse.Fail(ex.Code));
+        }
     }
-
-    [HttpPut("theme")]
-    [Validate((typeof(SetThemeSchema)))]
-    public async Task<IActionResult> SetTheme(
-        [FromBody] SetThemeRequest request,
-        [FromServices] UserService userService,
-        [FromServices] IHubContext<NmxHub> hubContext)
-    {
-        var userId = GetUserId();
-        if (userId == null)
-            return Unauthorized(ApiResponse.Fail(AuthErrors.Unauthorized));
-
-        await userService.SetThemeAsync(userId.Value, request.ThemeId);
-        await hubContext.Clients.User(userId.Value.ToString())
-            .SendAsync(SignalREvents.UserThemeChanged, new ThemeChanged(request.ThemeId));
-        return Ok(ApiResponse.Ok());
-    }
-
+    
     [HttpPut("password")]
     [Validate(typeof(ChangePasswordSchema))]
     public async Task<IActionResult> ChangePassword(
@@ -66,6 +59,28 @@ public class UserController : ControllerBase
         }
     }
 
+    [HttpGet("settings")]
+    public async Task<IActionResult> GetSettings(
+        [FromServices] UserSettingsService userSettingsService)
+    {
+        var userId = GetUserId();
+        if (userId == null)
+            return Unauthorized(ApiResponse.Fail(AuthErrors.Unauthorized));
+        var settings = await userSettingsService.GetAllAsync(userId.Value);
+        return Ok(ApiResponse<Dictionary<string, string>>.Ok(settings));
+    }
+    
+    [HttpPut("settings")]
+    public async Task<IActionResult> SetSettings(
+        [FromBody] Dictionary<string, string> settings,
+        [FromServices] UserSettingsService userSettingsService)
+    {
+        var userId = GetUserId();
+        if (userId == null)
+            return Unauthorized(ApiResponse.Fail(AuthErrors.Unauthorized));
+        await userSettingsService.SetBatchAsync(userId.Value, settings);
+        return Ok(ApiResponse.Ok());
+    }
     
     private int? GetUserId()
     {
@@ -74,9 +89,10 @@ public class UserController : ControllerBase
     }
 }
 
-public class SetThemeRequest
+public class UpdateProfileRequest
 {
-    public string ThemeId { get; init; } = string.Empty;
+    public string Email { get; init; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
 }
 
 public class ChangePasswordRequest

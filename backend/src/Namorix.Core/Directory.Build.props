@@ -1,6 +1,5 @@
 <Project>
   <PropertyGroup>
-    <Version>0.32.0</Version>
     <PackageId>Namorix.Core</PackageId>
     <IsPackable>true</IsPackable>
   </PropertyGroup>

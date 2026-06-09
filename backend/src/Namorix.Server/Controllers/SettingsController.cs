@@ -36,10 +36,19 @@ public class SettingsController(SettingsService settingsService) : ControllerBas
     [HttpGet("appearance/options")]
     public IActionResult GetAppearanceOptions()
     {
-        var options = settingsService.GetAppearanceOptions();
+        var options = SettingsService.GetAppearanceOptions();
         return Ok(ApiResponse<AppearanceOptionsData>.Ok(options));
     }
+    
+    [HttpPut("appearance")]
+    [RequireAdmin]
+    public async Task<IActionResult> SetAppearanceDefaults(
+        [FromBody] Dictionary<string, string> settings)
+    {
+        await settingsService.SetAppearanceDefaultsAsync(settings);
+        return Ok(ApiResponse.Ok());
 }
+    }
 
 public class SettingsResponse
 {

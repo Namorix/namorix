@@ -10,6 +10,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IOptions<AppCo
     private readonly AppConfig? _config = config?.Value;
     
     public DbSet<User> Users { get; set; }
+    public DbSet<UserSetting> UserSettings { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<Setting> Settings { get; set; }
     public DbSet<Permission> Permissions { get; set; }
@@ -27,6 +28,18 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IOptions<AppCo
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Email)
+            .IsUnique();
+        
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Name)
+            .IsUnique();
+        
+        modelBuilder.Entity<UserSetting>()
+            .HasIndex(s => new { s.UserId, s.Key })
+            .IsUnique();
+        
         modelBuilder.Entity<Permission>()
             .HasIndex(p => new { p.Name, p.Value })
             .IsUnique();

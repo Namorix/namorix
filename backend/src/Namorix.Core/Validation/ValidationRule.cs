@@ -70,12 +70,20 @@ public class StringValidationRule : ValidationRule
 public class FormatValidationRule : ValidationRule
 {
     public string Pattern { get; init; } = string.Empty;
+    public int? MinLength { get; init; }
+    public int? MaxLength { get; init; }
 
     public override ValidationResult Validate(string field, object? value, object? requestObj = null)
     {
         if (value is not string str || string.IsNullOrEmpty(str))
             return IsRequired ? Fail(ValidationErrorCodes.Required, field) : Pass();
-
+        
+        if (MinLength.HasValue && str.Length < MinLength.Value)
+            return Fail(ValidationErrorCodes.TooShort, field, new ValidationMeta { MinLength = MinLength.Value });
+        
+        if (MaxLength.HasValue && str.Length > MaxLength.Value)
+            return Fail(ValidationErrorCodes.TooLong, field, new ValidationMeta { MaxLength = MaxLength.Value });
+        
         return !Regex.IsMatch(str, Pattern)
             ? Fail(ValidationErrorCodes.InvalidFormat, field, new ValidationMeta { Pattern = Pattern })
             : Pass();

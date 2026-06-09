@@ -111,8 +111,24 @@ public class SettingsService(AppDbContext dbContext, IMemoryCache memoryCache,
         return (userCount == 0, registerEnabled);
     }
     
-    public AppearanceOptionsData GetAppearanceOptions()
+    public static AppearanceOptionsData GetAppearanceOptions()
     {
         return AppearanceOptionsData.Default;
+    }
+    
+    public async Task SetAppearanceDefaultsAsync(Dictionary<string, string> settings)
+    {
+        foreach (var (key, value) in settings)
+        {
+            var dbKey = $"appearance_{key}";
+            var existing = await dbContext.Settings.FirstOrDefaultAsync(s => s.Key == dbKey);
+            if (existing != null)
+                existing.Value = value;
+            else
+                dbContext.Settings.Add(new Setting { Key = dbKey, Value = value });
+        }
+        
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation("Appearance defaults updated: {Count} keys", settings.Count);
     }
 }

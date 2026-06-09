@@ -193,6 +193,16 @@ namespace Namorix.Adapters.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -200,11 +210,6 @@ namespace Namorix.Adapters.Migrations
 
                     b.Property<int>("Role")
                         .HasColumnType("INTEGER");
-
-                    b.Property<string>("ThemeId")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("TEXT");
@@ -215,6 +220,12 @@ namespace Namorix.Adapters.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("Users");
                 });
@@ -241,6 +252,33 @@ namespace Namorix.Adapters.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("UserPermissions");
+                });
+
+            modelBuilder.Entity("Namorix.Core.Models.UserSetting", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Key")
+                        .IsUnique();
+
+                    b.ToTable("UserSettings");
                 });
 
             modelBuilder.Entity("Namorix.Core.Models.RefreshToken", b =>
@@ -273,6 +311,17 @@ namespace Namorix.Adapters.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Namorix.Core.Models.UserSetting", b =>
+                {
+                    b.HasOne("Namorix.Core.Models.User", "User")
+                        .WithMany("UserSettings")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Namorix.Core.Models.Permission", b =>
                 {
                     b.Navigation("UserPermissions");
@@ -283,6 +332,8 @@ namespace Namorix.Adapters.Migrations
                     b.Navigation("RefreshTokens");
 
                     b.Navigation("UserPermissions");
+
+                    b.Navigation("UserSettings");
                 });
 #pragma warning restore 612, 618
         }

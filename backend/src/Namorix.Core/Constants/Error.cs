@@ -4,6 +4,8 @@ public static class AuthErrors
 {
     public const string InvalidCredentials = "INVALID_CREDENTIALS";
     public const string UsernameExists = "USERNAME_EXISTS";
+    public const string EmailExists = "EMAIL_EXISTS";
+    public const string NameExists = "NAME_EXISTS";
     public const string TokenReuseDetected = "TOKEN_REUSE_DETECTED";
     public const string FingerprintMismatch = "FINGERPRINT_MISMATCH";
     public const string InvalidToken = "INVALID_TOKEN";

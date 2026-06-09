@@ -33,7 +33,7 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig, 
         return user;
     }
 
-    public async Task<User> Register(string username, string password)
+    public async Task<User> Register(string username, string password, string email, string name)
     {
         var usernameExists = await dbContext.Users.AnyAsync(u => u.Username == username);
         if (usernameExists)
@@ -42,15 +42,32 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig, 
             throw new AuthException(AuthErrors.UsernameExists);
         }
 
+        var emailExists = await dbContext.Users.AnyAsync(u => u.Email == email);
+        if (emailExists)
+        {
+            logger.LogWarning("Register failed: email={Email} already exists", email);
+            throw new AuthException(AuthErrors.EmailExists);
+        }
+        
+        var nameExists = await dbContext.Users.AnyAsync(u => u.Name == name);
+        if (nameExists)
+        {
+            logger.LogWarning("Register failed: name={Name} already exists", name);
+            throw new AuthException(AuthErrors.NameExists);
+        }
+        
         var userCount = await dbContext.Users.CountAsync();
         var role = userCount == 0 ? UserRole.Admin : UserRole.User;
         var user = new User
         {
             Username = username,
             Password = BCrypt.Net.BCrypt.HashPassword(password),
+            Email = email,
+            Name = name,
             Role = role,
             CreatedAt = DateTime.UtcNow
         };
+        
         dbContext.Users.Add(user);
         await dbContext.SaveChangesAsync();
         logger.LogInformation("User registered: username={Username}, role={Role}", username, role);

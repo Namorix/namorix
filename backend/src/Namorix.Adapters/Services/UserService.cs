@@ -8,20 +8,25 @@ namespace Namorix.Adapters.Services;
 
 public class UserService(AppDbContext appDbContext, ILogger<UserService> logger)
 {
-    public async Task<string?> GetThemeAsync(int userId)
+    public async Task UpdateProfileAsync(int userId, string email, string name)
     {
-        return await appDbContext.Users
-            .Where(u => u.Id == userId)
-            .Select(u => u.ThemeId)
-            .FirstOrDefaultAsync();
-    }
-
-    public async Task SetThemeAsync(int userId, string themeId)
-    {
-        logger.LogInformation("Theme changed: userId={UserId}, themeId={ThemeId}", userId, themeId);
+        var emailExists = await appDbContext.Users
+            .AnyAsync(u => u.Email == email && u.Id != userId);
+        
+        if (emailExists)
+            throw new AuthException(AuthErrors.EmailExists);
+        
+        var nameExists = await appDbContext.Users
+            .AnyAsync(u => u.Name == name && u.Id != userId);
+        
+        if (nameExists)
+            throw new AuthException(AuthErrors.NameExists);
+        
         await appDbContext.Users
             .Where(u => u.Id == userId)
-            .ExecuteUpdateAsync(s => s.SetProperty(u => u.ThemeId, themeId));
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(u => u.Email, email)
+                .SetProperty(u => u.Name, name));
     }
     
     public async Task ChangePasswordAsync(int userId, string currentPassword, string newPassword)
