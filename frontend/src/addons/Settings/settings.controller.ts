@@ -2,6 +2,7 @@ import {
   ApiError,
   ApiSettingsRoutes,
   ApiUserRoutes,
+  type AppearanceSettings,
   getApiBaseUrl,
   nmxHttp,
 } from "@namorix/core"
@@ -21,6 +22,30 @@ export interface AppearanceOptionsResponse {
 }
 
 export const settingsController = {
+  async getUserSettings(): Promise<Record<string, string>> {
+    const res = await nmxHttp
+      .url(getApiBaseUrl() + ApiUserRoutes.settings)
+      .get()
+      .json<Record<string, string>>()
+    return res.success ? res.data : {}
+  },
+
+  async saveUserSettings(settings: AppearanceSettings): Promise<void> {
+    const res = await nmxHttp
+      .url(getApiBaseUrl() + ApiUserRoutes.settings)
+      .put(settings)
+      .json()
+    if (!res.success) throw ApiError.fromResponse(res)
+  },
+
+  async setAppearanceDefaults(settings: AppearanceSettings): Promise<void> {
+    const res = await nmxHttp
+      .url(getApiBaseUrl() + ApiSettingsRoutes.appearanceDefaults)
+      .put(settings)
+      .json()
+    if (!res.success) throw ApiError.fromResponse(res)
+  },
+
   async getSystem(): Promise<{
     proxies: string[]
     origins: string[]
@@ -57,6 +82,14 @@ export const settingsController = {
       .get()
       .json<AppearanceOptionsResponse>()
     return res.success ? res.data : null
+  },
+
+  async updateProfile(email: string, name: string): Promise<void> {
+    const res = await nmxHttp
+      .url(getApiBaseUrl() + ApiUserRoutes.profile)
+      .put({ email, name })
+      .json()
+    if (!res.success) throw ApiError.fromResponse(res)
   },
 
   async changePassword(

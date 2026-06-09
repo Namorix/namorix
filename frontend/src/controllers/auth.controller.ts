@@ -4,10 +4,11 @@ import {
   ApiUserRoutes,
   getApiBaseUrl,
   nmxHttp,
-  NMX_THEME_STORAGE_KEY,
   stopConnection,
   setUserStore,
   setHasBeenConnected,
+  setAppearanceStore,
+  type AppearanceSettings,
 } from "@namorix/core"
 
 async function login(
@@ -20,20 +21,26 @@ async function login(
     .post({ username, password, rememberMe })
     .json<void>()
   if (!data.success) throw ApiError.fromResponse(data)
+  await loadAppearance()
 
-  const themeRes = await nmxHttp
-    .url(getApiBaseUrl() + ApiUserRoutes.theme)
-    .get()
-    .json<{ themeId: string }>()
-  if (themeRes.success && themeRes.data) {
-    localStorage.setItem(NMX_THEME_STORAGE_KEY, themeRes.data.themeId)
-  }
+  // const themeRes = await nmxHttp
+  //   .url(getApiBaseUrl() + ApiUserRoutes.theme)
+  //   .get()
+  //   .json<{ themeId: string }>()
+  // if (themeRes.success && themeRes.data) {
+  //   localStorage.setItem(NMX_THEME_STORAGE_KEY, themeRes.data.themeId)
+  // }
 }
 
-async function register(username: string, password: string): Promise<void> {
+async function register(
+  username: string,
+  password: string,
+  email: string,
+  name: string,
+): Promise<void> {
   const data = await nmxHttp
     .url(getApiBaseUrl() + ApiAuthRoutes.register)
-    .post({ username, password })
+    .post({ username, password, email, name })
     .json<void>()
   if (!data.success) throw ApiError.fromResponse(data)
 }
@@ -49,4 +56,14 @@ async function logout(): Promise<void> {
   if (!data.success) throw ApiError.fromResponse(data)
 }
 
-export const authController = { login, register, logout }
+async function loadAppearance() {
+  const res = await nmxHttp
+    .url(getApiBaseUrl() + ApiUserRoutes.settings)
+    .get()
+    .json<AppearanceSettings>()
+  if (res.success && res.data) {
+    setAppearanceStore(res.data)
+  }
+}
+
+export const authController = { login, register, logout, loadAppearance }

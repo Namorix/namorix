@@ -31,6 +31,8 @@ export const Register: React.FC = () => {
   const [username, setUsername] = useState("IzeroCs")
   const [password, setPassword] = useState("12345678")
   const [confirmPassword, setConfirmPassword] = useState("12345678")
+  const [email, setEmail] = useState("izero.cs@gmail.com")
+  const [name, setName] = useState("Nguyễn Danh Nam")
   const [busy, setBusy] = useState(false)
   const needsRegister = useNeedsRegisterStore()
   const navigate = useNavigate()
@@ -42,6 +44,8 @@ export const Register: React.FC = () => {
       .required(ValidationFields.USERNAME, username)
       .required(ValidationFields.PASSWORD, password)
       .required(ValidationFields.CONFIRM_PASSWORD, confirmPassword)
+      .required(ValidationFields.EMAIL, email)
+      .required(ValidationFields.NAME, name)
       .minLength(
         ValidationFields.USERNAME,
         username,
@@ -57,6 +61,9 @@ export const Register: React.FC = () => {
         password,
         AuthConstraints.password.minLength,
       )
+      .maxLength(ValidationFields.EMAIL, email, AuthConstraints.email.maxLength)
+      .minLength(ValidationFields.NAME, name, AuthConstraints.name.minLength)
+      .maxLength(ValidationFields.NAME, name, AuthConstraints.name.maxLength)
       .equal(ValidationFields.CONFIRM_PASSWORD, confirmPassword, password)
       .first()
 
@@ -67,7 +74,7 @@ export const Register: React.FC = () => {
     setBusy(true)
 
     try {
-      await authController.register(username, password)
+      await authController.register(username, password, email, name)
       nmxToast.success(t("auth.register.success"))
       setTimeout(() => {
         navigate(DefaultPaths.LOGIN)
@@ -109,6 +116,38 @@ export const Register: React.FC = () => {
                   value={username}
                   disabled={busy}
                   onValueChange={(value: string) => setUsername(value)}
+                  required
+                />
+              </NmxFormField>
+              <NmxFormField
+                label={t("auth.register.emailLabel")}
+                controlId="nmx-auth-email"
+                required
+              >
+                <NmxFormInput
+                  id="nmx-auth-email"
+                  name="email"
+                  type="email"
+                  placeholder={t("auth.register.emailPlaceholder")}
+                  value={email}
+                  disabled={busy}
+                  onValueChange={setEmail}
+                  required
+                />
+              </NmxFormField>
+              <NmxFormField
+                label={t("auth.register.nameLabel")}
+                controlId="nmx-auth-display-name"
+                required
+              >
+                <NmxFormInput
+                  id="nmx-auth-display-name"
+                  name="name"
+                  type="text"
+                  placeholder={t("auth.register.namePlaceholder")}
+                  value={name}
+                  disabled={busy}
+                  onValueChange={setName}
                   required
                 />
               </NmxFormField>

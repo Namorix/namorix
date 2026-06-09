@@ -7,7 +7,7 @@ const corePkg = "./packages/core/package.json"
 const stylesPkg = "./packages/styles/package.json"
 const uiPkg = "./packages/ui/package.json"
 
-const backendCore = "../backend/src/Namorix.Core/Directory.Build.props"
+const backendCore = "../backend/src/Namorix.Core/Namorix.Core.csproj"
 const backendServer = "../backend/src/Namorix.Server/Namorix.Server.csproj"
 const matchVersion = (xml: string) =>
   xml.match(/<Version>(.*?)<\/Version>/)?.[1]

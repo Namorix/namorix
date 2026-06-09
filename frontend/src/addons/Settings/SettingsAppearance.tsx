@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useLayoutEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
   NmxAccentColorPicker,
@@ -8,7 +8,6 @@ import {
   NmxSegmentedGroup,
   NmxSelect,
   type NmxSelectData,
-  type NmxSemanticColor,
   NmxSettingsCard,
   NmxSettingsRow,
   NmxSettingsSection,
@@ -18,7 +17,14 @@ import {
   type AppearanceOptionsResponse,
   settingsController,
 } from "./settings.controller"
-import { UserRole, useUserStore } from "@namorix/core"
+import {
+  AppearanceDefaults,
+  type AppearanceSettings,
+  nmxToast,
+  resolveError,
+  UserRole,
+  useUserStore,
+} from "@namorix/core"
 
 const THEMES: NmxSelectData[] = [{ value: "dark", label: "Dark" }]
 
@@ -26,35 +32,57 @@ export const SettingsAppearance: React.FC = () => {
   const { t } = useTranslation()
   const [options, setOptions] = useState<AppearanceOptionsResponse | null>(null)
   const [collapsedDefault, setCollapsedDefault] = useState(false)
-  const [density, setDensity] = useState("default")
-  const [fontFamily, setFontFamily] = useState("Inter")
-  const [fontSize, setFontSize] = useState("md")
-  const [accentColor, setAccentColor] = useState("blue")
+  const [theme, setTheme] = useState(AppearanceDefaults.appearance_theme)
+  const [density, setDensity] = useState(AppearanceDefaults.appearance_density)
+  const [fontFamily, setFontFamily] = useState(
+    AppearanceDefaults.appearance_font_family,
+  )
+  const [fontSize, setFontSize] = useState(
+    AppearanceDefaults.appearance_font_size,
+  )
+  const [accentColor, setAccentColor] = useState(
+    AppearanceDefaults.appearance_accent_color!,
+  )
+  const [language, setLanguage] = useState(
+    AppearanceDefaults.appearance_language,
+  )
+  const [dateFormat, setDateFormat] = useState(
+    AppearanceDefaults.appearance_date_format,
+  )
   const [busy, setBusy] = useState(false)
-  const [alert, setAlert] = useState<{
-    semantic: NmxSemanticColor
-    message?: string
-  } | null>(null)
+  const [dialogOpen, setDialogOpen] = useState(false)
 
   const user = useUserStore()
   const isAdmin = user?.role === UserRole.Admin
-  const [saveAsDefault, setSaveAsDefault] = useState(false)
 
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const handleSaveClick = () => setDialogOpen(true)
-
-  const handleConfirm = async () => {
-    setDialogOpen(false)
-  }
-
-  useEffect(() => {
+  useLayoutEffect(() => {
     settingsController.getAppearanceOptions().then(setOptions)
+    settingsController.getUserSettings().then((s) => {
+      setCollapsedDefault(s.appearance_collapsed === "true")
+      setDensity(s.appearance_density ?? AppearanceDefaults.appearance_density)
+      setFontFamily(
+        s.appearance_font_family ?? AppearanceDefaults.appearance_font_family,
+      )
+      setFontSize(
+        s.appearance_font_size ?? AppearanceDefaults.appearance_font_size,
+      )
+      setAccentColor(
+        s.appearance_accent_color ??
+          AppearanceDefaults.appearance_accent_color!,
+      )
+      setLanguage(
+        s.appearance_language ?? AppearanceDefaults.appearance_language,
+      )
+      setDateFormat(
+        s.appearance_date_format ?? AppearanceDefaults.appearance_date_format,
+      )
+    })
   }, [])
 
-  const densityIconMap : Record<string, NmxIconFontSymbol> = {
+  const densityIconMap: Record<string, NmxIconFontSymbol> = {
     compact: NmxIconFontSymbol.DENSITY_COMPACT,
     default: NmxIconFontSymbol.DENSITY_DEFAULT,
-    spacious: NmxIconFontSymbol.DENSITY_SPACIOUS
+    spacious: NmxIconFontSymbol.DENSITY_SPACIOUS,
   }
 
   const fontSizeValueMap: Record<string, string> = {
@@ -68,9 +96,49 @@ export const SettingsAppearance: React.FC = () => {
   const fontSizes = options?.fontSizes ?? []
   const languages = options?.languages ?? []
   const dateFormats = options?.dateFormats ?? []
-  const densities = (options?.densities ?? []).map(d => ({
-    ...d, label: "", icon: densityIconMap[d.value]
+  const densities = (options?.densities ?? []).map((d) => ({
+    ...d,
+    label: "",
+    icon: densityIconMap[d.value],
   }))
+
+  const buildSettings = (): AppearanceSettings => ({
+    appearance_theme: theme,
+    appearance_accent_color: accentColor,
+    appearance_collapsed: String(collapsedDefault),
+    appearance_density: density,
+    appearance_font_family: fontFamily,
+    appearance_font_size: fontSize,
+    appearance_language: language,
+    appearance_date_format: dateFormat,
+  })
+
+  const handleSaveForMySelf = async () => {
+    setBusy(true)
+    try {
+      await settingsController.saveUserSettings(buildSettings())
+      nmxToast.success(t("addon.settings.appearance.saved"))
+    } catch (err) {
+      nmxToast.error(
+        resolveError(t, err, "addon.settings.appearance.saveFailed"),
+      )
+    }
+    setBusy(false)
+  }
+
+  const handleSaveAsSystemDefault = async () => {
+    setBusy(true)
+    try {
+      await settingsController.setAppearanceDefaults(buildSettings())
+      nmxToast.success(t("addon.settings.appearance.savedAsDefault"))
+    } catch (err) {
+      nmxToast.error(
+        resolveError(t, err, "addon.settings.appearance.saveFailed"),
+      )
+    }
+    setBusy(false)
+    setDialogOpen(false)
+  }
 
   return (
     <>
@@ -80,7 +148,7 @@ export const SettingsAppearance: React.FC = () => {
             label={t("addon.settings.appearance.theme")}
             description={t("addon.settings.appearance.themeDesc")}
           >
-            <NmxSelect defaultValue="en" options={THEMES} />
+            <NmxSelect value={theme} options={THEMES} onChange={setTheme} />
           </NmxSettingsRow>
           <NmxSettingsRow
             label={t("addon.settings.appearance.accentColor")}
@@ -160,44 +228,43 @@ export const SettingsAppearance: React.FC = () => {
             label={t("addon.settings.appearance.language")}
             description={t("addon.settings.appearance.languageDesc")}
           >
-            <NmxSelect defaultValue="en" options={languages} />
+            <NmxSelect
+              value={language}
+              options={languages}
+              onChange={setLanguage}
+            />
           </NmxSettingsRow>
           <NmxSettingsRow
             label={t("addon.settings.appearance.dateFormat")}
             description={t("addon.settings.appearance.dateFormatDesc")}
           >
-            <NmxSelect defaultValue="DD/MM/YYYY" options={dateFormats} />
+            <NmxSelect
+              value={dateFormat}
+              options={dateFormats}
+              onChange={setDateFormat}
+            />
           </NmxSettingsRow>
         </NmxSettingsCard>
       </NmxSettingsSection>
       <NmxSettingsSection className="nmx-settings-section__horizontal">
         {isAdmin && (
-          <>
-            <NmxButton
-              disabled={busy}
-              label={t("addon.settings.saveAsSystemDefault")}
-              semantic="error"
-              variant="ghost"
-              uppercase
-              fullWidth
-              onClick={() => setDialogOpen(true)}
-            />
-            <NmxButton
-              disabled={busy}
-              label={t("addon.settings.saveForMySelf")}
-              uppercase
-              fullWidth
-            />
-          </>
-        )}
-        {!isAdmin && (
           <NmxButton
             disabled={busy}
-            label={t("addon.settings.save")}
+            label={t("addon.settings.saveAsSystemDefault")}
+            semantic="error"
+            variant="ghost"
             uppercase
             fullWidth
+            onClick={() => setDialogOpen(true)}
           />
         )}
+        <NmxButton
+          disabled={busy}
+          label={t("addon.settings.save")}
+          uppercase
+          fullWidth
+          onClick={handleSaveForMySelf}
+        />
       </NmxSettingsSection>
       <NmxAlertDialog
         open={dialogOpen}
@@ -206,7 +273,7 @@ export const SettingsAppearance: React.FC = () => {
           "addon.settings.appearance.dialogConfirmSaveDescription",
         )}
         confirmLabel={t("addon.settings.save")}
-        onConfirm={handleConfirm}
+        onConfirm={handleSaveAsSystemDefault}
         onCancel={() => setDialogOpen(false)}
         loading={busy}
       />

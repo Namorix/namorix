@@ -1,7 +1,8 @@
 import React, { useEffect } from "react"
 import { DesktopArea, Launcher, Taskbar, WindowManager } from "../components"
 import { defocusAll, useAppDispatch } from "../store"
-import { useSignalR } from "@namorix/core"
+import { nmxToast, useSignalR } from "@namorix/core"
+import { authController } from "../controllers"
 
 export const Desktop: React.FC = () => {
   const dispatch = useAppDispatch()
@@ -27,6 +28,10 @@ export const Desktop: React.FC = () => {
       document.removeEventListener("contextmenu", preventContextMenu)
     }
   }, [dispatch])
+
+  useEffect(() => {
+    authController.loadAppearance().catch((err) => nmxToast.error(err))
+  }, [])
 
   return (
     <>

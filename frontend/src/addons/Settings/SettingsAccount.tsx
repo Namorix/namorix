@@ -29,7 +29,39 @@ export const SettingsAccount: React.FC = () => {
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
+  const [email, setEmail] = useState(user?.email ?? "")
+  const [name, setName] = useState(user?.name ?? "")
+  const [profileBusy, setProfileBusy] = useState(false)
   const [busy, setBusy] = useState(false)
+
+  const handleUpdateProfile = async (e: React.MouseEvent) => {
+    e.preventDefault()
+
+    const error = validate(t)
+      .required(ValidationFields.EMAIL, email)
+      .required(ValidationFields.NAME, name)
+      .maxLength(ValidationFields.EMAIL, email, AuthConstraints.email.maxLength)
+      .minLength(ValidationFields.NAME, name, AuthConstraints.name.minLength)
+      .maxLength(ValidationFields.NAME, name, AuthConstraints.name.maxLength)
+      .first()
+
+    if (error) {
+      return nmxToast.error(error)
+    }
+
+    setProfileBusy(true)
+
+    try {
+      await settingsController.updateProfile(email, name)
+      nmxToast.success(t("addon.settings.account.profileUpdated"))
+    } catch (err: unknown) {
+      nmxToast.error(
+        resolveError(t, err, "addon.settings.account.profileUpdateError"),
+      )
+    }
+
+    setProfileBusy(false)
+  }
 
   const handleChangePassword = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -55,12 +87,14 @@ export const SettingsAccount: React.FC = () => {
     try {
       await settingsController.changePassword(currentPassword, newPassword)
 
-      nmxToast.success(t("addon.settings.account.success"))
+      nmxToast.success(t("addon.settings.account.passwordUpdated"))
       setCurrentPassword("")
       setNewPassword("")
       setConfirmPassword("")
     } catch (err: unknown) {
-      nmxToast.error(resolveError(t, err, "addon.settings.account.error"))
+      nmxToast.error(
+        resolveError(t, err, "addon.settings.account.passwordUpdatedError"),
+      )
     }
 
     setBusy(false)
@@ -68,7 +102,7 @@ export const SettingsAccount: React.FC = () => {
 
   return (
     <>
-      <NmxSettingsSection title={t("addon.settings.account.title")}>
+      <NmxSettingsSection title={t("addon.settings.account.profileSection")}>
         <NmxSettingsCard>
           <div className="nmx-addon-setting__profile-header">
             <div className="nmx-addon-setting__avatar">
@@ -82,7 +116,6 @@ export const SettingsAccount: React.FC = () => {
               <NmxMetaItem>
                 <NmxBadge
                   semantic={user?.role === UserRole.Admin ? "success" : "info"}
-                  className="nmx-addon-setting__meta-role"
                 >
                   {user?.role === UserRole.Admin
                     ? t("user.role.admin")
@@ -91,7 +124,44 @@ export const SettingsAccount: React.FC = () => {
               </NmxMetaItem>
             </NmxMetaList>
           </div>
+          <NmxSettingsRow
+            label={t("addon.settings.account.email")}
+            description={t("addon.settings.account.emailDesc")}
+          >
+            <NmxFormInput
+              type="email"
+              value={email}
+              onValueChange={setEmail}
+              disabled={profileBusy}
+            />
+          </NmxSettingsRow>
+          <NmxSettingsRow
+            label={t("addon.settings.account.name")}
+            description={t("addon.settings.account.nameDesc")}
+          >
+            <NmxFormInput
+              type="text"
+              value={name}
+              onValueChange={setName}
+              disabled={profileBusy}
+            />
+          </NmxSettingsRow>
+        </NmxSettingsCard>
+      </NmxSettingsSection>
+      <NmxSettingsSection>
+        <NmxButton
+          onClick={handleUpdateProfile}
+          disabled={profileBusy}
+          label={t("addon.settings.account.saveProfile")}
+          fullWidth
+          uppercase
+        />
+      </NmxSettingsSection>
 
+      <NmxSettingsSection
+        title={t("addon.settings.account.changePasswordSection")}
+      >
+        <NmxSettingsCard>
           <NmxSettingsRow
             label={t("addon.settings.account.currentPassword")}
             description={t("addon.settings.account.currentPasswordDesc")}
@@ -118,7 +188,7 @@ export const SettingsAccount: React.FC = () => {
           </NmxSettingsRow>
           <NmxSettingsRow
             label={t("addon.settings.account.confirmPassword")}
-            description={t("addon.settings.account.confirmPassword")}
+            description={t("addon.settings.account.confirmPasswordDesc")}
           >
             <NmxFormInput
               type="password"
@@ -132,8 +202,9 @@ export const SettingsAccount: React.FC = () => {
       <NmxSettingsSection>
         <NmxButton
           onClick={handleChangePassword}
+          semantic="error"
           disabled={busy}
-          label={t("addon.settings.save")}
+          label={t("addon.settings.account.savePassword")}
           fullWidth
           uppercase
         />
