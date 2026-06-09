@@ -1,10 +1,12 @@
 import { useState } from "react"
 import type { WithBaseProps } from "../types"
 import { cx } from "../utils"
+import  { NmxIconFont, type NmxIconFontSymbol } from "./NmxIcon"
 
 export interface NmxSegmentedGroupData<T extends string> {
   value: T
   label: string
+  icon?: NmxIconFontSymbol
 }
 
 interface NmxSegmentedGroupProps<T extends string> extends WithBaseProps {
@@ -12,6 +14,10 @@ interface NmxSegmentedGroupProps<T extends string> extends WithBaseProps {
   defaultValue?: T
   options: NmxSegmentedGroupData<T>[]
   onChange?: (value: T) => void
+  renderItem?: (
+    opt: NmxSegmentedGroupData<T>,
+    active: boolean,
+  ) => React.ReactNode
 }
 
 export const NmxSegmentedGroup = <T extends string>({
@@ -19,6 +25,7 @@ export const NmxSegmentedGroup = <T extends string>({
   defaultValue,
   options,
   onChange,
+  renderItem,
   className,
   shouldRender,
   ...rest
@@ -50,7 +57,19 @@ export const NmxSegmentedGroup = <T extends string>({
           )}
           onClick={() => handleClick(opt.value as T)}
         >
-          {opt.label}
+          {renderItem ? (
+            renderItem(opt, activeValue === opt.value)
+          ) : (
+            <>
+              {opt.icon && (
+                <NmxIconFont
+                  symbol={opt.icon}
+                  className="nmx-segmented-group__icon"
+                />
+              )}
+              {opt.label}
+            </>
+          )}
         </button>
       ))}
     </div>

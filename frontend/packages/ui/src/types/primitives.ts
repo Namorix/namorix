@@ -1,6 +1,7 @@
 export type NmxSpacing = "xs" | "sm" | "md" | "lg" | "xl"
 export type NmxButtonVariant = "outline" | "filled" | "text" | "ghost"
 export type NmxSemanticColor =
+  | "default"
   | "primary"
   | "trace"
   | "debug"

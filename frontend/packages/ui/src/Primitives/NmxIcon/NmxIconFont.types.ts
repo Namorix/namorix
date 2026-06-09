@@ -25,6 +25,9 @@ export const NmxIconFontSymbol = {
   PAUSE: "ic-pause",
   CHECK: "ic-check",
   NOTIFICATION: "ic-notification",
+  DENSITY_COMPACT: "ic-density-compact",
+  DENSITY_DEFAULT: "ic-density-default",
+  DENSITY_SPACIOUS: "ic-density-spacious",
 } as const
 
 export type NmxIconFontSymbol =
