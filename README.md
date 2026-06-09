@@ -143,9 +143,9 @@ namorix/
 
 | Package | Purpose | Importable By |
 |---------|---------|---------------|
-| `@namorix/core` | Types, auth guards, http client with auto-refresh + CSRF, `ApiError`, i18n (NmxI18n, ValidationRunner), SignalR hooks (useSignalR, useSignalREvent, useSignalRGroup, useSignalRStatus), store (nmxStore), theme, addon contract, fingerprint, cache (useTabCache, Show), hooks (usePageSize, useLocalStorage) | frontend, @namorix/ui, external addons |
+| `@namorix/core` | Types, auth guards, http client with auto-refresh + CSRF, `ApiError`, i18n (NmxI18n, ValidationRunner), SignalR hooks (useSignalR, useSignalREvent, useSignalRGroup, useSignalRStatus), store (nmxStore), theme, addon contract, fingerprint, cache (useTabCache, Show), hooks (usePageSize, useLocalStorage), toast (NmxToastBus) | frontend, @namorix/ui, external addons |
 | `@namorix/styles` | SCSS tokens, reset, fonts, icomoon icons, component/layout SCSS (shared by all themes), shell-specific SCSS | frontend, @namorix/ui, external addons |
-| `@namorix/ui` | Primitives (NmxButton, NmxForm, NmxIcon, NmxInlineAlert, NmxToggle, NmxSelect, NmxSelectMultiple, NmxSlider, NmxSegmentedGroup, NmxBadge, NmxChip, NmxLoading, NmxPagination, NmxPulseDot, NmxSearchInput, NmxStatCard, NmxTagInput) + Composite (NmxCard, NmxDataTable, NmxMetaList, NmxRail, NmxSettings, NmxToolbar, NmxAddon, NmxDialog, NmxAlertDialog, NmxTabContext, NmxTabProvider) + NmxHostContext + Layouts (NmxHorizontalWrap, NmxGrid) | frontend |
+| `@namorix/ui` | Primitives (NmxButton, NmxForm, NmxIcon, NmxInlineAlert, NmxToggle, NmxSelect, NmxSelectMultiple, NmxSlider, NmxSegmentedGroup, NmxBadge, NmxChip, NmxLoading, NmxPagination, NmxPulseDot, NmxSearchInput, NmxStatCard, NmxTagInput) + Composite (NmxCard, NmxDataTable, NmxMetaList, NmxRail, NmxSettings, NmxToolbar, NmxAddon, NmxDialog, NmxAlertDialog, NmxToastProvider, NmxTabContext, NmxTabProvider) + NmxHostContext + Layouts (NmxHorizontalWrap, NmxGrid) | frontend |
 | `backend` | ASP.NET Core 8 API server (SignalR, flat file traffic + logs, SQLite, Log pipeline, FileLogger, ValidationFilter, SecurityHeaders, CSRF, CORS) | - |
 | `frontend` | Vite React shell (Redux Toolkit, SignalR client, addon system) | - |
 

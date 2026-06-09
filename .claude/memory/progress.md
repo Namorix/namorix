@@ -125,10 +125,10 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.33.0 | M3 (Settings density icons + font-size preview) |
-| @namorix/core | 0.25.2 | M3 (export useTranslation, dialog i18n keys) |
-| @namorix/styles | 0.26.0 | M3 (new button variants, scrim/default tokens, preview font-size, density icons) |
-| @namorix/ui | 0.20.0 | M3 (SegmentedGroup renderItem + icon, NmxAlertDialog i18n, "default" semantic) |
+| frontend | 0.34.0 | M3 (toast notification, register/login form refactor, needsRegister store) |
+| @namorix/core | 0.26.0 | M3 (new toast module, needsRegister store, ic-warning/info icons) |
+| @namorix/styles | 0.27.0 | M3 (new toast.scss, ic-warning/info icon fonts) |
+| @namorix/ui | 0.21.0 | M3 (new NmxToastProvider, NmxAlertDialog i18n fix) |
 | Namorix.Core | 0.32.0 | M3 (new AppearanceOptionsData, enhanced RequireAdminAttribute logging) |
 | Namorix.Server | 0.32.0 | M3 (SettingsController refactor: consolidated endpoints, auth class-level) |
 
@@ -150,6 +150,15 @@
 | Namorix.Server | Bug fixes, config tweaks | New endpoint, new middleware, auth feature |
 
 ## Version History
+
+### 2026-06-09 — Toast notification system, form refactor, needsRegister store
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.25.2 → 0.26.0 | NEW: `toast/` module — NmxToastBus (event emitter), NmxToastEvent types, nmxToast singleton with .long/.short/.success/.error/.warning/.info. NEW: `store` — needsRegister key + accessors (getNeedsRegisterStore, useNeedsRegisterStore, setNeedsRegisterStore). MODIFIED: `auth/auth.service.ts` — persists needsRegister from getAuthStatus(). MODIFIED: `NmxIconFontSymbol` — +WARNING, +INFO. |
+| @namorix/styles | 0.26.0 → 0.27.0 | NEW: `toast.scss` — drop+expand animation, semantic color variants (success/error/warning/info). NEW: icomoon — ic-warning, ic-info glyphs. MODIFIED: `form.scss` — input border fix. Theme CSS rebuilt. |
+| @namorix/ui | 0.20.0 → 0.21.0 | NEW: `NmxToastProvider` — subscribes to nmxToast event bus, renders toast queue with 3-toast cap, uses NmxIconFont for type icons. MODIFIED: `NmxAlertDialog` — useTranslation from core barrel. |
+| frontend | 0.33.0 → 0.34.0 | NEW: `Root.tsx` — mount NmxToastProvider. REFACTOR: `Register.tsx` — use useNeedsRegisterStore instead of checkHasUsers() effect. REFACTOR: `Login.tsx`, `SettingsSystem.tsx`, `SettingsAccount.tsx` — form simplification, removed redundant state. NEW i18n keys. |
 
 ### 2026-06-09 — Density icons, font-size preview, button variants, NmxAlertDialog i18n
 

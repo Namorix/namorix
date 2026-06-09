@@ -25,6 +25,13 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 ## Recent Changes
 
+### 2026-06-09 (later) — Toast notification system, form refactor, needsRegister store
+
+- **@namorix/core (0.25.2 → 0.26.0)**: NEW `toast/` module — NmxToastBus event emitter, nmxToast singleton (.long/.short/.success/.error/.warning/.info). NEW needsRegister store key + accessors. Auth persistence for needsRegister from getAuthStatus(). NEW ic-warning, ic-info icon symbols.
+- **@namorix/styles (0.26.0 → 0.27.0)**: NEW toast.scss — drop+expand animation, semantic color variants. NEW ic-warning, ic-info icomoon glyphs. Form input border fix. Theme CSS rebuilt.
+- **@namorix/ui (0.20.0 → 0.21.0)**: NEW NmxToastProvider — subscribes to nmxToast, max 3 concurrent toasts. NmxAlertDialog — fix useTranslation import path.
+- **frontend (0.33.0 → 0.34.0)**: Root.tsx — mount NmxToastProvider. Register/Login/Settings — form refactor, use needsRegister store instead of API call.
+
 ### 2026-06-09 — Density icons, font-size preview, button variants, NmxAlertDialog i18n
 
 - **@namorix/styles (0.25.0 → 0.26.0)**: NEW button variants (outline/ghost/text SCSS). NEW maps — "default" semantic color. NEW dialog scrim token. NEW preview font-size tokens (--nmx-font-size-preview-*). NEW icomoon density icons (compact/default/spacious). Theme CSS rebuilt.
@@ -299,6 +306,13 @@ Các service method (PermissionService, SettingsService) không có try/catch ch
 
 ### Auth Filter Attribute — Inconsistent Pattern ✅ (Resolved)
 Cả 3 attribute filter (`RequireAuthAttribute`, `RequireAdminAttribute`, `RequirePermissionAttribute`) đã thống nhất dùng `ActionFilterAttribute` + async `OnActionExecutionAsync`.
+
+### Toast Notification System (Planned)
+- **Architecture:** Event bus trong `@namorix/core` (`nmxToast` singleton), React provider trong `@namorix/ui` (`NmxToastProvider`), mount trong `Root.tsx`
+- **API:** `nmxToast.long(msg)`, `nmxToast.short(msg)`, `.success()`, `.error()`, `.warning()`, `.info()`
+- **Context isolation:** Widget addon (cùng DOM) → toast trên desktop. Standalone (window.open riêng) → tự mount provider → toast trong standalone
+- **Tokens:** Dùng `--nmx-color-{success/error/warning/info}` CSS variable từ styles, không hardcode
+- **Khi nào implement:** Khi cần toast cho Settings save confirm hoặc external addon feedback
 
 ## Pending Fixes
 

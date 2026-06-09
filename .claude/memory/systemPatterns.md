@@ -57,7 +57,18 @@
 - WebSocket endpoints: `/namorix-shell-ws`, `/namorix-terminal-ws`
 - **Chỉ dùng cho backend communication.** Shell ↔ Addon trong browser dùng Event Bus (`@namorix/core`), không qua SignalR.
 
-### 5. Docker via Unix Socket (Docker.DotNet.Enhanced)
+### 5. Toast Notification System (Planned)
+
+- **Imperative API** (`@namorix/core`): `nmxToast.long(msg)`, `nmxToast.short(msg)`, `.success()`, `.error()`, `.warning()`, `.info()`
+- **Event bus pattern** — `NmxToastBus` singleton trong core, emits events (`NmxToastEvent` với id, message, type, duration)
+- **UI layer** (`@namorix/ui`): `NmxToastProvider` subscribe vào bus, quản lý queue + animation
+- **Shell mounts provider** một lần trong `Root.tsx` — tất cả component cùng JS context dùng chung
+- **Widget addon** (cùng DOM với shell): gọi `nmxToast.success()` → toast hiển thị trên desktop
+- **Standalone addon** (window.open riêng): JS context riêng → cần tự mount `<NmxToastProvider>` → toast hiển thị trong standalone window
+- **Context isolation** mang tính tự nhiên — không cần bridge, mỗi window có toast instance riêng
+- Dùng `--nmx-color-{success/error/warning/info}` tokens cho styling, không hardcode
+
+### 6. Docker via Unix Socket (Docker.DotNet.Enhanced)
 - Desktop backend runs on same machine as Docker
 - NuGet package: `Docker.DotNet.Enhanced` — fork maintained bởi Testcontainers team (repo gốc `Docker.DotNet` từ dotnet org không còn maintain)
 - Kết nối qua Unix socket (`/var/run/docker.sock`)
