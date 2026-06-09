@@ -62,7 +62,8 @@ namorix/
 │   │   │       ├── i18n/     # NmxI18n, ValidationRunner, validation-messages
 │   │   │       ├── router/   # GuardedRoute, createAuthGuard/LoginGuard/RegisterGuard
 │   │   │       ├── signalr/  # SignalR service, hooks (useSignalR, useSignalREvent, useSignalRGroup, useSignalRStatus), constants
-│   │   │       ├── store/    # nmxStore observable singleton, accessors
+│   │   │       ├── store/    # nmxStore observable singleton, accessors (user, theme, registerEnabled, needsRegister)
+│   │   │       ├── toast/    # NmxToastBus event emitter, nmxToast singleton (.long/.short/.success/.error/.warning/.info)
 │   │   │       ├── theme/    # ThemeManifest types, loader (hot swap CSS), registry
 │   │   │       ├── types/    # ApiResponse, ValidationErrorMeta, error codes
 │   │   │       ├── utils/    # cx, dedupe, isMobile, sanitizePath
@@ -83,9 +84,9 @@ namorix/
 │   │           │                   # NmxSegmentedGroup, NmxBadge, NmxChip, NmxLoading,
 │   │           │                   # NmxPagination, NmxPulseDot, NmxSearchInput,
 │   │           │                   # NmxStatCard, NmxTagInput
-│   │           ├── Components/    # Composite: NmxCard, NmxDataTable, NmxMetaList, NmxRail,
-│   │           │                   # NmxSettings, NmxToolbar, NmxAddon, NmxTabContext,
-│   │           │                   # NmxTabProvider
+│   │           ├── Components/    # Composite: NmxCard, NmxDataTable, NmxDialog, NmxMetaList, NmxRail,
+│   │           │                   # NmxSettings, NmxToolbar, NmxAddon, NmxAlertDialog,
+│   │           │                   # NmxToastProvider, NmxTabContext, NmxTabProvider
 │   │           ├── hooks/         # useHorizontalDrag
 │   │           ├── context/       # NmxHostContext, useIsWindowed
 │   │           ├── Layouts/       # NmxHorizontalWrap, NmxGrid
