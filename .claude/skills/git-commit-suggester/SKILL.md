@@ -128,3 +128,8 @@ EOF
 10. **Breaking changes** — if a commit removes/renames a public API, use `!` suffix and explain impact in bullet points.
 11. **Never skip modified files** — every file in `git diff --stat` and `git ls-files --others --exclude-standard` output must appear in exactly one commit. No exceptions.
 12. **Verify file existence before git add** — before outputting any `git add` command, check `test -f <path>` or `test -d <path>` for every path. Skip files đã staged delete (D) hoặc là source path của staged rename (R) — những file này không còn trên disk.
+13. **Check OS before outputting commands** — xác định `process.platform` (win32/darwin/linux).
+    - **win32**: user dùng Windows Terminal với PowerShell. Dùng backtick `` ` `` cho line continuation, here-string `@'...'@` cho commit message.
+    - **darwin/linux**: dùng `\` line continuation, `cat <<'EOF'` heredoc.
+    - Output lệnh đúng với terminal của user.
+14. **NEVER execute git commands** — chỉ output ready-to-run commands. Không tự động chạy `git add` hay `git commit`.
