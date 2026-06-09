@@ -24,6 +24,8 @@ export const NmxIconFontSymbol = {
   PLAY: "ic-play",
   PAUSE: "ic-pause",
   CHECK: "ic-check",
+  WARNING: "ic-warning",
+  INFO: "ic-info",
   NOTIFICATION: "ic-notification",
   DENSITY_COMPACT: "ic-density-compact",
   DENSITY_DEFAULT: "ic-density-default",

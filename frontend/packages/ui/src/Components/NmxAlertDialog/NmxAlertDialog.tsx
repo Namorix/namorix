@@ -42,7 +42,7 @@ export const NmxAlertDialog = ({
           className="nmx-dialog__button"
         />
         <NmxButton
-          semantic="success"
+          semantic="primary"
           label={confirm}
           onClick={onConfirm}
           disabled={loading}
