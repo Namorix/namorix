@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import { AuthView } from "../components"
 import {
   type NmxFormSubmitEvent,
@@ -7,22 +7,21 @@ import {
   NmxFormActions,
   NmxFormField,
   NmxFormInput,
-  NmxInlineAlert,
   NmxCardContent,
   NmxCard,
   NmxCardBody,
   NmxCardHeader,
   NmxCardFooter,
-  type NmxInlineAlertState,
 } from "@namorix/ui"
 import { useTranslation } from "react-i18next"
 import { Link, useNavigate } from "react-router-dom"
 import { authController } from "../controllers"
 import {
   AuthConstraints,
-  authService,
   DefaultPaths,
+  nmxToast,
   resolveError,
+  useNeedsRegisterStore,
   validate,
   ValidationFields,
 } from "@namorix/core"
@@ -33,19 +32,8 @@ export const Register: React.FC = () => {
   const [password, setPassword] = useState("12345678")
   const [confirmPassword, setConfirmPassword] = useState("12345678")
   const [busy, setBusy] = useState(false)
-  const [alert, setAlert] = useState<NmxInlineAlertState | null>(null)
+  const needsRegister = useNeedsRegisterStore()
   const navigate = useNavigate()
-
-  useEffect(() => {
-    authService.checkHasUsers().then((hasUsers) => {
-      if (!hasUsers) {
-        setAlert({
-          semantic: "warning",
-          message: t("auth.register.initialRegistration"),
-        })
-      }
-    })
-  }, [setAlert, t])
 
   const handleSubmit = async (e: NmxFormSubmitEvent) => {
     e.preventDefault()
@@ -73,22 +61,19 @@ export const Register: React.FC = () => {
       .first()
 
     if (error) {
-      return setAlert({ semantic: "error", message: error })
+      return nmxToast.error(error)
     }
 
     setBusy(true)
 
     try {
       await authController.register(username, password)
-      setAlert({ semantic: "success", message: t("auth.register.success") })
+      nmxToast.success(t("auth.register.success"))
       setTimeout(() => {
         navigate(DefaultPaths.LOGIN)
       }, 2000)
     } catch (err: unknown) {
-      setAlert({
-        semantic: "error",
-        message: resolveError(t, err, "auth.register.errors.generic"),
-      })
+      nmxToast.error(resolveError(t, err, "auth.register.errors.generic"))
     }
 
     setBusy(false)
@@ -102,15 +87,15 @@ export const Register: React.FC = () => {
       <NmxCard>
         <NmxCardContent>
           <NmxCardHeader
-            title={t("auth.register.title")}
+            title={
+              !needsRegister
+                ? t("auth.register.title")
+                : t("auth.register.titleAdministrator")
+            }
             description={t("auth.register.description")}
           />
           <NmxCardBody>
             <NmxForm onSubmit={handleSubmit}>
-              <NmxInlineAlert
-                semantic={alert?.semantic}
-                message={alert?.message}
-              />
               <NmxFormField
                 label={t("auth.register.usernameLabel")}
                 controlId="nmx-auth-username"

@@ -7,14 +7,12 @@ import {
   NmxFormActions,
   NmxFormField,
   NmxFormInput,
-  NmxInlineAlert,
   NmxToggle,
   NmxCardContent,
   NmxCard,
   NmxCardBody,
   NmxCardHeader,
   NmxCardFooter,
-  type NmxInlineAlertState,
 } from "@namorix/ui"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -22,6 +20,7 @@ import { Link, useNavigate } from "react-router-dom"
 import {
   AuthConstraints,
   DefaultPaths,
+  nmxToast,
   resolveError,
   useRegisterEnabledStore,
   validate,
@@ -35,13 +34,11 @@ export const Login: React.FC = () => {
   const [password, setPassword] = useState("12345678")
   const [rememberMe, setRememberMe] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [alert, setAlert] = useState<NmxInlineAlertState | null>(null)
   const registerEnabled = useRegisterEnabledStore()
   const navigate = useNavigate()
 
   const handleSubmit = async (e: NmxFormSubmitEvent) => {
     e.preventDefault()
-    setAlert({ semantic: "error", message: null })
 
     const error = validate(t)
       .required(ValidationFields.USERNAME, username)
@@ -64,22 +61,19 @@ export const Login: React.FC = () => {
       .first()
 
     if (error) {
-      return setAlert({ semantic: "error", message: error })
+      return nmxToast.error(error)
     }
 
     setBusy(true)
 
     try {
       await authController.login(username, password, rememberMe)
-      setAlert({ semantic: "success", message: t("auth.login.success") })
+      nmxToast.success(t("auth.login.success"))
       setTimeout(() => {
         navigate(DefaultPaths.HOME)
       }, 2000)
     } catch (err: unknown) {
-      setAlert({
-        semantic: "error",
-        message: resolveError(t, err, "auth.login.errors.generic"),
-      })
+      nmxToast.error(resolveError(t, err, "auth.login.errors.generic"))
     }
 
     setBusy(false)
@@ -98,10 +92,6 @@ export const Login: React.FC = () => {
           />
           <NmxCardBody>
             <NmxForm onSubmit={handleSubmit}>
-              <NmxInlineAlert
-                semantic={alert?.semantic}
-                message={alert?.message}
-              />
               <NmxFormField
                 label={t("auth.login.usernameLabel")}
                 controlId="nmx-auth-username"

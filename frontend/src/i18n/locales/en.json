@@ -54,6 +54,7 @@
       "heroTitle": "Create\nAccount",
       "heroDescription": "Set up your Namorix desktop credentials to get started",
       "title": "Create account",
+      "titleAdministrator": "Create admin account",
       "description": "Register when your administrator has opened register",
       "usernameLabel": "Username",
       "passwordLabel": "Password",
@@ -69,6 +70,9 @@
       },
       "initialRegistration": "Initial registration: This account will be granted Administrative privileges",
       "success": "Account created successfully. Taking you to login..."
+    },
+    "logout": {
+      "success": "Successfully logged out"
     }
   },
   "launcher": {

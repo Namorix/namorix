@@ -13,9 +13,11 @@ import {
 } from "../../store"
 import { authController } from "../../controllers"
 import { useNavigate } from "react-router-dom"
-import { useUserStore } from "@namorix/core"
+import { nmxToast, useUserStore } from "@namorix/core"
+import { useTranslation } from "react-i18next"
 
 export const Launcher: React.FC = () => {
+  const { t } = useTranslation()
   const dispatch = useAppDispatch()
   const openWindow = useOpenWindow()
   const isOpen = useAppSelector(selectorLauncherIsOpen)
@@ -71,6 +73,7 @@ export const Launcher: React.FC = () => {
     close()
     dispatch(closeAllWindows())
     await authController.logout()
+    nmxToast.success(t("auth.logout.success"))
     navigate("/login")
   }
 

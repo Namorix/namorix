@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react"
 import {
   NmxButton,
-  NmxInlineAlert,
-  type NmxSemanticColor,
   NmxSettingsCard,
   NmxSettingsRow,
   NmxSettingsSection,
@@ -11,6 +9,7 @@ import {
 } from "@namorix/ui"
 import { settingsController } from "./settings.controller"
 import { useTranslation } from "react-i18next"
+import { nmxToast } from "@namorix/core"
 
 export const SettingsSystem: React.FC = () => {
   const { t } = useTranslation()
@@ -18,10 +17,6 @@ export const SettingsSystem: React.FC = () => {
   const [origins, setOrigins] = useState<string[]>([])
   const [registerEnabled, setRegisterEnabled] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [alert, setAlert] = useState<{
-    semantic: NmxSemanticColor
-    message?: string
-  } | null>(null)
 
   useEffect(() => {
     settingsController.getSystem().then((data) => {
@@ -33,7 +28,6 @@ export const SettingsSystem: React.FC = () => {
 
   const handleSave = async (e: React.MouseEvent) => {
     e.preventDefault()
-    setAlert(null)
     setBusy(true)
 
     const ok = await settingsController.setSystem({
@@ -47,27 +41,16 @@ export const SettingsSystem: React.FC = () => {
       setProxies(data.proxies)
       setOrigins(data.origins)
       setRegisterEnabled(data.registerEnabled)
+      nmxToast.error(t("addon.settings.system.saveFailed"))
+    } else {
+      nmxToast.success(t("addon.settings.system.saved"))
     }
-
-    setAlert({
-      semantic: ok ? "success" : "error",
-      message: ok
-        ? t("addon.settings.system.saved")
-        : t("addon.settings.system.saveFailed"),
-    })
 
     setBusy(false)
   }
 
   return (
     <>
-      <NmxSettingsSection shouldRender={!!alert}>
-        <NmxInlineAlert
-          semantic={alert?.semantic}
-          message={alert?.message}
-          shouldRender={!!alert}
-        />
-      </NmxSettingsSection>
       <NmxSettingsSection title={t("addon.settings.system.proxySection")}>
         <NmxSettingsCard>
           <NmxSettingsRow

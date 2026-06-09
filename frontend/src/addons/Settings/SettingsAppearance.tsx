@@ -175,17 +175,18 @@ export const SettingsAppearance: React.FC = () => {
           <>
             <NmxButton
               disabled={busy}
-              label={t("addon.settings.saveForMySelf")}
-              uppercase
-              fullWidth
-            />
-            <NmxButton
-              disabled={busy}
               label={t("addon.settings.saveAsSystemDefault")}
               semantic="error"
+              variant="ghost"
               uppercase
               fullWidth
               onClick={() => setDialogOpen(true)}
+            />
+            <NmxButton
+              disabled={busy}
+              label={t("addon.settings.saveForMySelf")}
+              uppercase
+              fullWidth
             />
           </>
         )}

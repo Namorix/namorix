@@ -7,17 +7,16 @@ import {
   AuthConstraints,
   useUserStore,
   resolveError,
+  nmxToast,
 } from "@namorix/core"
 import {
   NmxButton,
   NmxFormInput,
-  NmxInlineAlert,
   NmxIconFont,
   NmxIconFontSymbol,
   NmxMetaList,
   NmxMetaItem,
   NmxBadge,
-  type NmxInlineAlertState,
   NmxSettingsSection,
   NmxSettingsCard,
   NmxSettingsRow,
@@ -31,11 +30,9 @@ export const SettingsAccount: React.FC = () => {
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [busy, setBusy] = useState(false)
-  const [alert, setAlert] = useState<NmxInlineAlertState | null>(null)
 
   const handleChangePassword = async (e: React.MouseEvent) => {
     e.preventDefault()
-    setAlert(null)
 
     const error = validate(t)
       .required(ValidationFields.CURRENT_PASSWORD, currentPassword)
@@ -50,7 +47,7 @@ export const SettingsAccount: React.FC = () => {
       .first()
 
     if (error) {
-      return setAlert({ semantic: "error", message: error })
+      return nmxToast.error(error)
     }
 
     setBusy(true)
@@ -58,19 +55,12 @@ export const SettingsAccount: React.FC = () => {
     try {
       await settingsController.changePassword(currentPassword, newPassword)
 
-      setAlert({
-        semantic: "success",
-        message: t("addon.settings.account.success"),
-      })
-
+      nmxToast.success(t("addon.settings.account.success"))
       setCurrentPassword("")
       setNewPassword("")
       setConfirmPassword("")
     } catch (err: unknown) {
-      setAlert({
-        semantic: "error",
-        message: resolveError(t, err, "addon.settings.account.error"),
-      })
+      nmxToast.error(resolveError(t, err, "addon.settings.account.error"))
     }
 
     setBusy(false)
@@ -102,7 +92,6 @@ export const SettingsAccount: React.FC = () => {
             </NmxMetaList>
           </div>
 
-          <NmxInlineAlert semantic={alert?.semantic} message={alert?.message} />
           <NmxSettingsRow
             label={t("addon.settings.account.currentPassword")}
             description={t("addon.settings.account.currentPasswordDesc")}
