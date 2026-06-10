@@ -44,32 +44,6 @@
       "cancel": "Cancel"
     }
   },
-  "addon": {
-    "settings": {
-      "appearance": {
-        "theme": "Theme",
-        "accentColor": "Accent color",
-        "accentColorDesc": "Main interactive color",
-        "layout": "Layout",
-        "sidebarWidth": "Sidebar width",
-        "sidebarWidthDesc": "Expanded state",
-        "collapsedByDefault": "Collapsed by default",
-        "collapsedByDefaultDesc": "Show icon only on start",
-        "density": "Density",
-        "densityDesc": "Spacing between elements",
-        "compact": "Compact",
-        "default": "Default",
-        "spacious": "Spacious",
-        "typography": "Typography",
-        "fontFamily": "Font family",
-        "fontSize": "Font size",
-        "languageRegion": "Language & Region",
-        "language": "Language",
-        "dateFormat": "Date format",
-        "numberFormat": "Number format"
-      }
-    }
-  },
   "user": {
     "role": {
       "admin": "Admin",
