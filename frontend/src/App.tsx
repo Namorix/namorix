@@ -8,6 +8,7 @@ import {
   DefaultPaths,
   GuardedRoute,
   isHasBeenConnected,
+  nmxToast,
   removeOnCloseHandler,
   useSignalRStatus,
 } from "@namorix/core"
@@ -41,9 +42,7 @@ export const App: React.FC = () => {
         }
         addOnCloseHandler(handler)
       })
-      .catch((err) => {
-        console.log(err)
-      })
+      .catch((err) => nmxToast.error(err))
       .finally(() => setChecking(false))
     return () => removeOnCloseHandler(handler)
   }, [])

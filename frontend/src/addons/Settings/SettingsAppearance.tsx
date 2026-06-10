@@ -26,13 +26,12 @@ import {
   useUserStore,
 } from "@namorix/core"
 
-const THEMES: NmxSelectData[] = [{ value: "dark", label: "Dark" }]
-
 export const SettingsAppearance: React.FC = () => {
   const { t } = useTranslation()
   const [options, setOptions] = useState<AppearanceOptionsResponse | null>(null)
   const [collapsedDefault, setCollapsedDefault] = useState(false)
   const [theme, setTheme] = useState(AppearanceDefaults.appearance_theme)
+  const [themes, setThemes] = useState<NmxSelectData[]>([])
   const [density, setDensity] = useState(AppearanceDefaults.appearance_density)
   const [fontFamily, setFontFamily] = useState(
     AppearanceDefaults.appearance_font_family,
@@ -59,30 +58,46 @@ export const SettingsAppearance: React.FC = () => {
   const isAdmin = user?.role === UserRole.Admin
 
   useLayoutEffect(() => {
-    settingsController.getAppearanceOptions().then(setOptions)
-    settingsController.getUserSettings().then((s) => {
-      setCollapsedDefault(s.appearance_collapsed === "true")
-      setDensity(s.appearance_density ?? AppearanceDefaults.appearance_density)
-      setFontFamily(
-        s.appearance_font_family ?? AppearanceDefaults.appearance_font_family,
+    settingsController
+      .getAppearanceOptions()
+      .then(setOptions)
+      .catch((err) => nmxToast.error(err))
+
+    settingsController
+      .getThemes()
+      .then((list) =>
+        setThemes(list.map((t) => ({ value: t.id, label: t.name }))),
       )
-      setFontSize(
-        s.appearance_font_size ?? AppearanceDefaults.appearance_font_size,
-      )
-      setAccentColor(
-        s.appearance_accent_color ??
-          AppearanceDefaults.appearance_accent_color!,
-      )
-      setLanguage(
-        s.appearance_language ?? AppearanceDefaults.appearance_language,
-      )
-      setTimeFormat(
-        s.appearance_time_format ?? AppearanceDefaults.appearance_time_format,
-      )
-      setDateFormat(
-        s.appearance_date_format ?? AppearanceDefaults.appearance_date_format,
-      )
-    })
+      .catch((err) => nmxToast.error(err))
+
+    settingsController
+      .getUserSettings()
+      .then((s) => {
+        setCollapsedDefault(s.appearance_collapsed === "true")
+        setDensity(
+          s.appearance_density ?? AppearanceDefaults.appearance_density,
+        )
+        setFontFamily(
+          s.appearance_font_family ?? AppearanceDefaults.appearance_font_family,
+        )
+        setFontSize(
+          s.appearance_font_size ?? AppearanceDefaults.appearance_font_size,
+        )
+        setAccentColor(
+          s.appearance_accent_color ??
+            AppearanceDefaults.appearance_accent_color!,
+        )
+        setLanguage(
+          s.appearance_language ?? AppearanceDefaults.appearance_language,
+        )
+        setTimeFormat(
+          s.appearance_time_format ?? AppearanceDefaults.appearance_time_format,
+        )
+        setDateFormat(
+          s.appearance_date_format ?? AppearanceDefaults.appearance_date_format,
+        )
+      })
+      .catch((err) => nmxToast.error(err))
   }, [])
 
   const densityIconMap: Record<string, NmxIconFontSymbol> = {
@@ -160,7 +175,7 @@ export const SettingsAppearance: React.FC = () => {
             label={t("addon.settings.appearance.theme")}
             description={t("addon.settings.appearance.themeDesc")}
           >
-            <NmxSelect value={theme} options={THEMES} onChange={setTheme} />
+            <NmxSelect value={theme} options={themes} onChange={setTheme} />
           </NmxSettingsRow>
           <NmxSettingsRow
             label={t("addon.settings.appearance.accentColor")}

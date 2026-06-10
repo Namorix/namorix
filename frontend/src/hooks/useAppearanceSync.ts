@@ -2,6 +2,7 @@ import { useEffect } from "react"
 import {
   type ConfigChanged,
   NMX_APPEARANCE_DEFAULTS_KEY,
+  nmxToast,
   SignalREvent,
   type UserSettingsChanged,
   useSignalREvent,
@@ -14,15 +15,15 @@ export function useAppearanceSync() {
 
   useEffect(() => {
     if (!user) {
-      loadAppearanceSystem().catch(() => {})
+      loadAppearanceSystem().catch((err) => nmxToast.error(err))
     } else {
-      authController.loadAppearance().catch(() => {})
+      authController.loadAppearance().catch((err) => nmxToast.error(err))
     }
   }, [user])
 
   useSignalREvent(SignalREvent.SystemConfigChanged, (data: ConfigChanged) => {
     if (data.key === NMX_APPEARANCE_DEFAULTS_KEY) {
-      loadAppearanceSystem().catch(() => {})
+      loadAppearanceSystem().catch((err) => nmxToast.error(err))
     }
   })
 
@@ -30,7 +31,7 @@ export function useAppearanceSync() {
     SignalREvent.UserSettingsChanged,
     (data: UserSettingsChanged) => {
       if (user?.id === data.userId) {
-        authController.loadAppearance().catch(() => {})
+        authController.loadAppearance().catch((err) => nmxToast.error(err))
       }
     },
   )

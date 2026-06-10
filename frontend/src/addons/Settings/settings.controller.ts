@@ -1,10 +1,12 @@
 import {
   ApiError,
   ApiSettingsRoutes,
+  ApiThemeRoutes,
   ApiUserRoutes,
   type AppearanceSettings,
   getApiBaseUrl,
   nmxHttp,
+  type ThemeManifest,
 } from "@namorix/core"
 import type {
   NmxAccentColorData,
@@ -102,5 +104,14 @@ export const settingsController = {
       .put({ currentPassword, newPassword })
       .json()
     if (!res.success) throw ApiError.fromResponse(res)
+  },
+
+  async getThemes(): Promise<ThemeManifest[]> {
+    const res = await nmxHttp
+      .url(getApiBaseUrl() + ApiThemeRoutes.themes)
+      .get()
+      .json<ThemeManifest[]>()
+
+    return res.success ? res.data : []
   },
 }
