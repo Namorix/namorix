@@ -12,33 +12,45 @@ export const NmxAlertDialog = ({
   open,
   title,
   description,
+  size = "md",
   confirmLabel,
   cancelLabel,
+  closeLabel,
   onConfirm,
   onCancel,
+  onClose,
   loading = false,
+  className,
+  children,
 }: NmxAlertDialogProps) => {
   const { t } = useTranslation()
   const confirm = confirmLabel ?? t("core:ui.alertDialog.confirm", "Confirm")
-  const cancel = cancelLabel ?? t("core:ui.alertDialog.cancel", "Cancel")
+  const cancel =
+    closeLabel ??
+    (onClose ? t("core:ui.alertDialog.close", "Close") : null) ??
+    cancelLabel ??
+    t("core:ui.alertDialog.cancel", "Cancel")
 
   return (
     <NmxDialog
       open={open}
-      onClose={loading ? undefined : onCancel}
-      size="sm"
+      onClose={loading ? undefined : (onClose ?? onCancel)}
+      size={size}
       dismissable={!loading}
+      className={className}
     >
-      <NmxDialogHeader title={title} onClose={loading ? undefined : onCancel} />
-      <NmxDialogBody>{description}</NmxDialogBody>
+      <NmxDialogHeader
+        title={title}
+        onClose={loading ? undefined : (onClose ?? onCancel)}
+      />
+      <NmxDialogBody>{children ?? description}</NmxDialogBody>
       <NmxDialogFooter>
         <NmxButton
           variant="ghost"
           semantic="error"
           label={cancel}
-          onClick={onCancel}
+          onClick={onClose ?? onCancel}
           disabled={loading}
-          shouldRender={!!onCancel}
           className="nmx-dialog__button"
         />
         <NmxButton
@@ -46,6 +58,7 @@ export const NmxAlertDialog = ({
           label={confirm}
           onClick={onConfirm}
           disabled={loading}
+          shouldRender={!!onConfirm}
           className="nmx-dialog__button"
         />
       </NmxDialogFooter>

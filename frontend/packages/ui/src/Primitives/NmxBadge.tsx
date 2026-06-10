@@ -5,12 +5,14 @@ import { cx, cxSemantic } from "../utils"
 interface NmxBadgeProps
   extends WithBaseProps, WithSemanticColor, WithUppercase {
   bgEnabled?: boolean
+  size?: "sm" | "md"
 }
 
 export const NmxBadge: React.FC<NmxBadgeProps> = ({
   semantic = "info",
   bgEnabled = true,
   uppercase = true,
+  size = "md",
   shouldRender = true,
   children,
   className,
@@ -28,6 +30,7 @@ export const NmxBadge: React.FC<NmxBadgeProps> = ({
         cxSemantic("nmx-badge", semantic),
         { "nmx-badge--bg": bgEnabled },
         { "nmx-badge--uppercase": uppercase },
+        size && `nmx-badge--${size}`,
         className,
       )}
     >

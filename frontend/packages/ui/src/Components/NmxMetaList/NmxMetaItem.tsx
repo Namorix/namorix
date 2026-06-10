@@ -5,13 +5,19 @@ import React from "react"
 interface NmxMetaItemProps extends WithBaseProps, WithSemanticColor, WithMuted {
   label?: string
   value?: string
+  isBlockMessage?: boolean
+  alignValue?: "start" | "end"
+  classValue?: string
 }
 
 export const NmxMetaItem: React.FC<NmxMetaItemProps> = ({
   label,
   value,
+  isBlockMessage = false,
+  alignValue = "start",
   semantic,
   muted,
+  classValue,
   shouldRender = true,
   children,
   className,
@@ -22,17 +28,26 @@ export const NmxMetaItem: React.FC<NmxMetaItemProps> = ({
   }
 
   return (
-    <div {...rest} className={cx("nmx-meta-list__item", className)}>
+    <div
+      {...rest}
+      className={cx(
+        "nmx-meta-list__item",
+        { "nmx-meta-list--block": isBlockMessage },
+        className,
+      )}
+    >
       {label && <span className="nmx-meta-list__item-label">{label}</span>}
       {(value || children) && (
         <span
           className={cx(
             "nmx-meta-list__item-value",
+            { "nmx-meta-list__item-value--end": alignValue === "end" },
             cxSemantic(
               "nmx-meta-list__item-value",
               !muted ? semantic : undefined,
             ),
             cxMuted("nmx-meta-list__item-value", muted),
+            classValue,
           )}
         >
           {value ? value : children}
