@@ -3,16 +3,13 @@ import React, { useCallback, useEffect, useRef, useState } from "react"
 import { trafficController, type TrafficLog } from "./traffic.controller"
 import { useTranslation } from "react-i18next"
 import type { NmxDataTableColumn, NmxDataTableFallback } from "@namorix/ui"
+import { methodToSemantic, statusToSemantic } from "./utils"
 import {
   formatDuration,
   formatSize,
-  formatTimestamp,
-  methodToSemantic,
-  statusToSemantic,
-} from "./utils"
-import {
   SignalREvent,
   SignalRGroups,
+  useDateTimeFormat,
   usePageSize,
   useSignalREvent,
   useSignalRGroup,
@@ -30,6 +27,7 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
   live,
 }) => {
   const { t } = useTranslation()
+  const { timestamp } = useDateTimeFormat()
   const { pageSize, setPageSize, options: pageSizeOptions } = usePageSize()
   const [logs, setLogs] = useState<TrafficLog[]>([])
   const [page, setPage] = useState(1)
@@ -139,7 +137,7 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
     },
     {
       header: t("addon.networkTraffic.logs.timestamp"),
-      renderCell: (row) => formatTimestamp(row.timestamp),
+      renderCell: (row) => timestamp(row.timestamp),
       grow: 2,
       disableEllipsisCell: true,
       hideBelow: "lg",

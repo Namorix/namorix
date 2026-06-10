@@ -17,24 +17,3 @@ export function statusToSemantic(code: number): NmxSemanticColor {
   if (code >= 300) return "info"
   return "success"
 }
-
-export function formatDuration(ms: number): string {
-  return ms >= 1000 ? `${(ms / 1000).toFixed(2)}s` : `${ms}ms`
-}
-
-export function formatSize(bytes: number): string {
-  return bytes >= 1024 ? `${(bytes / 1024).toFixed(1)}KB` : `${bytes}B`
-}
-
-export function formatTimestamp(ts: string): string {
-  const d = new Date(ts)
-
-  const hh = String(d.getHours()).padStart(2, "0")
-  const mm = String(d.getMinutes()).padStart(2, "0")
-  const ss = String(d.getSeconds()).padStart(2, "0")
-  const dd = String(d.getDate()).padStart(2, "0")
-  const mo = String(d.getMonth() + 1).padStart(2, "0")
-  const yyyy = d.getFullYear()
-
-  return `${hh}:${mm}:${ss} - ${dd}/${mo}/${yyyy}`
-}

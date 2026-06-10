@@ -9,6 +9,7 @@ import {
   type LogEntry,
   type LogLevel,
   type LogGroup,
+  useDateTimeFormat,
 } from "@namorix/core"
 import {
   NmxBadge,
@@ -26,7 +27,6 @@ import {
   NmxButtonLive,
 } from "@namorix/ui"
 import { logController } from "./log.controller"
-import { formatTimestamp } from "../NetworkTraffic/utils"
 
 const LEVEL_CHIPS: Array<{
   value: string
@@ -70,6 +70,7 @@ const GROUP_TYPES: Record<
 
 export const LogViewer: React.FC = () => {
   const { t } = useTranslation()
+  const { timestamp } = useDateTimeFormat()
   const { pageSize, setPageSize, options: pageSizeOptions } = usePageSize()
   const [entries, setEntries] = useState<LogEntry[]>([])
   const [total, setTotal] = useState(0)
@@ -161,7 +162,7 @@ export const LogViewer: React.FC = () => {
     },
     {
       header: t("addon.logViewer.timestamp"),
-      renderCell: (row) => formatTimestamp(row.timestamp),
+      renderCell: (row) => timestamp(row.timestamp),
       grow: 1,
       disableEllipsisCell: true,
       hideBelow: "lg",

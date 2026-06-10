@@ -15,6 +15,7 @@ import {
   applyAppearanceTokens,
   AppearanceDefaults,
 } from "@namorix/core"
+import i18next from "i18next"
 
 async function login(
   username: string,
@@ -53,7 +54,6 @@ async function logout(): Promise<void> {
 }
 
 async function loadAppearance(res?: ApiResponse<AppearanceSettings>) {
-  console.log("load")
   if (!res) {
     res = await nmxHttp
       .url(getApiBaseUrl() + ApiUserRoutes.settings)
@@ -66,6 +66,10 @@ async function loadAppearance(res?: ApiResponse<AppearanceSettings>) {
 
     setAppearanceStore(merged)
     applyAppearanceTokens(merged)
+
+    if (i18next.language !== merged.appearance_language) {
+      await i18next.changeLanguage(merged.appearance_language)
+    }
 
     if (merged.appearance_theme) {
       await applyTheme(merged.appearance_theme)

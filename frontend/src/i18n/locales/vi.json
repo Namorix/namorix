@@ -1,1 +1,10 @@
-{}
+{
+  "addon": {
+    "about": {
+      "title": "Thông tin"
+    },
+    "settings": {
+      "title": "Cài đặt"
+    }
+  }
+}
