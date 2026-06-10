@@ -3,7 +3,7 @@ import { App } from "./App"
 import { Provider } from "react-redux"
 import { store } from "./store"
 import { NmxHostContext, NmxToastProvider } from "@namorix/ui"
-import { useAppearanceSync } from "./hooks/useAppearanceSync"
+import { useAppearanceSync } from "./hooks"
 
 export const Root = () => {
   useEffect(() => {

@@ -1,5 +1,6 @@
-import { memo } from "react"
+import { memo, type RefObject } from "react"
 import {
+  NmxBadge,
   NmxIconFont,
   NmxIconFontSymbol,
   NmxIconSvg,
@@ -8,6 +9,7 @@ import {
 import { TaskbarAppButton } from "./TaskbarAppButton"
 import type { WindowId } from "../../store"
 import type { SignalRStatus } from "@namorix/core"
+import { NotificationPanel } from "./NotificationPanel"
 
 interface TaskViewProps {
   order: WindowId[]
@@ -16,10 +18,27 @@ interface TaskViewProps {
   signalStatus: SignalRStatus
   onStartClick: () => void
   onAppClick: (id: WindowId) => void
+  unreadCount: string
+  isNotifPanelOpen: boolean
+  onNotificationClick: () => void
+  onViewAllNotifs: () => void
+  panelRef: RefObject<HTMLDivElement | null>
 }
 
 export const TaskbarView = memo<TaskViewProps>(
-  ({ order, time, date, signalStatus, onStartClick, onAppClick }) => {
+  ({
+    order,
+    time,
+    date,
+    signalStatus,
+    onStartClick,
+    onAppClick,
+    unreadCount,
+    isNotifPanelOpen,
+    onNotificationClick,
+    onViewAllNotifs,
+    panelRef,
+  }) => {
     return (
       <div className="nmx-taskbar">
         <div className="nmx-taskbar__inner">
@@ -37,11 +56,25 @@ export const TaskbarView = memo<TaskViewProps>(
             ))}
           </div>
 
-          <div className="nmx-taskbar__tray">
-            <NmxIconFont
-              symbol={NmxIconFontSymbol.NOTIFICATION}
-              className="nmx-taskbar__icon-notification"
-            />
+          <div className="nmx-taskbar__tray" ref={panelRef}>
+            <div className="nmx-taskbar__notification-wrapper">
+              <NmxIconFont
+                symbol={NmxIconFontSymbol.NOTIFICATION}
+                className="nmx-taskbar__icon-notification"
+                onClick={onNotificationClick}
+              />
+              <NmxBadge
+                size="sm"
+                semantic="error"
+                className="nmx-taskbar__notification-badge"
+                shouldRender={unreadCount !== "0"}
+              >
+                {unreadCount}
+              </NmxBadge>
+            </div>
+            {isNotifPanelOpen && (
+              <NotificationPanel onViewAll={onViewAllNotifs} />
+            )}
 
             <NmxIconFont
               symbol={NmxIconFontSymbol.LINK}

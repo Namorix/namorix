@@ -1,11 +1,17 @@
 import { configureStore } from "@reduxjs/toolkit"
-import { launcherReducer, taskbarReducer, windowsReducer } from "./slices"
+import {
+  launcherReducer,
+  notificationsReducer,
+  taskbarReducer,
+  windowsReducer,
+} from "./slices"
 
 export const store = configureStore({
   reducer: {
     windowsState: windowsReducer,
     launcher: launcherReducer,
     taskbar: taskbarReducer,
+    notifications: notificationsReducer,
   },
 })
 

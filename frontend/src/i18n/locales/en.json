@@ -266,7 +266,32 @@
     },
     "notificationCenter": {
       "title": "Notification Center",
-      "description": "View and manage system notifications and alerts"
+      "description": "View and manage system notifications and alerts",
+      "panel": {
+        "title": "Notifications",
+        "noNotifications": "No notifications",
+        "justNow": "just now",
+        "minAgo": "{{count}} min ago",
+        "hoursAgo": "{{count}} hours ago"
+      },
+      "filter": {
+        "all": "All",
+        "unread": "Unread"
+      },
+      "type": {
+        "info": "Info",
+        "success": "Success",
+        "warning": "Warning",
+        "error": "Error"
+      },
+      "action": {
+        "dismiss": "Dismiss",
+        "markRead": "Mark as read",
+        "markAllRead": "Mark all as read",
+        "loadMore": "Load more"
+      },
+      "empty": "No notifications yet",
+      "emptyDescription": "System notifications and alerts will appear here"
     },
     "packageCenter": {
       "title": "Package Center",
