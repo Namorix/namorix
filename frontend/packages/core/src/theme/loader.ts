@@ -42,3 +42,10 @@ export async function loadTheme(cssId: string, cssPath: string): Promise<void> {
     })
   })
 }
+
+export function applyTheme(themeId: string): Promise<void> {
+  const cssUrl = ThemeRoutes.themes
+    .replace("{id}", themeId)
+    .replace("{path}", themeId)
+  return loadTheme(themeId, cssUrl)
+}
