@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { AuthView } from "../components"
 import {
   type NmxFormSubmitEvent,
@@ -36,6 +36,10 @@ export const Register: React.FC = () => {
   const [busy, setBusy] = useState(false)
   const needsRegister = useNeedsRegisterStore()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    nmxToast.warning(t("auth.register.initialRegistration"))
+  }, [])
 
   const handleSubmit = async (e: NmxFormSubmitEvent) => {
     e.preventDefault()
@@ -76,9 +80,7 @@ export const Register: React.FC = () => {
     try {
       await authController.register(username, password, email, name)
       nmxToast.success(t("auth.register.success"))
-      setTimeout(() => {
-        navigate(DefaultPaths.LOGIN)
-      }, 2000)
+      navigate(DefaultPaths.LOGIN)
     } catch (err: unknown) {
       nmxToast.error(resolveError(t, err, "auth.register.errors.generic"))
     }

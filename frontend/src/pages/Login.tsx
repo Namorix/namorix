@@ -69,9 +69,7 @@ export const Login: React.FC = () => {
     try {
       await authController.login(username, password, rememberMe)
       nmxToast.success(t("auth.login.success"))
-      setTimeout(() => {
-        navigate(DefaultPaths.HOME)
-      }, 2000)
+      navigate(DefaultPaths.HOME)
     } catch (err: unknown) {
       nmxToast.error(resolveError(t, err, "auth.login.errors.generic"))
     }

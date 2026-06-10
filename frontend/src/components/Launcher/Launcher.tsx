@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import { useLauncherSearch } from "./useLauncherSearch"
 import { LauncherView } from "./LauncherView"
 import { useOpenWindow } from "../WindowFrame"
@@ -15,9 +15,12 @@ import { authController } from "../../controllers"
 import { useNavigate } from "react-router-dom"
 import { nmxToast, useUserStore } from "@namorix/core"
 import { useTranslation } from "react-i18next"
+import { NmxAlertDialog } from "@namorix/ui"
 
 export const Launcher: React.FC = () => {
   const { t } = useTranslation()
+  const [confirmLogout, setConfirmLogout] = useState(false)
+
   const dispatch = useAppDispatch()
   const openWindow = useOpenWindow()
   const isOpen = useAppSelector(selectorLauncherIsOpen)
@@ -69,24 +72,38 @@ export const Launcher: React.FC = () => {
     close()
   }
 
-  const handleLogout = async () => {
+  const handleLogoutClick = () => setConfirmLogout(true)
+  const handleLogoutConfirm = async () => {
     close()
     dispatch(closeAllWindows())
+    setConfirmLogout(false)
     await authController.logout()
     nmxToast.success(t("auth.logout.success"))
     navigate("/login")
   }
 
   return (
-    <LauncherView
-      items={items}
-      query={query}
-      user={user}
-      onQueryChange={setQuery}
-      onLogout={handleLogout}
-      onOpenApp={handleOpenApp}
-      searchRef={searchRef}
-      onClose={close}
-    />
+    <>
+      <LauncherView
+        items={items}
+        query={query}
+        user={user}
+        onQueryChange={setQuery}
+        onLogout={handleLogoutClick}
+        onOpenApp={handleOpenApp}
+        searchRef={searchRef}
+        onClose={close}
+      />
+      <NmxAlertDialog
+        open={confirmLogout}
+        title={t("auth.logout.confirmTitle")}
+        description={t("auth.logout.confirmDescription")}
+        confirmLabel={t("auth.logout.confirm")}
+        cancelLabel={t("auth.logout.cancel")}
+        onConfirm={handleLogoutConfirm}
+        onClose={() => setConfirmLogout(false)}
+        size="sm"
+      />
+    </>
   )
 }

@@ -1,4 +1,11 @@
-import { NmxBadge, NmxDataTable, NmxPagination } from "@namorix/ui"
+import {
+  NmxAlertDialog,
+  NmxBadge,
+  NmxDataTable,
+  NmxMetaItem,
+  NmxMetaList,
+  NmxPagination,
+} from "@namorix/ui"
 import React, { useCallback, useEffect, useRef, useState } from "react"
 import { trafficController, type TrafficLog } from "./traffic.controller"
 import { useTranslation } from "react-i18next"
@@ -35,6 +42,8 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
   const [elapsedMs, setElapsedMs] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<unknown>()
+  const [selectedLog, setSelectedLog] = useState<TrafficLog | null>(null)
+
   const prevFilterRef = useRef(filterSearch)
 
   const fetchLogs = useCallback(
@@ -171,7 +180,53 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
         rows={logs}
         fallbackConditions={fallbackConditions}
         className="nmx-addon-page__data-table"
+        clickableRows={true}
+        onRowClick={(log) => setSelectedLog(log)}
       />
+      <NmxAlertDialog
+        open={!!selectedLog}
+        title={timestamp(selectedLog?.timestamp ?? "")}
+        onClose={() => setSelectedLog(null)}
+        size="md"
+      >
+        {selectedLog && (
+          <NmxMetaList>
+            <NmxMetaItem label={t("addon.networkTraffic.logs.statusCode")}>
+              <NmxBadge
+                semantic={statusToSemantic(selectedLog.statusCode)}
+                bgEnabled={false}
+                size="sm"
+              >
+                {selectedLog.statusCode}
+              </NmxBadge>
+            </NmxMetaItem>
+            <NmxMetaItem label={t("addon.networkTraffic.logs.method")}>
+              <NmxBadge
+                semantic={methodToSemantic(selectedLog.method)}
+                size="sm"
+              >
+                {selectedLog.method}
+              </NmxBadge>
+            </NmxMetaItem>
+            <NmxMetaItem
+              label={t("addon.networkTraffic.logs.path")}
+              value={selectedLog.path}
+            />
+            <NmxMetaItem
+              label={t("addon.networkTraffic.logs.duration")}
+              value={formatDuration(selectedLog.durationMs)}
+            />
+            <NmxMetaItem
+              label={t("addon.networkTraffic.logs.size")}
+              value={formatSize(selectedLog.responseSizeBytes)}
+            />
+            <NmxMetaItem
+              label={t("addon.networkTraffic.logs.ip")}
+              value={selectedLog.ip ?? "-"}
+            />
+          </NmxMetaList>
+        )}
+      </NmxAlertDialog>
       {total > 0 && (
         <NmxPagination
           page={page}

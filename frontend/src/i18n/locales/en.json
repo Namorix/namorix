@@ -76,7 +76,11 @@
       "success": "Account created successfully. Taking you to login..."
     },
     "logout": {
-      "success": "Successfully logged out"
+      "success": "Successfully logged out",
+      "confirmTitle": "Logout",
+      "confirmDescription": "Are you sure you want to logout?",
+      "confirm": "Logout",
+      "cancel": "Cancel"
     }
   },
   "launcher": {

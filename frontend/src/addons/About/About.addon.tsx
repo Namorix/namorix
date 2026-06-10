@@ -13,7 +13,7 @@ registerAddon(
       localeKey: LocaleKeys.about,
       icon: NmxIconSvgSymbol.APP_ABOUT,
       defaultWidth: 450,
-      defaultHeight: 750,
+      defaultHeight: 770,
     },
     About,
   ),

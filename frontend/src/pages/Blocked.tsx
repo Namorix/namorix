@@ -75,10 +75,12 @@ export const Blocked: React.FC<BlockedProps> = ({ code }) => {
             label={t("blocked.meta.label.status")}
             value={t("blocked.meta.value.blocked")}
             semantic="error"
+            alignValue="end"
           />
           <NmxMetaItem
             label={t("blocked.meta.label.timestamp")}
             value={new Date().toISOString()}
+            alignValue="end"
           />
         </NmxMetaList>
         {code === HttpErrorCodes.CONNECTION_LOST && (

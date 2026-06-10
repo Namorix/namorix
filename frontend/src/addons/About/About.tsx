@@ -45,16 +45,19 @@ export const About: React.FC = () => {
             label={t("addon.about.meta.author")}
             value="IzeroCs"
             className="nmx-addon-about__meta-item"
+            alignValue="end"
           />
           <NmxMetaItem
             label={t("addon.about.meta.license")}
             value="AGPL-3.0"
             className="nmx-addon-about__meta-item"
+            alignValue="end"
           />
           <NmxMetaItem
             label={t("addon.about.meta.stack")}
             value="React · .NET 8 · SQLite"
             className="nmx-addon-about__meta-item"
+            alignValue="end"
           />
         </NmxMetaList>
 
@@ -65,11 +68,13 @@ export const About: React.FC = () => {
             label="Namorix.Core"
             value={__BACKEND_CORE_VERSION__}
             className="nmx-addon-about__meta-item"
+            alignValue="end"
           />
           <NmxMetaItem
             label="Namorix.Server"
             value={__BACKEND_SERVER_VERSION__}
             className="nmx-addon-about__meta-item"
+            alignValue="end"
           />
         </NmxMetaList>
 
@@ -80,16 +85,19 @@ export const About: React.FC = () => {
             label="@namorix/core"
             value={__CORE_VERSION__}
             className="nmx-addon-about__meta-item"
+            alignValue="end"
           />
           <NmxMetaItem
             label="@namorix/styles"
             value={__STYLES_VERSION__}
             className="nmx-addon-about__meta-item"
+            alignValue="end"
           />
           <NmxMetaItem
             label="@namorix/ui"
             value={__UI_VERSION__}
             className="nmx-addon-about__meta-item"
+            alignValue="end"
           />
         </NmxMetaList>
 

@@ -25,6 +25,9 @@ import {
   NmxSelectMultiple,
   NmxButtonRefresh,
   NmxButtonLive,
+  NmxAlertDialog,
+  NmxMetaList,
+  NmxMetaItem,
 } from "@namorix/ui"
 import { logController } from "./log.controller"
 
@@ -84,6 +87,7 @@ export const LogViewer: React.FC = () => {
   const prevFilterRef = useRef("")
   const [live, setLive] = useState(true)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [selectedLog, setSelectedLog] = useState<LogEntry | null>(null)
 
   const fetchLogs = useCallback(
     async (pg: number, lvls: string[], src: string, size: number) => {
@@ -125,7 +129,10 @@ export const LogViewer: React.FC = () => {
       header: t("addon.logViewer.level"),
       renderCell: (row) => {
         return (
-          <NmxBadge semantic={LEVEL_TYPES[row.level]?.semantic ?? "info"}>
+          <NmxBadge
+            semantic={LEVEL_TYPES[row.level]?.semantic ?? "info"}
+            size="sm"
+          >
             {(LEVEL_TYPES[row.level]?.level ?? "info").toUpperCase()}
           </NmxBadge>
         )
@@ -138,7 +145,10 @@ export const LogViewer: React.FC = () => {
     {
       header: t("addon.logViewer.group"),
       renderCell: (row) => (
-        <NmxBadge semantic={GROUP_TYPES[row.group]?.semantic ?? "info"}>
+        <NmxBadge
+          semantic={GROUP_TYPES[row.group]?.semantic ?? "info"}
+          size="sm"
+        >
           {GROUP_TYPES[row.group]?.group}
         </NmxBadge>
       ),
@@ -231,10 +241,47 @@ export const LogViewer: React.FC = () => {
         rows={entries}
         fallbackConditions={fallbackConditions}
         clickableRows={true}
-        onRowClick={(row) => {
-          console.log(row)
-        }}
+        onRowClick={(row) => setSelectedLog(row)}
       />
+
+      <NmxAlertDialog
+        open={!!selectedLog}
+        title={timestamp(selectedLog?.timestamp ?? "")}
+        onClose={() => setSelectedLog(null)}
+        size="lg"
+      >
+        {selectedLog && (
+          <NmxMetaList>
+            <NmxMetaItem label={t("addon.logViewer.level")}>
+              <NmxBadge
+                semantic={LEVEL_TYPES[selectedLog.level]?.semantic ?? "info"}
+                size="sm"
+              >
+                {(
+                  LEVEL_TYPES[selectedLog.level]?.level ?? "info"
+                ).toUpperCase()}
+              </NmxBadge>
+            </NmxMetaItem>
+            <NmxMetaItem label={t("addon.logViewer.group")}>
+              <NmxBadge
+                semantic={GROUP_TYPES[selectedLog.group]?.semantic ?? "info"}
+                size="sm"
+              >
+                {GROUP_TYPES[selectedLog.group]?.group ?? "misc"}
+              </NmxBadge>
+            </NmxMetaItem>
+            <NmxMetaItem
+              label={t("addon.logViewer.source")}
+              value={selectedLog.source}
+            />
+            <NmxMetaItem
+              label={t("addon.logViewer.message")}
+              value={selectedLog.message}
+              isBlockMessage
+            />
+          </NmxMetaList>
+        )}
+      </NmxAlertDialog>
 
       {total > 0 && (
         <NmxPagination

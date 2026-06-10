@@ -110,10 +110,11 @@ export const SettingsAccount: React.FC = () => {
             </div>
             <NmxMetaList className="nmx-addon-setting__meta-list">
               <NmxMetaItem
+                label={t("addon.settings.account.username")}
                 value={user?.username}
-                className="nmx-addon-setting__meta-value"
+                classValue="nmx-addon-setting__meta-value"
               />
-              <NmxMetaItem>
+              <NmxMetaItem label={t("addon.settings.account.role")}>
                 <NmxBadge
                   semantic={user?.role === UserRole.Admin ? "success" : "info"}
                 >
