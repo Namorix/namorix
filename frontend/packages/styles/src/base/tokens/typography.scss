@@ -21,6 +21,7 @@
 
   --nmx-font-size-unit: var(--nmx-font-size-unit-md);
 
+  --nmx-font-size-2xs:  calc(var(--nmx-font-size-unit) * 2.5);
   --nmx-font-size-xs:   calc(var(--nmx-font-size-unit) * 3);
   --nmx-font-size-sm:   calc(var(--nmx-font-size-unit) * 3.5);
   --nmx-font-size-md:   calc(var(--nmx-font-size-unit) * 4);

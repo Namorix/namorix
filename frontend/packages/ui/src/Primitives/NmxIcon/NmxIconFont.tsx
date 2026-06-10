@@ -5,10 +5,12 @@ import { cx } from "../../utils"
 
 interface NmxIconFontProps extends WithBaseProps {
   symbol: NmxIconFontSymbol
+  onClick?: (e: React.MouseEvent) => void
 }
 
 export const NmxIconFont: React.FC<NmxIconFontProps> = ({
   symbol,
+  onClick,
   shouldRender = true,
   className,
   ...rest
@@ -22,6 +24,7 @@ export const NmxIconFont: React.FC<NmxIconFontProps> = ({
       {...rest}
       className={cx("nmx-icon-font", symbol, className)}
       aria-hidden="true"
+      onClick={onClick}
     ></span>
   )
 }

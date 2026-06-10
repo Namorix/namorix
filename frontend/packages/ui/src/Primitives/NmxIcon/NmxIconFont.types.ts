@@ -30,6 +30,7 @@ export const NmxIconFontSymbol = {
   DENSITY_COMPACT: "ic-density-compact",
   DENSITY_DEFAULT: "ic-density-default",
   DENSITY_SPACIOUS: "ic-density-spacious",
+  MARK_ALL: "ic-mark-all",
 } as const
 
 export type NmxIconFontSymbol =

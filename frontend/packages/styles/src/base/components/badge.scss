@@ -21,7 +21,7 @@
     background: color-mix(
       in oklab,
       var(--nmx-badge-bg, var(--nmx-color-primary)) 14%,
-      transparent
+      var(--nmx-color-surface)
     );
   }
 

@@ -7,7 +7,7 @@
 
 @font-face {
   font-family: "icomoon";
-  src: url("/public/fonts/icomoon/fonts/icomoon.ttf?q2097z") format("truetype"), url("/public/fonts/icomoon/fonts/icomoon.woff?q2097z") format("woff"), url("/public/fonts/icomoon/fonts/icomoon.svg?q2097z#icomoon") format("svg");
+  src: url("/public/fonts/icomoon/fonts/icomoon.ttf?epu0nj") format("truetype"), url("/public/fonts/icomoon/fonts/icomoon.woff?epu0nj") format("woff"), url("/public/fonts/icomoon/fonts/icomoon.svg?epu0nj#icomoon") format("svg");
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -24,6 +24,9 @@
   /* Better Font Rendering =========== */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+.ic-mark-all:before {
+  content: "\e91f";
 }
 .ic-info:before {
   content: "\e91e";
@@ -992,7 +995,7 @@ textarea,
   --nmx-badge-text: var(--nmx-color-success);
 }
 .nmx-badge--bg {
-  background: color-mix(in oklab, var(--nmx-badge-bg, var(--nmx-color-primary)) 14%, transparent);
+  background: color-mix(in oklab, var(--nmx-badge-bg, var(--nmx-color-primary)) 14%, var(--nmx-color-surface));
 }
 .nmx-badge--uppercase {
   text-transform: uppercase;
@@ -2251,6 +2254,8 @@ textarea,
   --nmx-z-tooltip: 300;
   --nmx-z-toast: 400;
   --nmx-z-dialog: 1000;
+  --nmx-z-launcher: 9998;
+  --nmx-z-notification: 9998;
 }
 :root {
   --nmx-icon-logo: url("/icons/logo.svg");
@@ -2328,6 +2333,7 @@ textarea,
   --nmx-font-size-preview-md: calc(var(--nmx-font-size-unit-md) * 4); /* 16px  */
   --nmx-font-size-preview-lg: calc(var(--nmx-font-size-unit-lg) * 4); /* ~18px */
   --nmx-font-size-unit: var(--nmx-font-size-unit-md);
+  --nmx-font-size-2xs: calc(var(--nmx-font-size-unit) * 2.5);
   --nmx-font-size-xs: calc(var(--nmx-font-size-unit) * 3);
   --nmx-font-size-sm: calc(var(--nmx-font-size-unit) * 3.5);
   --nmx-font-size-md: calc(var(--nmx-font-size-unit) * 4);

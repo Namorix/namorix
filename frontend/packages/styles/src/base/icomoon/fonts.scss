@@ -3,9 +3,9 @@
 @font-face {
   font-family: '#{$icomoon-font-family}';
   src:
-    url('#{$icomoon-font-path}/#{$icomoon-font-family}.ttf?q2097z') format('truetype'),
-    url('#{$icomoon-font-path}/#{$icomoon-font-family}.woff?q2097z') format('woff'),
-    url('#{$icomoon-font-path}/#{$icomoon-font-family}.svg?q2097z##{$icomoon-font-family}') format('svg');
+    url('#{$icomoon-font-path}/#{$icomoon-font-family}.ttf?epu0nj') format('truetype'),
+    url('#{$icomoon-font-path}/#{$icomoon-font-family}.woff?epu0nj') format('woff'),
+    url('#{$icomoon-font-path}/#{$icomoon-font-family}.svg?epu0nj##{$icomoon-font-family}') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -26,6 +26,11 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.ic-mark-all {
+  &:before {
+    content: $ic-mark-all; 
+  }
+}
 .ic-info {
   &:before {
     content: $ic-info; 
