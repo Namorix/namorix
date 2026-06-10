@@ -25,6 +25,12 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 ## Recent Changes
 
+### 2026-06-10 (evening) — Theme registry cleanup, error catch audit, theme list from API
+
+- **@namorix/core (0.30.0 → 0.30.1)**: REMOVED `theme/registry.ts` — dead code (getAllThemes không bao giờ gọi). REMOVED `ThemeRoutes.builtin` / `registry.json` — source of truth chuyển sang backend. README.md — utils description updated.
+- **frontend (0.38.0 → 0.38.1)**: NEW `settingsController.getThemes()` + SettingsAppearance fetch themes từ API. FIX all `catch(() => {})` → `nmxToast.error(err)`. REMOVED `useTrafficGroup.ts` — dead code. REMOVED `frontend/packages/core/src/theme/registry.ts`. `App.tsx` — catch error handling.
+- **Namorix.Core/Namorix.Server (0.35.0 → 0.35.1)**: ThemeService trả về cả "light" + "dark" built-in themes.
+
 ### 2026-06-10 (later 2) — Core format utilities, useDateTimeFormat hook, i18n language sync
 
 - **@namorix/core (0.29.0 → 0.30.0)**: NEW `utils/format.ts` — centralized `formatDateTime`, `formatTimestamp`, `formatDuration`, `formatSize`. NEW `hooks/useDateTimeFormat.ts` — hook đọc time/date format từ appearance store, trả về `clock()`/`timestamp()` với reactive updates. NEW `getAppearanceStore()` getter.

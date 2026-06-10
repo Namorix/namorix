@@ -66,7 +66,7 @@ namorix/
 │   │   │       ├── toast/    # NmxToastBus event emitter, nmxToast singleton (.long/.short/.success/.error/.warning/.info)
 │   │   │       ├── theme/    # ThemeManifest types, loader (hot swap CSS), registry
 │   │   │       ├── types/    # ApiResponse, ValidationErrorMeta, error codes
-│   │   │       ├── utils/    # cx, dedupe, isMobile, sanitizePath
+│   │   │       ├── utils/    # cx, isMobile, sanitizePath, format
 │   │   │       ├── apiRoutes.ts
 │   │   │       ├── config.ts
 │   │   │       └── constants.ts

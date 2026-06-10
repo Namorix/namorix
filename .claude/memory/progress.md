@@ -125,12 +125,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.38.0 | M3 (useDateTimeFormat, format core utils, i18n language sync) |
-| @namorix/core | 0.30.0 | M3 (format.ts utilities, useDateTimeFormat hook, getAppearanceStore) |
+| frontend | 0.38.1 | M3 (Theme list API, error catch cleanup, remove dead code) |
+| @namorix/core | 0.30.1 | M3 (Remove registry.ts dead code, clean ThemeRoutes) |
 | @namorix/styles | 0.28.0 | M3 (accent.scss tokens, spacing/typography updates, theme CSS rebuilt) |
 | @namorix/ui | 0.21.2 | M3 (NmxDialog Esc key dismiss) |
-| Namorix.Core | 0.35.0 | M3 (IUserSettingsNotifier, DefaultAccentColor on ThemeManifest, TimeFormat) |
-| Namorix.Server | 0.35.0 | M3 (UserSettingsChanged SignalR event, theme default accent) |
+| Namorix.Core | 0.35.1 | M3 (Add "dark" to built-in theme list) |
+| Namorix.Server | 0.35.1 | M3 (ThemeService returns both light + dark) |
 
 ## Version Rules
 
@@ -150,6 +150,15 @@
 | Namorix.Server | Bug fixes, config tweaks | New endpoint, new middleware, auth feature |
 
 ## Version History
+
+### 2026-06-10 (evening) — Theme registry cleanup, error catch audit, theme list from API
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.30.0 → 0.30.1 | REMOVED: `theme/registry.ts` — dead code (getAllThemes không dùng). `apiRoutes.ts` — xóa `ThemeRoutes.builtin`. README.md — utils description. |
+| frontend | 0.38.0 → 0.38.1 | NEW: `SettingsAppearance.tsx` — fetch themes từ `GET /api/themes` thay hardcode. `settings.controller.ts` — thêm `getThemes()`. FIX: `App.tsx` — `.catch(console.log)` → `nmxToast.error`. `useAppearanceSync.ts` — `.catch(() => {})` → `nmxToast.error`. REMOVED: `useTrafficGroup.ts` — dead code. |
+| Namorix.Core | 0.35.0 → 0.35.1 | NEW: `ThemeService.cs` — thêm "dark" theme (chỉ có "light" trước đây). |
+| Namorix.Server | 0.35.0 → 0.35.1 | (version bump đồng bộ với Core) |
 
 ### 2026-06-10 (later 2) — Core format utilities, useDateTimeFormat hook, i18n language sync
 
