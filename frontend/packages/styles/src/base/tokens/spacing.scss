@@ -7,7 +7,11 @@
   --nmx-radius-half: 50%;
 
   /* Spacing */
-  --nmx-spacing-unit: 4px;
+  --nmx-spacing-unit-compact: 3px;
+  --nmx-spacing-unit-default: 4px;
+  --nmx-spacing-unit-spacious: 5px;
+
+  --nmx-spacing-unit: var(--nmx-spacing-unit-default);
   --nmx-spacing-xs: calc(var(--nmx-spacing-unit) * 1); /* 4px */
   --nmx-spacing-sm: calc(var(--nmx-spacing-unit) * 2); /* 8px */
   --nmx-spacing-md: calc(var(--nmx-spacing-unit) * 3); /* 12px */

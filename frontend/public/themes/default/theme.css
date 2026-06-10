@@ -2199,6 +2199,13 @@ textarea,
   }
 }
 :root {
+  --nmx-accent-color-blue: #378ADD;
+  --nmx-accent-color-green: #1D9E75;
+  --nmx-accent-color-purple: #7F77DD;
+  --nmx-accent-color-orange: #D85A30;
+  --nmx-accent-color-pink: #D4537E;
+}
+:root {
   /* Semantic */
   --nmx-color-trace: var(--nmx-color-slate-500);
   --nmx-color-debug: var(--nmx-color-violet-600);
@@ -2262,7 +2269,10 @@ textarea,
   --nmx-radius-full: 9999px;
   --nmx-radius-half: 50%;
   /* Spacing */
-  --nmx-spacing-unit: 4px;
+  --nmx-spacing-unit-compact: 3px;
+  --nmx-spacing-unit-default: 4px;
+  --nmx-spacing-unit-spacious: 5px;
+  --nmx-spacing-unit: var(--nmx-spacing-unit-default);
   --nmx-spacing-xs: calc(var(--nmx-spacing-unit) * 1); /* 4px */
   --nmx-spacing-sm: calc(var(--nmx-spacing-unit) * 2); /* 8px */
   --nmx-spacing-md: calc(var(--nmx-spacing-unit) * 3); /* 12px */
@@ -2289,7 +2299,9 @@ textarea,
   --nmx-rail-width-expanded-xl: 320px; /* sub-menu mở */
 }
 :root {
-  --nmx-font-sans: Inter, system-ui, sans-serif;
+  /** Fonts */
+  --nmx-font-family-system: Inter, system-ui, sans-serif;
+  --nmx-font-sans: var(--nmx-font-family-system);
   --nmx-font-mono: "JetBrains Mono", ui-monospace, monospace;
   --nmx-font-logo: Rajdhani, sans-serif;
   --nmx-font-chip: "DM Sans", sans-serif;
