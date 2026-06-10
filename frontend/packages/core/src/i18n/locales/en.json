@@ -41,7 +41,8 @@
     },
     "alertDialog": {
       "confirm": "Confirm",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "close": "Close"
     }
   },
   "user": {

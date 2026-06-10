@@ -43,6 +43,6 @@ export const authService: AuthChecker = {
 
   isRegistrationOpen: async () => {
     const status = await getAuthStatus()
-    return status.registerEnabled
+    return status.needsRegister || status.registerEnabled
   },
 }
