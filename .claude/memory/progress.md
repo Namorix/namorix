@@ -127,7 +127,7 @@
 |---------|---------|-----------|
 | frontend | 0.38.1 | M3 (Theme list API, error catch cleanup, remove dead code) |
 | @namorix/core | 0.30.1 | M3 (Remove registry.ts dead code, clean ThemeRoutes) |
-| @namorix/styles | 0.28.0 | M3 (accent.scss tokens, spacing/typography updates, theme CSS rebuilt) |
+| @namorix/styles | 0.28.1 | M3 (SVG icons moved to public/, absolute paths in CSS) |
 | @namorix/ui | 0.21.2 | M3 (NmxDialog Esc key dismiss) |
 | Namorix.Core | 0.35.1 | M3 (Add "dark" to built-in theme list) |
 | Namorix.Server | 0.35.1 | M3 (ThemeService returns both light + dark) |
@@ -150,6 +150,12 @@
 | Namorix.Server | Bug fixes, config tweaks | New endpoint, new middleware, auth feature |
 
 ## Version History
+
+### 2026-06-X — SVG icons moved to public, relative → absolute paths
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/styles | 0.28.0 → 0.28.1 | MODIFIED: `base/tokens/icons.scss` — SVG paths từ `../icons/` → `/icons/`. MODIFIED: `public/themes/*/theme.css` — rebuilt với absolute URLs. REMOVED: `base/icons/` — 10 SVG files moved to `frontend/public/icons/`. |
 
 ### 2026-06-10 (evening) — Theme registry cleanup, error catch audit, theme list from API
 

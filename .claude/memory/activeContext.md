@@ -25,6 +25,10 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 ## Recent Changes
 
+### 2026-06-X — SVG icons moved to public/, reduce CSS bundle size
+
+- **@namorix/styles (0.28.0 → 0.28.1)**: Moved 10 SVG icons from `packages/styles/src/base/icons/` → `frontend/public/icons/`. Changed paths in `tokens/icons.scss` from relative (`../icons/`) to absolute (`/icons/`). Theme CSS rebuilt — SVGs no longer inlined as base64, served as static files instead.
+
 ### 2026-06-10 (evening) — Theme registry cleanup, error catch audit, theme list from API
 
 - **@namorix/core (0.30.0 → 0.30.1)**: REMOVED `theme/registry.ts` — dead code (getAllThemes không bao giờ gọi). REMOVED `ThemeRoutes.builtin` / `registry.json` — source of truth chuyển sang backend. README.md — utils description updated.
