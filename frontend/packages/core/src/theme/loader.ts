@@ -61,18 +61,24 @@ export function applyAppearanceTokens(settings: AppearanceSettings) {
     )
   }
 
-  root.style.setProperty(
-    "--nmx-spacing-unit",
-    `var(--nmx-spacing-unit-${settings.appearance_density})`,
-  )
+  if (settings.appearance_density) {
+    root.style.setProperty(
+      "--nmx-spacing-unit",
+      `var(--nmx-spacing-unit-${settings.appearance_density})`,
+    )
+  }
 
-  root.style.setProperty(
-    "--nmx-font-sans",
-    `var(--nmx-font-family-${settings.appearance_font_family})`,
-  )
+  if (settings.appearance_font_family) {
+    root.style.setProperty(
+      "--nmx-font-sans",
+      `var(--nmx-font-family-${settings.appearance_font_family})`,
+    )
+  }
 
-  root.style.setProperty(
-    "--nmx-font-size-unit",
-    `var(--nmx-font-size-unit-${settings.appearance_font_size})`,
-  )
+  if (settings.appearance_font_size) {
+    root.style.setProperty(
+      "--nmx-font-size-unit",
+      `var(--nmx-font-size-unit-${settings.appearance_font_size})`,
+    )
+  }
 }
