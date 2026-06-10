@@ -47,6 +47,12 @@ public class SetSettingsSchema : IValidationSchema
         AllowedValues = [.. AppearanceOptionsData.Default.Languages.Select(c => c.Value)]
     };
     
+    public AllowedValuesValidationRule AppearanceTimeFormat => new()
+    {
+        IsRequired = true,
+        AllowedValues = [.. AppearanceOptionsData.Default.TimeFormats.Select(c => c.Value)]
+    };
+    
     public AllowedValuesValidationRule AppearanceDateFormat => new()
     {
         IsRequired = true,

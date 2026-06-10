@@ -17,4 +17,4 @@ public record LogEntryRecord(
 );
 
 public record ConfigChanged(string Key);
-public record ThemeChanged(string ThemeId);
+public record UserSettingsChanged(int UserId);

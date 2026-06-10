@@ -9,12 +9,15 @@ public class AppearanceOptionsData
     public List<SelectOptionData> Densities { get; private init; } = [];
     public List<FontSizeOptionData> FontSizes { get; private init; } = [];
     public List<SelectOptionData> Languages { get; private init; } = [];
+    public List<SelectOptionData> TimeFormats { get; private init; } = [];
     public List<SelectOptionData> DateFormats { get; private init; } = [];
+
 
     public static AppearanceOptionsData Default => new()
     {
         AccentColors =
         [
+            new AccentColorData { Id = "default", Color = "#FFFFFF" },
             new AccentColorData { Id = "blue", Color = "#378ADD" },
             new AccentColorData { Id = "green", Color = "#1D9E75" },
             new AccentColorData { Id = "purple", Color = "#7F77DD" },
@@ -41,6 +44,11 @@ public class AppearanceOptionsData
         [
             new SelectOptionData { Value = "en", Label = "English" },
             new SelectOptionData { Value = "vi", Label = "Tiếng Việt" },
+        ],
+        TimeFormats =
+        [
+            new SelectOptionData { Value = "HH:mm", Label = "24-hour" },
+            new SelectOptionData { Value = "hh:mm A", Label = "12-hour" },
         ],
         DateFormats =
         [

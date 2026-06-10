@@ -3,11 +3,13 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Namorix.Adapters.Persistence;
 using Namorix.Core.Constants;
+using Namorix.Core.Infrastructure;
 using Namorix.Core.Models;
 
 namespace Namorix.Adapters.Services;
 
-public class UserSettingsService(AppDbContext dbContext, IMemoryCache memoryCache)
+public class UserSettingsService(AppDbContext dbContext, IMemoryCache memoryCache,
+    IUserSettingsNotifier userSettingsNotifier)
 {
     private const string CacheKeyPrefix = "user_settings_";
     
@@ -31,6 +33,7 @@ public class UserSettingsService(AppDbContext dbContext, IMemoryCache memoryCach
             dbContext.UserSettings.Add(new UserSetting() { UserId = userId, Key = key, Value = value });
         await dbContext.SaveChangesAsync();
         memoryCache.Remove(GetCacheKeyUser(userId));
+        await userSettingsNotifier.NotifyUserSettingsChangedAsync(userId);
     }
 
     public async Task SetBatchAsync(int userId, Dictionary<string, string> settings)
@@ -50,6 +53,7 @@ public class UserSettingsService(AppDbContext dbContext, IMemoryCache memoryCach
         
         await dbContext.SaveChangesAsync();
         memoryCache.Remove(GetCacheKeyUser(userId));
+        await userSettingsNotifier.NotifyUserSettingsChangedAsync(userId);
     }
 
     private static string GetCacheKeyUser(int userId) =>

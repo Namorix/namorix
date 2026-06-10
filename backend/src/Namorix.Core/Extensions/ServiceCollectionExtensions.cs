@@ -44,6 +44,7 @@ public static class ServiceCollectionExtensions
         
         services.AddScoped<ITrafficNotifier, SignalRTrafficNotifier>();
         services.AddScoped<ISystemNotifier, SignalRSystemNotifier>();
+        services.AddScoped<IUserSettingsNotifier, SignalRUserSettingsNotifier>();
         services.AddHostedService<LogFlushWorker>();
         services.AddHostedService<TrafficFlushWorker>();
         services.AddHostedService<TrafficCleanupWorker>();

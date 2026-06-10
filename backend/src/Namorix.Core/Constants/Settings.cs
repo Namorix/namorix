@@ -24,11 +24,12 @@ public static class AppearanceSettingKeys
     public const string FontFamily = "appearance_font_family";
     public const string FontSize = "appearance_font_size";
     public const string Language = "appearance_language";
+    public const string TimeFormat = "appearance_time_format";
     public const string DateFormat = "appearance_date_format";
     
     public static readonly string[] All = [
         Theme, AccentColor, Collapsed, Density,
-        FontFamily, FontSize, Language, DateFormat
+        FontFamily, FontSize, Language, TimeFormat, DateFormat
     ];
 }
 
@@ -37,12 +38,13 @@ public static class AppearanceDefaults
     public static readonly Dictionary<string, string> Defaults = new()
     {
         [AppearanceSettingKeys.Theme] = "dark",
-        [AppearanceSettingKeys.AccentColor] = "blue",
+        [AppearanceSettingKeys.AccentColor] = "default",
         [AppearanceSettingKeys.Collapsed] = "true",
         [AppearanceSettingKeys.Density] = "default",
         [AppearanceSettingKeys.FontFamily] = "system",
         [AppearanceSettingKeys.FontSize] = "md",
         [AppearanceSettingKeys.Language] = "en",
+        [AppearanceSettingKeys.TimeFormat] = "HH:mm",
         [AppearanceSettingKeys.DateFormat] = "DD/MM/YYYY",
     };
 }

@@ -5,17 +5,23 @@ namespace Namorix.Adapters.Services;
 
 public class ThemeService(AppDbContext appDbContext)
 {
-    public async Task<IReadOnlyList<ThemeManifest>> GetAllAsync()
+    public static Task<IReadOnlyList<ThemeManifest>> GetAllAsync()
     {
-        return
-        [
-            new ThemeManifest
-            {
-                Id = "light",
-                Name = "Light",
-                CssPath = "/theme.css",
-                IsBuiltIn = true
-            }
-        ];
+        try
+        {
+            return Task.FromResult<IReadOnlyList<ThemeManifest>>([
+                new ThemeManifest
+                {
+                    Id = "light",
+                    Name = "Light",
+                    CssPath = "/theme.css",
+                    IsBuiltIn = true
+                }
+            ]);
+        }
+        catch (Exception exception)
+        {
+            return Task.FromException<IReadOnlyList<ThemeManifest>>(exception);
+        }
     }
 }

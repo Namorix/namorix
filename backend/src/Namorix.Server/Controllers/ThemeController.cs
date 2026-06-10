@@ -13,7 +13,7 @@ public class ThemeController(ThemeService themeService): ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var themes = await themeService.GetAllAsync();
+        var themes = await ThemeService.GetAllAsync();
         return Ok(ApiResponse<IReadOnlyList<ThemeManifest>>.Ok(themes));
     }
 }

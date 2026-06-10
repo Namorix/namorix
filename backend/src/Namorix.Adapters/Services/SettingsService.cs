@@ -130,6 +130,7 @@ public class SettingsService(AppDbContext dbContext, IMemoryCache memoryCache,
         
         await dbContext.SaveChangesAsync();
         memoryCache.Remove(AppearanceSettingKeys.MemoryCacheKey);
+        await systemNotifier.NotifyConfigChangedAsync(AppearanceSettingKeys.MemoryCacheKey);
         logger.LogInformation("Appearance defaults updated: {Count} keys", settings.Count);
     }
     

@@ -18,5 +18,5 @@ public static class SignalREvents
     public const string LogsNewEntry = "logs:new-entry";
     public const string LogsHistory = "logs:history";
     public const string SystemConfigChanged = "system:config-changed";
-    public const string UserThemeChanged = "user:theme-changed";
+    public const string UserSettingsChanged = "user:settings-changed";
 }

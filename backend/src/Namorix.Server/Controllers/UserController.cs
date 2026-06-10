@@ -129,6 +129,10 @@ public class SetSettingsRequest
     [JsonPropertyName(AppearanceSettingKeys.Language)]
     public string? AppearanceLanguage { get; init; }
 
+
+    [JsonPropertyName(AppearanceSettingKeys.TimeFormat)]
+    public string? AppearanceTimeFormat { get; init; }
+
     [JsonPropertyName(AppearanceSettingKeys.DateFormat)]
     public string? AppearanceDateFormat { get; init; }
 
@@ -156,7 +160,10 @@ public class SetSettingsRequest
         
         if (AppearanceLanguage != null)
             dict[AppearanceSettingKeys.Language] = AppearanceLanguage;
-        
+
+        if (AppearanceTimeFormat != null)
+            dict[AppearanceSettingKeys.TimeFormat] = AppearanceTimeFormat;
+
         if (AppearanceDateFormat != null)
             dict[AppearanceSettingKeys.DateFormat] = AppearanceDateFormat;
         
