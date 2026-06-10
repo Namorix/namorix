@@ -25,6 +25,15 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 ## Recent Changes
 
+### 2026-06-10 — Detail dialogs, meta-list grid, logout confirm, register fix
+
+- **@namorix/core (0.30.1 → 0.30.2)**: FIX `isRegistrationOpen()` — first user bypasses register_enabled lock.
+- **@namorix/ui (0.21.2 → 0.21.3)**: NEW `NmxAlertDialog` — `hideCancel`, `size`, children. `NmxBadge` — `size` prop. `NmxMetaItem` — children + align props.
+- **@namorix/styles (0.28.1 → 0.28.2)**: meta-list grid refactor (flex → `auto 1fr`), badge size SCSS, minor fixes. Theme CSS rebuilt.
+- **frontend (0.38.1 → 0.38.2)**: LogViewer + NetworkTraffic — detail dialogs. Launcher — logout confirm dialog. Register/Login/Blocked fixes.
+- **Namorix.Core (0.35.0 → 0.35.1)**: AppearanceOptionsData update.
+- **Namorix.Server (0.35.1 → 0.35.2)**: AuthController register fix (first user bypass), ThemeService/ThemeController.
+
 ### 2026-06-X — SVG icons moved to public/, reduce CSS bundle size
 
 - **@namorix/styles (0.28.0 → 0.28.1)**: Moved 10 SVG icons from `packages/styles/src/base/icons/` → `frontend/public/icons/`. Changed paths in `tokens/icons.scss` from relative (`../icons/`) to absolute (`/icons/`). Theme CSS rebuilt — SVGs no longer inlined as base64, served as static files instead.

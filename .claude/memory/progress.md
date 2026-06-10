@@ -125,12 +125,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.38.1 | M3 (Theme list API, error catch cleanup, remove dead code) |
-| @namorix/core | 0.30.1 | M3 (Remove registry.ts dead code, clean ThemeRoutes) |
-| @namorix/styles | 0.28.1 | M3 (SVG icons moved to public/, absolute paths in CSS) |
-| @namorix/ui | 0.21.2 | M3 (NmxDialog Esc key dismiss) |
-| Namorix.Core | 0.35.1 | M3 (Add "dark" to built-in theme list) |
-| Namorix.Server | 0.35.1 | M3 (ThemeService returns both light + dark) |
+| frontend | 0.38.2 | M3 (Detail dialogs, logout confirm, register/login fixes) |
+| @namorix/core | 0.30.2 | M3 (Fix isRegistrationOpen — first user bypasses register lock) |
+| @namorix/styles | 0.28.2 | M3 (meta-list grid refactor, badge size SCSS, minor fixes) |
+| @namorix/ui | 0.21.3 | M3 (AlertDialog hideCancel/size/children, Badge size, MetaItem children) |
+| Namorix.Core | 0.35.2 | M3 (AppearanceOptionsData update) |
+| Namorix.Server | 0.35.2 | M3 (AuthController register fix, ThemeService/ThemeController) |
 
 ## Version Rules
 
@@ -149,6 +149,13 @@
 | Namorix.Core | Bug fixes, internal refactor | New public API, new module, breaking change |
 | Namorix.Server | Bug fixes, config tweaks | New endpoint, new middleware, auth feature |
 
+**Quan trọng — backend version độc lập:**
+- `Namorix.Core/` files → bump **Namorix.Core** chỉ
+- `Namorix.Adapters/` files → bump **Namorix.Server** (Adapters không có version riêng)
+- `Namorix.Server/` files → bump **Namorix.Server** chỉ
+- `Namorix.Workers/` files → bump **Namorix.Server**
+- Không bao giờ bump cả Core + Server cùng lúc nếu chỉ 1 trong 2 thay đổi
+
 ## Version History
 
 ### 2026-06-X — SVG icons moved to public, relative → absolute paths
@@ -157,14 +164,24 @@
 |---------|---------|---------|
 | @namorix/styles | 0.28.0 → 0.28.1 | MODIFIED: `base/tokens/icons.scss` — SVG paths từ `../icons/` → `/icons/`. MODIFIED: `public/themes/*/theme.css` — rebuilt với absolute URLs. REMOVED: `base/icons/` — 10 SVG files moved to `frontend/public/icons/`. |
 
+### 2026-06-10 — Detail dialogs, meta-list grid, logout confirm, register fix
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.30.1 → 0.30.2 | FIX: `auth/auth.service.ts` — `isRegistrationOpen()` trả về true nếu `needsRegister` (không có user nào), bypass register_enabled. |
+| @namorix/ui | 0.21.2 → 0.21.3 | NEW: `NmxAlertDialog` — thêm `hideCancel`, `size` prop, children thay `description`. `NmxBadge` — thêm `size` prop (sm/md). `NmxMetaItem` — thêm children support, align props. |
+| @namorix/styles | 0.28.1 → 0.28.2 | REFACTOR: `meta-list.scss` — flex → grid (`auto 1fr`). NEW: `badge.scss` — size variant (`--sm`). Theme CSS rebuilt. |
+| frontend | 0.38.1 → 0.38.2 | NEW: `LogViewer.tsx` — detail dialog (NmxAlertDialog + NmxMetaList). `NetworkTrafficLogs.tsx` — detail dialog. `Launcher.tsx` — logout confirm dialog. FIX: `Register.tsx` — register flow. `Blocked.tsx`, `Login.tsx` — minor fixes. |
+| Namorix.Core | 0.35.0 → 0.35.1 | MODIFIED: `AppearanceOptionsData.cs` — minor update. |
+| Namorix.Server | 0.35.1 → 0.35.2 | FIX: `AuthController.cs` — register check: if `needsRegister` then allow register even if register_enabled=false. MODIFIED: `ThemeService.cs`, `ThemeController.cs`. |
+
 ### 2026-06-10 (evening) — Theme registry cleanup, error catch audit, theme list from API
 
 | Package | Version | Changes |
 |---------|---------|---------|
 | @namorix/core | 0.30.0 → 0.30.1 | REMOVED: `theme/registry.ts` — dead code (getAllThemes không dùng). `apiRoutes.ts` — xóa `ThemeRoutes.builtin`. README.md — utils description. |
 | frontend | 0.38.0 → 0.38.1 | NEW: `SettingsAppearance.tsx` — fetch themes từ `GET /api/themes` thay hardcode. `settings.controller.ts` — thêm `getThemes()`. FIX: `App.tsx` — `.catch(console.log)` → `nmxToast.error`. `useAppearanceSync.ts` — `.catch(() => {})` → `nmxToast.error`. REMOVED: `useTrafficGroup.ts` — dead code. |
-| Namorix.Core | 0.35.0 → 0.35.1 | NEW: `ThemeService.cs` — thêm "dark" theme (chỉ có "light" trước đây). |
-| Namorix.Server | 0.35.0 → 0.35.1 | (version bump đồng bộ với Core) |
+| Namorix.Server | 0.35.0 → 0.35.1 | NEW: `ThemeService.cs` (Adapters) — thêm "dark" theme. `ThemeController.cs` — trả về cả light + dark. |
 
 ### 2026-06-10 (later 2) — Core format utilities, useDateTimeFormat hook, i18n language sync
 
