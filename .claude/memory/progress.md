@@ -125,12 +125,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.35.0 | M3 (UserSettings, appearance settings load/save, profile section) |
-| @namorix/core | 0.27.0 | M3 (AppearanceSettings type, store, Email/Name fields for User) |
+| frontend | 0.36.0 | M3 (Auth theme refactor — loadSystemDefaults, loadAppearance in Root, Esc dialog dismiss) |
+| @namorix/core | 0.28.0 | M3 (applyTheme utility in loader, ApiSettingsRoutes.appearance route) |
 | @namorix/styles | 0.27.1 | M3 (auth.scss fixes) |
-| @namorix/ui | 0.21.1 | M3 (NmxButtonLive — active prop → semantic) |
-| Namorix.Core | 0.33.0 | M3 (UserSetting model, Email/Name on User, FormatValidationRule extended) |
-| Namorix.Server | 0.33.0 | M3 (UserSettings API, UpdateProfile, UpdateProfileSchema) |
+| @namorix/ui | 0.21.2 | M3 (NmxDialog Esc key dismiss) |
+| Namorix.Core | 0.34.0 | M3 (AppearanceDefaults constants, AllowedValuesValidationRule, SetSettingsSchema) |
+| Namorix.Server | 0.34.0 | M3 (GET /api/settings/appearance, settings validation, user settings cache) |
 
 ## Version Rules
 
@@ -150,6 +150,16 @@
 | Namorix.Server | Bug fixes, config tweaks | New endpoint, new middleware, auth feature |
 
 ## Version History
+
+### 2026-06-10 — Settings validation, Esc dialog dismiss, auth theme refactor, appearance caching
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.27.0 → 0.28.0 | NEW: `theme/loader.ts` — `applyTheme()` utility. `apiRoutes.ts` — `appearance` route for system defaults. |
+| @namorix/ui | 0.21.1 → 0.21.2 | NEW: `NmxDialog` — Esc keydown handler dismisses dialog when `dismissable=true`. |
+| frontend | 0.35.0 → 0.36.0 | REFACTOR: `Root.tsx` — `useEffect [user]` handles both `loadSystemDefaults()` (unauthenticated) and `loadAppearance()` (authenticated). `auth.controller.ts` — removed `loadAppearance()` from login, added `loadSystemDefaults()`. `main.tsx` — removed `restoreTheme()`, calls `loadSystemDefaults()`. `Desktop.tsx` — removed redundant `loadAppearance()`. |
+| Namorix.Core | 0.33.0 → 0.34.0 | NEW: `ValidationRule.cs` — `AllowedValuesValidationRule` (validates string against allowed list). `Validation/Schemas/SetSettingsSchema.cs` — settings request DTO + schema with AppearanceOptionsData validation. `Constants/Settings.cs` — `AppearanceSettingKeys.All`, `AppearanceDefaults` class. `Constants/Error.cs` — `InvalidOption` error code. `Constants/Validation.cs` — `AllowedValues` in `ValidationMeta`. MODIFIED: `SettingsService.cs` — added `GetAppearanceDefaultsAsync()` with memory cache, fixed key prefix bug in `SetAppearanceDefaultsAsync()`. `UserSettingsService.cs` — added `IMemoryCache` to `GetAllAsync()`, invalidate on Set/SetBatch. |
+| Namorix.Server | 0.33.0 → 0.34.0 | NEW: `SettingsController.cs` — `GET /api/settings/appearance` public endpoint. `UserController.cs` — `[Validate(typeof(SetSettingsSchema))]` on `SetSettings`, `SetSettingsRequest` DTO. `SettingsController.cs` — `[Validate(typeof(SetSettingsSchema))]` on `PUT /api/settings/appearance`. |
 
 ### 2026-06-09 — Email/Name on User, UserSettings store, Appearance settings save
 

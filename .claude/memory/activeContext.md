@@ -25,6 +25,14 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 ## Recent Changes
 
+### 2026-06-10 — Settings validation, Esc dialog dismiss, auth theme refactor, appearance caching
+
+- **@namorix/core (0.27.0 → 0.28.0)**: NEW `applyTheme()` utility in loader. NEW `ApiSettingsRoutes.appearance` route.
+- **@namorix/ui (0.21.1 → 0.21.2)**: NEW Esc keydown handler in NmxDialog — dismisses dialog when `dismissable=true`.
+- **frontend (0.35.0 → 0.36.0)**: REFACTOR auth theme loading — `Root.tsx` `useEffect [user]` handles both `loadSystemDefaults()` (unauthenticated) and `loadAppearance()` (authenticated). Removed `restoreTheme()` from `main.tsx`, removed redundant `loadAppearance()` from `Desktop.tsx` and `login()`.
+- **Namorix.Core (0.33.0 → 0.34.0)**: NEW `AllowedValuesValidationRule` — validates string against allowed list (e.g., accent colors, densities). NEW `SetSettingsRequest` DTO + `SetSettingsSchema` — validates appearance values against `AppearanceOptionsData.Default`. NEW `AppearanceDefaults` constants + `AppearanceSettingKeys.All`. NEW `GetAppearanceDefaultsAsync()` with memory cache. FIXED key prefix bug in `SetAppearanceDefaultsAsync`. FIXED `UserSettingsService` — added `IMemoryCache` to `GetAllAsync()`, cache invalidation on write.
+- **Namorix.Server (0.33.0 → 0.34.0)**: NEW `GET /api/settings/appearance` (public, returns system default appearance). NEW `[Validate]` on `PUT /api/user/settings` and `PUT /api/settings/appearance`.
+
 ### 2026-06-09 — Email/Name on User, UserSettings store, Appearance settings save
 
 - **@namorix/core (0.26.0 → 0.27.0)**: NEW `types/appearance.ts` — AppearanceSettings interface. NEW store key `appearance` + accessors. MODIFIED `types/user.ts` — +email, name. `types/error.ts` — +EMAIL_EXISTS, NAME_EXISTS. `constants.ts` — +AppearanceDefaults. `apiRoutes.ts` — +UserSettings routes. `i18n` — +EMAIL, NAME validation fields + error messages.
@@ -324,22 +332,16 @@ Cả 3 attribute filter (`RequireAuthAttribute`, `RequireAdminAttribute`, `Requi
 
 ## Pending Fixes
 
-### CSS URL resolution inconsistency
-- `restoreTheme()` ghép URL từ `ThemeRoutes.themes.replace("{id}", ...)`
-- `switchTheme()` dùng `manifest.css` trực tiếp — sau refresh load sai URL
-- **Fix:** Option A — thêm `NMX_THEME_CSS_URL_KEY`, lưu URL thật, restore ưu tiên URL này, fallback ghép từ ID
-- **Files:** `constants.ts`, `loader.ts` (thêm `saveThemePreference`), `ThemeProvider.tsx` (lưu URL khi switch), `auth.controller.ts` (lưu URL khi login sync)
-
 ### SetThemeRequest thiếu validation
 - `UserController.cs:45-47` — `SetThemeRequest.ThemeId` thiếu `[Required]`, `[MaxLength]`
 - `User.cs:16` — `ThemeId` thiếu `[MaxLength]` (các string field khác đều có)
 - **Fix:** Thêm `[Required]`, `[MaxLength(100)]` vào cả 2 chỗ
 
-### Login flow — theme fetch error propagation
-- `auth.controller.ts:20-27` — Nếu GET `/api/user/theme` fail, error propagate ra caller dù login đã OK
-- **Fix:** Tách try/catch riêng cho theme fetch, không block login
-
 ### ✅ Resolved
+- CSS URL resolution inconsistency — **removed localStorage `restoreTheme()`**, replaced with server-fetch approach via `loadSystemDefaults()`/`loadAppearance()` ✅
+- Login flow theme fetch error — removed old `/api/user/theme` call, theme loaded through `loadAppearance()` in Root useEffect ✅
+- Settings validation missing — added `SetSettingsSchema` + `AllowedValuesValidationRule` + `[Validate]` attribute ✅
+- NmxDialog missing Esc dismiss — added keydown handler ✅
 - ThemeManifest types drift — `isBuiltIn: boolean` đã có ✅
 - `/api/themes` handler — đã implement ✅
 - `public/themes/registry.json` — đã tạo ✅
