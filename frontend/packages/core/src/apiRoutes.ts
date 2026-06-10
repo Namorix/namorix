@@ -48,6 +48,5 @@ export const ApiSettingsRoutes = {
 }
 
 export const ThemeRoutes = {
-  builtin: "/themes/registry.json",
   themes: "/themes/{id}/{path}",
 }
