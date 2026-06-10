@@ -4,12 +4,12 @@ namespace Namorix.Core.Data;
 
 public class AppearanceOptionsData
 {
-    public List<AccentColorData> AccentColors { get; init; } = [];
-    public List<SelectOptionData> FontFamilies { get; init; } = [];
-    public List<SelectOptionData> Densities { get; init; } = [];
-    public List<FontSizeOptionData> FontSizes { get; init; } = [];
-    public List<SelectOptionData> Languages { get; init; } = [];
-    public List<SelectOptionData> DateFormats { get; init; } = [];
+    public List<AccentColorData> AccentColors { get; private init; } = [];
+    public List<SelectOptionData> FontFamilies { get; private init; } = [];
+    public List<SelectOptionData> Densities { get; private init; } = [];
+    public List<FontSizeOptionData> FontSizes { get; private init; } = [];
+    public List<SelectOptionData> Languages { get; private init; } = [];
+    public List<SelectOptionData> DateFormats { get; private init; } = [];
 
     public static AppearanceOptionsData Default => new()
     {

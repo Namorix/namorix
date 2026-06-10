@@ -129,6 +129,26 @@ public class SettingsService(AppDbContext dbContext, IMemoryCache memoryCache,
         }
         
         await dbContext.SaveChangesAsync();
+        memoryCache.Remove(AppearanceSettingKeys.MemoryCacheKey);
         logger.LogInformation("Appearance defaults updated: {Count} keys", settings.Count);
+    }
+    
+    public async Task<Dictionary<string, string>> GetAppearanceDefaultsAsync()
+    {
+        return await memoryCache.GetOrCreateAsync(AppearanceSettingKeys.MemoryCacheKey, async entry =>
+        {
+            entry.AbsoluteExpirationRelativeToNow = Time.ExpirationRelativeToNow;
+        
+            var dbSettings = await dbContext.Settings
+                .Where(s => s.Key.StartsWith(AppearanceSettingKeys.Prefix))
+                .ToListAsync();
+            var result = new Dictionary<string, string>();
+            foreach (var key in AppearanceSettingKeys.All)
+            {
+                var dbValue = dbSettings.FirstOrDefault(s => s.Key == key)?.Value;
+                result[key] = dbValue ?? AppearanceDefaults.Defaults[key];
+            }
+            return result;
+        }) ?? new Dictionary<string, string>();
     }
 }

@@ -15,6 +15,8 @@ public static class SettingValues
 
 public static class AppearanceSettingKeys
 {
+    public const string Prefix = "appearance_";
+    public const string MemoryCacheKey = "appearance_defaults";
     public const string Theme = "appearance_theme";
     public const string AccentColor = "appearance_accent_color";
     public const string Collapsed = "appearance_collapsed";
@@ -23,4 +25,24 @@ public static class AppearanceSettingKeys
     public const string FontSize = "appearance_font_size";
     public const string Language = "appearance_language";
     public const string DateFormat = "appearance_date_format";
+    
+    public static readonly string[] All = [
+        Theme, AccentColor, Collapsed, Density,
+        FontFamily, FontSize, Language, DateFormat
+    ];
+}
+
+public static class AppearanceDefaults
+{
+    public static readonly Dictionary<string, string> Defaults = new()
+    {
+        [AppearanceSettingKeys.Theme] = "dark",
+        [AppearanceSettingKeys.AccentColor] = "blue",
+        [AppearanceSettingKeys.Collapsed] = "true",
+        [AppearanceSettingKeys.Density] = "default",
+        [AppearanceSettingKeys.FontFamily] = "system",
+        [AppearanceSettingKeys.FontSize] = "md",
+        [AppearanceSettingKeys.Language] = "en",
+        [AppearanceSettingKeys.DateFormat] = "DD/MM/YYYY",
+    };
 }

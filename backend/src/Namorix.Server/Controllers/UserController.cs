@@ -1,7 +1,9 @@
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Namorix.Adapters.Services;
 using Namorix.Core.Constants;
 using Namorix.Core.Exceptions;
+using Namorix.Core.Middleware;
 using Namorix.Core.Responses;
 using Namorix.Core.Validation;
 using Namorix.Core.Validation.Schemas;
@@ -23,6 +25,7 @@ public class UserController : ControllerBase
         var userId = GetUserId();
         if (userId == null)
             return Unauthorized(ApiResponse.Fail(AuthErrors.Unauthorized));
+        
         try
         {
             await userService.UpdateProfileAsync(userId.Value, request.Email, request.Name);
@@ -66,18 +69,22 @@ public class UserController : ControllerBase
         var userId = GetUserId();
         if (userId == null)
             return Unauthorized(ApiResponse.Fail(AuthErrors.Unauthorized));
+        
         var settings = await userSettingsService.GetAllAsync(userId.Value);
         return Ok(ApiResponse<Dictionary<string, string>>.Ok(settings));
     }
     
     [HttpPut("settings")]
+    [Validate(typeof(SetSettingsSchema))]
     public async Task<IActionResult> SetSettings(
-        [FromBody] Dictionary<string, string> settings,
+        [FromBody] SetSettingsRequest request,
         [FromServices] UserSettingsService userSettingsService)
     {
         var userId = GetUserId();
         if (userId == null)
             return Unauthorized(ApiResponse.Fail(AuthErrors.Unauthorized));
+        var settings = request.ToDictionary();
+        
         await userSettingsService.SetBatchAsync(userId.Value, settings);
         return Ok(ApiResponse.Ok());
     }
@@ -99,4 +106,63 @@ public class ChangePasswordRequest
 {
     public string CurrentPassword { get; init; } = string.Empty;
     public string NewPassword { get; init; } = string.Empty;
+}
+
+public class SetSettingsRequest
+{
+    [JsonPropertyName(AppearanceSettingKeys.Theme)]
+    public string? AppearanceTheme { get; init; }
+
+    
+    [JsonPropertyName(AppearanceSettingKeys.AccentColor)]
+    public string? AppearanceAccentColor { get; init; }
+
+    [JsonPropertyName(AppearanceSettingKeys.Density)]
+    public string? AppearanceDensity { get; init; }
+
+    [JsonPropertyName(AppearanceSettingKeys.FontFamily)]
+    public string? AppearanceFontFamily { get; init; }
+
+    [JsonPropertyName(AppearanceSettingKeys.FontSize)]
+    public string? AppearanceFontSize { get; init; }
+
+    [JsonPropertyName(AppearanceSettingKeys.Language)]
+    public string? AppearanceLanguage { get; init; }
+
+    [JsonPropertyName(AppearanceSettingKeys.DateFormat)]
+    public string? AppearanceDateFormat { get; init; }
+
+    [JsonPropertyName(AppearanceSettingKeys.Collapsed)]
+    public string? AppearanceCollapsed { get; init; }
+    
+    public Dictionary<string, string> ToDictionary()
+    {
+        var dict = new Dictionary<string, string>();
+
+        if (AppearanceTheme != null)
+            dict[AppearanceSettingKeys.Theme] = AppearanceTheme;
+        
+        if (AppearanceAccentColor != null)
+            dict[AppearanceSettingKeys.AccentColor] = AppearanceAccentColor;
+        
+        if (AppearanceDensity != null)
+            dict[AppearanceSettingKeys.Density] = AppearanceDensity;
+        
+        if (AppearanceFontFamily != null)
+            dict[AppearanceSettingKeys.FontFamily] = AppearanceFontFamily;
+        
+        if (AppearanceFontSize != null)
+            dict[AppearanceSettingKeys.FontSize] = AppearanceFontSize;
+        
+        if (AppearanceLanguage != null)
+            dict[AppearanceSettingKeys.Language] = AppearanceLanguage;
+        
+        if (AppearanceDateFormat != null)
+            dict[AppearanceSettingKeys.DateFormat] = AppearanceDateFormat;
+        
+        if (AppearanceCollapsed != null)
+            dict[AppearanceSettingKeys.Collapsed] = AppearanceCollapsed;
+        
+        return dict;
+    }
 }

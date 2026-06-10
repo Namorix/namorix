@@ -3,12 +3,12 @@ using Namorix.Adapters.Services;
 using Namorix.Core.Data;
 using Namorix.Core.Middleware;
 using Namorix.Core.Responses;
-using Namorix.Server.Middleware;
+using Namorix.Core.Validation;
+using Namorix.Core.Validation.Schemas;
 
 namespace Namorix.Server.Controllers;
 
 [ApiController]
-[RequireAuth]
 [Route("api/settings")]
 public class SettingsController(SettingsService settingsService) : ControllerBase
 {
@@ -34,6 +34,7 @@ public class SettingsController(SettingsService settingsService) : ControllerBas
     }
     
     [HttpGet("appearance/options")]
+    [RequireAuth]
     public IActionResult GetAppearanceOptions()
     {
         var options = SettingsService.GetAppearanceOptions();
@@ -42,13 +43,22 @@ public class SettingsController(SettingsService settingsService) : ControllerBas
     
     [HttpPut("appearance")]
     [RequireAdmin]
+    [Validate(typeof(SetSettingsSchema))]
     public async Task<IActionResult> SetAppearanceDefaults(
-        [FromBody] Dictionary<string, string> settings)
+        [FromBody] SetSettingsRequest request)
     {
+        var settings = request.ToDictionary();
         await settingsService.SetAppearanceDefaultsAsync(settings);
         return Ok(ApiResponse.Ok());
-}
     }
+    
+    [HttpGet("appearance")]
+    public async Task<IActionResult> GetAppearanceDefaults()
+    {
+        var settings = await settingsService.GetAppearanceDefaultsAsync();
+        return Ok(ApiResponse<Dictionary<string, string>>.Ok(settings));
+    }
+}
 
 public class SettingsResponse
 {

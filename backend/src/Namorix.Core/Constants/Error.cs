@@ -27,6 +27,7 @@ public static class ValidationErrorCodes
     public const string OutOfRange = "OUT_OF_RANGE";
     public const string InvalidEnum = "INVALID_ENUM";
     public const string ValidationError = "VALIDATION_ERROR";
+    public const string InvalidOption = "INVALID_OPTION";
 }
 
 public static class HttpErrorCodes

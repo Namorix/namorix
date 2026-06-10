@@ -8,4 +8,5 @@ public class ValidationMeta
     public int? Max { get; init; }
     public string? Pattern { get; init; }
     public object[]? Enum { get; init; }
+    public string[]? AllowedValues { get; init; }
 }

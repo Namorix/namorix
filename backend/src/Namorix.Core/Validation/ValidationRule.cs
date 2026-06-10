@@ -109,3 +109,18 @@ public class EnumValidateRule : ValidationRule
         return Pass();
     }
 }
+
+public class AllowedValuesValidationRule : ValidationRule
+{
+    public string[] AllowedValues { get; init; } = [];
+    public override ValidationResult Validate(string field, object? value, object? requestObj = null)
+    {
+        if (value is not string str || string.IsNullOrEmpty(str))
+            return IsRequired ? Fail(ValidationErrorCodes.Required, field) : Pass();
+        
+        return Array.Exists(AllowedValues, v => v == str)
+            ? Pass()
+            : Fail(ValidationErrorCodes.InvalidOption, field,
+                new ValidationMeta { AllowedValues = AllowedValues });
+    }
+}
