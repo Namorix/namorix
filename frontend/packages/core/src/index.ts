@@ -17,5 +17,6 @@ export * from "./signalr"
 export * from "./store"
 export * from "./hooks"
 export * from "./toast"
+export * from "./notification"
 
 initStores()

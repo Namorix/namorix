@@ -5,6 +5,7 @@ export const API_AUTH_BASE = API_BASE + "/auth"
 export const API_USER_BASE = API_BASE + "/user"
 export const API_TRAFFIC_BASE = API_BASE + "/traffic"
 export const API_SETTINGS_BASE = API_BASE + "/settings"
+export const API_NOTIFICATION_BASE = API_BASE + "/notifications"
 
 export const ApiAuthRoutes = {
   status: API_AUTH_BASE + "/status",
@@ -45,6 +46,12 @@ export const ApiSettingsRoutes = {
   system: API_SETTINGS_BASE + "/system",
   appearanceOptions: API_SETTINGS_BASE + "/appearance/options",
   appearanceSystem: API_SETTINGS_BASE + "/appearance",
+}
+
+export const ApiNotificationRoutes = {
+  base: API_NOTIFICATION_BASE,
+  unreadCount: API_NOTIFICATION_BASE + "/unread-count",
+  readAll: API_NOTIFICATION_BASE + "/read-all",
 }
 
 export const ThemeRoutes = {

@@ -10,6 +10,8 @@ export const SignalREvent = {
   LogsHistory: SignalRGroups.Logs + ":history",
   SystemConfigChanged: "system:config-changed",
   UserSettingsChanged: "user:settings-changed",
+  NotificationReceived: "notification:received",
+  NotificationReadStatus: "notification:read-status",
 } as const
 
 export type BucketData = {
