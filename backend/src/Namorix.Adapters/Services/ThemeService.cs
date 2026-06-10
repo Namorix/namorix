@@ -16,7 +16,14 @@ public class ThemeService(AppDbContext appDbContext)
                     Name = "Light",
                     CssPath = "/theme.css",
                     IsBuiltIn = true
-                }
+                },
+                new ThemeManifest
+                {
+                    Id = "dark",
+                    Name = "Dark",
+                    CssPath = "/theme.css",
+                    IsBuiltIn = true
+                },
             ]);
         }
         catch (Exception exception)
