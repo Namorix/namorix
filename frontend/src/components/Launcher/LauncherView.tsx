@@ -6,7 +6,7 @@ import {
   NmxSearchInput,
 } from "@namorix/ui"
 import type { AddonItem, OnOpenApp } from "../../types"
-import { type User } from "@namorix/core"
+import { NMX_NAME, type User } from "@namorix/core"
 import { useTranslation } from "react-i18next"
 import { resolveAddonLocaleTitle } from "../../utils"
 
@@ -37,6 +37,7 @@ export const LauncherView: React.FC<
   return (
     <div className="nmx-launcher-overlay" onMouseDown={onClose}>
       <div className="nmx-launcher" onMouseDown={(e) => e.stopPropagation()}>
+        <span className="nmx-launcher__head">{NMX_NAME}</span>
         <NmxSearchInput
           ref={searchRef}
           value={query}

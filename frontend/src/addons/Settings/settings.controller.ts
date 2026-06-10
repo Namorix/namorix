@@ -18,6 +18,7 @@ export interface AppearanceOptionsResponse {
   densities: NmxSegmentedGroupData<string>[]
   fontSizes: NmxSegmentedGroupData<string>[]
   languages: NmxSelectData[]
+  timeFormats: NmxSelectData[]
   dateFormats: NmxSelectData[]
 }
 
@@ -40,7 +41,7 @@ export const settingsController = {
 
   async setAppearanceDefaults(settings: AppearanceSettings): Promise<void> {
     const res = await nmxHttp
-      .url(getApiBaseUrl() + ApiSettingsRoutes.appearanceDefaults)
+      .url(getApiBaseUrl() + ApiSettingsRoutes.appearanceSystem)
       .put(settings)
       .json()
     if (!res.success) throw ApiError.fromResponse(res)

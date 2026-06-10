@@ -202,7 +202,6 @@ export const SettingsAccount: React.FC = () => {
       <NmxSettingsSection>
         <NmxButton
           onClick={handleChangePassword}
-          semantic="error"
           disabled={busy}
           label={t("addon.settings.account.savePassword")}
           fullWidth

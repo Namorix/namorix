@@ -8,6 +8,7 @@ import {
   NmxAddonRoot,
 } from "@namorix/ui"
 import { useTranslation } from "react-i18next"
+import { NMX_NAME } from "@namorix/core"
 
 declare const __APP_VERSION__: string
 declare const __CORE_VERSION__: string
@@ -27,7 +28,7 @@ export const About: React.FC = () => {
             symbol={NmxIconSvgSymbol.LOGO}
             className="nmx-addon-about__logo"
           />
-          <div className="nmx-addon-about__name">Namorix</div>
+          <div className="nmx-addon-about__name">{NMX_NAME}</div>
           <div className="nmx-addon-about__version">
             {t("addon.about.version")} {__APP_VERSION__}
           </div>

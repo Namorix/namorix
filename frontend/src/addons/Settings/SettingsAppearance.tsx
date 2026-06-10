@@ -46,6 +46,9 @@ export const SettingsAppearance: React.FC = () => {
   const [language, setLanguage] = useState(
     AppearanceDefaults.appearance_language,
   )
+  const [timeFormat, setTimeFormat] = useState(
+    AppearanceDefaults.appearance_time_format,
+  )
   const [dateFormat, setDateFormat] = useState(
     AppearanceDefaults.appearance_date_format,
   )
@@ -73,6 +76,9 @@ export const SettingsAppearance: React.FC = () => {
       setLanguage(
         s.appearance_language ?? AppearanceDefaults.appearance_language,
       )
+      setTimeFormat(
+        s.appearance_time_format ?? AppearanceDefaults.appearance_time_format,
+      )
       setDateFormat(
         s.appearance_date_format ?? AppearanceDefaults.appearance_date_format,
       )
@@ -95,12 +101,17 @@ export const SettingsAppearance: React.FC = () => {
   const fontFamilies = options?.fontFamilies ?? []
   const fontSizes = options?.fontSizes ?? []
   const languages = options?.languages ?? []
+  const timeFormats = options?.timeFormats ?? []
   const dateFormats = options?.dateFormats ?? []
   const densities = (options?.densities ?? []).map((d) => ({
     ...d,
     label: "",
     icon: densityIconMap[d.value],
   }))
+
+  const pickerColors = accentColors.map((c) =>
+    c.id === "default" ? { ...c, color: "var(--nmx-color-primary)" } : c,
+  )
 
   const buildSettings = (): AppearanceSettings => ({
     appearance_theme: theme,
@@ -110,6 +121,7 @@ export const SettingsAppearance: React.FC = () => {
     appearance_font_family: fontFamily,
     appearance_font_size: fontSize,
     appearance_language: language,
+    appearance_time_format: timeFormat,
     appearance_date_format: dateFormat,
   })
 
@@ -155,7 +167,7 @@ export const SettingsAppearance: React.FC = () => {
             description={t("addon.settings.appearance.accentColorDesc")}
           >
             <NmxAccentColorPicker
-              colors={accentColors}
+              colors={pickerColors}
               value={accentColor}
               onChange={setAccentColor}
             />
@@ -232,6 +244,16 @@ export const SettingsAppearance: React.FC = () => {
               value={language}
               options={languages}
               onChange={setLanguage}
+            />
+          </NmxSettingsRow>
+          <NmxSettingsRow
+            label={t("addon.settings.appearance.timeFormat")}
+            description={t("addon.settings.appearance.timeFormatDesc")}
+          >
+            <NmxSelect
+              value={timeFormat}
+              options={timeFormats}
+              onChange={setTimeFormat}
             />
           </NmxSettingsRow>
           <NmxSettingsRow

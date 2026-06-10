@@ -173,6 +173,8 @@
         "languageRegion": "Language & Region",
         "language": "Language",
         "languageDesc": "Select your preferred display language",
+        "timeFormat": "Time format",
+        "timeFormatDesc": "Choose 12-hour or 24-hour display",
         "dateFormat": "Date format",
         "dateFormatDesc": "Choose date display format",
         "dialogConfirmSaveTitle": "Confirm save",
