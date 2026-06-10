@@ -25,6 +25,11 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 ## Recent Changes
 
+### 2026-06-10 (later 2) — Core format utilities, useDateTimeFormat hook, i18n language sync
+
+- **@namorix/core (0.29.0 → 0.30.0)**: NEW `utils/format.ts` — centralized `formatDateTime`, `formatTimestamp`, `formatDuration`, `formatSize`. NEW `hooks/useDateTimeFormat.ts` — hook đọc time/date format từ appearance store, trả về `clock()`/`timestamp()` với reactive updates. NEW `getAppearanceStore()` getter.
+- **frontend (0.37.0 → 0.38.0)**: REFACTOR `useTaskbarClock` — dùng `useDateTimeFormat`. REFACTOR LogViewer + NetworkTrafficLogs — dùng `formatTimestamp` từ core. REMOVED duplicate `formatDuration`/`formatSize`/`formatTimestamp` from NetworkTraffic/utils. ADDED `i18n.changeLanguage()` in `loadAppearance` based on `appearance_language`.
+
 ### 2026-06-10 (later) — Time format, user settings SignalR notifier, accent CSS tokens, clock format
 
 - **@namorix/core (0.28.0 → 0.29.0)**: NEW `applyAppearanceTokens()` — maps appearance settings (accent color, density, font) to `--nmx-*` CSS custom properties. NEW `UserSettingsChanged` SignalR event. MODIFIED `AppearanceSettings` — +`appearance_time_format` field.

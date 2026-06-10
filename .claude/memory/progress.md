@@ -125,8 +125,8 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.37.0 | M3 (Time format, default accent, useAppearanceSync hook, clock format) |
-| @namorix/core | 0.29.0 | M3 (applyAppearanceTokens, UserSettingsChanged event, appearance_time_format) |
+| frontend | 0.38.0 | M3 (useDateTimeFormat, format core utils, i18n language sync) |
+| @namorix/core | 0.30.0 | M3 (format.ts utilities, useDateTimeFormat hook, getAppearanceStore) |
 | @namorix/styles | 0.28.0 | M3 (accent.scss tokens, spacing/typography updates, theme CSS rebuilt) |
 | @namorix/ui | 0.21.2 | M3 (NmxDialog Esc key dismiss) |
 | Namorix.Core | 0.35.0 | M3 (IUserSettingsNotifier, DefaultAccentColor on ThemeManifest, TimeFormat) |
@@ -150,6 +150,13 @@
 | Namorix.Server | Bug fixes, config tweaks | New endpoint, new middleware, auth feature |
 
 ## Version History
+
+### 2026-06-10 (later 2) — Core format utilities, useDateTimeFormat hook, i18n language sync
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.29.0 → 0.30.0 | NEW: `utils/format.ts` — `formatDateTime()`, `formatTimestamp()`, `formatDuration()`, `formatSize()`. NEW: `hooks/useDateTimeFormat.ts` — hook tự động đọc time/date format từ appearance store, trả về `clock()` + `timestamp()` functions. NEW: `store/accessors.ts` — `getAppearanceStore()` getter. |
+| frontend | 0.37.0 → 0.38.0 | REFACTOR: `useTaskbarClock.ts` — dùng `useDateTimeFormat()` hook từ core. `LogViewer.tsx` + `NetworkTrafficLogs.tsx` — dùng `formatTimestamp()` từ core. `NetworkTraffic/utils.ts` — xóa `formatTimestamp`, `formatDuration`, `formatSize` (đã chuyển vào core). `auth.controller.ts` — thêm `i18n.changeLanguage()` dựa trên `appearance_language`. |
 
 ### 2026-06-10 (later) — Time format, user settings SignalR notifier, accent CSS tokens, clock format
 
