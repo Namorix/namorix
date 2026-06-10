@@ -133,11 +133,17 @@ Page load (chưa login)
         ├── user null → loadSystemDefaults()
         │     └── GET /api/settings/appearance (public)
         │           ├── setAppearanceStore(data)
+        │           ├── applyAppearanceTokens(data)
         │           └── applyTheme(data.appearance_theme)
         └── user có → loadAppearance()
               └── GET /api/user/settings
                     ├── setAppearanceStore(data)
+                    ├── applyAppearanceTokens(data)
                     └── applyTheme(data.appearance_theme)
+
+User change settings
+  └── SignalR: user:settings-changed { userId }
+        └── useAppearanceSync() → reloadAppearance()
 
 Admin change system defaults
   └── SignalR: system:config-changed { key: "appearance_defaults" }
@@ -166,6 +172,7 @@ applyTheme(themeId)
 | `appearance_font_size` | string | sm, md, lg |
 | `appearance_language` | string | en, vi |
 | `appearance_date_format` | string | DD/MM/YYYY, MM/DD/YYYY, YYYY-MM-DD |
+| `appearance_time_format` | string | HH:mm, hh:mm A |
 
 ### APIs
 
@@ -260,7 +267,9 @@ SetSettingsSchema (IValidationSchema)
 | `backend/src/Namorix.Core/Validation/Schemas/SetSettingsSchema.cs` | DTO + schema |
 | `backend/src/Namorix.Core/Validation/ValidationRule.cs` | `AllowedValuesValidationRule` |
 | `backend/src/Namorix.Adapters/Services/SettingsService.cs` | System settings logic |
-| `backend/src/Namorix.Adapters/Services/UserSettingsService.cs` | User settings logic |
+| `backend/src/Namorix.Adapters/Services/UserSettingsService.cs` | User settings logic + SignalR notify on change |
+| `backend/src/Namorix.Core/Infrastructure/IUserSettingsNotifier.cs` | Interface for user settings SignalR notification |
+| `backend/src/Namorix.Core/Hubs/SignalRUserSettingsNotifier.cs` | Sends `user:settings-changed` to user's connections |
 | `backend/src/Namorix.Core/Constants/Settings.cs` | Setting keys + defaults |
 
 ---
@@ -412,6 +421,7 @@ On disconnect
 | `traffic:stats-init` | Server → Client | BucketData[] | NetworkTraffic stats |
 | `logs:new-entry` | Server → Client | LogEntry[] | LogViewer (live mode) |
 | `system:config-changed` | Server → Client | `{ key: string }` | useAppearanceSync |
+| `user:settings-changed` | Server → Client | `{ userId: number }` | useAppearanceSync (re-fetch user settings) |
 | `user:theme-changed` | Server → Client | `{ themeId: string }` | (planned) |
 
 ### Hooks
@@ -649,7 +659,7 @@ createAuthGuard(authService)
 | `i18n/` | `NmxI18n`, `validate()`, `formatApiError()` | types |
 | `router/` | `GuardedRoute`, `createAuthGuard()` | auth |
 | `addon/` | `defineAddon()`, `registerAddon()`, `AddonContext` | types, eventBus |
-| `theme/` | `restoreTheme()`, `loadTheme()`, `applyTheme()` | apiRoutes, constants |
+| `theme/` | `restoreTheme()`, `loadTheme()`, `applyTheme()`, `applyAppearanceTokens()` | apiRoutes, constants |
 | `signalr/` | `signalr.service`, `useSignalR()`, `useSignalREvent()` | @microsoft/signalr |
 | `store/` | `nmxStore`, `setUserStore()`, `setAppearanceStore()` | types, init |
 | `toast/` | `nmxToast` | - |
@@ -697,8 +707,8 @@ createAuthGuard(authService)
 
 | Project | Role |
 |---------|------|
-| `Namorix.Core` | Config, constants, models, validation, middleware, SignalR notifiers |
-| `Namorix.Adapters` | EF Core, services (Auth, Permission, Settings, Theme, User) |
+| `Namorix.Core` | Config, constants, models, validation, middleware, SignalR notifiers (system + user settings) |
+| `Namorix.Adapters` | EF Core, services (Auth, Permission, Settings, Theme, User), migrations |
 | `Namorix.Server` | Controllers, Program.cs, middleware (Auth, TrustedProxy) |
 | `Namorix.Workers` | TokenCleanupWorker |
 

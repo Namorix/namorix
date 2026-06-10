@@ -67,6 +67,7 @@ Read ONLY these files (skip if unchanged):
 - `.claude/memory/techContext.md` — only if tech/deps changed
 - `.claude/memory/productContext.md` — only if UX changed
 - `.claude/memory/projectbrief.md` — rarely changes
+- `.claude/FLOW.md` — always read (comprehensive flow docs, update if architecture/flows changed)
 - Package `.json` files — only for packages being bumped + their dependents
 - `README.md` — always read (may contain version badges, tech stack table, quick start commands)
 - `docs/` markdown files — only if related to changed code
@@ -91,6 +92,18 @@ Read ONLY these files (skip if unchanged):
 - `systemPatterns.md`: new patterns, architecture decisions
 - `techContext.md`: new deps, new config, new key files
 - `productContext.md`: UX changes
+
+#### FLOW.md — update if related code changed
+1. Check git diff for changes to:
+   - Auth flow (backend auth, frontend controllers, guards)
+   - SignalR events (new event, new notifier, new subscriber)
+   - Appearance settings (new key, new validation, new UI)
+   - API endpoints (new/modified controller endpoints)
+   - Addon system (new contract, new mode)
+   - New backend interfaces/services
+   - New frontend hooks/components
+2. Read relevant sections of FLOW.md that match changed code
+3. Update sections accordingly — add new events to SignalR table, new keys to appearance table, new files to responsibility map
 
 ### Step 6: Update All Version References
 
