@@ -27,6 +27,7 @@ public class AppearanceOptionsData
         FontFamilies =
         [
             new SelectOptionData { Value = "system", Label = "System default" },
+            new SelectOptionData { Value = "nunito", Label = "Nunito" }
         ],
         Densities =
         [

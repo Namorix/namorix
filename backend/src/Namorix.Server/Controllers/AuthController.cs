@@ -47,8 +47,8 @@ public class AuthController(AuthService authService, SettingsService settingsSer
     [Validate(typeof(RegisterSchema))]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
-        var registerEnabled = await settingsService.IsRegisterEnabled();
-        if (!registerEnabled)
+        var (needsRegister, registerEnabled) = await settingsService.GetAuthStatus();
+        if (!registerEnabled && !needsRegister)
             return StatusCode(StatusCodes.Status403Forbidden,
                 ApiResponse.Fail(AuthErrors.RegisterClosed));
 

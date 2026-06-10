@@ -3,7 +3,7 @@ using Namorix.Core.Models;
 
 namespace Namorix.Adapters.Services;
 
-public class ThemeService(AppDbContext appDbContext)
+public class ThemeService()
 {
     public static Task<IReadOnlyList<ThemeManifest>> GetAllAsync()
     {
