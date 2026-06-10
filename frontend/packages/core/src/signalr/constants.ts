@@ -9,7 +9,7 @@ export const SignalREvent = {
   LogsNewEntry: SignalRGroups.Logs + ":new-entry",
   LogsHistory: SignalRGroups.Logs + ":history",
   SystemConfigChanged: "system:config-changed",
-  UserThemeChanged: "user:theme-changed",
+  UserSettingsChanged: "user:settings-changed",
 } as const
 
 export type BucketData = {
@@ -28,7 +28,7 @@ export type TrafficLogsFlushed = {
 }
 
 export type ConfigChanged = { key: string }
-export type ThemeChanged = { themeId: string }
+export type UserSettingsChanged = { userId: number }
 
 export type SignalRGroups = (typeof SignalRGroups)[keyof typeof SignalRGroups]
 export type SignalREvent = (typeof SignalREvent)[keyof typeof SignalREvent]

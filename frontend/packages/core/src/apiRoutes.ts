@@ -44,7 +44,7 @@ export const ApiLogRoutes = {
 export const ApiSettingsRoutes = {
   system: API_SETTINGS_BASE + "/system",
   appearanceOptions: API_SETTINGS_BASE + "/appearance/options",
-  appearanceDefaults: API_SETTINGS_BASE + "/appearance",
+  appearanceSystem: API_SETTINGS_BASE + "/appearance",
 }
 
 export const ThemeRoutes = {

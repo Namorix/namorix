@@ -6,8 +6,10 @@ const state: NmxStoreValue = {
   user: null,
   theme: null,
   connectionStatus: "disconnected",
+  needsRegister: false,
   registerEnabled: false,
   config: {},
+  appearance: {},
 }
 
 const listeners = new Map<string, Set<Listener>>()

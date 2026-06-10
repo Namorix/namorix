@@ -5,6 +5,7 @@ import {
   NMX_THEME_STORAGE_KEY,
 } from "../constants"
 import { sanitizePathSegment } from "../utils"
+import type { AppearanceSettings } from "../types"
 
 function appendStylesheet(
   id: string,
@@ -48,4 +49,30 @@ export function applyTheme(themeId: string): Promise<void> {
     .replace("{id}", themeId)
     .replace("{path}", themeId)
   return loadTheme(themeId, cssUrl)
+}
+
+export function applyAppearanceTokens(settings: AppearanceSettings) {
+  const root = document.documentElement
+
+  if (settings.appearance_accent_color !== "default") {
+    root.style.setProperty(
+      "--nmx-color-primary",
+      `var(--nmx-accent-color-${settings.appearance_accent_color})`,
+    )
+  }
+
+  root.style.setProperty(
+    "--nmx-spacing-unit",
+    `var(--nmx-spacing-unit-${settings.appearance_density})`,
+  )
+
+  root.style.setProperty(
+    "--nmx-font-sans",
+    `var(--nmx-font-family-${settings.appearance_font_family})`,
+  )
+
+  root.style.setProperty(
+    "--nmx-font-size-unit",
+    `var(--nmx-font-size-unit-${settings.appearance_font_size})`,
+  )
 }
