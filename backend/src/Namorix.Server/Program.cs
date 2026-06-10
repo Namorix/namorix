@@ -7,6 +7,8 @@ using Namorix.Adapters.Persistence;
 using Namorix.Adapters.Services;
 using Namorix.Core.Extensions;
 using Namorix.Core.Helpers;
+using Namorix.Core.Hubs;
+using Namorix.Core.Infrastructure;
 using Namorix.Server.Extensions;
 using Namorix.Workers;
 
@@ -23,6 +25,9 @@ builder.Services.AddScoped<UserSettingsService>();
 builder.Services.AddScoped<SettingsService>();
 builder.Services.AddScoped<PermissionService>();
 builder.Services.AddScoped<ThemeService>();
+builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<INotificationNotifier, SignalRNotificationNotifier>();
+
 
 builder.Services.AddNamorixCore(builder.Environment.IsDevelopment());
 builder.Services.AddHostedService<TokenCleanupWorker>();

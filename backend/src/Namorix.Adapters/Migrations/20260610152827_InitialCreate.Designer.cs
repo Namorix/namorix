@@ -11,7 +11,7 @@ using Namorix.Adapters.Persistence;
 namespace Namorix.Adapters.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260610043319_InitialCreate")]
+    [Migration("20260610152827_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -45,6 +45,52 @@ namespace Namorix.Adapters.Migrations
                         .IsUnique();
 
                     b.ToTable("AddonManifests");
+                });
+
+            modelBuilder.Entity("Namorix.Core.Models.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DescriptionKey")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Params")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Source")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TitleKey")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "CreatedAt");
+
+                    b.HasIndex("UserId", "IsRead");
+
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("Namorix.Core.Models.Permission", b =>

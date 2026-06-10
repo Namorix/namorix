@@ -26,6 +26,26 @@ namespace Namorix.Adapters.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Notifications",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    UserId = table.Column<int>(type: "INTEGER", nullable: false),
+                    Type = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    TitleKey = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
+                    DescriptionKey = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
+                    Params = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    Source = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    IsRead = table.Column<bool>(type: "INTEGER", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Notifications", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Permissions",
                 columns: table => new
                 {
@@ -174,6 +194,16 @@ namespace Namorix.Adapters.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Notifications_UserId_CreatedAt",
+                table: "Notifications",
+                columns: new[] { "UserId", "CreatedAt" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notifications_UserId_IsRead",
+                table: "Notifications",
+                columns: new[] { "UserId", "IsRead" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Permissions_Name_Value",
                 table: "Permissions",
                 columns: new[] { "Name", "Value" },
@@ -224,6 +254,9 @@ namespace Namorix.Adapters.Migrations
         {
             migrationBuilder.DropTable(
                 name: "AddonManifests");
+
+            migrationBuilder.DropTable(
+                name: "Notifications");
 
             migrationBuilder.DropTable(
                 name: "RefreshTokens");

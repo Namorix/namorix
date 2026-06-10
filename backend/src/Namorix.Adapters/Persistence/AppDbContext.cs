@@ -17,6 +17,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IOptions<AppCo
     public DbSet<UserPermission> UserPermissions { get; set; }
     public DbSet<ThemeManifest> ThemeManifests { get; set; }
     public DbSet<AddonManifest> AddonManifests { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -51,5 +52,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IOptions<AppCo
         modelBuilder.Entity<AddonManifest>()
             .HasIndex(a => a.Id)
             .IsUnique();
+        
+        modelBuilder.Entity<Notification>()
+            .HasIndex(n => new { n.UserId, n.CreatedAt });
+        modelBuilder.Entity<Notification>()
+            .HasIndex(n => new { n.UserId, n.IsRead });
     }
 }

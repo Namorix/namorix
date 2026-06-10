@@ -19,4 +19,6 @@ public static class SignalREvents
     public const string LogsHistory = "logs:history";
     public const string SystemConfigChanged = "system:config-changed";
     public const string UserSettingsChanged = "user:settings-changed";
+    public const string NotificationReceived = "notification:received";
+    public const string NotificationReadStatus = "notification:read-status";
 }
