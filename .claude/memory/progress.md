@@ -125,12 +125,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.36.0 | M3 (Auth theme refactor — loadSystemDefaults, loadAppearance in Root, Esc dialog dismiss) |
-| @namorix/core | 0.28.0 | M3 (applyTheme utility in loader, ApiSettingsRoutes.appearance route) |
-| @namorix/styles | 0.27.1 | M3 (auth.scss fixes) |
+| frontend | 0.37.0 | M3 (Time format, default accent, useAppearanceSync hook, clock format) |
+| @namorix/core | 0.29.0 | M3 (applyAppearanceTokens, UserSettingsChanged event, appearance_time_format) |
+| @namorix/styles | 0.28.0 | M3 (accent.scss tokens, spacing/typography updates, theme CSS rebuilt) |
 | @namorix/ui | 0.21.2 | M3 (NmxDialog Esc key dismiss) |
-| Namorix.Core | 0.34.0 | M3 (AppearanceDefaults constants, AllowedValuesValidationRule, SetSettingsSchema) |
-| Namorix.Server | 0.34.0 | M3 (GET /api/settings/appearance, settings validation, user settings cache) |
+| Namorix.Core | 0.35.0 | M3 (IUserSettingsNotifier, DefaultAccentColor on ThemeManifest, TimeFormat) |
+| Namorix.Server | 0.35.0 | M3 (UserSettingsChanged SignalR event, theme default accent) |
 
 ## Version Rules
 
@@ -150,6 +150,16 @@
 | Namorix.Server | Bug fixes, config tweaks | New endpoint, new middleware, auth feature |
 
 ## Version History
+
+### 2026-06-10 (later) — Time format, user settings SignalR notifier, accent CSS tokens, clock format
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.28.0 → 0.29.0 | NEW: `theme/loader.ts` — `applyAppearanceTokens()` (maps appearance settings to CSS custom properties). NEW: `signalr/constants.ts` — `UserSettingsChanged` event. MODIFIED: `types/appearance.ts` — +`appearance_time_format`. `store/nmxStore.ts` — +`NmxStoreKeys.appearance`. `constants.ts` — +appearance constant. |
+| @namorix/styles | 0.27.1 → 0.28.0 | NEW: `base/tokens/accent.scss` — accent color CSS token. MODIFIED: `spacing.scss` — density-related spacing tokens. `typography.scss` — font-size unit scaling. Theme CSS rebuilt (default + dark). |
+| frontend | 0.36.0 → 0.37.0 | NEW: `hooks/useAppearanceSync.ts` — hook xử lý appearance load + SignalR listener. MODIFIED: `useTaskbarClock.ts` — date format + time format (12h/24h). `SettingsAppearance.tsx` — time format picker, default accent option. `auth.controller.ts` — gộp `loadAppearance`, refactor. `Root.tsx` — simplified, delegated to `useAppearanceSync`. `settings.controller.ts` — +timeFormats. |
+| Namorix.Core | 0.34.0 → 0.35.0 | NEW: `Infrastructure/IUserSettingsNotifier.cs` — interface for user settings notifications. `Hubs/SignalRUserSettingsNotifier.cs` — sends `user:settings-changed` via SignalR. MODIFIED: `Models/ThemeManifest.cs` — +`DefaultAccentColor`. `Constants/Settings.cs` — +`TimeFormat`. `Data/AppearanceOptionsData.cs` — +`TimeFormats`, +default accent. `Validation/Schemas/SetSettingsSchema.cs` — +`AppearanceTimeFormat` rule. `Services/UserSettingsService.cs` — inject notifier, call on SetBatch/Set. |
+| Namorix.Server | 0.34.0 → 0.35.0 | MODIFIED: `Services/ThemeService.cs` — +`DefaultAccentColor` on Light theme. `Controllers/ThemeController.cs` — include defaultAccentColor. `Extensions/ServiceCollectionExtensions.cs` — register `IUserSettingsNotifier`. |
 
 ### 2026-06-10 — Settings validation, Esc dialog dismiss, auth theme refactor, appearance caching
 

@@ -25,6 +25,14 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 ## Recent Changes
 
+### 2026-06-10 (later) — Time format, user settings SignalR notifier, accent CSS tokens, clock format
+
+- **@namorix/core (0.28.0 → 0.29.0)**: NEW `applyAppearanceTokens()` — maps appearance settings (accent color, density, font) to `--nmx-*` CSS custom properties. NEW `UserSettingsChanged` SignalR event. MODIFIED `AppearanceSettings` — +`appearance_time_format` field.
+- **@namorix/styles (0.27.1 → 0.28.0)**: NEW `accent.scss` token file. Spacing + typography token updates for density/font-size scaling. Theme CSS rebuilt.
+- **frontend (0.36.0 → 0.37.0)**: NEW `useAppearanceSync` hook — centralized appearance loading + SignalR listener (system settings + user settings). `useTaskbarClock` — date format from setting, time format (12h/24h). `SettingsAppearance` — time format picker, "Default" accent option (uses `var(--nmx-color-primary)`). `Root.tsx` simplified.
+- **Namorix.Core (0.34.0 → 0.35.0)**: NEW `IUserSettingsNotifier` + `SignalRUserSettingsNotifier` — sends `user:settings-changed` to user's SignalR connections on settings update. NEW `ThemeManifest.DefaultAccentColor`. NEW `AppearanceSettingKeys.TimeFormat`. NEW `TimeFormats` in `AppearanceOptionsData`.
+- **Namorix.Server (0.34.0 → 0.35.0)**: REGISTER `IUserSettingsNotifier` in DI. Include `defaultAccentColor` in theme response.
+
 ### 2026-06-10 — Settings validation, Esc dialog dismiss, auth theme refactor, appearance caching
 
 - **@namorix/core (0.27.0 → 0.28.0)**: NEW `applyTheme()` utility in loader. NEW `ApiSettingsRoutes.appearance` route.
