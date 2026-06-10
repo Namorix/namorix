@@ -1,6 +1,7 @@
 import { createPortal } from "react-dom"
 import { cx } from "../../utils"
 import type { NmxDialogProps } from "./NmxDialog.types"
+import { useEffect } from "react"
 
 export const NmxDialog = ({
   open,
@@ -12,6 +13,15 @@ export const NmxDialog = ({
   children,
   ...rest
 }: NmxDialogProps) => {
+  useEffect(() => {
+    if (!open || !dismissable) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose?.()
+    }
+    document.addEventListener("keydown", handleKeyDown)
+    return () => document.removeEventListener("keydown", handleKeyDown)
+  }, [open, dismissable, onClose])
+
   if (!shouldRender || !open) return null
 
   return createPortal(
