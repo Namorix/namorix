@@ -81,12 +81,14 @@ backend/
     │   │   ├── NmxHub.cs             # SignalR hub for log/traffic/status events
     │   │   ├── NmxHubFilter.cs       # Hub connection filter (auth + error handling)
     │   │   ├── SignalRLogNotifier.cs
+│   │   ├── SignalRNotificationNotifier.cs
     │   │   ├── SignalRSystemNotifier.cs
     │   │   ├── SignalRTrafficNotifier.cs
     │   │   └── SignalRUserSettingsNotifier.cs  # Sends user:settings-changed
     │   ├── Infrastructure/
     │   │   ├── CountingStream.cs
     │   │   ├── ILogNotifier.cs
+│   │   ├── INotificationNotifier.cs
     │   │   ├── ISystemNotifier.cs
     │   │   ├── ITrafficNotifier.cs
     │   │   ├── IUserSettingsNotifier.cs  # User settings change notification
@@ -109,6 +111,7 @@ backend/
     │   │   └── TrafficMonitorMiddleware.cs
     │   ├── Models/
     │   │   ├── AddonManifest.cs      # Addon metadata (for M4)
+│   │   ├── Notification.cs       # Notification entity (i18n key+params)
     │   │   ├── Permission.cs
     │   │   ├── RefreshToken.cs       # Refresh token entity
     │   │   ├── Setting.cs            # Key-value settings entity
@@ -155,6 +158,7 @@ backend/
     │       ├── SettingsService.cs    # IsRegisterEnabled, GetTrustedProxies, AllowedOrigins, GetAppearanceDefaults (IMemoryCache)
     │       ├── UserSettingsService.cs  # User appearance settings (IMemoryCache)
     │       ├── ThemeService.cs       # Built-in theme list (light + dark)
+│       ├── NotificationService.cs  # Notification CRUD, pagination, SignalR push
     │       └── UserService.cs        # User CRUD (including email, name)
     ├── Namorix.Server/               # API + Middleware Pipeline
     │   ├── Controllers/
@@ -163,6 +167,7 @@ backend/
     │   │   ├── SettingsController.cs # System settings + appearance defaults + options
     │   │   ├── ThemeController.cs    # Theme list query
     │   │   ├── UserController.cs     # Profile, password, settings (all validated)
+│   │   ├── NotificationController.cs  # Notification list, unread, mark read, delete
     │   │   └── ...
     │   ├── Extensions/
     │   │   └── ApplicationBuilderExtensions.cs  # Server middleware pipeline wrapper
@@ -209,6 +214,16 @@ backend/
 | PUT | `/api/user/settings` | RequireAuth | Save user appearance settings (validated via SetSettingsSchema) |
 | PUT | `/api/user/profile` | RequireAuth | Update email + name (validated) |
 | PUT | `/api/user/password` | RequireAuth | Change password |
+
+### Notification (`/api/notifications`)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/notifications` | RequireAuth | List notifications (paginated: `page`, `pageSize`) |
+| GET | `/api/notifications/unread-count` | RequireAuth | Get unread notification count |
+| POST | `/api/notifications/{id}/read` | RequireAuth | Mark notification as read |
+| POST | `/api/notifications/read-all` | RequireAuth | Mark all notifications as read |
+| DELETE | `/api/notifications/{id}` | RequireAuth | Delete a notification |
 
 ### Permission (`/api/permission`)
 
@@ -301,6 +316,7 @@ SQLite database file (`namorix.db`), tạo tự động khi chạy migrations.
 - **UserPermission** — `userId`, `permissionId`
 - **ThemeManifest** — `id`, `name`, `version`, `author`, `description`, `preview`, `cssPath`, `tags`, `isBuiltIn`
 - **AddonManifest** — `id`, `displayName`, `description`, `icon` (for M4)
+- **Notification** — `id`, `userId`, `type`, `titleKey`, `descriptionKey?`, `params?`, `source?`, `isRead`, `createdAt`
 
 ### Migrations
 
@@ -342,6 +358,7 @@ SignalR is implemented and active via `/hubs/main`:
 - **Traffic events**: Network traffic data push to Network Traffic addon
 - **System events**: Config changes (`system:config-changed`) for appearance defaults sync
 - **User events**: User settings changes (`user:settings-changed`) for multi-tab sync
+- **Notification events**: Notification push (`notification:received`) for real-time badge update
 
 SignalR client (frontend) auto-reconnects with exponential backoff (5s → 30s cap, infinite retry).
 

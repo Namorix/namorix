@@ -46,7 +46,7 @@ frontend/
 │   │   ├── SystemMonitor/           # System resource monitoring
 │   │   ├── FileManager/             # File browser scaffold
 │   │   ├── Terminal/                # Terminal emulator scaffold
-│   │   ├── NotificationCenter/      # System notifications scaffold
+│   │   ├── NotificationCenter/      # Full addon with taskbar badge, dropdown panel, SignalR real-time
 │   │   └── PackageCenter/           # External addon management scaffold
 │   │
 │   ├── components/
@@ -59,11 +59,11 @@ frontend/
 │   │   └── Auth/                    # (empty — reserved)
 │   │
 │   ├── store/                       # Redux Toolkit
-│   │   ├── index.ts                 # configureStore (windowsState, launcher, taskbar slices)
+│   │   ├── index.ts                 # configureStore (windowsState, launcher, taskbar, notifications slices)
 │   │   ├── hooks.ts                 # useAppDispatch, useAppSelector (shallowEqual default)
 │   │   ├── types.ts                 # RootState, AppDispatch, WindowRect
-│   │   ├── slices/                  # windowsSlice, launcherSlice, taskbarSlice
-│   │   └── selectors/               # windowSelectors, launcherSelectors, taskbarSelectors
+│   │   ├── slices/                  # windowsSlice, launcherSlice, taskbarSlice, notificationsSlice
+│   │   └── selectors/               # windowSelectors, launcherSelectors, taskbarSelectors, notificationSelectors
 │   │
 │   ├── types/
 │   │   ├── windowing.ts             # rectToOrigin helper
@@ -74,6 +74,7 @@ frontend/
 │   │
 │   ├── controllers/
 │   │   ├── auth.controller.ts       # login, register, logout, loadAppearance, loadSystemDefaults
+│   │   ├── notification.controller.ts  # fetchNotifications, fetchUnreadCount, markAsRead, markAllAsRead, delete
 │   │   ├── settings.controller.ts   # getUserSettings, getAppearanceOptions, getThemes, updateProfile, changePassword
 │   │   ├── log.controller.ts        # listLogs with level/source filters
 │   │   └── health.controller.ts     # Health check, untrusted proxy detection
@@ -81,13 +82,15 @@ frontend/
 │   ├── hooks/
 │   │   ├── useTaskbarClock.ts       # Live clock for taskbar (uses appearance date/time format)
 │   │   ├── useAppearanceSync.ts     # Theme loading + content language + SignalR listener
-│   │   └── useDateTimeFormat.ts     # Reactive hook for useAppearanceStore time/date format
+│   │   ├── useDateTimeFormat.ts     # Reactive hook for useAppearanceStore time/date format
+│   │   └── useNotificationEvents.ts # SignalR listener for notification:received + notification:read-status
 │   │
 │   ├── i18n/
 │   │   ├── index.ts                 # NmxI18n instance with core + translation namespaces
 │   │   └── locales/
 │   │       ├── en.json              # English translations
-│   │       └── vi.json              # Vietnamese translations (TODO)
+│   │       ├── vi.json              # Vietnamese translations (TODO)
+│   │       └── notification/        # Notification content keys (en.json, vi.json)
 │   │
 │   ├── pages/
 │   │   ├── Login.tsx                # Username + password + remember-me toggle
@@ -126,7 +129,7 @@ const windows = useAppSelector((s) => s.windowsState)
 dispatch(closeWindow(windowId))
 ```
 
-Slices: `windowsSlice` (open/close/focus/minimize/maximize/move/resize/cascade), `launcherSlice` (toggle), `taskbarSlice` (window buttons). Selectors use `createSelector` for memoization. `useAppSelector` defaults to `shallowEqual`.
+Slices: `windowsSlice` (open/close/focus/minimize/maximize/move/resize/cascade), `launcherSlice` (toggle), `taskbarSlice` (window buttons), `notificationsSlice` (unread count, pagination, mark read). Selectors use `createSelector` for memoization. `useAppSelector` defaults to `shallowEqual`.
 
 ### Client-side Validation
 ```typescript
@@ -142,6 +145,7 @@ const error = validate(t)
 ```
 @namorix/core (namespace "core")  →  common.validation.*, common.fields.*
 frontend (namespace "translation") →  auth.login.*, auth.register.*
+frontend (namespace "notification") →  notification.* (content keys for notification center)
 ```
 
 ### SignalR Realtime
@@ -181,7 +185,7 @@ Built-in addons use the same contract as external addons (M4):
 - **NmxAddonManifest**: id, displayName, description?, icon?
 - **AddonContext**: addonId, locale, theme
 
-Four system addons are implemented: LogViewer, NetworkTraffic (SignalR + flat file), Settings, SystemMonitor.
+Five system addons are implemented: LogViewer, NetworkTraffic (SignalR + flat file), Settings, SystemMonitor, NotificationCenter.
 
 ## Milestones
 

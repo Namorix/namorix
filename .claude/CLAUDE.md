@@ -101,7 +101,7 @@ interface AuthChecker {
 - **Decorator-based routing** (C#: `[HttpGet]`, `[HttpPost]`, `[Validate]`, `[Controller]`; Frontend: registerController)
 - **CSRF double-submit** — `nmx_csrf_token` cookie + `X-CSRF-Token` header, enabled via `CsrfEnabled` config (C# middleware `UseCsrfProtection()`)
 - **Session self-heal** — `AuthController.Session()` gọi `TryRefresh()` khi access token expired, tự động refresh qua refresh token cookie trước khi trả về 401
-- **i18n layering** — core namespace + frontend translation namespace, `fallbackNS: ["core", "translation"]`
+- **i18n layering** — core namespace + frontend translation namespace + notification namespace, `fallbackNS: ["core", "translation", "notification"]`
 - **Validation two-tier** — server: `[Validate]` attribute with schema; client: `ValidationRunner` + `formatApiError()`
 - **Token whitelist** — refresh_tokens table with fingerprint + IP tracking for theft detection
 
@@ -474,6 +474,7 @@ frontend/packages/
 │       ├── apiRoutes.ts
 │       ├── constants.ts
 │       ├── theme/             # ThemeManifest, loader, registry
+│       ├── notification/     # NmxNotificationDto, SignalR events, API routes
 │       ├── providers/         # ThemeProvider
 │       └── utils/cx.ts
 ├── styles/

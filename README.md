@@ -99,7 +99,7 @@ namorix/
 │       │   ├── FileManager/     # File browser scaffold
 │       │   ├── LogViewer/       # Level filter chips + multi-select, paginated table
 │       │   ├── NetworkTraffic/  # Overview/Logs with SignalR + flat file backend
-│       │   ├── NotificationCenter/ # System notifications scaffold
+│       │   ├── NotificationCenter/ # Full addon with taskbar badge, dropdown panel, SignalR real-time
 │       │   ├── PackageCenter/   # External addon management scaffold
 │       │   ├── Settings/       # Appearance, System, Account tabs
 │       │   ├── SystemMonitor/
@@ -112,15 +112,15 @@ namorix/
 │       │   ├── WindowFrame/  # Draggable, resizable window chrome (6 hooks)
 │       │   └── WindowManager.tsx  # Render all open windows by zOrder
 │       ├── config/windowDefaults.ts # CSS token cache (read from --nmx-*)
-│       ├── controllers/      # auth.controller, settings.controller, log.controller
-│       ├── hooks/            # useTaskbarClock, useAppearanceSync
-│       ├── i18n/locales/     # en.json, vi.json
+│       ├── controllers/      # auth.controller, notification.controller, settings.controller, log.controller
+│       ├── hooks/            # useTaskbarClock, useAppearanceSync, useNotificationEvents
+│       ├── i18n/locales/     # en.json, vi.json, notification/en.json, notification/vi.json
 │       ├── pages/            # Login, Register, Desktop, Blocked
 │       ├── store/            # Redux Toolkit
 │       │   ├── index.ts      # configureStore
 │       │   ├── hooks.ts      # useAppDispatch, useAppSelector (shallowEqual)
 │       │   ├── types.ts
-│       │   ├── slices/       # windowsSlice, launcherSlice, taskbarSlice
+│       │   ├── slices/       # windowsSlice, launcherSlice, taskbarSlice, notificationsSlice
 │       │   └── selectors/    # Memoized createSelector
 │       └── types/            # WindowId, WindowState, windowing types
 └── backend/                   # ASP.NET Core 8 API (port 3000)
@@ -144,7 +144,7 @@ namorix/
 
 | Package | Purpose | Importable By |
 |---------|---------|---------------|
-| `@namorix/core` | Types, auth guards, http client with auto-refresh + CSRF, `ApiError`, i18n (NmxI18n, ValidationRunner), SignalR hooks (useSignalR, useSignalREvent, useSignalRGroup, useSignalRStatus), store (nmxStore), theme, addon contract, fingerprint, cache (useTabCache, Show), hooks (usePageSize, useLocalStorage), toast (NmxToastBus) | frontend, @namorix/ui, external addons |
+| `@namorix/core` | Types, auth guards, http client with auto-refresh + CSRF, `ApiError`, i18n (NmxI18n, ValidationRunner), SignalR hooks (useSignalR, useSignalREvent, useSignalRGroup, useSignalRStatus), store (nmxStore), theme, addon contract, fingerprint, cache (useTabCache, Show), hooks (usePageSize, useLocalStorage), toast (NmxToastBus), notification (NmxNotificationDto, SignalR events, API routes) | frontend, @namorix/ui, external addons |
 | `@namorix/styles` | SCSS tokens, reset, fonts, icomoon icons, component/layout SCSS (shared by all themes), shell-specific SCSS | frontend, @namorix/ui, external addons |
 | `@namorix/ui` | Primitives (NmxButton, NmxForm, NmxIcon, NmxInlineAlert, NmxToggle, NmxSelect, NmxSelectMultiple, NmxSlider, NmxSegmentedGroup, NmxBadge, NmxChip, NmxLoading, NmxPagination, NmxPulseDot, NmxSearchInput, NmxStatCard, NmxTagInput) + Composite (NmxCard, NmxDataTable, NmxMetaList, NmxRail, NmxSettings, NmxToolbar, NmxAddon, NmxDialog, NmxAlertDialog, NmxToastProvider, NmxTabContext, NmxTabProvider) + NmxHostContext + Layouts (NmxHorizontalWrap, NmxGrid) | frontend |
 | `backend` | ASP.NET Core 8 API server (SignalR, flat file traffic + logs, SQLite, Log pipeline, FileLogger, ValidationFilter, SecurityHeaders, CSRF, CORS) | - |
