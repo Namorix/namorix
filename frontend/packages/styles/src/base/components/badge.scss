@@ -28,4 +28,9 @@
   &--uppercase {
     text-transform: uppercase;
   }
+
+  &--sm {
+    font-size: var(--nmx-font-size-xs);
+    padding: var(--nmx-spacing-xs) var(--nmx-spacing-sm);
+  }
 }

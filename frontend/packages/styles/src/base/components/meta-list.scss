@@ -1,35 +1,45 @@
 @use "../abstract/mixins" as *;
 
 .nmx-meta-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--nmx-spacing-sm);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--nmx-spacing-lg);
+  align-items: start;
+  text-align: start;
 
   &__item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: var(--nmx-font-size-xs);
-    margin-bottom: var(--nmx-spacing-xs);
-
-    &:last-child {
-      margin-bottom: 0;
-    }
+    display: contents;
+    font-family: var(--nmx-font-mono), serif;
+    font-size: var(--nmx-font-size-sm);
 
     &-label {
       color: var(--nmx-color-on-surface-variant);
-      font-family: var(--nmx-font-mono), serif;
+      align-self: center;
     }
 
     &-value {
       color: var(--nmx-meta-text, var(--nmx-color-on-surface));
-      font-family: var(--nmx-font-mono), serif;
+      word-break: break-all;
+      text-align: start;
 
       &--muted {
         --nmx-meta-text: var(--nmx-color-on-surface-variant);
       }
 
+      &--end {
+        text-align: end;
+      }
+
       @include semantic-variants("nmx-meta", false, true);
+    }
+  }
+
+  &--block {
+    .nmx-meta-list__item-value {
+      background: var(--nmx-color-surface-lowest);
+      padding: var(--nmx-spacing-md);
+      border-radius: var(--nmx-radius-md);
+      white-space: pre-wrap;
     }
   }
 }

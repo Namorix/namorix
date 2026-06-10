@@ -144,6 +144,7 @@
     gap: var(--nmx-spacing-md);
     padding: var(--nmx-spacing-xs) var(--nmx-spacing-md);
     border-radius: var(--nmx-radius-sm);
+    cursor: pointer;
 
     &:hover {
       background: var(--nmx-color-surface-high);

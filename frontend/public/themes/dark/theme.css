@@ -1,4 +1,5 @@
-@charset "UTF-8";@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap");@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Rajdhani:wght@300;400;500;600;700&display=swap");@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Rajdhani:wght@300;400;500;600;700&display=swap");@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap");
+@charset "UTF-8";@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap");@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Rajdhani:wght@300;400;500;600;700&display=swap");@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Rajdhani:wght@300;400;500;600;700&display=swap");@import url("https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap");@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap");
+
 
 
 
@@ -881,30 +882,31 @@ textarea,
   height: 1em;
 }
 .nmx-meta-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--nmx-spacing-sm);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--nmx-spacing-lg);
+  align-items: start;
+  text-align: start;
 }
 .nmx-meta-list__item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: var(--nmx-font-size-xs);
-  margin-bottom: var(--nmx-spacing-xs);
-}
-.nmx-meta-list__item:last-child {
-  margin-bottom: 0;
+  display: contents;
+  font-family: var(--nmx-font-mono), serif;
+  font-size: var(--nmx-font-size-sm);
 }
 .nmx-meta-list__item-label {
   color: var(--nmx-color-on-surface-variant);
-  font-family: var(--nmx-font-mono), serif;
+  align-self: center;
 }
 .nmx-meta-list__item-value {
   color: var(--nmx-meta-text, var(--nmx-color-on-surface));
-  font-family: var(--nmx-font-mono), serif;
+  word-break: break-all;
+  text-align: start;
 }
 .nmx-meta-list__item-value--muted {
   --nmx-meta-text: var(--nmx-color-on-surface-variant);
+}
+.nmx-meta-list__item-value--end {
+  text-align: end;
 }
 .nmx-meta-list__item-value--default {
   --nmx-meta-text: var(--nmx-color-default);
@@ -932,6 +934,12 @@ textarea,
 }
 .nmx-meta-list__item-value--success {
   --nmx-meta-text: var(--nmx-color-success);
+}
+.nmx-meta-list--block .nmx-meta-list__item-value {
+  background: var(--nmx-color-surface-lowest);
+  padding: var(--nmx-spacing-md);
+  border-radius: var(--nmx-radius-md);
+  white-space: pre-wrap;
 }
 .nmx-badge {
   display: inline-flex;
@@ -988,6 +996,10 @@ textarea,
 }
 .nmx-badge--uppercase {
   text-transform: uppercase;
+}
+.nmx-badge--sm {
+  font-size: var(--nmx-font-size-xs);
+  padding: var(--nmx-spacing-xs) var(--nmx-spacing-sm);
 }
 .nmx-chip {
   display: inline-flex;
@@ -2301,6 +2313,7 @@ textarea,
 :root {
   /** Fonts */
   --nmx-font-family-system: Inter, system-ui, sans-serif;
+  --nmx-font-family-nunito: Nunito, sans-serif;
   --nmx-font-sans: var(--nmx-font-family-system);
   --nmx-font-mono: "JetBrains Mono", ui-monospace, monospace;
   --nmx-font-logo: Rajdhani, sans-serif;

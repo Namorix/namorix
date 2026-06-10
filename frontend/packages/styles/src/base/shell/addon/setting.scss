@@ -1,18 +1,7 @@
-.nmx-addon-setting {
-  & .nmx-addon-setting__meta-list {
-    gap: var(--nmx-spacing-md);
-  }
-
-  & .nmx-addon-setting__meta-role {
-    font-weight: bold;
-    text-transform: uppercase;
-  }
-
-  & .nmx-addon-setting__meta-value {
+.nmx-addon-setting .nmx-addon-setting__meta-value {
     color: var(--nmx-color-on-surface);
-    font-size: var(--nmx-font-size-2xl);
+    font-size: var(--nmx-font-size-sm);
     font-weight: var(--nmx-font-weight-bold);
-  }
 }
 
 .nmx-addon-setting__profile-header {
