@@ -9,6 +9,8 @@ import {
   setHasBeenConnected,
   setAppearanceStore,
   type AppearanceSettings,
+  ApiSettingsRoutes,
+  applyTheme,
 } from "@namorix/core"
 
 async function login(
@@ -21,15 +23,6 @@ async function login(
     .post({ username, password, rememberMe })
     .json<void>()
   if (!data.success) throw ApiError.fromResponse(data)
-  await loadAppearance()
-
-  // const themeRes = await nmxHttp
-  //   .url(getApiBaseUrl() + ApiUserRoutes.theme)
-  //   .get()
-  //   .json<{ themeId: string }>()
-  // if (themeRes.success && themeRes.data) {
-  //   localStorage.setItem(NMX_THEME_STORAGE_KEY, themeRes.data.themeId)
-  // }
 }
 
 async function register(
@@ -63,7 +56,24 @@ async function loadAppearance() {
     .json<AppearanceSettings>()
   if (res.success && res.data) {
     setAppearanceStore(res.data)
+    if (res.data.appearance_theme) {
+      await applyTheme(res.data.appearance_theme)
+    }
+  }
+}
+
+async function loadSystemDefaults() {
+  const res = await nmxHttp
+    .url(getApiBaseUrl() + ApiSettingsRoutes.appearanceDefaults)
+    .get()
+    .json<AppearanceSettings>()
+  if (res.success && res.data) {
+    setAppearanceStore(res.data)
+    if (res.data.appearance_theme) {
+      await applyTheme(res.data.appearance_theme)
+    }
   }
 }
 
 export const authController = { login, register, logout, loadAppearance }
+export { loadSystemDefaults }

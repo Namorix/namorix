@@ -2,7 +2,7 @@ import "./main.scss"
 
 import { createRoot } from "react-dom/client"
 import { BrowserRouter } from "react-router-dom"
-import { configureCore, generateFingerprint, restoreTheme } from "@namorix/core"
+import { configureCore, generateFingerprint } from "@namorix/core"
 import { Root } from "./Root"
 import "./i18n"
 import "./addons"
@@ -15,10 +15,6 @@ configureCore({
 })
 
 generateFingerprint().catch(console.error)
-
-if (!import.meta.env.DEV) {
-  restoreTheme()
-}
 
 const { hostname } = location
 const isLocal =
