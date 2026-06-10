@@ -19,7 +19,7 @@ Browser-based desktop shell, self-hosted.
 | Backend | ASP.NET Core 8 |
 | Database | SQLite + EF Core |
 | Auth | JWT (access + refresh) with HttpOnly cookies |
-| Terminal | xterm.js (planned) |
+| Terminal | xterm.js |
 | Realtime | SignalR |
 | Server-to-server | gRPC (planned) |
 | Docker | Docker.DotNet.Enhanced (planned) |
@@ -64,7 +64,7 @@ namorix/
 │   │   │       ├── signalr/  # SignalR service, hooks (useSignalR, useSignalREvent, useSignalRGroup, useSignalRStatus), constants
 │   │   │       ├── store/    # nmxStore observable singleton, accessors (user, theme, registerEnabled, needsRegister)
 │   │   │       ├── toast/    # NmxToastBus event emitter, nmxToast singleton (.long/.short/.success/.error/.warning/.info)
-│   │   │       ├── theme/    # ThemeManifest types, loader (hot swap CSS), registry
+│   │   │       ├── theme/    # ThemeManifest types, loader (hot swap CSS)
 │   │   │       ├── types/    # ApiResponse, ValidationErrorMeta, error codes
 │   │   │       ├── utils/    # cx, isMobile, sanitizePath, format
 │   │   │       ├── apiRoutes.ts
@@ -112,8 +112,8 @@ namorix/
 │       │   ├── WindowFrame/  # Draggable, resizable window chrome (6 hooks)
 │       │   └── WindowManager.tsx  # Render all open windows by zOrder
 │       ├── config/windowDefaults.ts # CSS token cache (read from --nmx-*)
-│       ├── controllers/      # auth.controller, health.controller
-│       ├── hooks/            # useTaskbarClock
+│       ├── controllers/      # auth.controller, settings.controller, log.controller
+│       ├── hooks/            # useTaskbarClock, useAppearanceSync
 │       ├── i18n/locales/     # en.json, vi.json
 │       ├── pages/            # Login, Register, Desktop, Blocked
 │       ├── store/            # Redux Toolkit
@@ -161,10 +161,10 @@ Frontend uses controller pattern for API calls:
 import { nmxHttp, getApiBaseUrl, ApiError, ApiAuthRoutes } from "@namorix/core"
 
 export const authController = {
-  register: async (username: string, password: string) => {
+  login: async (username: string, password: string, rememberMe?: boolean) => {
     const data = await nmxHttp
-      .url(getApiBaseUrl() + ApiAuthRoutes.register)
-      .post({ username, password })
+      .url(getApiBaseUrl() + ApiAuthRoutes.login)
+      .post({ username, password, rememberMe })
       .json()
     if (!data.success) throw ApiError.fromResponse(data)
   },
@@ -237,6 +237,6 @@ Addon có 3 mode tích hợp:
 
 1. **M1** — Static shell UI + mock auth page ✅
 2. **M2** — Full auth backend (login/register/logout/refresh/session, decorators, i18n, validation) ✅
-3. **M3** — System Addons (Built-in): addon contract + registry, About, Log Viewer, NetworkTraffic (SignalR + flat file storage + filter chips), SystemMonitor, Settings (Appearance/System/Account), theme system (hot swap CSS, localStorage+DB), File Manager, Terminal, Notification Center, Package Center (scaffold)
+3. **M3** — System Addons (Built-in): addon contract + registry, About, Log Viewer, NetworkTraffic (SignalR + flat file storage), SystemMonitor, Settings (Appearance/System/Account), theme system (hot swap CSS, server-driven), File Manager, Terminal, Notification Center, Package Center
 4. **M4** — External addon system (Docker lifecycle, addon manager)
 5. **M5** — @namorix/core publish npm + addon integration guide

@@ -636,6 +636,9 @@ createAuthGuard(authService)
         │     ├── true → null (render Desktop)
         │     └── false → redirect "/register"
         └── false → redirect "/login"
+
+Note: `isRegistrationOpen()` trả về true nếu không có user nào (`needsRegister=true`),
+bỏ qua `register_enabled` setting — user đầu tiên luôn có thể register.
 ```
 
 ### Key files
@@ -675,14 +678,17 @@ createAuthGuard(authService)
 | `NmxButton` | Primitive | size, variant, rounded, semantic |
 | `NmxForm` | Primitive | NmxFormField, NmxFormInput, NmxFormActions |
 | `NmxDialog` | Composite | NmxDialogHeader, NmxDialogBody, NmxDialogFooter |
-| `NmxAlertDialog` | Composite | open, onConfirm, onCancel, loading |
+| `NmxAlertDialog` | Composite | open, hideCancel, size, onConfirm, onCancel, loading |
 | `NmxToastProvider` | Provider | subscribes nmxToast event bus |
 | `NmxCard` | Composite | NmxCardHeader, NmxCardBody, NmxCardFooter |
 | `NmxSelect`, `NmxSlider`, `NmxSegmentedGroup` | Primitive | - |
 | `NmxSearchInput` | Primitive | onSubmit, suggestions |
 | `NmxDataTable` | Data | columns, rows, hideBelow |
 | `NmxPagination` | Data | page, pageSize, total |
-| `NmxChip`, `NmxChipFilter`, `NmxBadge` | Primitive | semantic color |
+| `NmxBadge` | Primitive | semantic, bgEnabled, uppercase, size |
+| `NmxMetaList` | Layout | grid (auto 1fr) |
+| `NmxMetaItem` | Layout | label, value, isBlockMessage, children |
+| `NmxChip`, `NmxChipFilter` | Primitive | semantic color |
 | `NmxToggle` | Primitive | checked, onChange |
 | `NmxRail` | Layout | sidebar with tabs |
 | `NmxToolbar` | Layout | toolbar with tabs |

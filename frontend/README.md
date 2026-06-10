@@ -39,10 +39,15 @@ frontend/
 │   ├── addons/                      # Built-in system addons (M3)
 │   │   ├── registry.ts              # registerAddon, resolveAddon, listAddons
 │   │   ├── index.ts                 # Bootstrap — imports all *.addon.ts + addonToItems helper
-│   │   ├── LogViewer/               # Log entry viewer with level chips, source search, pagination
-│   │   ├── NetworkTraffic/          # Network traffic overview, logs, threats (SignalR + flat file)
-│   │   ├── Settings/                # Appearance (theme), System (proxies), Account tabs
-│   │   └── SystemMonitor/           # System resource monitoring
+│   │   ├── LogViewer/               # Log entry viewer with level chips, source search, pagination, detail dialog
+│   │   ├── NetworkTraffic/          # Network traffic overview, logs (SignalR + flat file), detail dialog
+│   │   ├── About/                   # Version info, meta-list, GitHub links
+│   │   ├── Settings/                # Appearance (theme, accent, density, font, language, date/time format), System, Account tabs
+│   │   ├── SystemMonitor/           # System resource monitoring
+│   │   ├── FileManager/             # File browser scaffold
+│   │   ├── Terminal/                # Terminal emulator scaffold
+│   │   ├── NotificationCenter/      # System notifications scaffold
+│   │   └── PackageCenter/           # External addon management scaffold
 │   │
 │   ├── components/
 │   │   ├── AuthView.tsx             # Two-column layout (hero + form panel)
@@ -68,11 +73,15 @@ frontend/
 │   │   └── windowDefaults.ts        # CSS variable cache for window geometry defaults
 │   │
 │   ├── controllers/
-│   │   ├── auth.controller.ts       # login, register, logout — API calls via nmxHttp
+│   │   ├── auth.controller.ts       # login, register, logout, loadAppearance, loadSystemDefaults
+│   │   ├── settings.controller.ts   # getUserSettings, getAppearanceOptions, getThemes, updateProfile, changePassword
+│   │   ├── log.controller.ts        # listLogs with level/source filters
 │   │   └── health.controller.ts     # Health check, untrusted proxy detection
 │   │
 │   ├── hooks/
-│   │   └── useTaskbarClock.ts       # Live clock for taskbar (updates every 30s)
+│   │   ├── useTaskbarClock.ts       # Live clock for taskbar (uses appearance date/time format)
+│   │   ├── useAppearanceSync.ts     # Theme loading + content language + SignalR listener
+│   │   └── useDateTimeFormat.ts     # Reactive hook for useAppearanceStore time/date format
 │   │
 │   ├── i18n/
 │   │   ├── index.ts                 # NmxI18n instance with core + translation namespaces
@@ -82,7 +91,7 @@ frontend/
 │   │
 │   ├── pages/
 │   │   ├── Login.tsx                # Username + password + remember-me toggle
-│   │   ├── Register.tsx             # Username + password + confirmPassword
+│   │   ├── Register.tsx             # Username + email + password + name
 │   │   ├── Desktop.tsx              # Full shell layout: taskbar, desktop, windows, launcher
 │   │   └── Blocked.tsx              # Untrusted proxy / blocked access screen
 │   │

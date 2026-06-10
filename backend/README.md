@@ -48,14 +48,14 @@ backend/
     │   │   ├── AppConfig.cs          # Root config (CsrfEnabled, SecureCookie, AllowedOrigins)
     │   │   └── JwtConfig.cs          # JWT settings (Secret, Issuer, Audience, expiration)
     │   ├── Constants/
-    │   │   ├── Auth.cs               # AuthConstraints (username/password min/max length)
+    │   │   ├── Auth.cs               # AuthConstraints (username/password/email/name min/max length, patterns)
     │   │   ├── Cookie.cs             # Cookie names (nmx_access_token, nmx_refresh_token, nmx_csrf_token)
-    │   │   ├── Error.cs              # HttpErrorCodes, AuthErrorCodes, MiddlewareErrorCodes
+    │   │   ├── Error.cs              # Error codes (HttpErrorCodes, AuthErrorCodes, MiddlewareErrorCodes, ValidationErrorCodes)
     │   │   ├── Http.cs               # HttpContextKeys
     │   │   ├── Jwt.cs                # JwtClaims (UserId, Username, Role, Jti, Iat)
     │   │   ├── Routes.cs             # API route constants
-    │   │   ├── Settings.cs           # SettingKeys (RegisterEnabled, TrustedProxies)
-    │   │   └── Validation.cs         # ValidationErrorCodes
+    │   │   ├── Settings.cs           # SettingKeys, AppearanceSettingKeys, AppearanceDefaults
+    │   │   └── Validation.cs         # ValidationMeta
     │   ├── Controllers/
     │   │   └── LogController.cs      # Log query with level/source filters, pagination
     │   ├── Exceptions/
@@ -82,12 +82,14 @@ backend/
     │   │   ├── NmxHubFilter.cs       # Hub connection filter (auth + error handling)
     │   │   ├── SignalRLogNotifier.cs
     │   │   ├── SignalRSystemNotifier.cs
-    │   │   └── SignalRTrafficNotifier.cs
+    │   │   ├── SignalRTrafficNotifier.cs
+    │   │   └── SignalRUserSettingsNotifier.cs  # Sends user:settings-changed
     │   ├── Infrastructure/
     │   │   ├── CountingStream.cs
     │   │   ├── ILogNotifier.cs
     │   │   ├── ISystemNotifier.cs
     │   │   ├── ITrafficNotifier.cs
+    │   │   ├── IUserSettingsNotifier.cs  # User settings change notification
     │   │   ├── LogBuffer.cs
     │   │   ├── SignalREvents.cs
     │   │   └── TrafficBuffer.cs
@@ -130,25 +132,38 @@ backend/
     │       ├── TrafficCleanupWorker.cs
     │       ├── TrafficFlushWorker.cs
     │       └── TrafficStatsWorker.cs
+    ├── Namorix.Core/
+    │   ├── Infrastructure/
+    │   │   ├── IUserSettingsNotifier.cs  # User settings change notification
+    │   │   └── SignalRUserSettingsNotifier.cs  # Sends `user:settings-changed` via SignalR
+    │   ├── Validation/
+    │   │   └── Schemas/
+    │   │       ├── SetSettingsSchema.cs  # Appearance settings DTO + validation rules
+    │   │       ├── UpdateProfileSchema.cs  # Profile update validation
+    │   │       ├── ChangePasswordSchema.cs  # Password change validation
+    │   │       ├── LoginSchema.cs
+    │   │       └── RegisterSchema.cs
+    │   └── Data/
+    │       └── AppearanceOptionsData.cs  # Static valid appearance options
     ├── Namorix.Adapters/             # Persistence + Business Services
     │   ├── Migrations/               # EF Core migrations
     │   ├── Persistence/
     │   │   └── AppDbContext.cs       # EF Core DbContext
     │   └── Services/
-    │       ├── AuthService.cs        # Login, Register, RefreshToken, RevokeToken, VerifyAccessToken
+    │       ├── AuthService.cs        # Login, Register (email/name), RefreshToken, RevokeToken, VerifyAccessToken
     │       ├── PermissionService.cs  # User permission management
-    │       ├── SettingsService.cs    # IsRegisterEnabled, GetTrustedProxies, AllowedOrigins (IMemoryCache)
-    │       ├── ThemeService.cs       # User theme preferences
-    │       └── UserService.cs        # User CRUD
+    │       ├── SettingsService.cs    # IsRegisterEnabled, GetTrustedProxies, AllowedOrigins, GetAppearanceDefaults (IMemoryCache)
+    │       ├── UserSettingsService.cs  # User appearance settings (IMemoryCache)
+    │       ├── ThemeService.cs       # Built-in theme list (light + dark)
+    │       └── UserService.cs        # User CRUD (including email, name)
     ├── Namorix.Server/               # API + Middleware Pipeline
     │   ├── Controllers/
-    │   │   ├── AuthController.cs     # 7 auth endpoints (login, register, logout, session, refresh, status)
+    │   │   ├── AuthController.cs     # 7 auth endpoints (login, register with email/name, logout, session, refresh, status)
     │   │   ├── HealthController.cs   # Health check endpoint
-    │   │   ├── PermissionController.cs   # User permission management
-    │   │   ├── SettingsController.cs # Trusted proxies, allowed origins
+    │   │   ├── SettingsController.cs # System settings + appearance defaults + options
     │   │   ├── ThemeController.cs    # Theme list query
-    │   │   ├── UserController.cs     # User theme preferences
-    │   │   └── UserPermissionController.cs
+    │   │   ├── UserController.cs     # Profile, password, settings (all validated)
+    │   │   └── ...
     │   ├── Extensions/
     │   │   └── ApplicationBuilderExtensions.cs  # Server middleware pipeline wrapper
     │   ├── Middleware/
@@ -169,7 +184,7 @@ backend/
 | Method | Path | Description |
 |--------|------|-------------|
 | POST | `/api/auth/login` | Login with username + password. Body: `{ username, password, rememberMe? }` |
-| POST | `/api/auth/register` | Register new user. Body: `{ username, password }` |
+| POST | `/api/auth/register` | Register new user. Body: `{ username, password, email, name }` |
 | POST | `/api/auth/logout` | Clear cookies, revoke refresh token |
 | POST | `/api/auth/logout-all` | Revoke all refresh tokens for current user |
 | GET | `/api/auth/session` | Validate access token, return user info (auto-refresh if expired) |
@@ -178,17 +193,22 @@ backend/
 
 ### Settings (`/api/settings`)
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/settings/proxies` | Get list of trusted proxy IPs |
-| PUT | `/api/settings/proxies` | Set trusted proxy IPs. Body: `{ proxies: string[] }` |
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/settings/system` | Admin | System config (proxies, origins, register) |
+| PUT | `/api/settings/system` | Admin | Set system config |
+| GET | `/api/settings/appearance` | Public | System default appearance settings |
+| PUT | `/api/settings/appearance` | Admin | Set system default appearance (validated) |
+| GET | `/api/settings/appearance/options` | RequireAuth | Valid appearance options (accent colors, etc.) |
 
 ### User (`/api/user`)
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/user/theme` | Get current user's themeId |
-| PUT | `/api/user/theme` | Set user theme preference. Body: `{ themeId: string }` |
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/user/settings` | RequireAuth | Get user's appearance settings |
+| PUT | `/api/user/settings` | RequireAuth | Save user appearance settings (validated via SetSettingsSchema) |
+| PUT | `/api/user/profile` | RequireAuth | Update email + name (validated) |
+| PUT | `/api/user/password` | RequireAuth | Change password |
 
 ### Permission (`/api/permission`)
 
@@ -273,13 +293,14 @@ SQLite database file (`namorix.db`), tạo tự động khi chạy migrations.
 
 ### Models
 
-- **User** — `id`, `username`, `password`, `role`, `themeId`, `createdAt`
+- **User** — `id`, `username`, `password`, `role`, `email`, `name`, `createdAt`
 - **RefreshToken** — `jti`, `userId`, `tokenHash`, `userAgent`, `fingerprint`, `ipAddress`, `lastUsedAt`, `expiresAt`
-- **Setting** — `key` (PK), `value`
+- **Setting** — `id`, `key` (PK), `value`
+- **UserSetting** — `id`, `userId`, `key`, `value` (appearance settings per user)
 - **Permission** — `id`, `name`, `description`
 - **UserPermission** — `userId`, `permissionId`
-- **ThemeManifest** — `id`, `name`, `version`, `author`, `description`, `preview`, `css`, `tags`, `isBuiltIn`
-- **AddonManifest** — `id`, `name`, `version`, `author`, `description`, `icon`, `entry`, `permissions` (for M4)
+- **ThemeManifest** — `id`, `name`, `version`, `author`, `description`, `preview`, `cssPath`, `tags`, `isBuiltIn`
+- **AddonManifest** — `id`, `displayName`, `description`, `icon` (for M4)
 
 ### Migrations
 
@@ -305,6 +326,8 @@ make db_reset
 5. Logout-all → POST /api/auth/logout-all → revoke all user tokens
 ```
 
+- Register: supports email + name fields (validated), unique constraints
+- First user = admin (auto-register if no users exist, bypasses register_enabled lock)
 - Access token: JWT, 5 phút (có thể cấu hình)
 - Refresh token: random 64-byte, 7 ngày (mặc định) / 90 ngày (remember-me)
 - Refresh rotation: old token bị revoke ngay khi refresh
@@ -317,7 +340,8 @@ SignalR is implemented and active via `/hubs/main`:
 
 - **Log events**: Real-time log entry streaming to Log Viewer addon
 - **Traffic events**: Network traffic data push to Network Traffic addon
-- **System events**: Backend status notifications (planned)
+- **System events**: Config changes (`system:config-changed`) for appearance defaults sync
+- **User events**: User settings changes (`user:settings-changed`) for multi-tab sync
 
 SignalR client (frontend) auto-reconnects with exponential backoff (5s → 30s cap, infinite retry).
 
