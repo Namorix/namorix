@@ -125,12 +125,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.38.2 | M3 (Detail dialogs, logout confirm, register/login fixes) |
-| @namorix/core | 0.30.2 | M3 (Fix isRegistrationOpen — first user bypasses register lock) |
-| @namorix/styles | 0.28.2 | M3 (meta-list grid refactor, badge size SCSS, minor fixes) |
-| @namorix/ui | 0.21.3 | M3 (AlertDialog hideCancel/size/children, Badge size, MetaItem children) |
-| Namorix.Core | 0.35.2 | M3 (AppearanceOptionsData update) |
-| Namorix.Server | 0.35.2 | M3 (AuthController register fix, ThemeService/ThemeController) |
+| frontend | 0.39.0 | M3 (Notification Center addon, taskbar badge + panel) |
+| @namorix/core | 0.31.0 | M3 (New notification module: types, SignalR events, API routes) |
+| @namorix/styles | 0.29.0 | M3 (Notification panel SCSS, icomoon icons updated) |
+| @namorix/ui | 0.21.4 | M3 (New NmxIconFontSymbol entries) |
+| Namorix.Core | 0.36.0 | M3 (Notification model, INotificationNotifier interface, SignalR events) |
+| Namorix.Server | 0.36.0 | M3 (NotificationController, NotificationService, DI) |
 
 ## Version Rules
 

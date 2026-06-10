@@ -1,5 +1,16 @@
 # Version History — June 2026
 
+## 2026-06-10 — Notification Center addon, taskbar badge + panel
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.30.2 → 0.31.0 | NEW: `notification/types.ts` — NmxNotificationDto. MODIFIED: `signalr/constants.ts` — new NotificationReceived/NotificationReadStatus events. `apiRoutes.ts` — new ApiNotificationRoutes. |
+| @namorix/ui | 0.21.3 → 0.21.4 | NEW: `NmxIconFont.types.ts` — new icon symbols. |
+| @namorix/styles | 0.28.2 → 0.29.0 | NEW: `taskbar.scss` — notification panel + item SCSS. MODIFIED: icomoon — updated font with new icons. |
+| frontend | 0.38.2 → 0.39.0 | NEW: `slices/notificationsSlice.ts` — Redux state for notifications. `selectors/notificationSelectors.ts` — capped unread count. `hooks/useNotificationEvents.ts` — SignalR event listener. `controllers/notification.controller.ts` — REST API calls. `components/Taskbar/NotificationPanel.tsx` — dropdown panel. `addons/NotificationCenter/NotificationCenter.tsx` — full addon window. `utils/notification.ts` — i18n resolve helper. `i18n/locales/notification/` — notification content keys. MODIFIED: Taskbar.tsx, TaskbarView.tsx — badge + panel + launcher coordination. Desktop.tsx — mount useNotificationEvents. |
+| Namorix.Core | 0.35.2 → 0.36.0 | NEW: `Models/Notification.cs` — notification entity. `Infrastructure/INotificationNotifier.cs` — notifier interface. `Hubs/SignalRNotificationNotifier.cs` — SignalR implementation. `Responses/NotificationResponse.cs` — DTO. MODIFIED: `Constants/SignalR.cs` — new events. |
+| Namorix.Server | 0.35.2 → 0.36.0 | NEW: `Controllers/NotificationController.cs` — REST API (list, unread, mark read, delete). `Adapters/Services/NotificationService.cs` — business logic. MODIFIED: `Program.cs` — DI registration. `Adapters/Persistence/AppDbContext.cs` — DbSet + indexes. |
+
 ## 2026-06-X — SVG icons moved to public, relative → absolute paths
 
 | Package | Version | Changes |
