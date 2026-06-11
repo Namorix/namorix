@@ -43,11 +43,14 @@ export const notificationsSlice = createSlice({
     },
 
     addNotification(state, action: PayloadAction<NmxNotificationDto>) {
+      const existing = state.items.find((n) => n.id === action.payload.id)
+      if (existing) {
+        Object.assign(existing, action.payload)
+        return
+      }
       state.items.unshift(action.payload)
       state.totalCount += 1
-      if (!action.payload.isRead) {
-        state.unreadCount += 1
-      }
+      if (!action.payload.isRead) state.unreadCount += 1
     },
 
     markAsRead(state, action: PayloadAction<number>) {

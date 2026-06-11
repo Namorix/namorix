@@ -10,7 +10,6 @@ import "./SystemMonitor/SystemMonitor.addon"
 import "./NetworkTraffic/NetworkTraffic.addon"
 import "./FileManager/FileManager.addon"
 import "./Terminal/Terminal.addon"
-import "./NotificationCenter/NotificationCenter.addon"
 import "./PackageCenter/PackageCenter.addon"
 
 export const addonToItems = (addon: AddonModule): AddonItem => ({

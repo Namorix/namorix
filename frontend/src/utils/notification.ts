@@ -1,5 +1,20 @@
 import type { TFunction } from "i18next"
-import type { NmxNotificationDto } from "@namorix/core"
+import type { NmxAddonLocaleKeys, NmxNotificationDto } from "@namorix/core"
+import { resolveAddonLocaleTitleByKey } from "./addon"
+import { NmxIconFontSymbol, NmxIconSvgSymbol } from "@namorix/ui"
+
+export const NOTIFICATION_TYPE_ICON: Record<string, NmxIconFontSymbol> = {
+  info: NmxIconFontSymbol.INFO,
+  success: NmxIconFontSymbol.CHECK,
+  warning: NmxIconFontSymbol.WARNING,
+  error: NmxIconFontSymbol.CLOSE,
+  security: NmxIconFontSymbol.SECURITY,
+}
+
+export const NOTIFICATION_SOURCE_ICON: Record<string, NmxIconSvgSymbol> = {
+  system: NmxIconSvgSymbol.APP_SYSTEM,
+  settings: NmxIconSvgSymbol.APP_SETTINGS,
+}
 
 function parseParams(raw?: string): Record<string, string> | undefined {
   if (!raw) return undefined
@@ -52,27 +67,12 @@ function toHtml(str: string) {
     )
 }
 
-export function resolveNotificationTitle(
-  t: TFunction,
-  notif: NmxNotificationDto,
-): string {
-  const params = parseParams(notif.params)
-  return t(`notification:${notif.key}.title`, params)
-}
-
 export function resolveNotificationDescription(
   t: TFunction,
   notif: NmxNotificationDto,
 ): string | undefined {
   const params = parseParams(notif.params)
-  return t(`notification:${notif.key}.description`, params)
-}
-
-export function resolveNotificationTitleHtml(
-  t: TFunction,
-  notification: NmxNotificationDto,
-): string {
-  return toHtml(resolveNotificationTitle(t, notification))
+  return t(`notification:${notif.key}`, params)
 }
 
 export function resolveNotificationDescriptionHtml(
@@ -81,4 +81,10 @@ export function resolveNotificationDescriptionHtml(
 ): string {
   const desc = resolveNotificationDescription(t, notification)
   return desc ? toHtml(desc) : ""
+}
+
+export function resolveSourceName(t: TFunction, source?: string): string {
+  return (
+    resolveAddonLocaleTitleByKey(t, source as NmxAddonLocaleKeys) ?? t("system")
+  )
 }

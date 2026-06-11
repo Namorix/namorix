@@ -1,11 +1,6 @@
 import { memo, useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import {
-  NmxIconFont,
-  NmxIconFontSymbol,
-  NmxIconBox,
-  type NmxSemanticColor,
-} from "@namorix/ui"
+import { NmxBadge, NmxIconFont, NmxIconFontSymbol } from "@namorix/ui"
 import {
   useAppSelector,
   useAppDispatch,
@@ -15,141 +10,93 @@ import {
   markAllAsRead,
   setNotifications,
   setLoading,
+  selectorNotificationsLoading,
 } from "../../store"
-import { fetchNotifications } from "../../controllers"
 import {
-  resolveNotificationDescriptionHtml,
-  resolveNotificationTitleHtml,
-} from "../../utils/notification"
-import { type NmxNotificationDto, useDateTimeFormat } from "@namorix/core"
+  fetchNotifications,
+  markAsRead as apiMarkAsRead,
+  markAllAsRead as apiMarkAllAsRead,
+} from "../../controllers"
+import { nmxToast } from "@namorix/core"
+import { NotificationItem } from "../NotificationItem"
 
-interface NotificationPanelProps {
-  onViewAll: () => void
-}
+export const NotificationPanel = memo(() => {
+  const { t } = useTranslation()
+  const dispatch = useAppDispatch()
+  const items = useAppSelector(selectorNotifications)
+  const unreadCount = useAppSelector(selectorUnreadCount)
+  const loading = useAppSelector(selectorNotificationsLoading)
 
-const TYPE_ICON: Record<string, NmxIconFontSymbol> = {
-  info: NmxIconFontSymbol.INFO,
-  success: NmxIconFontSymbol.CHECK,
-  warning: NmxIconFontSymbol.WARNING,
-  error: NmxIconFontSymbol.CLOSE,
-  security: NmxIconFontSymbol.SECURITY,
-}
+  useEffect(() => {
+    dispatch(setLoading(true))
+    fetchNotifications(1, 5)
+      .then((data) => {
+        dispatch(setNotifications({ ...data, append: false }))
+      })
+      .catch(() => dispatch(setLoading(false)))
+  }, [dispatch])
 
-const NotificationItem = memo<{ notification: NmxNotificationDto }>(
-  ({ notification }) => {
-    const { t } = useTranslation()
-    const { relativeTime } = useDateTimeFormat()
-    const dispatch = useAppDispatch()
-
-    return (
-      <button
-        className={`nmx-notification-item ${!notification.isRead ? "nmx-notification-item--unread" : ""}`}
-        type="button"
-        onClick={() => dispatch(markAsRead(notification.id))}
-      >
-        <NmxIconBox
-          semantic={
-            (
-              { security: "error" } as Partial<Record<string, NmxSemanticColor>>
-            )[notification.type] ?? (notification.type as NmxSemanticColor)
-          }
-          className="nmx-notification-item__icon-box"
-        >
-          <NmxIconFont
-            symbol={TYPE_ICON[notification.type] ?? NmxIconFontSymbol.INFO}
-            className="nmx-notification-item__icon"
-          />
-        </NmxIconBox>
-        <div className="nmx-notification-item__body">
-          <span
-            className="nmx-notification-item__title"
-            dangerouslySetInnerHTML={{
-              __html: resolveNotificationTitleHtml(t, notification),
-            }}
-          />
-          <span
-            className="nmx-notification-item__description"
-            dangerouslySetInnerHTML={{
-              __html: resolveNotificationDescriptionHtml(t, notification),
-            }}
-          />
-          <span className="nmx-notification-item__time">
-            {notification.createdAt ? relativeTime(notification.createdAt) : ""}
-          </span>
-        </div>
-      </button>
-    )
-  },
-)
-
-NotificationItem.displayName = "NotificationItem"
-
-export const NotificationPanel = memo<NotificationPanelProps>(
-  ({ onViewAll }) => {
-    const { t } = useTranslation()
-    const dispatch = useAppDispatch()
-    const items = useAppSelector(selectorNotifications)
-    const unreadCount = useAppSelector(selectorUnreadCount)
-
-    useEffect(() => {
-      dispatch(setLoading(true))
-      fetchNotifications(1, 5)
-        .then((data) => {
-          dispatch(setNotifications({ ...data, append: false }))
-        })
-        .catch(() => dispatch(setLoading(false)))
-    }, [dispatch])
-
-    return (
-      <div className="nmx-notification-panel">
-        <div className="nmx-notification-panel__header">
+  return (
+    <div className="nmx-notification-panel">
+      <div className="nmx-notification-panel__header">
+        <div className="nmx-notification-panel__title-wrap">
           <span className="nmx-notification-panel__title">
-            {t("addon.notificationCenter.panel.title")}
+            {t("notification.title")}
           </span>
-          <div className="nmx-notification-panel__actions">
-            {unreadCount > 0 && (
-              <button
-                className="nmx-notification-panel__actions-btn"
-                type="button"
-                onClick={() => dispatch(markAllAsRead())}
-              >
-                <NmxIconFont
-                  symbol={NmxIconFontSymbol.MARK_ALL}
-                  className="nmx-notification-panel__actions-icon"
-                />
-              </button>
-            )}
+          {unreadCount > 0 && (
+            <NmxBadge
+              semantic="error"
+              size="sm"
+              className="nmx-notification-panel__title-badge"
+            >
+              {unreadCount}
+            </NmxBadge>
+          )}
+        </div>
+        <div className="nmx-notification-panel__actions">
+          {unreadCount > 0 && (
             <button
               className="nmx-notification-panel__actions-btn"
               type="button"
-              onClick={onViewAll}
+              onClick={() => {
+                apiMarkAllAsRead()
+                  .then(() => dispatch(markAllAsRead()))
+                  .catch((err) => nmxToast.error(err))
+              }}
             >
               <NmxIconFont
-                symbol={NmxIconFontSymbol.NOTIFICATION}
+                symbol={NmxIconFontSymbol.MARK_ALL}
                 className="nmx-notification-panel__actions-icon"
               />
             </button>
-          </div>
-        </div>
-
-        <div className="nmx-notification-panel__list">
-          {items.length === 0 ? (
-            <div className="nmx-notification-panel__empty">
-              <span>{t("addon.notificationCenter.panel.noNotifications")}</span>
-            </div>
-          ) : (
-            items
-              .slice(0, 5)
-              .map((notification) => (
-                <NotificationItem
-                  key={notification.id}
-                  notification={notification}
-                />
-              ))
           )}
         </div>
       </div>
-    )
-  },
-)
+
+      <div className="nmx-notification-panel__list">
+        {loading ? (
+          <div className="nmx-notification-panel__loading">
+            <span>{t("notification.loadNotifications")}</span>
+          </div>
+        ) : items.length === 0 ? (
+          <div className="nmx-notification-panel__empty">
+            <span>{t("notification.noNotifications")}</span>
+          </div>
+        ) : (
+          items.slice(0, 5).map((notification) => (
+            <NotificationItem
+              key={notification.id}
+              notification={notification}
+              onRead={() => {
+                apiMarkAsRead(notification.id)
+                  .then(() => dispatch(markAsRead(notification.id)))
+                  .catch((err) => nmxToast.error(err))
+              }}
+            />
+          ))
+        )}
+      </div>
+    </div>
+  )
+})
 NotificationPanel.displayName = "NotificationPanel"

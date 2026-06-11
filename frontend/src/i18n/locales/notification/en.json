@@ -1,8 +1,6 @@
 {
   "auth": {
-    "loginFailed": {
-      "title": "Login failed",
-      "description": "Failed login attempt for **{{username}}** from **{{ip}}**"
-    }
+    "loginFailed": "Failed login attempt for **{{username}}** from **{{ip}}**",
+    "userRegistered": "**{{username}}** (**{{email}}**) has registered"
   }
 }

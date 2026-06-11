@@ -21,7 +21,6 @@ interface TaskViewProps {
   unreadCount: string
   isNotificationPanelOpen: boolean
   onNotificationClick: () => void
-  onViewAllNotifications: () => void
   panelRef: RefObject<HTMLDivElement | null>
 }
 
@@ -36,7 +35,6 @@ export const TaskbarView = memo<TaskViewProps>(
     unreadCount,
     isNotificationPanelOpen,
     onNotificationClick,
-    onViewAllNotifications,
     panelRef,
   }) => {
     return (
@@ -74,9 +72,7 @@ export const TaskbarView = memo<TaskViewProps>(
                 {unreadCount}
               </NmxBadge>
             </button>
-            {isNotificationPanelOpen && (
-              <NotificationPanel onViewAll={onViewAllNotifications} />
-            )}
+            {isNotificationPanelOpen && <NotificationPanel />}
 
             <NmxIconFont
               symbol={NmxIconFontSymbol.LINK}

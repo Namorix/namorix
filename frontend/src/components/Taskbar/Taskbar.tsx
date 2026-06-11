@@ -12,17 +12,11 @@ import {
   toggleLauncher,
   useAppDispatch,
   useAppSelector,
-  type WindowId,
 } from "../../store"
 import { useSignalRStatus } from "@namorix/core"
-import { useOpenWindow } from "../WindowFrame"
-import { useTranslation } from "react-i18next"
-import type { AddonItem } from "../../types"
 
 export const Taskbar: React.FC = () => {
-  const { t } = useTranslation()
   const dispatch = useAppDispatch()
-  const openWindow = useOpenWindow()
   const order = useAppSelector(selectorTaskbarOrder)
   const activeId = useAppSelector(selectorActiveId)
   const signalStatus = useSignalRStatus()
@@ -58,18 +52,6 @@ export const Taskbar: React.FC = () => {
     return () => document.removeEventListener("mousedown", handler)
   }, [isNotificationPanelOpen])
 
-  const handleViewAllNotifications = useCallback(() => {
-    setNotificationPanelOpen(false)
-
-    openWindow({
-      id: "notification-center" as WindowId,
-      displayName: t("addon.notificationCenter.title"),
-      localeKey: "notificationCenter",
-      defaultWidth: 480,
-      defaultHeight: 560,
-    } as AddonItem)
-  }, [openWindow, t])
-
   return (
     <TaskbarView
       order={order}
@@ -87,7 +69,6 @@ export const Taskbar: React.FC = () => {
         dispatch(closeLauncher())
         setNotificationPanelOpen((v) => !v)
       }}
-      onViewAllNotifications={handleViewAllNotifications}
       panelRef={panelRef}
     />
   )
