@@ -125,12 +125,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.43.0 | M3 (NotificationPanel redesign: infinite scroll, filter, delete all) |
-| @namorix/core | 0.34.1 | M3 (New useDoubleTap hook, apiRoutes deleteRead) |
-| @namorix/styles | 0.30.1 | M3 (notification.scss skeleton/loading/footer, dialox fix) |
-| @namorix/ui | 0.21.6 | M3 (New NmxIconFontSymbol entries) |
-| Namorix.Core | 0.36.2 | M3 (No changes) |
-| Namorix.Server | 0.36.3 | M3 (DeleteRead endpoint + service, NotificationItem double-tap detail) |
+| frontend | 0.42.0 | M3 (NotificationItem shared component, xoá NotificationCenter addon) |
+| @namorix/core | 0.34.0 | M3 (NmxNotificationDto occurrences/lastOccurredAt, fix useSignalREvent) |
+| @namorix/styles | 0.30.0 | M3 (New notification.scss, app-system icon, icomoon update) |
+| @namorix/ui | 0.21.5 | M3 (New NmxIconFont/NmxIconSvgSymbol entries) |
+| Namorix.Core | 0.36.2 | M3 (Model: Occurences/LastOccurredAt/Icon, NotificationSource constants) |
+| Namorix.Server | 0.36.2 | M3 (NotificationService dedup + CreateForAdminsAsync, register notif) |
 
 ## Version Rules
 

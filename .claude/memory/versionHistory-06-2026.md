@@ -1,15 +1,5 @@
 # Version History — June 2026
 
-## 2026-06-11 — NotificationPanel redesign: infinite scroll, filter, delete all, double-tap
-
-| Package | Version | Changes |
-|---------|---------|---------|
-| @namorix/core | 0.34.0 → 0.34.1 | NEW: `hooks/useDoubleTap.ts` — reusable double-tap hook. MODIFIED: `apiRoutes.ts` — thêm deleteRead route. |
-| @namorix/ui | 0.21.5 → 0.21.6 | MODIFIED: `NmxIconFont.types.ts` — thêm icon symbols. `NmxButtonLive`, `NmxButtonRefresh` — tweaks. |
-| @namorix/styles | 0.30.0 → 0.30.1 | MODIFIED: `notification.scss` — skeleton loading, footer, filter active state. `dialog.scss` — fix. Icomoon rebuild. Themes rebuilt. |
-| frontend | 0.42.0 → 0.43.0 | NEW: `NotificationItem.tsx` — double-tap detail (AlertDialog), `onDetail` prop. `NotificationPanel.tsx` — infinite scroll (load more on scroll), filter (unread toggle + size lock), delete all read, footer showing count, Escape close loading state. `WindowTitleBar.tsx` — dùng useDoubleTap cho maximize/restore. `DesktopIcon.tsx` — dùng useDoubleTap. `notificationsSlice.ts` — clearRead reducer, cleanup unused. `notification.controller.ts` — deleteRead API. `en.json` — thêm delete notif keys. |
-| Namorix.Server | 0.36.2 → 0.36.3 | NEW: `NotificationController.cs` — DELETE /read endpoint. `NotificationService.cs` — DeleteReadAsync. |
-
 ## 2026-06-11 — Notification dedup, shared NotificationItem, xoá NotificationCenter addon
 
 | Package | Version | Changes |
