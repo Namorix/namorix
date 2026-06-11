@@ -52,6 +52,7 @@ export const ApiNotificationRoutes = {
   base: API_NOTIFICATION_BASE,
   unreadCount: API_NOTIFICATION_BASE + "/unread-count",
   readAll: API_NOTIFICATION_BASE + "/read-all",
+  deleteRead: API_NOTIFICATION_BASE + "/read",
 }
 
 export const ThemeRoutes = {
