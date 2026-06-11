@@ -1,1 +1,8 @@
-{}
+{
+  "auth": {
+    "loginFailed": {
+      "title": "Login failed",
+      "description": "Failed login attempt for **{{username}}** from **{{ip}}**"
+    }
+  }
+}

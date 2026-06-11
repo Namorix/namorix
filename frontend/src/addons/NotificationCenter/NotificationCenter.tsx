@@ -21,10 +21,10 @@ import {
   setNotifications,
   setLoading,
 } from "../../store"
-import { fetchNotifications } from "../../controllers/notification.controller"
+import { fetchNotifications } from "../../controllers"
 import {
-  resolveNotifTitle,
-  resolveNotifDescription,
+  resolveNotificationTitle,
+  resolveNotificationDescription,
 } from "../../utils/notification"
 import type { NmxNotificationDto } from "@namorix/core"
 
@@ -43,7 +43,7 @@ const NotificationRow: React.FC<{ notif: NmxNotificationDto }> = ({
 
   return (
     <div
-      className={`nmx-notif-row ${!notif.isRead ? "nmx-notif-row--unread" : ""}`}
+      className={`nmx-notification-row ${!notif.isRead ? "nmx-notification-row--unread" : ""}`}
       onClick={() => {
         if (!notif.isRead) dispatch(markAsRead(notif.id))
       }}
@@ -51,18 +51,18 @@ const NotificationRow: React.FC<{ notif: NmxNotificationDto }> = ({
       <NmxIconBox semantic={notif.type}>
         <NmxIconFont symbol={TYPE_ICON[notif.type] ?? NmxIconFontSymbol.INFO} />
       </NmxIconBox>
-      <div className="nmx-notif-row__body">
-        <span className="nmx-notif-row__title">
-          {resolveNotifTitle(t, notif)}
+      <div className="nmx-notification-row__body">
+        <span className="nmx-notification-row__title">
+          {resolveNotificationTitle(t, notif)}
         </span>
-        {resolveNotifDescription(t, notif) && (
-          <span className="nmx-notif-row__desc">
-            {resolveNotifDescription(t, notif)}
+        {resolveNotificationDescription(t, notif) && (
+          <span className="nmx-notification-row__desc">
+            {resolveNotificationDescription(t, notif)}
           </span>
         )}
       </div>
       <button
-        className="nmx-notif-row__dismiss"
+        className="nmx-notification-row__dismiss"
         type="button"
         onClick={(e) => {
           e.stopPropagation()
@@ -106,16 +106,16 @@ export const NotificationCenter: React.FC = () => {
 
   return (
     <NmxAddonRoot className="nmx-addon-notification-center">
-      <div className="nmx-notif-center__header">
+      <div className="nmx-notification-center__header">
         <h2>{t("addon.notificationCenter.title")}</h2>
-        <div className="nmx-notif-center__actions">
+        <div className="nmx-notification-center__actions">
           <button type="button" onClick={() => dispatch(markAllAsRead())}>
             {t("addon.notificationCenter.action.markAllRead")}
           </button>
         </div>
       </div>
 
-      <div className="nmx-notif-center__filters">
+      <div className="nmx-notification-center__filters">
         <button
           className={filter === "all" ? "active" : ""}
           type="button"
@@ -132,12 +132,12 @@ export const NotificationCenter: React.FC = () => {
         </button>
       </div>
 
-      <div className="nmx-notif-center__list">
+      <div className="nmx-notification-center__list">
         {filtered.length === 0 ? (
-          <div className="nmx-notif-center__empty">
+          <div className="nmx-notification-center__empty">
             <NmxIconSvg symbol={NmxIconSvgSymbol.APP_NOTIFICATION_CENTER} />
             <span>{t("addon.notificationCenter.empty")}</span>
-            <span className="nmx-notif-center__empty-desc">
+            <span className="nmx-notification-center__empty-desc">
               {t("addon.notificationCenter.emptyDescription")}
             </span>
           </div>
@@ -149,7 +149,7 @@ export const NotificationCenter: React.FC = () => {
       </div>
 
       {hasMore && (
-        <div className="nmx-notif-center__load-more">
+        <div className="nmx-notification-center__load-more">
           <button
             type="button"
             disabled={loading}

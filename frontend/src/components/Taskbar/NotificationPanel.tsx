@@ -1,6 +1,11 @@
 import { memo, useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import { NmxIconFont, NmxIconFontSymbol, NmxIconBox } from "@namorix/ui"
+import {
+  NmxIconFont,
+  NmxIconFontSymbol,
+  NmxIconBox,
+  type NmxSemanticColor,
+} from "@namorix/ui"
 import {
   useAppSelector,
   useAppDispatch,
@@ -12,8 +17,11 @@ import {
   setLoading,
 } from "../../store"
 import { fetchNotifications } from "../../controllers"
-import { resolveNotifTitle } from "../../utils/notification"
-import type { NmxNotificationDto } from "@namorix/core"
+import {
+  resolveNotificationDescriptionHtml,
+  resolveNotificationTitleHtml,
+} from "../../utils/notification"
+import { type NmxNotificationDto, useDateTimeFormat } from "@namorix/core"
 
 interface NotificationPanelProps {
   onViewAll: () => void
@@ -24,30 +32,55 @@ const TYPE_ICON: Record<string, NmxIconFontSymbol> = {
   success: NmxIconFontSymbol.CHECK,
   warning: NmxIconFontSymbol.WARNING,
   error: NmxIconFontSymbol.CLOSE,
+  security: NmxIconFontSymbol.SECURITY,
 }
 
-const NotificationItem = memo<{ notif: NmxNotificationDto }>(({ notif }) => {
-  const { t } = useTranslation()
-  const dispatch = useAppDispatch()
+const NotificationItem = memo<{ notification: NmxNotificationDto }>(
+  ({ notification }) => {
+    const { t } = useTranslation()
+    const { relativeTime } = useDateTimeFormat()
+    const dispatch = useAppDispatch()
 
-  return (
-    <button
-      className={`nmx-notification-item ${!notif.isRead ? "nmx-notification-item--unread" : ""}`}
-      type="button"
-      onClick={() => dispatch(markAsRead(notif.id))}
-    >
-      {!notif.isRead && <span className="nmx-notification-item__dot" />}
-      <NmxIconBox semantic={notif.type}>
-        <NmxIconFont symbol={TYPE_ICON[notif.type] ?? NmxIconFontSymbol.INFO} />
-      </NmxIconBox>
-      <div className="nmx-notification-item__body">
-        <span className="nmx-notification-item__title">
-          {resolveNotifTitle(t, notif)}
-        </span>
-      </div>
-    </button>
-  )
-})
+    return (
+      <button
+        className={`nmx-notification-item ${!notification.isRead ? "nmx-notification-item--unread" : ""}`}
+        type="button"
+        onClick={() => dispatch(markAsRead(notification.id))}
+      >
+        <NmxIconBox
+          semantic={
+            (
+              { security: "error" } as Partial<Record<string, NmxSemanticColor>>
+            )[notification.type] ?? (notification.type as NmxSemanticColor)
+          }
+          className="nmx-notification-item__icon-box"
+        >
+          <NmxIconFont
+            symbol={TYPE_ICON[notification.type] ?? NmxIconFontSymbol.INFO}
+            className="nmx-notification-item__icon"
+          />
+        </NmxIconBox>
+        <div className="nmx-notification-item__body">
+          <span
+            className="nmx-notification-item__title"
+            dangerouslySetInnerHTML={{
+              __html: resolveNotificationTitleHtml(t, notification),
+            }}
+          />
+          <span
+            className="nmx-notification-item__description"
+            dangerouslySetInnerHTML={{
+              __html: resolveNotificationDescriptionHtml(t, notification),
+            }}
+          />
+          <span className="nmx-notification-item__time">
+            {notification.createdAt ? relativeTime(notification.createdAt) : ""}
+          </span>
+        </div>
+      </button>
+    )
+  },
+)
 
 NotificationItem.displayName = "NotificationItem"
 
@@ -80,7 +113,10 @@ export const NotificationPanel = memo<NotificationPanelProps>(
                 type="button"
                 onClick={() => dispatch(markAllAsRead())}
               >
-                <NmxIconFont symbol={NmxIconFontSymbol.MARK_ALL} />
+                <NmxIconFont
+                  symbol={NmxIconFontSymbol.MARK_ALL}
+                  className="nmx-notification-panel__actions-icon"
+                />
               </button>
             )}
             <button
@@ -88,7 +124,10 @@ export const NotificationPanel = memo<NotificationPanelProps>(
               type="button"
               onClick={onViewAll}
             >
-              <NmxIconFont symbol={NmxIconFontSymbol.NOTIFICATION} />
+              <NmxIconFont
+                symbol={NmxIconFontSymbol.NOTIFICATION}
+                className="nmx-notification-panel__actions-icon"
+              />
             </button>
           </div>
         </div>
@@ -101,7 +140,12 @@ export const NotificationPanel = memo<NotificationPanelProps>(
           ) : (
             items
               .slice(0, 5)
-              .map((notif) => <NotificationItem key={notif.id} notif={notif} />)
+              .map((notification) => (
+                <NotificationItem
+                  key={notification.id}
+                  notification={notification}
+                />
+              ))
           )}
         </div>
       </div>

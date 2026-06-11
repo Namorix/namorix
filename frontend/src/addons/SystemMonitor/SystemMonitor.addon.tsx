@@ -1,4 +1,4 @@
-import { defineAddon, NmxAddonLocaleKeys } from "@namorix/core"
+import { defineAddon, NmxAddonId, NmxAddonLocaleKeys } from "@namorix/core"
 import { registerAddon } from "../"
 import { NmxIconSvgSymbol } from "@namorix/ui"
 import { SystemMonitor } from "./SystemMonitor"
@@ -6,7 +6,7 @@ import { SystemMonitor } from "./SystemMonitor"
 registerAddon(
   defineAddon(
     {
-      id: "system-monitor",
+      id: NmxAddonId.systemMonitor,
       displayName: "System Monitor",
       description:
         "Track system resource usage, performance metrics, and running processes",

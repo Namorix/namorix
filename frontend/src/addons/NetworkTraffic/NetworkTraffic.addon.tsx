@@ -1,4 +1,9 @@
-import { defineAddon, NmxAddonLocaleKeys, UserRole } from "@namorix/core"
+import {
+  defineAddon,
+  NmxAddonId,
+  NmxAddonLocaleKeys,
+  UserRole,
+} from "@namorix/core"
 import { registerAddon } from "../"
 import { NmxIconSvgSymbol } from "@namorix/ui"
 import { NetworkTraffic } from "./NetworkTraffic"
@@ -6,7 +11,7 @@ import { NetworkTraffic } from "./NetworkTraffic"
 registerAddon(
   defineAddon(
     {
-      id: "network-traffic",
+      id: NmxAddonId.networkTraffic,
       displayName: "Network Traffic",
       description:
         "Monitor HTTP requests and network traffic with real-time filtering and analysis",

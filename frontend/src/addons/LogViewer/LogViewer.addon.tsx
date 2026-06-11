@@ -1,4 +1,9 @@
-import { defineAddon, NmxAddonLocaleKeys, UserRole } from "@namorix/core"
+import {
+  defineAddon,
+  NmxAddonId,
+  NmxAddonLocaleKeys,
+  UserRole,
+} from "@namorix/core"
 import { registerAddon } from "../"
 import { LogViewer } from "./LogViewer"
 import { NmxIconSvgSymbol } from "@namorix/ui"
@@ -6,7 +11,7 @@ import { NmxIconSvgSymbol } from "@namorix/ui"
 registerAddon(
   defineAddon(
     {
-      id: "log-viewer",
+      id: NmxAddonId.logViewer,
       displayName: "Logs Viewer",
       description:
         "View and filter system logs by severity level, source, and time range",

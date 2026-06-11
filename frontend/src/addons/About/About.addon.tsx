@@ -1,4 +1,4 @@
-import { defineAddon, NmxAddonLocaleKeys } from "@namorix/core"
+import { defineAddon, NmxAddonId, NmxAddonLocaleKeys } from "@namorix/core"
 import { registerAddon } from "../"
 import { NmxIconSvgSymbol } from "@namorix/ui"
 import { About } from "./About"
@@ -6,7 +6,7 @@ import { About } from "./About"
 registerAddon(
   defineAddon(
     {
-      id: "about",
+      id: NmxAddonId.about,
       displayName: "About",
       description:
         "View system information, version details, and legal notices",

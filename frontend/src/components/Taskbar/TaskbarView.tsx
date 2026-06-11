@@ -19,9 +19,9 @@ interface TaskViewProps {
   onStartClick: () => void
   onAppClick: (id: WindowId) => void
   unreadCount: string
-  isNotifPanelOpen: boolean
+  isNotificationPanelOpen: boolean
   onNotificationClick: () => void
-  onViewAllNotifs: () => void
+  onViewAllNotifications: () => void
   panelRef: RefObject<HTMLDivElement | null>
 }
 
@@ -34,9 +34,9 @@ export const TaskbarView = memo<TaskViewProps>(
     onStartClick,
     onAppClick,
     unreadCount,
-    isNotifPanelOpen,
+    isNotificationPanelOpen,
     onNotificationClick,
-    onViewAllNotifs,
+    onViewAllNotifications,
     panelRef,
   }) => {
     return (
@@ -57,23 +57,25 @@ export const TaskbarView = memo<TaskViewProps>(
           </div>
 
           <div className="nmx-taskbar__tray" ref={panelRef}>
-            <div className="nmx-taskbar__notification-wrapper">
+            <button
+              className="nmx-taskbar__tray-btn"
+              onClick={onNotificationClick}
+            >
               <NmxIconFont
                 symbol={NmxIconFontSymbol.NOTIFICATION}
-                className="nmx-taskbar__icon-notification"
-                onClick={onNotificationClick}
+                className="nmx-taskbar__tray-icon"
               />
               <NmxBadge
                 size="sm"
                 semantic="error"
-                className="nmx-taskbar__notification-badge"
+                className="nmx-taskbar__tray-badge"
                 shouldRender={unreadCount !== "0"}
               >
                 {unreadCount}
               </NmxBadge>
-            </div>
-            {isNotifPanelOpen && (
-              <NotificationPanel onViewAll={onViewAllNotifs} />
+            </button>
+            {isNotificationPanelOpen && (
+              <NotificationPanel onViewAll={onViewAllNotifications} />
             )}
 
             <NmxIconFont

@@ -77,7 +77,7 @@ export const Taskbar: React.FC = () => {
       date={date}
       signalStatus={signalStatus}
       unreadCount={unreadCountCapped}
-      isNotifPanelOpen={isNotificationPanelOpen}
+      isNotificationPanelOpen={isNotificationPanelOpen}
       onStartClick={() => {
         setNotificationPanelOpen(false)
         dispatch(toggleLauncher())
@@ -87,7 +87,7 @@ export const Taskbar: React.FC = () => {
         dispatch(closeLauncher())
         setNotificationPanelOpen((v) => !v)
       }}
-      onViewAllNotifs={handleViewAllNotifications}
+      onViewAllNotifications={handleViewAllNotifications}
       panelRef={panelRef}
     />
   )

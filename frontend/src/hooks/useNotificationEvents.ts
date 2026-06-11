@@ -7,7 +7,12 @@ export const useNotificationEvents = () => {
   const dispatch = useAppDispatch()
   useSignalREvent<NmxNotificationDto>(
     SignalREvent.NotificationReceived,
-    useCallback((data) => dispatch(addNotification(data)), [dispatch]),
+    useCallback(
+      (data) => {
+        dispatch(addNotification(data))
+      },
+      [dispatch],
+    ),
   )
 
   useSignalREvent<{ id: number; isRead: boolean }>(
