@@ -11,12 +11,7 @@ export const NmxButtonRefresh: React.FC<NmxButtonRefreshProps> = ({
   onClick,
   title = "Refresh",
 }) => (
-  <NmxButton
-    title={title}
-    onClick={onClick}
-    className="nmx-button__refresh"
-    variant="ghost"
-  >
+  <NmxButton title={title} onClick={onClick} className="nmx-button__refresh">
     <NmxIconFont symbol={NmxIconFontSymbol.REFRESH} />
   </NmxButton>
 )

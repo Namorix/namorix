@@ -7,7 +7,7 @@
 
 .nmx-addon-log-viewer__actions {
   display: flex;
-  gap: var(--nmx-spacing-sm);
+  gap: var(--nmx-spacing-md);
 }
 
 @container log-view-horizontal (max-width: #{$nmx-breakpoint-sm}) {
