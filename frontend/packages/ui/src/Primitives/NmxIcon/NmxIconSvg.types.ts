@@ -1,5 +1,6 @@
 export const NmxIconSvgSymbol = {
   LOGO: "logo",
+  APP_SYSTEM: "app-system",
   APP_ABOUT: "app-about",
   APP_LOGS: "app-logs",
   APP_SETTINGS: "app-settings",

@@ -1,11 +1,13 @@
 :root {
   --nmx-taskbar-height: 50px;
 
-  --nmx-taskbar-launcher-min-width: 340px;
+  --nmx-taskbar-launcher-min-width: 300px;
   --nmx-taskbar-launcher-max-width: 480px;
+  --nmx-taskbar-launcher-max-height: 320px;
 
-  --nmx-taskbar-notification-min-width: 340px;
+  --nmx-taskbar-notification-min-width: 300px;
   --nmx-taskbar-notification-max-width: 480px;
+  --nmx-taskbar-notification-max-height: 320px;
 
   --nmx-window-frame-edge-size: 4px;
 

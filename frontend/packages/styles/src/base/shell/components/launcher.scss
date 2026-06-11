@@ -57,7 +57,7 @@
     grid-template-columns: repeat(4, 1fr);
     gap: var(--nmx-spacing-sm);
     overflow-y: auto;
-    max-height: 320px;
+    max-height: var(--nmx-taskbar-launcher-max-height);
     margin: 0 var(--nmx-spacing-md);
 
     @include scrollbar();

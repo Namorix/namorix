@@ -9,7 +9,7 @@
   background-color: color-mix(
     in oklab,
     var(--nmx-icon-box-bg) 14%,
-    transparent
+    var(--nmx-color-surface-low)
   );
   border-radius: var(--nmx-radius-md);
   color: var(--nmx-icon-box-text);
