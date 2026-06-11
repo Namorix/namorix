@@ -8,8 +8,7 @@ public class Notification
     public int UserId { get; init; }
     
     [MaxLength(50)] public string Type { get; init; } = string.Empty;
-    [MaxLength(200)] public string TitleKey { get; init; } = string.Empty;
-    [MaxLength(200)] public string? DescriptionKey { get; init; }
+    [MaxLength(200)] public string Key { get; init; } = string.Empty;
     [MaxLength(500)] public string? Params { get; init; } // JSON: {"fileName":"report.pdf"}
     [MaxLength(100)] public string? Source { get; init; }
     

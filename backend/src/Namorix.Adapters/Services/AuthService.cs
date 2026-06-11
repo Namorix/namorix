@@ -14,7 +14,8 @@ using Namorix.Core.Models;
 
 namespace Namorix.Adapters.Services;
 
-public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig, ILogger<AuthService> logger)
+public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig,
+    ILogger<AuthService> logger, NotificationService notificationService)
 {
     private readonly JwtConfig _jwtConfig = jwtConfig.Value;
     
@@ -267,16 +268,44 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig, 
     public async Task<(User user, string accessToken, string refreshToken)> LoginWithTokens(
         string username, string password, bool rememberMe, string? userAgent, string? fingerprint, string? ipAddress)
     {
-        var user = await Login(username, password);
-        var ttlDays = GetRefreshTokenExpiration(rememberMe);
+        try
+        {
+            var user = await Login(username, password);
+            var ttlDays = GetRefreshTokenExpiration(rememberMe);
+            var (accessToken, refreshToken, jti) = GenerateTokens(user);
+            var refreshTokenEntity = CreateRefreshToken(user, jti, refreshToken,
+                userAgent, fingerprint, ipAddress, ttlDays);
+            dbContext.RefreshTokens.Add(refreshTokenEntity);
+            await dbContext.SaveChangesAsync();
+            return (user, accessToken, refreshToken);
+        }
+        catch (AuthException ex) when (ex.Code == AuthErrors.InvalidCredentials)
+        {
+            await CreateLoginFailedNotifications(username, ipAddress);
+            throw;
+        }
+    }
+    
+    private async Task CreateLoginFailedNotifications(string username, string? ipAddress)
+    {
+        var foundUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Username == username);
+        if (foundUser == null) return;
+        var notifParams = new { username, ip = ipAddress ?? "unknown" };
 
-        var (accessToken, refreshToken, jti) = GenerateTokens(user);
-        var refreshTokenEntity = CreateRefreshToken(user, jti, refreshToken,
-            userAgent, fingerprint, ipAddress, ttlDays);
-        dbContext.RefreshTokens.Add(refreshTokenEntity);
-        await dbContext.SaveChangesAsync();
+        await notificationService.CreateAsync(foundUser.Id, NotificationType.Security, NotificationKeys.Auth.LoginFailed,
+            NotificationSource.System, notifParams);
 
-        return (user, accessToken, refreshToken);
+        if (foundUser.Role == UserRole.Admin) return;
+
+        var admins = await dbContext.Users
+            .Where(u => u.Role == UserRole.Admin && u.Id != foundUser.Id)
+            .ToListAsync();
+        
+        foreach (var admin in admins)
+        {
+            await notificationService.CreateAsync(admin.Id, NotificationType.Security, NotificationKeys.Auth.LoginFailed,
+                NotificationSource.System, notifParams);
+        }
     }
 }
 

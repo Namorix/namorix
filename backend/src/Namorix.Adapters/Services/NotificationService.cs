@@ -26,8 +26,7 @@ public class NotificationService(
             {
                 Id = n.Id,
                 Type = n.Type,
-                TitleKey = n.TitleKey,
-                DescriptionKey = n.DescriptionKey,
+                Key = n.Key,
                 Params = n.Params,
                 Source = n.Source,
                 IsRead = n.IsRead,
@@ -73,36 +72,31 @@ public class NotificationService(
     }
 
     public async Task<NotificationDto> CreateAsync(
-        int userId, string type, string titleKey,
-        string? descriptionKey, string? source, object? paramsObj)
+        int userId, string type, string key,
+        string? source, object? paramsObj)
     {
         var notif = new Notification
         {
             UserId = userId,
             Type = type,
-            TitleKey = titleKey,
-            DescriptionKey = descriptionKey,
+            Key = key,
             Params = paramsObj != null ? JsonSerializer.Serialize(paramsObj) : null,
             Source = source,
             IsRead = false,
             CreatedAt = DateTime.UtcNow,
         };
-
         db.Notifications.Add(notif);
         await db.SaveChangesAsync();
-
         var dto = new NotificationDto
         {
             Id = notif.Id,
             Type = notif.Type,
-            TitleKey = notif.TitleKey,
-            DescriptionKey = notif.DescriptionKey,
+            Key = notif.Key,
             Params = notif.Params,
             Source = notif.Source,
             IsRead = notif.IsRead,
             CreatedAt = notif.CreatedAt,
         };
-
         await notifier.NotifyReceivedAsync(userId, dto);
         return dto;
     }
