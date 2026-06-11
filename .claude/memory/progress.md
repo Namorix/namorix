@@ -125,12 +125,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.41.0 | M3 (Notification MD, relative time, login failed notif) |
-| @namorix/core | 0.33.0 | M3 (formatRelativeTime, NmxAddonId, common.time i18n) |
-| @namorix/styles | 0.29.0 | M3 (Notification panel SCSS, icomoon icons updated) |
-| @namorix/ui | 0.21.4 | M3 (New NmxIconFontSymbol entries) |
-| Namorix.Core | 0.36.1 | M3 (Notification model simplified, NotificationType/Keys constants) |
-| Namorix.Server | 0.36.1 | M3 (AuthService login failed notification, NotificationService simplified) |
+| frontend | 0.42.0 | M3 (NotificationItem shared component, xoá NotificationCenter addon) |
+| @namorix/core | 0.34.0 | M3 (NmxNotificationDto occurrences/lastOccurredAt, fix useSignalREvent) |
+| @namorix/styles | 0.30.0 | M3 (New notification.scss, app-system icon, icomoon update) |
+| @namorix/ui | 0.21.5 | M3 (New NmxIconFont/NmxIconSvgSymbol entries) |
+| Namorix.Core | 0.36.2 | M3 (Model: Occurences/LastOccurredAt/Icon, NotificationSource constants) |
+| Namorix.Server | 0.36.2 | M3 (NotificationService dedup + CreateForAdminsAsync, register notif) |
 
 ## Version Rules
 

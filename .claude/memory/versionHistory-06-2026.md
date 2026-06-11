@@ -1,5 +1,16 @@
 # Version History — June 2026
 
+## 2026-06-11 — Notification dedup, shared NotificationItem, xoá NotificationCenter addon
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.33.0 → 0.34.0 | MODIFIED: `notification/types.ts` — thêm occurrences, lastOccurredAt. `signalr/useSignalREvent.ts` — fix `conn.off(eventName)` → `conn.off(eventName, handler)`. |
+| @namorix/ui | 0.21.4 → 0.21.5 | MODIFIED: `NmxIconFont.types.ts`, `NmxIconSvg.types.ts` — thêm icon symbols. |
+| @namorix/styles | 0.29.0 → 0.30.0 | NEW: `notification.scss`. MODIFIED: icomoon fonts, theme CSS rebuilt. |
+| frontend | 0.41.0 → 0.42.0 | NEW: `components/NotificationItem.tsx` — shared component (icon app + severity badge). DELETED: `addons/NotificationCenter/` — xoá addon window. MODIFIED: NotificationPanel — dùng NotificationItem chung, xoá "View all". `notificationsSlice` — dedup trong addNotification. `useNotificationEvents` — fetchUnreadCount on mount. i18n — dọn keys. |
+| Namorix.Core | 0.36.1 → 0.36.2 | MODIFIED: `Models/Notification.cs` — thêm Occurrences, LastOccurredAt, Icon. `Responses/NotificationResponse.cs` — thêm fields tương ứng. `Constants/Notification.cs` — thêm NotificationSource, NotificationKeys.Auth.UserRegistered. |
+| Namorix.Server | 0.36.1 → 0.36.2 | MODIFIED: `Services/NotificationService.cs` — CreateForAdminsAsync, dedup trong CreateAsync, ordering IsRead ASC. `Services/AuthService.cs` — thêm register notif, dùng NotificationType.Security. New migration. |
+
 ## 2026-06-11 — Notification model simplified, login failed notification, formatRelativeTime
 
 | Package | Version | Changes |

@@ -27,6 +27,13 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-06-11 — Notification dedup, shared NotificationItem, xoá NotificationCenter addon
+
+- Backend: Thêm Occurrences/LastOccurredAt/Icon vào model. CreateForAdminsAsync. Dedup trong CreateAsync (tìm unread cùng key → tăng occurrences). Order IsRead ASC. AuthService thêm register notif.
+- Core: NmxNotificationDto thêm occurrences/lastOccurredAt. Fix useSignalREvent — `conn.off(eventName, handler)` thay vì `conn.off(eventName)`.
+- UI/Styles: New notification.scss, app-system icon, icomoon rebuild.
+- Frontend: Tách NotificationItem component dùng chung (icon app + severity badge). Xoá NotificationCenter addon. Panel bỏ "View all". notificationsSlice dedup. fetchUnreadCount on mount.
+
 ### 2026-06-11 — Notification model simplified, login failed notif, formatRelativeTime
 
 - Backend: Notification model simplified (Key thay titleKey/descriptionKey). Thêm `NotificationType` + `NotificationKeys` constants. AuthService gửi notifi khi login failed (cho user + admin). Migration mới.
