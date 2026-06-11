@@ -90,7 +90,14 @@
     "title": "Notifications",
     "noNotifications": "No notifications",
     "loadNotifications": "Loading notifications...",
-    "occurredTimes": "Occurred {{count}} times · "
+    "occurredTimes": "Occurred {{count}} times · ",
+    "loadMore": "Load more",
+    "showingCount": "Loaded {{loaded}} of {{total}} notifications",
+    "deleteAllReadSuccess": "Cleared {{count}} read notifications",
+    "skeleton": {
+      "source": "System",
+      "description": "Loading notification..."
+    }
   },
   "addon": {
     "system": {

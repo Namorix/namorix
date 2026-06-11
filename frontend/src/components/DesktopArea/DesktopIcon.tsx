@@ -3,6 +3,7 @@ import { NmxIconSvg } from "@namorix/ui"
 import type { AddonItem, OnOpenApp } from "../../types"
 import { useTranslation } from "react-i18next"
 import { resolveAddonLocaleTitle } from "../../utils"
+import { useDoubleTap } from "@namorix/core/hooks/useDoubleTap"
 
 interface DesktopIconProps {
   addon: AddonItem
@@ -12,16 +13,11 @@ interface DesktopIconProps {
 export const DesktopIcon: React.FC<DesktopIconProps> = ({ addon, onOpen }) => {
   const { t } = useTranslation()
   const btnRef = useRef<HTMLButtonElement>(null)
-  const lastTap = useRef(0)
 
-  const handleClick = () => {
-    const now = Date.now()
-    if (now - lastTap.current < 300) {
-      const rect = btnRef.current?.getBoundingClientRect()
-      onOpen(addon, rect)
-    }
-    lastTap.current = now
-  }
+  const handleClick = useDoubleTap(() => {
+    const rect = btnRef.current?.getBoundingClientRect()
+    onOpen(addon, rect)
+  })
 
   return (
     <button

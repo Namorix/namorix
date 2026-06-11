@@ -18,8 +18,8 @@ export const selectorUnreadCountCapped = createSelector(
 export const selectorNotificationsLoading = (state: RootState) =>
   state.notifications.loading
 
-export const selectorNotificationsHasMore = (state: RootState) =>
-  state.notifications.hasMore
-
 export const selectorNotificationsPage = (state: RootState) =>
   state.notifications.page
+
+export const selectorNotificationsTotalCount = (state: RootState) =>
+  state.notifications.totalCount

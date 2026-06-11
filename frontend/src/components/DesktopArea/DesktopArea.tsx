@@ -12,10 +12,7 @@ export const DesktopArea: React.FC = () => {
   const addons = useMemo(() => listAddons(user?.role).map(addonToItems), [user])
 
   const handleOpenApp: OnOpenApp = (item, rect) => {
-    if (!rect) {
-      return
-    }
-
+    if (!rect) return
     openWindow(item, rectToOrigin(rect))
   }
 

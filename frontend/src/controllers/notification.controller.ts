@@ -56,11 +56,10 @@ export async function markAllAsRead(): Promise<number> {
   return res.data
 }
 
-export async function deleteNotification(id: number): Promise<void> {
+export async function deleteRead(): Promise<void> {
   const res = await nmxHttp
-    .url(getApiBaseUrl() + ApiNotificationRoutes.base + `/${id}`)
+    .url(getApiBaseUrl() + ApiNotificationRoutes.deleteRead)
     .delete()
     .json()
-
   if (!res.success) throw ApiError.fromResponse(res)
 }

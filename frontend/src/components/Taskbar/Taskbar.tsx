@@ -43,13 +43,29 @@ export const Taskbar: React.FC = () => {
 
   useEffect(() => {
     if (!isNotificationPanelOpen) return
+
     const handler = (e: MouseEvent) => {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+      const target = e.target as HTMLElement
+      if (
+        panelRef.current &&
+        !panelRef.current.contains(target) &&
+        !target.closest(".nmx-dialog")
+      ) {
         setNotificationPanelOpen(false)
       }
     }
+
+    const keyHandler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setNotificationPanelOpen(false)
+    }
+
     document.addEventListener("mousedown", handler)
-    return () => document.removeEventListener("mousedown", handler)
+    document.addEventListener("keydown", keyHandler)
+
+    return () => {
+      document.removeEventListener("mousedown", handler)
+      document.removeEventListener("keydown", keyHandler)
+    }
   }, [isNotificationPanelOpen])
 
   return (

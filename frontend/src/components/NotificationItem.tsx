@@ -1,4 +1,4 @@
-import { memo } from "react"
+import React, { memo } from "react"
 import { useTranslation } from "react-i18next"
 import { type NmxNotificationDto, useDateTimeFormat } from "@namorix/core"
 import {
@@ -9,6 +9,7 @@ import {
   NmxIconSvg,
   NmxIconSvgSymbol,
   type NmxSemanticColor,
+  type WithBaseProps,
 } from "@namorix/ui"
 import {
   NOTIFICATION_SOURCE_ICON,
@@ -16,24 +17,35 @@ import {
   resolveNotificationDescriptionHtml,
   resolveSourceName,
 } from "../utils/notification"
+import { useDoubleTap } from "@namorix/core/hooks/useDoubleTap"
 
-interface NotificationItemProps {
+interface NotificationItemProps extends WithBaseProps {
   notification: NmxNotificationDto
   onRead?: (id: number) => void
+  onDetail?: (id: number) => void
+  isSkeleton?: boolean
 }
 
 export const NotificationItem = memo<NotificationItemProps>(
-  ({ notification, onRead }) => {
+  ({ notification, onRead, onDetail, className, isSkeleton }) => {
     const { t } = useTranslation()
     const { relativeTime } = useDateTimeFormat()
 
+    const handleDoubleClick = useDoubleTap((e: React.MouseEvent) => {
+      e.stopPropagation()
+      onDetail?.(notification.id)
+    })
+
     return (
       <button
-        className={cx("nmx-notification-item", {
+        className={cx("nmx-notification-item", className, {
           "nmx-notification-item--unread": !notification.isRead,
         })}
         type="button"
-        onClick={() => onRead?.(notification.id)}
+        onClick={(e) => {
+          handleDoubleClick(e)
+          onRead?.(notification.id)
+        }}
       >
         <div className="nmx-notification-item__icon-box">
           <NmxIconSvg
@@ -63,15 +75,17 @@ export const NotificationItem = memo<NotificationItemProps>(
           </NmxIconBox>
         </div>
         <div className="nmx-notification-item__body">
-          <div>
-            <span className="nmx-notification-item__title">
-              {resolveSourceName(t, notification.source)}
-            </span>
-          </div>
+          <span className="nmx-notification-item__title">
+            {isSkeleton
+              ? notification.source
+              : resolveSourceName(t, notification.source)}
+          </span>
           <span
             className="nmx-notification-item__description"
             dangerouslySetInnerHTML={{
-              __html: resolveNotificationDescriptionHtml(t, notification),
+              __html: isSkeleton
+                ? notification.key
+                : resolveNotificationDescriptionHtml(t, notification),
             }}
           />
           <div className="nmx-notification-item__time">
@@ -93,5 +107,26 @@ export const NotificationItem = memo<NotificationItemProps>(
     )
   },
 )
+
+export const NotificationItemSkeleton: React.FC = () => {
+  const { t } = useTranslation()
+
+  return (
+    <NotificationItem
+      className="nmx-notification-item--skeleton"
+      notification={{
+        id: 999,
+        type: "info",
+        key: t("notification.skeleton.description"),
+        source: t("notification.skeleton.source"),
+        isRead: true,
+        occurrences: 0,
+        createdAt: new Date().toISOString(),
+        lastOccurredAt: new Date().toISOString(),
+      }}
+      isSkeleton={true}
+    />
+  )
+}
 
 NotificationItem.displayName = "NotificationItem"

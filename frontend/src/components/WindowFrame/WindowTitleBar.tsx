@@ -8,6 +8,7 @@ import React, { memo } from "react"
 import { useTranslation } from "react-i18next"
 import { resolveAddonLocaleTitleByKey } from "../../utils"
 import type { NmxAddonLocaleKeys } from "@namorix/core"
+import { useDoubleTap } from "@namorix/core/hooks/useDoubleTap"
 
 interface WindowTitleBarProps {
   title: string
@@ -37,18 +38,20 @@ export const WindowTitleBar = memo(
   }: WindowTitleBarProps) => {
     const { t } = useTranslation()
 
+    const handleDoubleClick = useDoubleTap((e: React.MouseEvent) => {
+      e.stopPropagation()
+      if (maximized) {
+        onRestore(e.clientX, e.clientY)
+      } else {
+        onMaximize()
+      }
+    })
+
     return (
       <div
         className="nmx-window-frame__titlebar"
         onMouseDown={onTitleBarMouseDown}
-        onDoubleClick={(e) => {
-          e.stopPropagation()
-          if (maximized) {
-            onRestore(e.clientX, e.clientY)
-          } else {
-            onMaximize()
-          }
-        }}
+        onClick={handleDoubleClick}
       >
         {icon && (
           <NmxIconSvg symbol={icon} className="nmx-window-frame__app-icon" />
