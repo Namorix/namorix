@@ -4,7 +4,7 @@ import type { UserRole } from "../types"
 
 export type NmxAddonIconType = NmxIconSvgSymbol
 
-export const LocaleKeys = {
+export const NmxAddonLocaleKeys = {
   about: "about",
   logViewer: "logViewer",
   settings: "settings",
@@ -16,18 +16,28 @@ export const LocaleKeys = {
   packageCenter: "packageCenter",
 } as const
 
-export type LocaleKeys = (typeof LocaleKeys)[keyof typeof LocaleKeys]
+export type NmxAddonLocaleKeys =
+  (typeof NmxAddonLocaleKeys)[keyof typeof NmxAddonLocaleKeys]
+
+export const NmxAddonInstanceMode = {
+  single: "single",
+  multi: "multi",
+}
+
+export type NmxAddonInstanceMode =
+  (typeof NmxAddonInstanceMode)[keyof typeof NmxAddonInstanceMode]
 
 export interface NmxAddonManifest {
   id: string
   displayName: string
   description?: string
-  localeKey?: LocaleKeys
+  localeKey?: NmxAddonLocaleKeys
   icon?: NmxAddonIconType
   defaultWidth?: number
   defaultHeight?: number
   preferFullSize?: boolean
   role?: UserRole
+  instanceMode?: NmxAddonInstanceMode
 }
 
 export interface AddonContext {
