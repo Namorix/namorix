@@ -1195,8 +1195,8 @@ textarea,
   opacity: 0.7;
 }
 .nmx-pagination .nmx-pagination__size-select {
-  padding-top: var(--nmx-spacing-sm);
-  padding-bottom: var(--nmx-spacing-sm);
+  padding-top: var(--nmx-spacing-xs);
+  padding-bottom: var(--nmx-spacing-xs);
 }
 .nmx-pagination .nmx-pagination__size-wrap, .nmx-pagination .nmx-pagination__size-select {
   width: auto;

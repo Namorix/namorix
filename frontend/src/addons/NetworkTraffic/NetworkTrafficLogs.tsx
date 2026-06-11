@@ -89,7 +89,7 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
         <NmxBadge
           semantic={statusToSemantic(row.statusCode)}
           bgEnabled={false}
-          className="nmx-addon-network-traffic__badge"
+          size="sm"
         >
           {row.statusCode}
         </NmxBadge>
@@ -102,10 +102,7 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
     {
       header: t("addon.networkTraffic.logs.method"),
       renderCell: (row) => (
-        <NmxBadge
-          semantic={methodToSemantic(row?.method)}
-          className="nmx-addon-network-traffic__badge"
-        >
+        <NmxBadge semantic={methodToSemantic(row?.method)} size="sm">
           {row?.method}
         </NmxBadge>
       ),
@@ -240,7 +237,6 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
             setError(undefined)
             setPage(1)
           }}
-          className="nmx-addon-page__pagination nmx-addon-network-traffic__pagination"
           onPageChange={(page) => {
             setLoading(true)
             setError(undefined)

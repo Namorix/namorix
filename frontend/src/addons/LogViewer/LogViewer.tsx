@@ -290,7 +290,6 @@ export const LogViewer: React.FC = () => {
           totalItems={total}
           pageSize={pageSize}
           pageSizeOptions={pageSizeOptions}
-          className="nmx-addon-page__pagination"
           onPageSizeChange={(size) => {
             setPageSize(size)
             setError(undefined)
