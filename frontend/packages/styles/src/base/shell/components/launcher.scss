@@ -152,6 +152,10 @@
     }
   }
 
+  &__logout-btn:hover &__logout-icon {
+    color: color-mix(in oklab, var(--nmx-color-on-surface) 80%, transparent);
+  }
+
   &__logout-icon {
     color: var(--nmx-color-on-surface);
     font-size: var(--nmx-font-size-xl);
