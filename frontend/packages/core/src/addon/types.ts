@@ -13,7 +13,6 @@ export const NmxAddonId = {
   networkTraffic: "network-traffic",
   fileManager: "file-manager",
   terminal: "terminal",
-  notificationCenter: "notification-center",
   packageCenter: "package-center",
 } as const
 
@@ -27,7 +26,6 @@ export const NmxAddonLocaleKeys = {
   networkTraffic: "networkTraffic",
   fileManager: "fileManager",
   terminal: "terminal",
-  notificationCenter: "notificationCenter",
   packageCenter: "packageCenter",
 } as const
 

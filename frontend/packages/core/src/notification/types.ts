@@ -6,4 +6,6 @@ export interface NmxNotificationDto {
   source?: string
   isRead: boolean
   createdAt: string
+  occurrences: number
+  lastOccurredAt: string
 }

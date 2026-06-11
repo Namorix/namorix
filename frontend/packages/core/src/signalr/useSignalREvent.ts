@@ -12,7 +12,7 @@ export function useSignalREvent<T = unknown>(
 
     conn.on(eventName, handler)
     return () => {
-      conn.off(eventName)
+      conn.off(eventName, handler)
     }
   }, [eventName, handler])
 }
