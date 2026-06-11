@@ -56,3 +56,26 @@ export function formatDuration(ms: number): string {
 export function formatSize(bytes: number): string {
   return bytes >= 1024 ? `${(bytes / 1024).toFixed(1)}KB` : `${bytes}B`
 }
+
+export function formatRelativeTime(
+  input: Date | string,
+  t: (key: string, opts?: Record<string, unknown>) => string,
+): string {
+  const dateTime = typeof input === "string" ? new Date(input) : input
+  const diffMs = Date.now() - dateTime.getTime()
+  const diffMin = Math.floor(diffMs / 60000)
+  const diffHour = Math.floor(diffMin / 60)
+  const diffDay = Math.floor(diffHour / 24)
+
+  if (diffMin < 1) return t("core:common.time.justNow")
+  if (diffMin < 60) return t("core:common.time.minAgo", { count: diffMin })
+  if (diffHour < 24) return t("core:common.time.hoursAgo", { count: diffHour })
+  if (diffDay < 7) return t("core:common.time.daysAgo", { count: diffDay })
+
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(dateTime)
+}

@@ -2,6 +2,7 @@ import React from "react"
 import { createRoot, type Root } from "react-dom/client"
 import type { AddonContext, AddonEntry, NmxAddonManifest } from "./types"
 import { AddonContextProvider } from "./context"
+import { Provider } from "react-redux"
 
 type NmxComponent = React.ComponentType<object>
 
@@ -19,7 +20,13 @@ export function defineAddon(
         rootMap.set(container, root)
         root.render(
           <AddonContextProvider value={context}>
-            <Component />
+            {context.store ? (
+              <Provider store={context.store}>
+                <Component />
+              </Provider>
+            ) : (
+              <Component />
+            )}
           </AddonContextProvider>,
         )
       },

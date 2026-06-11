@@ -1,8 +1,23 @@
+import type { Store } from "@reduxjs/toolkit"
 import { NmxIconSvgSymbol } from "@namorix/ui"
 import { nmxStore } from "../store"
 import type { UserRole } from "../types"
 
 export type NmxAddonIconType = NmxIconSvgSymbol
+
+export const NmxAddonId = {
+  about: "about",
+  logViewer: "log-viewer",
+  settings: "settings",
+  systemMonitor: "system-monitor",
+  networkTraffic: "network-traffic",
+  fileManager: "file-manager",
+  terminal: "terminal",
+  notificationCenter: "notification-center",
+  packageCenter: "package-center",
+} as const
+
+export type NmxAddonId = (typeof NmxAddonId)[keyof typeof NmxAddonId]
 
 export const NmxAddonLocaleKeys = {
   about: "about",
@@ -43,6 +58,7 @@ export interface NmxAddonManifest {
 export interface AddonContext {
   addonId: string
   nmxStore: typeof nmxStore
+  store?: Store
 }
 
 export interface AddonEntry {
