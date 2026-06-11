@@ -12,10 +12,12 @@ import {
   toggleLauncher,
   useAppDispatch,
   useAppSelector,
+  type WindowId,
 } from "../../store"
 import { useSignalRStatus } from "@namorix/core"
 import { useOpenWindow } from "../WindowFrame"
 import { useTranslation } from "react-i18next"
+import type { AddonItem } from "../../types"
 
 export const Taskbar: React.FC = () => {
   const { t } = useTranslation()
@@ -59,15 +61,13 @@ export const Taskbar: React.FC = () => {
   const handleViewAllNotifications = useCallback(() => {
     setNotificationPanelOpen(false)
 
-    openWindow(
-      "notification-center",
-      t("addon.notificationCenter.title"),
-      "notificationCenter",
-      undefined,
-      undefined,
-      480,
-      560,
-    )
+    openWindow({
+      id: "notification-center" as WindowId,
+      displayName: t("addon.notificationCenter.title"),
+      localeKey: "notificationCenter",
+      defaultWidth: 480,
+      defaultHeight: 560,
+    } as AddonItem)
   }, [openWindow, t])
 
   return (

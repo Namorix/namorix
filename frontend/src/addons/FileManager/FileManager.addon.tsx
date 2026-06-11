@@ -1,4 +1,4 @@
-import { defineAddon, LocaleKeys } from "@namorix/core"
+import { defineAddon, NmxAddonLocaleKeys } from "@namorix/core"
 import { registerAddon } from "../"
 import { NmxIconSvgSymbol } from "@namorix/ui"
 import { FileManager } from "./FileManager"
@@ -9,7 +9,7 @@ registerAddon(
       id: "file-manager",
       displayName: "File Manager",
       description: "Browse and manage files and directories on the server",
-      localeKey: LocaleKeys.fileManager,
+      localeKey: NmxAddonLocaleKeys.fileManager,
       icon: NmxIconSvgSymbol.APP_FILE_MANAGER,
     },
     FileManager,

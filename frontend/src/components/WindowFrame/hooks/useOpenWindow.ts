@@ -1,5 +1,5 @@
-import type { NmxIconSvgSymbol } from "@namorix/ui"
 import {
+  focusWindow,
   maximizeWindow,
   moveWindow,
   openWindow,
@@ -10,7 +10,8 @@ import {
   type WindowRect,
 } from "../../../store"
 import { getWindowDefaults } from "../../../config"
-import { isMobile, type LocaleKeys } from "@namorix/core"
+import { isMobile, NmxAddonInstanceMode } from "@namorix/core"
+import type { AddonItem } from "../../../types"
 
 const clamp = (min: number, val: number, max: number) =>
   Math.max(min, Math.min(val, max))
@@ -18,25 +19,22 @@ const clamp = (min: number, val: number, max: number) =>
 export const useOpenWindow = () => {
   const dispatch = useAppDispatch()
 
-  return (
-    id: string,
-    title: string,
-    localeKey?: LocaleKeys,
-    icon?: NmxIconSvgSymbol,
-    originRect?: WindowRect,
-    addonWidth?: number,
-    addonHeight?: number,
-    preferFullSize?: boolean,
-  ) => {
+  return (item: AddonItem, originRect?: WindowRect) => {
+    if (item.instanceMode !== NmxAddonInstanceMode.multi) {
+      const state = store.getState().windowsState
+      const existingWinId = state.order.find(
+        (wid) => state.byId[wid]?.item.id === item.id,
+      )
+      if (existingWinId) {
+        dispatch(focusWindow(existingWinId))
+        return existingWinId
+      }
+    }
+
     const existingCount = store.getState().windowsState.order.length
     const action = dispatch(
       openWindow({
-        app: id,
-        title,
-        localeKey,
-        icon,
-        defaultWidth: addonWidth,
-        defaultHeight: addonHeight,
+        item,
         originRect: originRect ?? null,
       }),
     )
@@ -61,8 +59,8 @@ export const useOpenWindow = () => {
         ? availableHeight
         : availableHeight - margin * 2
 
-    const desireWidth = addonWidth ?? defaultWidth
-    const desireHeight = addonHeight ?? defaultHeight
+    const desireWidth = item.defaultWidth ?? defaultWidth
+    const desireHeight = item.defaultHeight ?? defaultHeight
 
     const width = clamp(minWidth, desireWidth, maxWidth)
     const height = clamp(minHeight, desireHeight, maxHeight)
@@ -85,7 +83,7 @@ export const useOpenWindow = () => {
     dispatch(moveWindow({ id: winId, x, y }))
     dispatch(resizeWindow({ id: winId, width, height }))
 
-    if (preferFullSize || isMobile()) {
+    if (item.preferFullSize || isMobile()) {
       dispatch(savePreMaximize({ id: winId, rect: { x, y, width, height } }))
       dispatch(maximizeWindow(winId))
     }

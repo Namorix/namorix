@@ -18,16 +18,7 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({ addon, onOpen }) => {
     const now = Date.now()
     if (now - lastTap.current < 300) {
       const rect = btnRef.current?.getBoundingClientRect()
-      onOpen(
-        addon.id,
-        addon.displayName,
-        addon.localeKey,
-        addon.icon,
-        rect,
-        addon.defaultWidth,
-        addon.defaultHeight,
-        addon.preferFullSize,
-      )
+      onOpen(addon, rect)
     }
     lastTap.current = now
   }

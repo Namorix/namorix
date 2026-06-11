@@ -45,30 +45,12 @@ export const Launcher: React.FC = () => {
 
   const close = () => dispatch(closeLauncher())
 
-  const handleOpenApp: OnOpenApp = (
-    id,
-    displayName,
-    localeKey,
-    icon,
-    rect,
-    defaultWidth,
-    defaultHeight,
-    preferFullSize,
-  ) => {
+  const handleOpenApp: OnOpenApp = (item, rect) => {
     const originRect: WindowRect | undefined = rect
       ? rectToOrigin(rect)
       : undefined
 
-    openWindow(
-      id,
-      displayName,
-      localeKey,
-      icon,
-      originRect,
-      defaultWidth,
-      defaultHeight,
-      preferFullSize,
-    )
+    openWindow(item, originRect)
     close()
   }
 

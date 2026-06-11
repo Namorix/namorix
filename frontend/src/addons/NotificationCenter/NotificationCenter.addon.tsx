@@ -1,4 +1,4 @@
-import { defineAddon, LocaleKeys } from "@namorix/core"
+import { defineAddon, NmxAddonLocaleKeys } from "@namorix/core"
 import { registerAddon } from "../"
 import { NmxIconSvgSymbol } from "@namorix/ui"
 import { NotificationCenter } from "./NotificationCenter"
@@ -9,7 +9,7 @@ registerAddon(
       id: "notification-center",
       displayName: "Notification Center",
       description: "View and manage system notifications and alerts",
-      localeKey: LocaleKeys.notificationCenter,
+      localeKey: NmxAddonLocaleKeys.notificationCenter,
       icon: NmxIconSvgSymbol.APP_NOTIFICATION_CENTER,
     },
     NotificationCenter,

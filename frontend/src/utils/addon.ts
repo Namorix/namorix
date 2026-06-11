@@ -1,6 +1,6 @@
 import type { AddonItem } from "../types"
 import type { TFunction } from "i18next"
-import type { LocaleKeys } from "@namorix/core"
+import type { NmxAddonLocaleKeys } from "@namorix/core"
 
 export function resolveAddonLocaleTitle(
   t: TFunction,
@@ -11,7 +11,7 @@ export function resolveAddonLocaleTitle(
 
 export function resolveAddonLocaleTitleByKey(
   t: TFunction,
-  localeKey?: LocaleKeys,
+  localeKey?: NmxAddonLocaleKeys,
 ) {
   return localeKey ? t(`addon.${localeKey}.title`) : undefined
 }

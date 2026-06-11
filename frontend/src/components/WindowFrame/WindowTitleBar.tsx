@@ -7,11 +7,11 @@ import {
 import React, { memo } from "react"
 import { useTranslation } from "react-i18next"
 import { resolveAddonLocaleTitleByKey } from "../../utils"
-import type { LocaleKeys } from "@namorix/core"
+import type { NmxAddonLocaleKeys } from "@namorix/core"
 
 interface WindowTitleBarProps {
   title: string
-  localeKey?: LocaleKeys
+  localeKey?: NmxAddonLocaleKeys
   icon?: NmxIconSvgSymbol
   maximized: boolean
   showMaximized?: boolean

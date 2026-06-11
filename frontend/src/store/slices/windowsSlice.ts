@@ -1,6 +1,6 @@
 import type { AnimState, WindowData, WindowId, WindowRect } from "../types"
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
-import type { LocaleKeys } from "@namorix/core"
+import type { AddonItem } from "../../types"
 
 export interface WindowsState {
   byId: Record<WindowId, WindowData>
@@ -52,30 +52,19 @@ export const windowsSlice = createSlice({
         state.activeId = id
       },
 
-      prepare(payload: {
-        app: string
-        title: string
-        localeKey?: LocaleKeys
-        icon?: WindowData["icon"]
-        defaultWidth?: number
-        defaultHeight?: number
-        originRect?: WindowRect | null
-      }) {
+      prepare(payload: { item: AddonItem; originRect?: WindowRect | null }) {
         const id = generateId()
         const window: WindowData = {
           id,
-          app: payload.app,
-          title: payload.title,
-          localeKey: payload.localeKey,
-          icon: payload.icon,
+          item: payload.item,
           minimized: false,
           maximized: false,
           focused: true,
           animState: "opening",
           x: 0,
           y: 0,
-          width: payload.defaultWidth ?? 640,
-          height: payload.defaultHeight ?? 480,
+          width: payload.item.defaultWidth ?? 640,
+          height: payload.item.defaultHeight ?? 480,
           preMaximize: null,
           originRect: payload.originRect ?? null,
         }

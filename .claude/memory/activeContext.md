@@ -27,6 +27,16 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-06-10 — AddonItem extends NmxAddonManifest, WindowData refactor, instanceMode
+
+Addon/window system refactor:
+- `AddonItem extends NmxAddonManifest` — loại bỏ field duplication
+- `WindowData` — thay `app/title/localeKey/icon` bằng `item: AddonItem`
+- `OnOpenApp` simplified to `(item, rect?)`
+- `useOpenWindow` simplified to `(item, originRect?)`
+- Thêm `NmxAddonInstanceMode` (single/multi) — single mode focus window đã tồn tại thay vì mở mới
+- `NmxAddonLocaleKeys` rename từ `LocaleKeys`
+
 ### 2026-06-10 — Notification Center (i18n key + params, full backend)
 
 Notification Center system: taskbar badge + dropdown panel + addon window.

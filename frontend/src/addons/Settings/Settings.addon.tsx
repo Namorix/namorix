@@ -1,4 +1,4 @@
-import { defineAddon, LocaleKeys } from "@namorix/core"
+import { defineAddon, NmxAddonLocaleKeys } from "@namorix/core"
 import { registerAddon } from "../"
 import { NmxIconSvgSymbol } from "@namorix/ui"
 import { Settings } from "./Settings"
@@ -10,7 +10,7 @@ registerAddon(
       displayName: "Settings",
       description:
         "Configure appearance, system preferences, and account settings",
-      localeKey: LocaleKeys.settings,
+      localeKey: NmxAddonLocaleKeys.settings,
       icon: NmxIconSvgSymbol.APP_SETTINGS,
     },
     Settings,

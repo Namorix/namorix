@@ -1,5 +1,12 @@
 # Version History — June 2026
 
+## 2026-06-10 — AddonItem extends NmxAddonManifest, WindowData refactor, instanceMode
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.31.0 → 0.32.0 | NEW: `addon/types.ts` — NmxAddonInstanceMode (single/multi), NmxAddonLocaleKeys rename. MODIFIED: `NmxAddonManifest` — thêm instanceMode field. |
+| frontend | 0.39.0 → 0.40.0 | REFACTOR: `AddonItem extends NmxAddonManifest` — loại bỏ field duplication. `WindowData` — thay `app/title/localeKey/icon` bằng `item: AddonItem`. `OnOpenApp` — simplified to `(item, rect?)`. `useOpenWindow` — nhận `AddonItem` + `originRect?`. NEW: instanceMode support — `single` (default, focus existing) / `multi` (always open new). MODIFIED: 25 files total (addons, taskbar, launcher, desktop, window frame, store). |
+
 ## 2026-06-10 — Notification Center addon, taskbar badge + panel
 
 | Package | Version | Changes |

@@ -125,8 +125,8 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.39.0 | M3 (Notification Center addon, taskbar badge + panel) |
-| @namorix/core | 0.31.0 | M3 (New notification module: types, SignalR events, API routes) |
+| frontend | 0.40.0 | M3 (AddonItem extends NmxAddonManifest, WindowData refactor, instanceMode) |
+| @namorix/core | 0.32.0 | M3 (NmxAddonInstanceMode type, NmxAddonLocaleKeys rename) |
 | @namorix/styles | 0.29.0 | M3 (Notification panel SCSS, icomoon icons updated) |
 | @namorix/ui | 0.21.4 | M3 (New NmxIconFontSymbol entries) |
 | Namorix.Core | 0.36.0 | M3 (Notification model, INotificationNotifier interface, SignalR events) |

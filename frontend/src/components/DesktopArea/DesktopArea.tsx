@@ -11,30 +11,12 @@ export const DesktopArea: React.FC = () => {
 
   const addons = useMemo(() => listAddons(user?.role).map(addonToItems), [user])
 
-  const handleOpenApp: OnOpenApp = (
-    id,
-    displayName,
-    localeKey,
-    icon,
-    rect,
-    defaultWidth,
-    defaultHeight,
-    preferFullSize,
-  ) => {
+  const handleOpenApp: OnOpenApp = (item, rect) => {
     if (!rect) {
       return
     }
 
-    openWindow(
-      id,
-      displayName,
-      localeKey,
-      icon,
-      rectToOrigin(rect),
-      defaultWidth,
-      defaultHeight,
-      preferFullSize,
-    )
+    openWindow(item, rectToOrigin(rect))
   }
 
   return <DesktopAreaView addons={addons} onIconOpen={handleOpenApp} />

@@ -26,7 +26,7 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ winId }) => {
   const frameRef = useRef<HTMLDivElement>(null)
   const { onTitleBarMouseDown } = useWindowDrag(winId, frameRef)
   const { onResizeStart } = useWindowResize(winId, frameRef)
-  const { mountRef } = useAddonMount(win?.app ?? winId)
+  const { mountRef } = useAddonMount(win?.item.id ?? winId)
   const handlers = useWindowHandlers(winId, win, frameRef)
 
   if (!win) {
