@@ -84,6 +84,7 @@
     flex: 1;
     overflow-y: auto;
     padding: var(--nmx-spacing-xl);
+    padding-bottom: 0;
     color: var(--nmx-color-on-surface);
     font-size: var(--nmx-font-size-sm);
   }
@@ -94,6 +95,5 @@
     justify-content: flex-end;
     gap: var(--nmx-spacing-md);
     padding: var(--nmx-spacing-lg) var(--nmx-spacing-xl);
-    padding-top: var(--nmx-spacing-3xl);
   }
 }

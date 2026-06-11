@@ -4,12 +4,15 @@
   position: absolute;
   bottom: 0;
   right: var(--nmx-spacing-md);
-  transform: translate(0, calc((-1 * (var(--nmx-taskbar-height) + var(--nmx-spacing-md)))));
+  transform: translate(
+    0,
+    calc((-1 * (var(--nmx-taskbar-height) + var(--nmx-spacing-md))))
+  );
   will-change: transform;
   min-width: var(--nmx-taskbar-notification-min-width);
   max-width: min(
-          var(--nmx-taskbar-notification-max-width),
-          calc(100vw - var(--nmx-spacing-md) * 2)
+    var(--nmx-taskbar-notification-max-width),
+    calc(100vw - var(--nmx-spacing-md) * 2)
   );
   width: auto;
   background: var(--nmx-color-surface);
@@ -18,6 +21,17 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+
+  animation: nmx-notification-panel-in var(--nmx-duration-normal)
+    var(--nmx-easing-standard) both;
+
+  @keyframes nmx-notification-panel-in {
+    from {
+      opacity: 0;
+      translate: 0 var(--nmx-spacing-md);
+      scale: 0.98;
+    }
+  }
 
   &__header {
     display: flex;
@@ -69,7 +83,23 @@
   }
 
   &__actions-btn:hover &__actions-icon {
+    color: color-mix(in oklab, var(--nmx-color-on-surface) 70%, transparent);
+  }
+
+  &__btn-filter {
+    color: var(--nmx-color-on-surface-variant);
+  }
+
+  &__btn-filter--active {
     color: var(--nmx-color-primary);
+  }
+
+  &__btn-filter--active:hover &__actions-icon {
+    color: color-mix(in oklab, var(--nmx-color-primary) 80%, transparent);
+  }
+
+  &__btn-delete:hover &__actions-icon {
+    color: var(--nmx-color-error);
   }
 
   &__list {
@@ -88,10 +118,26 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: var(--nmx-spacing-sm);
-    padding: var(--nmx-spacing-6xl);
+    padding: var(--nmx-spacing-4xl);
     color: var(--nmx-color-on-surface-variant);
     font-size: var(--nmx-font-size-sm);
+    height: 100%;
+  }
+
+  &__footer {
+    all: unset;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: var(--nmx-spacing-sm);
+  }
+
+  &__showing-count {
+    font-size: var(--nmx-font-size-xs);
+    color: var(--nmx-color-on-surface-variant);
   }
 }
 
@@ -173,4 +219,85 @@
     font-size: var(--nmx-font-size-xs);
     margin-left: auto;
   }
+}
+
+.nmx-notification-item--skeleton {
+  pointer-events: none;
+
+  .nmx-notification-item {
+    &__title,
+    &__description,
+    &__time,
+    &__icon-level {
+      color: transparent;
+    }
+  }
+
+  .nmx-notification-item__box-level {
+    background: var(--nmx-color-surface-mid);
+    animation: nmx-skeleton-pulse 1.5s ease-in-out infinite;
+  }
+
+  .nmx-notification-item__icon {
+    position: relative;
+    background: transparent;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: var(--nmx-radius-md);
+      background: var(--nmx-color-surface-mid);
+      animation: nmx-skeleton-pulse 1.5s ease-in-out infinite;
+    }
+  }
+
+  .nmx-notification-item {
+    &__title,
+    &__description,
+    &__time {
+      position: relative;
+
+      &::after {
+        content: "";
+        display: block;
+        height: 100%;
+        top: 0;
+        left: 0;
+        position: absolute;
+        border-radius: var(--nmx-radius-sm);
+        background: var(--nmx-color-surface-mid);
+        animation: nmx-skeleton-pulse 1.5s ease-in-out infinite;
+      }
+    }
+
+    &__title::after {
+      width: 30%;
+    }
+
+    &__description::after {
+      width: 80%;
+    }
+
+    &__time::after {
+      width: 100%;
+    }
+  }
+}
+
+@keyframes nmx-skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.nmx-notification-dialog {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--nmx-spacing-md);
 }
