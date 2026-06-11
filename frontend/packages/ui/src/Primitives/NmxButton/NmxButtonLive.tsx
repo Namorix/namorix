@@ -16,6 +16,7 @@ export const NmxButtonLive: React.FC<NmxButtonLiveProps> = ({
     onClick={onToggle}
     className="nmx-button__live"
     semantic={live ? "success" : "error"}
+    variant="ghost"
   >
     <NmxIconFont
       symbol={!live ? NmxIconFontSymbol.PLAY : NmxIconFontSymbol.PAUSE}
