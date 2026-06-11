@@ -47,24 +47,20 @@ public class NotificationController(NotificationService notifService) : Controll
         return Ok(ApiResponse.Ok());
     }
 
+    [HttpDelete("read")]
+    public async Task<IActionResult> DeleteRead()
+    {
+        var userId = GetUserId();
+        await notifService.DeleteReadAsync(userId);
+        return Ok(ApiResponse.Ok());
+    }
+    
     [HttpPost("read-all")]
     public async Task<IActionResult> MarkAllAsRead()
     {
         var userId = GetUserId();
         var count = await notifService.MarkAllAsReadAsync(userId);
         return Ok(ApiResponse<int>.Ok(count));
-    }
-
-    [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete(int id)
-    {
-        var userId = GetUserId();
-        var result = await notifService.DeleteAsync(userId, id);
-
-        if (!result)
-            return NotFound(ApiResponse.Fail(HttpErrorCodes.NotFound));
-        
-        return Ok(ApiResponse.Ok());
     }
     
     private int GetUserId()

@@ -136,6 +136,13 @@ public class NotificationService(AppDbContext db, INotificationNotifier notifier
             await CreateAsync(adminId, type, key, source, paramsObj);
     }
     
+    public async Task DeleteReadAsync(int userId)
+    {
+        await db.Notifications
+            .Where(n => n.UserId == userId && n.IsRead)
+            .ExecuteDeleteAsync();
+    }
+    
     private static NotificationDto MapToDto(Notification n) => new()
     {
         Id = n.Id,
