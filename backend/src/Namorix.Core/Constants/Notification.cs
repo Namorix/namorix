@@ -5,6 +5,7 @@ public static class NotificationKeys
     public static class Auth
     {
         public const string LoginFailed = "auth.loginFailed";
+        public const string UserRegistered = "auth.userRegistered";
     }
 }
 

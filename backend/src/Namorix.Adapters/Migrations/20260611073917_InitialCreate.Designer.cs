@@ -11,7 +11,7 @@ using Namorix.Adapters.Persistence;
 namespace Namorix.Adapters.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260611024108_InitialCreate")]
+    [Migration("20260611073917_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -63,6 +63,12 @@ namespace Namorix.Adapters.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("LastOccurredAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Occurrences")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Params")
                         .HasMaxLength(500)

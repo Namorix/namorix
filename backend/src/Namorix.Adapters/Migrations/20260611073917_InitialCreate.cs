@@ -37,7 +37,9 @@ namespace Namorix.Adapters.Migrations
                     Params = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
                     Source = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
                     IsRead = table.Column<bool>(type: "INTEGER", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    Occurrences = table.Column<int>(type: "INTEGER", nullable: false),
+                    LastOccurredAt = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {

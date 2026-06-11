@@ -71,6 +71,14 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig,
         
         dbContext.Users.Add(user);
         await dbContext.SaveChangesAsync();
+        
+        if (role != UserRole.Admin)
+        {
+            await notificationService.CreateForAdminsAsync(
+                NotificationType.Info, NotificationKeys.Auth.UserRegistered,
+                NotificationSource.System, new { username, email, name });
+        }
+        
         logger.LogInformation("User registered: username={Username}, role={Role}", username, role);
         return user;
     }
@@ -297,15 +305,8 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig,
 
         if (foundUser.Role == UserRole.Admin) return;
 
-        var admins = await dbContext.Users
-            .Where(u => u.Role == UserRole.Admin && u.Id != foundUser.Id)
-            .ToListAsync();
-        
-        foreach (var admin in admins)
-        {
-            await notificationService.CreateAsync(admin.Id, NotificationType.Security, NotificationKeys.Auth.LoginFailed,
-                NotificationSource.System, notifParams);
-        }
+        await notificationService.CreateForAdminsAsync(NotificationType.Security, NotificationKeys.Auth.LoginFailed,
+            NotificationSource.System, notifParams);
     }
 }
 

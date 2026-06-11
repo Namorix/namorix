@@ -61,6 +61,12 @@ namespace Namorix.Adapters.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime>("LastOccurredAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Occurrences")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Params")
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");

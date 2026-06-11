@@ -31,7 +31,7 @@ builder.Services.AddScoped<INotificationNotifier, SignalRNotificationNotifier>()
 
 builder.Services.AddNamorixCore(builder.Environment.IsDevelopment());
 builder.Services.AddHostedService<TokenCleanupWorker>();
-
+builder.Services.AddHostedService<NotificationCleanupWorker>();
 
 var app = builder.Build();
 
