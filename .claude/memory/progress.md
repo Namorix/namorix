@@ -125,12 +125,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.40.0 | M3 (AddonItem extends NmxAddonManifest, WindowData refactor, instanceMode) |
-| @namorix/core | 0.32.0 | M3 (NmxAddonInstanceMode type, NmxAddonLocaleKeys rename) |
+| frontend | 0.41.0 | M3 (Notification MD, relative time, login failed notif) |
+| @namorix/core | 0.33.0 | M3 (formatRelativeTime, NmxAddonId, common.time i18n) |
 | @namorix/styles | 0.29.0 | M3 (Notification panel SCSS, icomoon icons updated) |
 | @namorix/ui | 0.21.4 | M3 (New NmxIconFontSymbol entries) |
-| Namorix.Core | 0.36.0 | M3 (Notification model, INotificationNotifier interface, SignalR events) |
-| Namorix.Server | 0.36.0 | M3 (NotificationController, NotificationService, DI) |
+| Namorix.Core | 0.36.1 | M3 (Notification model simplified, NotificationType/Keys constants) |
+| Namorix.Server | 0.36.1 | M3 (AuthService login failed notification, NotificationService simplified) |
 
 ## Version Rules
 

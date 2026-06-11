@@ -27,6 +27,12 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-06-11 — Notification model simplified, login failed notif, formatRelativeTime
+
+- Backend: Notification model simplified (Key thay titleKey/descriptionKey). Thêm `NotificationType` + `NotificationKeys` constants. AuthService gửi notifi khi login failed (cho user + admin). Migration mới.
+- Core: Thêm `formatRelativeTime()`, `NmxAddonId`, `common.time` i18n keys. `useDateTimeFormat` thêm `relativeTime()`. Factory wrap Redux Provider cho addon. DTO simplified (Key).
+- Frontend: NotificationPanel/NotificationCenter dùng relative time + MD rendering. Thêm notifi key `auth.loginFailed`.
+
 ### 2026-06-10 — AddonItem extends NmxAddonManifest, WindowData refactor, instanceMode
 
 Addon/window system refactor:
@@ -94,6 +100,16 @@ Notification Center system: taskbar badge + dropdown panel + addon window.
 - CSRF token: `httpOnly: false, sameSite: "lax"` (readable by JS for double-submit)
 - `sameSite: "lax"` chosen over `"strict"` because frontend/backend run on different ports in dev
 
+### Window Scroll Containment — `overflow: clip` → `auto` + `overscroll-behavior: contain`
+
+`.nmx-window-frame__mount` dùng `overflow: clip` để addon tự quản lý scroll container, tránh mount bị scroll ngoài ý muốn. Nhưng `clip` khiến browser coi window là non-scrollable → wheel event leak ra document → scroll window bên dưới khi window trên không có scrollable content.
+
+**Fix:** `overflow: auto` + `overscroll-behavior: contain`:
+- `auto`: mount tự scroll nếu addon content overflow, không scroll nếu content đủ ngắn
+- `overscroll-behavior: contain`: chặn wheel event chain ra ngoài mount (lên document hoặc window khác)
+
+**Lịch sử:** `overflow: auto` (fe38ff6) → `overflow: hidden` (d3f1bc9) → `overflow: clip` (dcdc366) → `auto + overscroll-behavior: contain` (hiện tại)
+
 ### Service Error Handling — DB Failures Go Unwrapped (Intentional)
 Các service method (PermissionService, SettingsService) không có try/catch cho DB operations. Nếu EF Core failed (unique constraint, connection loss, etc.), exception propagate lên controller rồi ExceptionMiddleware trả 500 generic.
 
@@ -110,6 +126,15 @@ Cả 3 attribute filter (`RequireAuthAttribute`, `RequireAdminAttribute`, `Requi
 - **Khi nào implement:** Khi cần toast cho Settings save confirm hoặc external addon feedback
 
 ## Pending Fixes
+
+### 🔴 Window scroll containment — ✅ Resolved
+`.nmx-window-frame__mount` — `overflow: clip` → `overflow: auto` + `overscroll-behavior: contain`. Ngăn scroll leak qua window bên dưới.
+
+### 🔴 Redux Provider cho addon mount — ✅ Resolved
+`factory.tsx` wrap `<Provider store={context.store}>` khi context có store.
+
+### 🔴 SignalR notification handler trả về result — ✅ Resolved
+`useNotificationEvents` dùng `void dispatch()` để tránh SignalR báo lỗi "not expecting a result".
 
 ### 🔴 NotificationCenter — còn lỗi cần sửa
 

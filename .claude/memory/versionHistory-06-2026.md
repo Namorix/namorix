@@ -1,5 +1,14 @@
 # Version History — June 2026
 
+## 2026-06-11 — Notification model simplified, login failed notification, formatRelativeTime
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.32.0 → 0.33.0 | NEW: `utils/format.ts` — formatRelativeTime(). `addon/types.ts` — NmxAddonId. `i18n/locales/en.json` — common.time keys (justNow, minAgo, hoursAgo, daysAgo). MODIFIED: `hooks/useDateTimeFormat.ts` — thêm relativeTime(). `addon/factory.tsx` — Redux Provider wrapping. `notification/types.ts` — Key thay titleKey/descriptionKey. |
+| frontend | 0.40.0 → 0.41.0 | NEW: `utils/notification.ts` — toHtml MD parser, resolveNotifTitleHtml/DescriptionHtml. `i18n/locales/notification/en.json` — auth.loginFailed keys. MODIFIED: NotificationPanel, NotificationCenter — relative time, MD support. useNotificationEvents — void dispatch fix. useAddonMount — pass Redux store. |
+| Namorix.Core | 0.36.0 → 0.36.1 | MODIFIED: `Models/Notification.cs` — Key thay TitleKey/DescriptionKey. `Responses/NotificationResponse.cs` — Key thay TitleKey/DescriptionKey. NEW: `Constants/Notification.cs` — NotificationType (Info/Success/Warning/Error), NotificationKeys (Auth.LoginFailed). |
+| Namorix.Server | 0.36.0 → 0.36.1 | MODIFIED: `Services/AuthService.cs` — login failed notification (user + admins). `Services/NotificationService.cs` — CreateAsync simplified (key instead of titleKey/descriptionKey). NEW migration. |
+
 ## 2026-06-10 — AddonItem extends NmxAddonManifest, WindowData refactor, instanceMode
 
 | Package | Version | Changes |
