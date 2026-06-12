@@ -46,7 +46,6 @@ frontend/
 │   │   ├── SystemMonitor/           # System resource monitoring
 │   │   ├── FileManager/             # File browser scaffold
 │   │   ├── Terminal/                # Terminal emulator scaffold
-│   │   ├── NotificationCenter/      # Full addon with taskbar badge, dropdown panel, SignalR real-time
 │   │   └── PackageCenter/           # External addon management scaffold
 │   │
 │   ├── components/
@@ -185,7 +184,7 @@ Built-in addons use the same contract as external addons (M4):
 - **NmxAddonManifest**: id, displayName, description?, icon?
 - **AddonContext**: addonId, locale, theme
 
-Five system addons are implemented: LogViewer, NetworkTraffic (SignalR + flat file), Settings, SystemMonitor, NotificationCenter.
+Four system addons are implemented: LogViewer, NetworkTraffic (SignalR + flat file), Settings, SystemMonitor.
 
 ## Milestones
 

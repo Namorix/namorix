@@ -125,12 +125,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.42.0 | M3 (NotificationItem shared component, xoá NotificationCenter addon) |
-| @namorix/core | 0.34.0 | M3 (NmxNotificationDto occurrences/lastOccurredAt, fix useSignalREvent) |
-| @namorix/styles | 0.30.0 | M3 (New notification.scss, app-system icon, icomoon update) |
-| @namorix/ui | 0.21.5 | M3 (New NmxIconFont/NmxIconSvgSymbol entries) |
-| Namorix.Core | 0.36.2 | M3 (Model: Occurences/LastOccurredAt/Icon, NotificationSource constants) |
-| Namorix.Server | 0.36.2 | M3 (NotificationService dedup + CreateForAdminsAsync, register notif) |
+| frontend | 0.43.1 | M3 (Remove freezePanelSize, addons reorder) |
+| @namorix/core | 0.34.1 | M3 (useDoubleTap hook, apiRoutes deleteRead) |
+| @namorix/styles | 0.30.2 | M3 (Wallpaper CSS var, shadow tweaks, remove dark icons) |
+| @namorix/ui | 0.21.6 | M3 (New NmxIconFontSymbol entries) |
+| Namorix.Core | 0.36.3 | M3 (LogCleanupWorker — cleanup logs sau 7 ngày) |
+| Namorix.Server | 0.36.3 | M3 (DeleteRead endpoint + service) |
 
 ## Version Rules
 

@@ -7,7 +7,7 @@
   left: 0;
   right: 0;
   bottom: var(--nmx-taskbar-height);
-  background: var(--nmx-wallpaper);
+  background: var(--nmx-wallpaper) no-repeat cover center;
   height: calc(100vh - var(--nmx-taskbar-height));
 
   &__grid {

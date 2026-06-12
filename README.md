@@ -7,9 +7,14 @@ Browser-based desktop shell, self-hosted.
 ## Features
 
 - **Desktop Shell** — Window manager, taskbar, launcher, desktop icon shortcuts
-- **System Addons** — Built-in addons (About, NetworkTraffic, Log Viewer, Settings, SystemMonitor, File Manager, Terminal, Notification Center, Package Center) via addon contract
+- **System Addons** — Built-in addons (About, NetworkTraffic, Log Viewer, Settings, SystemMonitor, File Manager, Terminal, Package Center) via addon contract
 - **External Addons** — Docker-based addons with 3 modes: widget DOM slot, full app via window.open, direct URL
 - **Centralized Auth** — Single auth server for shell and addons
+
+## Screenshots
+
+![Namorix Desktop](images/screenshot-1.png)
+![Namorix Desktop with apps](images/screenshot-2.png)
 
 ## Tech Stack
 
@@ -99,7 +104,6 @@ namorix/
 │       │   ├── FileManager/     # File browser scaffold
 │       │   ├── LogViewer/       # Level filter chips + multi-select, paginated table
 │       │   ├── NetworkTraffic/  # Overview/Logs with SignalR + flat file backend
-│       │   ├── NotificationCenter/ # Full addon with taskbar badge, dropdown panel, SignalR real-time
 │       │   ├── PackageCenter/   # External addon management scaffold
 │       │   ├── Settings/       # Appearance, System, Account tabs
 │       │   ├── SystemMonitor/

@@ -49,6 +49,8 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<TrafficFlushWorker>();
         services.AddHostedService<TrafficCleanupWorker>();
         services.AddHostedService<TrafficStatsWorker>();
+        services.AddHostedService<LogCleanupWorker>();
+
 
         services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
         {

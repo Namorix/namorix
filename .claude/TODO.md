@@ -182,3 +182,21 @@ public class AppearanceSettingsData
 - `frontend/src/i18n/locales/en.json` + `vi.json` — sửa label
 - `frontend/packages/core/src/i18n/locales/en.json` — sửa `common.fields.username` label
 
+---
+
+## Notification Panel + Launcher — Freeze panel size khi filter
+
+**Context**: Khi toggle filter unread/all, số lượng items thay đổi → panel co giãn, UI không mượt. Hiện tại dùng `freezePanelSize` set inline `style.height/width` trước khi filter, `unfreezePanelSize` remove sau. Cách này chưa tối ưu.
+
+**Approach** (cần nghiên cứu):
+- Tìm cách freeze kích thước panel mà không cần JS inline style
+- Hoặc animate transition khi panel thay đổi kích thước
+- Áp dụng cho cả NotificationPanel và Launcher
+
+**Files**:
+- `frontend/src/components/Taskbar/NotificationPanel.tsx`
+- `frontend/src/components/Launcher/`
+- `frontend/packages/styles/src/base/shell/components/`
+
+**Note**: Nghiên cứu sau.
+

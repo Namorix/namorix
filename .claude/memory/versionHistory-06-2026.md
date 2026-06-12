@@ -1,5 +1,13 @@
 # Version History — June 2026
 
+## 2026-06-12 — LogCleanupWorker, wallpaper CSS var, cleanup freezePanelSize
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/styles | 0.30.1 → 0.30.2 | NEW: `base/tokens/misc.scss` — `--nmx-wallpaper` CSS variable. MODIFIED: `shell/components/desktop.scss` — dùng wallpaper var. `themes/dark/tokens.scss`, `themes/default/tokens.scss` — xoá wallpaper, reformat shadows. REMOVED: `themes/dark/icons/` — 2 files. |
+| frontend | 0.43.0 → 0.43.1 | NEW: `public/icons/background.svg` — wallpaper background. MODIFIED: `public/icons/logo.svg` — logo mới. favicon files — update. REMOVED: `NotificationPanel.tsx` — xoá freezePanelSize (chuyển TODO). `addons/index.ts` — import reorder. |
+| Namorix.Core | 0.36.2 → 0.36.3 | NEW: `Workers/LogCleanupWorker.cs` — cleanup log files sau 7 ngày. MODIFIED: `Extensions/ServiceCollectionExtensions.cs` — DI register LogCleanupWorker. |
+
 ## 2026-06-11 — Notification dedup, shared NotificationItem, xoá NotificationCenter addon
 
 | Package | Version | Changes |

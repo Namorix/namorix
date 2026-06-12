@@ -27,6 +27,12 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-06-12 — LogCleanupWorker, wallpaper CSS var, cleanup freezePanelSize
+
+- Backend: Thêm LogCleanupWorker — cleanup log files cũ hơn 7 ngày. DI register.
+- Styles: Thêm `--nmx-wallpaper` CSS var, desktop.scss dùng wallpaper. Xoá dark theme icons folder.
+- Frontend: Xoá freezePanelSize khỏi NotificationPanel (chuyển TODO). Reorder addons import.
+
 ### 2026-06-11 — Notification dedup, shared NotificationItem, xoá NotificationCenter addon
 
 - Backend: Thêm Occurrences/LastOccurredAt/Icon vào model. CreateForAdminsAsync. Dedup trong CreateAsync (tìm unread cùng key → tăng occurrences). Order IsRead ASC. AuthService thêm register notif.
@@ -143,15 +149,6 @@ Cả 3 attribute filter (`RequireAuthAttribute`, `RequireAdminAttribute`, `Requi
 ### 🔴 SignalR notification handler trả về result — ✅ Resolved
 `useNotificationEvents` dùng `void dispatch()` để tránh SignalR báo lỗi "not expecting a result".
 
-### 🔴 NotificationCenter — còn lỗi cần sửa
-
-- `NotificationController.cs` — `HttpContext.GetUserId()` không tồn tại, cần private `GetUserId()` như UserController
-- `apiRoutes.ts` — `API_NOTIFICATION_BASE = "/api/notification"` (số ít) nhưng controller route là `"api/notifications"` (số nhiều), gây 404
-- `taskbar.scss` — `--nmx-spacing-2/3/6` là token không tồn tại, cần thay bằng `--nmx-spacing-sm/md/2xl`
-- `NotificationPanel.tsx` — BEM class names `nmx-notif-item__*` không khớp SCSS `.nmx-notification-item__*`
-- Taskbar.tsx — cần close launcher khi mở notification panel và ngược lại
-- Thiếu migration (`dotnet ef migrations add AddNotifications`)
-- Notification content keys (notification/en.json, vi.json) đang rỗng
 
 ### SetThemeRequest thiếu validation
 - `UserController.cs:45-47` — `SetThemeRequest.ThemeId` thiếu `[Required]`, `[MaxLength]`

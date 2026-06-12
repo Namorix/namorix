@@ -101,16 +101,8 @@ export const NotificationPanel = memo(() => {
     }
   }, [items.length, totalCount, loading, dispatch, page])
 
-  const freezePanelSize = () => {
-    if (!panelRef.current) return
-    const { offsetHeight: height, offsetWidth: width } = panelRef.current
-    panelRef.current.style.height = height + "px"
-    panelRef.current.style.width = width + "px"
-  }
-
   const handleToggleFilter = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
-    freezePanelSize()
     setFilter((f) => !f)
   }, [])
 
@@ -120,7 +112,6 @@ export const NotificationPanel = memo(() => {
 
       if (readCount <= 0) return
 
-      freezePanelSize()
       deleteRead()
         .then(() => {
           dispatch(clearRead())

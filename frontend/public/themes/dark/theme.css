@@ -2544,6 +2544,7 @@ textarea,
   /* Color mix */
   --nmx-color-mix-lighten: white;
   --nmx-color-mix-darken: black;
+  --nmx-wallpaper: url("/icons/background.svg");
 }
 :root {
   /* Radius */
@@ -2642,7 +2643,6 @@ textarea,
 :root {
   /* Core colors */
   --nmx-color-bg: #111111;
-  --nmx-wallpaper: var(--nmx-color-bg);
   --nmx-color-surface: #1a1a1a; /* Main page/shell background behind cards and forms */
   --nmx-color-surface-lowest: #151515; /* Input fields, textareas, select (default fill) */
   --nmx-color-surface-low: #202020; /* Card/panel body (form card, setting card, modal body) */
@@ -2665,10 +2665,9 @@ textarea,
   --nmx-color-fatal: var(--nmx-color-rose-600);
   --nmx-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2), 0 1px 4px rgba(0, 0, 0, 0.16);
   --nmx-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.28), 0 1px 3px rgba(0, 0, 0, 0.2);
-  --nmx-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.36), 0 2px 6px rgba(0, 0, 0, 0.22);
-  --nmx-shadow-xl: 0 16px 40px rgba(0, 0, 0, 0.44), 0 4px 10px rgba(0, 0, 0, 0.26);
+  --nmx-shadow-lg:
+    0 8px 24px rgba(0, 0, 0, 0.36), 0 2px 6px rgba(0, 0, 0, 0.22);
+  --nmx-shadow-xl:
+    0 16px 40px rgba(0, 0, 0, 0.44), 0 4px 10px rgba(0, 0, 0, 0.26);
   --nmx-shadow-inset: inset 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-:root {
-  --nmx-icon-logo: url("data:image/svg+xml,%3c?xml%20version='1.0'%20encoding='UTF-8'%20standalone='no'?%3e%3csvg%20width='240'%20height='240'%20viewBox='0%200%20240%20240'%20fill='none'%20version='1.1'%20id='svg1'%20sodipodi:docname='.svg'%20inkscape:version='1.4.3%20(fcd0343856,%202026-01-01)'%20xmlns:inkscape='http://www.inkscape.org/namespaces/inkscape'%20xmlns:sodipodi='http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd'%20xmlns='http://www.w3.org/2000/svg'%20xmlns:svg='http://www.w3.org/2000/svg'%20xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns%23'%20xmlns:cc='http://creativecommons.org/ns%23'%20xmlns:dc='http://purl.org/dc/elements/1.1/'%3e%3cdefs%20id='defs1'%20/%3e%3csodipodi:namedview%20id='namedview1'%20pagecolor='%23ffffff'%20bordercolor='%23000000'%20borderopacity='0.25'%20inkscape:showpageshadow='2'%20inkscape:pageopacity='0.0'%20inkscape:pagecheckerboard='0'%20inkscape:deskcolor='%23d1d1d1'%20inkscape:zoom='1.6395833'%20inkscape:cx='81.728081'%20inkscape:cy='141.80432'%20inkscape:window-width='1920'%20inkscape:window-height='995'%20inkscape:window-x='0'%20inkscape:window-y='0'%20inkscape:window-maximized='1'%20inkscape:current-layer='svg1'%20/%3e%3cmetadata%20id='Namorix-Metadata-Block'%3e%3crdf:RDF%3e%3ccc:Work%20rdf:about=''%3e%3cdc:date%3e2026%3c/dc:date%3e%3cdc:creator%3e%3ccc:Agent%3e%3cdc:title%3eNguyen%20Danh%20Nam%3c/dc:title%3e%3c/cc:Agent%3e%3c/dc:creator%3e%3cdc:rights%3e%3ccc:Agent%3e%3cdc:title%3eNguyen%20Danh%20Nam%3c/dc:title%3e%3c/cc:Agent%3e%3c/dc:rights%3e%3ccc:license%20rdf:resource='https://creativecommons.org/licenses/by-nc-nd/4.0/'%20/%3e%3c/cc:Work%3e%3c/rdf:RDF%3e%3c/metadata%3e%3cpath%20id='nmx-i'%20d='M%2039.627706,60.858853%20C%2039.627706,50.291574%2031.061132,41.725%2020.493853,41.725%209.926574,41.725%201.36,50.291574%201.36,60.858853%20V%20179.14085%20c%200,10.56711%208.566574,19.13386%2019.133853,19.13386%2010.567279,0%2019.133853,-8.56675%2019.133853,-19.13386%20z'%20fill='%23007aff'%20style='stroke-width:1.73944'%20/%3e%3cpath%20id='nmx-glyph-fixed-1'%20d='m%20234.25552,79.410863%20c%207.47264,-7.472291%207.47264,-19.587151%200,-27.059443%20-7.47264,-7.472117%20-19.58785,-7.472117%20-27.05875,0%20L%2098.958306,160.58971%20c%20-7.472639,7.4709%20-7.472639,19.58611%200,27.05875%207.472644,7.47264%2019.587844,7.47264%2027.060484,0%20z'%20fill='%231c1c1e'%20style='stroke-width:1.73944;fill:%23ffffff;fill-opacity:1'%20/%3e%3cpath%20id='nmx-glyph-no-1'%20d='m%20135.85707,89.250012%20c%206.11414,-6.113092%206.11414,-16.025297%200,-22.138911%20-6.11239,-6.113614%20-16.02547,-6.113614%20-22.13961,0%20-6.11239,6.113614%20-6.11239,16.025819%200,22.138911%206.11414,6.114136%2016.02722,6.114136%2022.13961,0%20z'%20fill='%23007aff'%20style='stroke-width:1.73944'%20/%3e%3cpath%20id='nmx-glyph-no-2'%20d='m%20164.14734,117.54028%20c%206.11414,-6.11413%206.11414,-16.02547%200,-22.139603%20-6.11413,-6.114136%20-16.02547,-6.114136%20-22.1396,0%20-6.11414,6.114133%20-6.11414,16.025473%200,22.139603%206.11413,6.11414%2016.02547,6.11414%2022.1396,0%20z'%20fill='%23007aff'%20style='stroke-width:1.73944'%20/%3e%3cpath%20id='nmx-glyph-no-3'%20d='m%20192.43588,145.82882%20c%206.11413,-6.1124%206.11413,-16.02548%200,-22.13961%20-6.11414,-6.1124%20-16.02548,-6.1124%20-22.13961,0%20-6.1124,6.11413%20-6.1124,16.02721%200,22.13961%206.11413,6.11413%2016.02547,6.11413%2022.13961,0%20z'%20fill='%23007aff'%20style='stroke-width:1.73944'%20/%3e%3cpath%20id='nmx-glyph-no-4'%20d='m%20220.72615,174.11909%20c%206.11413,-6.11414%206.11413,-16.02721%200,-22.13961%20-6.11414,-6.11414%20-16.02547,-6.11414%20-22.13961,0%20-6.11414,6.1124%20-6.11414,16.02547%200,22.13961%206.11414,6.11239%2016.02547,6.11239%2022.13961,0%20z'%20fill='%23007aff'%20style='stroke-width:1.73944'%20/%3e%3c/svg%3e");
 }
