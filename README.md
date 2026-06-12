@@ -2,6 +2,10 @@
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPLv3-blue.svg)](LICENSE)
 
+<p align="center">
+  <img src="images/brand.png" alt="Namorix" width="400" />
+</p>
+
 Browser-based desktop shell, self-hosted.
 
 ## Features
