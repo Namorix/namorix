@@ -270,7 +270,25 @@
     },
     "systemMonitor": {
       "title": "System Monitor",
-      "description": "Track system resource usage, performance metrics, and running processes"
+      "description": "Track system resource usage, performance metrics, and running processes",
+      "processSection": "Process",
+      "cpu": "CPU Usage",
+      "cpuDescription": "{{count}} cores",
+      "memory": "Memory (RSS)",
+      "memoryDescription": "Heap {{heap}} · Total {{total}}",
+      "uptime": "Uptime",
+      "uptimeDescription": "{{count}} threads",
+      "diskSpaceSection": "Disk space",
+      "ioSection": "I/O",
+      "diskRead": "Disk read",
+      "diskWrite": "Disk write",
+      "networkRx": "Network rx",
+      "networkTx": "Network tx",
+      "environmentSection": "Environment",
+      "machine": "Machine",
+      "os": "OS",
+      "framework": "Framework",
+      "unknown": "Unknown"
     },
     "fileManager": {
       "title": "File Manager",
