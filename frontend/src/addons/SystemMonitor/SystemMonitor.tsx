@@ -17,7 +17,7 @@ import {
   useServerSignalREvent,
   useServerSignalRGroup,
 } from "../../signalr"
-import { formatBytes, formatBytesSec, formatUptime } from "@namorix/core"
+import { formatBytes, formatBytesSec } from "@namorix/core"
 
 export interface DiskData {
   name: string
@@ -27,23 +27,13 @@ export interface DiskData {
 
 interface SystemStats {
   cpu: number
-  cpuHistory: number[]
-  cpuProcess: number
-  cpuProcessHistory: number[]
   memory: {
-    total: number
-    available: number
-    usedPct: number
-  }
-  memoryHistory: number[]
-  process: {
     rss: number
     heap: number
     total: number
   }
-  processMemoryHistory: number[]
   threads: number
-  uptime: number
+  uptime: string
   environment: {
     os: string
     framework: string
@@ -81,60 +71,31 @@ export const SystemMonitor: React.FC = () => {
   return (
     <NmxAddonRoot scrolled className="nmx-addon-system-monitor">
       <NmxSection label={t("addon.systemMonitor.processSection")}>
-        <NmxGrid cols={2}>
+        <NmxGrid cols={3}>
           <NmxStatCard
             label={t("addon.systemMonitor.cpu")}
             icon={NmxIconFontSymbol.CPU}
             value={stats?.cpu != null ? `${stats.cpu.toFixed(1)}%` : null}
-            sparkData={stats?.cpuHistory}
             description={t("addon.systemMonitor.cpuDescription", {
               count: stats?.environment.cores ?? 0,
             })}
-            thresholdEnabled={true}
           />
-          <NmxStatCard
-            label={t("addon.systemMonitor.cpuProcess")}
-            icon={NmxIconFontSymbol.CPU}
-            value={
-              stats?.cpuProcess != null
-                ? `${stats.cpuProcess.toFixed(1)}%`
-                : null
-            }
-            sparkData={stats?.cpuProcessHistory}
-            description={t("addon.systemMonitor.cpuProcessDescription", {
-              count: stats?.environment.cores ?? 0,
-            })}
-            thresholdEnabled={true}
-          />
-        </NmxGrid>
-      </NmxSection>
-      <NmxSection label={t("addon.systemMonitor.memorySection")}>
-        <NmxGrid cols={2}>
           <NmxStatCard
             label={t("addon.systemMonitor.memory")}
             icon={NmxIconFontSymbol.RAM}
-            value={
-              stats?.memory.usedPct != null ? `${stats.memory.usedPct}%` : null
-            }
-            sparkData={stats?.memoryHistory}
+            value={stats ? formatBytes(stats.memory.rss) : null}
             description={t("addon.systemMonitor.memoryDescription", {
-              used: formatBytes(
-                stats ? stats.memory.total - stats.memory.available : 0,
-              ),
+              heap: formatBytes(stats?.memory.heap ?? 0),
               total: formatBytes(stats?.memory.total ?? 0),
             })}
-            thresholdEnabled={true}
           />
           <NmxStatCard
-            label={t("addon.systemMonitor.processMemory")}
-            icon={NmxIconFontSymbol.RAM}
-            value={formatBytes(stats?.process.rss ?? 0)}
-            sparkData={stats?.processMemoryHistory}
-            description={t("addon.systemMonitor.processMemoryDescription", {
-              heap: formatBytes(stats?.process.heap ?? 0),
-              total: formatBytes(stats?.process.total ?? 0),
+            label={t("addon.systemMonitor.uptime")}
+            icon={NmxIconFontSymbol.TIME}
+            value={stats?.uptime}
+            description={t("addon.systemMonitor.uptimeDescription", {
+              count: stats?.threads,
             })}
-            thresholdEnabled={true}
           />
         </NmxGrid>
       </NmxSection>
@@ -195,14 +156,6 @@ export const SystemMonitor: React.FC = () => {
             label={t("addon.systemMonitor.framework")}
             value={
               stats?.environment.framework ?? t("addon.systemMonitor.unknown")
-            }
-            alignValue="end"
-          />
-          <NmxMetaItem
-            label={t("addon.systemMonitor.uptime")}
-            value={
-              formatUptime(stats?.uptime ?? 0) ??
-              t("addon.systemMonitor.unknown")
             }
             alignValue="end"
           />

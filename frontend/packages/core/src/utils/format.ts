@@ -99,17 +99,3 @@ export function formatBytesSec(
   if (bytes == null) return null
   return formatBytes(bytes) + "/s"
 }
-
-export function formatUptime(seconds: number | undefined): string | null {
-  if (seconds == null) return null
-  const y = Math.floor(seconds / (86400 * 365.25))
-  const d = Math.floor((seconds % (86400 * 365.25)) / 86400)
-  const h = Math.floor((seconds % 86400) / 3600)
-  const m = Math.floor((seconds % 3600) / 60)
-
-  if (y > 0) return `${y}y ${d}d`
-  if (d > 0) return `${d}d ${h.toString().padStart(2, "0")}h`
-  if (h > 0)
-    return `${h.toString().padStart(2, "0")}h ${m.toString().padStart(2, "0")}m`
-  return `${m}m`
-}

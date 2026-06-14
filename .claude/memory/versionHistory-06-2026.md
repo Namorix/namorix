@@ -1,14 +1,5 @@
 # Version History — June 2026
 
-## 2026-06-13 — SystemMonitor refinements: system CPU, sparklines, threshold auto-color
-
-| Package | Version | Changes |
-|---------|---------|---------|
-| @namorix/core | 0.35.0 → 0.35.1 | NEW: `utils/format.ts` — formatUptime (y/d/h/m auto-scale). |
-| @namorix/ui | 0.22.0 → 0.22.1 | MODIFIED: `NmxStatCard.tsx` — thresholdEnabled + thresholds prop tự động đổi màu card theo %. Sparkline dùng resolvedColor. |
-| frontend | 0.44.0 → 0.44.1 | MODIFIED: `SystemMonitor.tsx` — systemCPU card, sparklines cho CPU/memory/process memory, formatUptime. `en.json` — systemCPU, processMemory keys. |
-| Namorix.Server | 0.37.0 → 0.37.1 | MODIFIED: `Workers/SystemStatsWorker.cs` — system CPU từ /proc/stat, memory từ /proc/meminfo (system RAM), history arrays (cpuHistory, memHistory, procMemHistory) cho sparkline. |
-
 ## 2026-06-13 — SystemMonitor full implementation, ServerSignalR, MainHub
 
 | Package | Version | Changes |
