@@ -1401,6 +1401,9 @@ textarea,
   letter-spacing: var(--nmx-letter-spacing-wide);
   font-size: var(--nmx-font-size-xs);
   text-transform: uppercase;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 .nmx-stat-card__icon {
   color: var(--nmx-color-on-surface-variant);

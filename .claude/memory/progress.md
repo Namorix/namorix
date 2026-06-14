@@ -127,12 +127,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.44.0 | M3 (SystemMonitor full: CPU, memory, uptime, disk, IO) |
-| @namorix/core | 0.35.0 | M3 (formatBytes/Sec, useSignalRGroup generic fix, formatSeconds) |
-| @namorix/styles | 0.31.0 | M3 (disk-usage, section, system-monitor SCSS, scrolled/contained variants) |
-| @namorix/ui | 0.22.0 | M3 (DiskUsage, NmxSection, NmxStatCard icon prop, NmxExpandable) |
+| frontend | 0.44.1 | M3 (SystemMonitor sparklines, system CPU, formatUptime) |
+| @namorix/core | 0.35.1 | M3 (formatUptime new) |
+| @namorix/styles | 0.31.0 | M3 (No changes) |
+| @namorix/ui | 0.22.1 | M3 (NmxStatCard threshold auto-color) |
 | Namorix.Core | 0.36.3 | M3 (No changes) |
-| Namorix.Server | 0.37.0 | M3 (SystemStatsWorker, MainHub, ServerSignalR, worker rename) |
+| Namorix.Server | 0.37.1 | M3 (SystemStatsWorker: system CPU, /proc/meminfo, history arrays) |
 
 ## Version Rules
 
