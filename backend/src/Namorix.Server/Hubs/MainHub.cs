@@ -12,7 +12,7 @@ public class MainHub(TrafficMonitorService monitorService, ILogger<MainHub> logg
     public async Task SubscribeSystemMonitor()
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, ServerSignalRGroups.SystemMonitor);
-        var cached = SystemStatsWorker.LatestStats;
+        var cached = SystemMonitorStatsWorker.LatestStats;
         if (cached != null)
             await Clients.Caller.SendAsync(ServerSignalREvent.SystemMonitorStatsUpdate, cached);
     }

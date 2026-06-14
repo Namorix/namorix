@@ -36,7 +36,7 @@ builder.Services.AddScoped<ISystemMonitorNotifier, SignalRSystemMonitorNotifier>
 builder.Services.AddNamorixCore<MainHub>(builder.Environment.IsDevelopment());
 builder.Services.AddHostedService<TokenCleanupWorker>();
 builder.Services.AddHostedService<NotificationCleanupWorker>();
-builder.Services.AddHostedService<SystemStatsWorker>();
+builder.Services.AddHostedService<SystemMonitorStatsWorker>();
 
 var app = builder.Build();
 
