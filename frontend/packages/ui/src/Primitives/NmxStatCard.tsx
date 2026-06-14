@@ -1,7 +1,12 @@
 import type { NmxSemanticColor, WithBaseProps } from "../types"
-import React, { useEffect, useRef } from "react"
+import React, { useEffect, useMemo, useRef } from "react"
 import { cx, cxSemantic, drawSparkline } from "../utils"
 import { NmxIconFont, type NmxIconFontSymbol } from "./NmxIcon"
+
+export interface Threshold {
+  value: number
+  semantic: NmxSemanticColor
+}
 
 export interface NmxStatCardProps extends WithBaseProps {
   label: string
@@ -15,7 +20,15 @@ export interface NmxStatCardProps extends WithBaseProps {
     direction: "up" | "down" | "neutral"
   }
   sparkData?: number[]
+  thresholdEnabled?: boolean
+  thresholds?: Threshold[]
 }
+
+const DEFAULT_THRESHOLDS: Threshold[] = [
+  { value: 50, semantic: "success" },
+  { value: 80, semantic: "warning" },
+  { value: 100, semantic: "error" },
+]
 
 export const NmxStatCard: React.FC<NmxStatCardProps> = ({
   label,
@@ -23,14 +36,30 @@ export const NmxStatCard: React.FC<NmxStatCardProps> = ({
   value,
   icon,
   unit,
-  semantic = "info",
+  semantic = "primary",
   trend,
   sparkData,
+  thresholdEnabled = false,
+  thresholds = DEFAULT_THRESHOLDS,
   shouldRender = true,
   className,
   ...rest
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  const resolvedColor = useMemo(() => {
+    if (!thresholdEnabled || !thresholds || value == null) {
+      return semantic
+    }
+
+    const num = typeof value === "number" ? value : parseFloat(value)
+    if (isNaN(num)) return semantic
+
+    const matched = [...thresholds]
+      .sort((a, b) => a.value - b.value)
+      .find((t) => num <= t.value)
+    return matched?.semantic ?? semantic
+  }, [thresholdEnabled, thresholds, value, semantic])
 
   useEffect(() => {
     if (!sparkData || sparkData.length === 0) {
@@ -60,7 +89,7 @@ export const NmxStatCard: React.FC<NmxStatCardProps> = ({
 
       const accent =
         getComputedStyle(canvas)
-          .getPropertyValue(cxSemantic("--nmx-color", semantic, false))
+          .getPropertyValue(cxSemantic("--nmx-color", resolvedColor, false))
           .trim() ||
         getComputedStyle(document.documentElement)
           .getPropertyValue("--nmx-color-primary")
@@ -74,7 +103,7 @@ export const NmxStatCard: React.FC<NmxStatCardProps> = ({
     const observer = new ResizeObserver(draw)
     observer.observe(canvas)
     return () => observer.disconnect()
-  }, [semantic, sparkData])
+  }, [resolvedColor, semantic, sparkData])
 
   if (!shouldRender) {
     return null
