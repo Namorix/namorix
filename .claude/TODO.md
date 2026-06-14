@@ -189,3 +189,16 @@ public class AppearanceSettingsData
 
 ---
 
+## NmxStatCard sparkline — canvas blur lần đầu render
+
+**Context**: Sparkline canvas bị mờ/stretch khi render lần đầu. Resize window → nét lại.
+
+**Approach** (cần thử):
+- `requestAnimationFrame` trước draw lần đầu
+- Hoặc chỉ vẽ sau ResizeObserver callback, không vẽ lần đầu
+
+**Files**:
+- `frontend/packages/ui/src/Primitives/NmxStatCard.tsx`
+
+**Note**: Chưa giải quyết được.
+

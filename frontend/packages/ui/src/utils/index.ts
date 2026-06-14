@@ -1,4 +1,4 @@
 export * from "./cx"
-export * from "./canvas"
+export * from "./drawSparkline"
 export * from "./cssVariableCache"
 export * from "./breakpointDefaults"

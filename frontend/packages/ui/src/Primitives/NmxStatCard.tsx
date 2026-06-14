@@ -62,16 +62,14 @@ export const NmxStatCard: React.FC<NmxStatCardProps> = ({
   }, [thresholdEnabled, thresholds, value, semantic])
 
   useEffect(() => {
-    if (!sparkData || sparkData.length === 0) {
-      return
-    }
-
     const canvas = canvasRef.current
-    if (!canvas) {
-      return
-    }
+    if (!canvas) return
 
     const draw = () => {
+      if (!sparkData || sparkData.length === 0) {
+        return
+      }
+
       const dpr = window.devicePixelRatio || 1
       const rect = canvas.getBoundingClientRect()
 
@@ -97,8 +95,6 @@ export const NmxStatCard: React.FC<NmxStatCardProps> = ({
 
       drawSparkline(ctx, sparkData, accent, rect.width, rect.height)
     }
-
-    draw()
 
     const observer = new ResizeObserver(draw)
     observer.observe(canvas)
