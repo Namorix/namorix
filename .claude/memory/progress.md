@@ -129,10 +129,10 @@
 |---------|---------|-----------|
 | frontend | 0.44.1 | M3 (SystemMonitor sparklines, system CPU, formatUptime) |
 | @namorix/core | 0.35.1 | M3 (formatUptime new) |
-| @namorix/styles | 0.31.0 | M3 (No changes) |
-| @namorix/ui | 0.22.1 | M3 (NmxStatCard threshold auto-color) |
+| @namorix/styles | 0.31.1 | M3 (disk-usage container queries, settings hardcoded → variable) |
+| @namorix/ui | 0.22.2 | M3 (NmxStatCard canvas resolution fix) |
 | Namorix.Core | 0.36.3 | M3 (No changes) |
-| Namorix.Server | 0.37.1 | M3 (SystemStatsWorker: system CPU, /proc/meminfo, history arrays) |
+| Namorix.Server | 0.37.2 | M3 (SystemMonitorStatsWorker rename, disk filter improvements) |
 
 ## Version Rules
 
@@ -159,6 +159,11 @@
 - Không bao giờ bump cả Core + Server cùng lúc nếu chỉ 1 trong 2 thay đổi
 
 ## Version History
+
+### 2026-06-14
+- @namorix/styles 0.31.0 → 0.31.1: DiskUsage container queries `.nmx-disk-item__name`, settings hardcoded 580px → variable
+- @namorix/ui 0.22.1 → 0.22.2: NmxStatCard canvas resolution fix (getBoundingClientRect → clientWidth/clientHeight)
+- Namorix.Server 0.37.1 → 0.37.2: SystemStatsWorker rename → SystemMonitorStatsWorker, DriveType/overlay filter, Namorix.Workers project removal
 
 Xem chi tiết tại:
 - [versionHistory-06-2026.md](versionHistory-06-2026.md) — June 2026

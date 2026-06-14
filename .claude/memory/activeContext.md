@@ -27,6 +27,12 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-06-14 — Worker rename, disk filter, NmxStatCard canvas fix, styles container queries
+
+- Backend: SystemStatsWorker renamed → SystemMonitorStatsWorker. Disk filter improved (DriveType.Fixed, overlay/fs exclusion, DistinctBy). Namorix.Workers project removed (workers moved to Server/Workers in previous commit).
+- Styles: DiskUsage container queries for `.nmx-disk-item__name` (responsive width breakpoints). Settings.scss hardcoded 580px → `$nmx-breakpoint-sm` variable.
+- UI: NmxStatCard canvas resolution fix — `getBoundingClientRect()` → `clientWidth`/`clientHeight` để tránh blur khi window-open scale animation.
+
 ### 2026-06-13 — SystemMonitor full implementation, ServerSignalR, MainHub
 
 - Backend: SystemStatsWorker push CPU/memory/uptime/disk/IO/network mỗi 1s. MainHub extends NmxHub. ServerSignalR constants. ISystemMonitorNotifier + SignalRSystemMonitorNotifier. Workers moved từ Namorix.Workers sang Server/Workers.
