@@ -72,11 +72,13 @@ export const NmxStatCard: React.FC<NmxStatCardProps> = ({
 
       const dpr = window.devicePixelRatio || 1
       const rect = canvas.getBoundingClientRect()
+      const width = canvas.clientWidth ?? rect.width
+      const height = canvas.clientHeight ?? rect.height
 
-      if (rect.width === 0 || rect.height === 0) return
+      if (width === 0 || height === 0) return
 
-      canvas.width = rect.width * dpr
-      canvas.height = rect.height * dpr
+      canvas.width = width * dpr
+      canvas.height = height * dpr
 
       const ctx = canvas.getContext("2d")
       if (!ctx) {
@@ -93,7 +95,7 @@ export const NmxStatCard: React.FC<NmxStatCardProps> = ({
           .getPropertyValue("--nmx-color-primary")
           .trim()
 
-      drawSparkline(ctx, sparkData, accent, rect.width, rect.height)
+      drawSparkline(ctx, sparkData, accent, width, height)
     }
 
     const observer = new ResizeObserver(draw)
