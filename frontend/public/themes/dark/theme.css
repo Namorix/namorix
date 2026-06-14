@@ -7,7 +7,7 @@
 
 @font-face {
   font-family: "icomoon";
-  src: url("/public/fonts/icomoon/fonts/icomoon.ttf?9vxehx") format("truetype"), url("/public/fonts/icomoon/fonts/icomoon.woff?9vxehx") format("woff"), url("/public/fonts/icomoon/fonts/icomoon.svg?9vxehx#icomoon") format("svg");
+  src: url("/public/fonts/icomoon/fonts/icomoon.ttf?3hbcra") format("truetype"), url("/public/fonts/icomoon/fonts/icomoon.woff?3hbcra") format("woff"), url("/public/fonts/icomoon/fonts/icomoon.svg?3hbcra#icomoon") format("svg");
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -24,6 +24,21 @@
   /* Better Font Rendering =========== */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+.ic-ram:before {
+  content: "\e922";
+}
+.ic-time:before {
+  content: "\e923";
+}
+.ic-cpu:before {
+  content: "\e924";
+}
+.ic-arrow-bar-up:before {
+  content: "\e925";
+}
+.ic-arrow-bar-down:before {
+  content: "\e926";
 }
 .ic-delete:before {
   content: "\e921";
@@ -497,6 +512,31 @@ textarea,
   height: 100%;
   min-height: 0;
 }
+.nmx-addon-root--scrolled {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.nmx-addon-root--scrolled::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.nmx-addon-root--scrolled::-webkit-scrollbar-track {
+  background: transparent;
+}
+.nmx-addon-root--scrolled::-webkit-scrollbar-thumb {
+  background-color: color-mix(in oklab, var(--nmx-color-on-surface-variant) 50%, transparent);
+  border-radius: 4px;
+  border: 2px solid transparent;
+}
+.nmx-addon-root--scrolled::-webkit-scrollbar-button {
+  display: none;
+  height: 0;
+  width: 0;
+}
+.nmx-addon-root--scrolled {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--nmx-color-on-surface-variant) 50%, transparent) transparent;
+}
 .nmx-addon-page {
   flex: 1;
   display: flex;
@@ -896,6 +936,12 @@ textarea,
   gap: var(--nmx-spacing-lg);
   align-items: start;
   text-align: start;
+}
+.nmx-meta-list--contained {
+  background: var(--nmx-color-surface-low);
+  border-radius: var(--nmx-radius-md);
+  box-shadow: var(--nmx-shadow-sm);
+  padding: var(--nmx-spacing-md);
 }
 .nmx-meta-list__item {
   display: contents;
@@ -1345,10 +1391,20 @@ textarea,
   box-shadow: var(--nmx-shadow-sm);
 }
 .nmx-stat-card__header {
+  display: flex;
+  flex-direction: row;
+  gap: var(--nmx-spacing-xs);
+  align-items: center;
+}
+.nmx-stat-card__label {
+  color: var(--nmx-color-on-surface-variant);
+  letter-spacing: var(--nmx-letter-spacing-wide);
   font-size: var(--nmx-font-size-xs);
   text-transform: uppercase;
-  letter-spacing: var(--nmx-letter-spacing-wide);
+}
+.nmx-stat-card__icon {
   color: var(--nmx-color-on-surface-variant);
+  font-size: var(--nmx-font-size-sm);
 }
 .nmx-stat-card__main {
   display: flex;
@@ -1357,9 +1413,13 @@ textarea,
 }
 .nmx-stat-card__value {
   font-family: var(--nmx-font-mono), monospace;
-  font-size: 28px;
-  font-weight: 600;
-  color: var(--nmx-stat-card-accent, var(--nmx-color-on-surface));
+  font-size: var(--nmx-font-size-3xl);
+  font-weight: var(--nmx-font-weight-bold);
+  color: var(--nmx-color-on-surface);
+}
+.nmx-stat-card__description {
+  color: var(--nmx-color-on-surface);
+  font-size: var(--nmx-font-size-sm);
 }
 .nmx-stat-card__unit {
   font-size: var(--nmx-font-size-sm);
@@ -2478,6 +2538,78 @@ textarea,
   flex-direction: row;
   align-items: center;
   gap: var(--nmx-spacing-md);
+}
+.nmx-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nmx-spacing-md);
+}
+.nmx-section__label {
+  display: flex;
+  align-items: center;
+  gap: var(--nmx-spacing-sm);
+  font-size: var(--nmx-font-size-xs);
+  font-weight: var(--nmx-font-weight-semibold);
+  color: var(--nmx-color-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: var(--nmx-letter-spacing-wide);
+}
+.nmx-section__icon {
+  font-size: var(--nmx-font-size-lg);
+}
+.nmx-disk-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nmx-spacing-sm);
+  background: var(--nmx-color-surface-low);
+  border-radius: var(--nmx-radius-md);
+  box-shadow: var(--nmx-shadow-sm);
+  padding: var(--nmx-spacing-md);
+}
+.nmx-disk-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--nmx-spacing-md);
+}
+.nmx-disk-item__name {
+  color: var(--nmx-color-on-surface);
+  font-size: var(--nmx-font-size-xs);
+  font-weight: var(--nmx-font-weight-semibold);
+  width: 64px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.nmx-disk-item__bar {
+  height: 6px;
+  width: 100%;
+  background: var(--nmx-color-surface-mid);
+  border-radius: var(--nmx-radius-full);
+  overflow: hidden;
+}
+.nmx-disk-item__fill {
+  height: 100%;
+  border-radius: var(--nmx-radius-full);
+  transition: width 0.5s ease;
+}
+.nmx-disk-item__fill--success {
+  background: var(--nmx-color-success);
+}
+.nmx-disk-item__fill--warning {
+  background: var(--nmx-color-warning);
+}
+.nmx-disk-item__fill--error {
+  background: var(--nmx-color-error);
+}
+.nmx-disk-item__info {
+  font-size: var(--nmx-font-size-xs);
+  color: var(--nmx-color-on-surface-variant);
+  white-space: nowrap;
+  width: 120px;
+  text-align: right;
+  flex-shrink: 0;
 }
 :root {
   --nmx-accent-color-blue: #378ADD;

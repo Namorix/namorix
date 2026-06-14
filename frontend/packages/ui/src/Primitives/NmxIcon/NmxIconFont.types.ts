@@ -9,6 +9,8 @@ export const NmxIconFontSymbol = {
   ARROW_NEXT: "ic-arrow-next",
   ARROW_UP: "ic-arrow-up",
   ARROW_DOWN: "ic-arrow-down",
+  ARROW_BAR_UP: "ic-arrow-bar-up",
+  ARROW_BAR_DOWN: "ic-arrow-bar-down",
   MENU: "ic-menu",
   MENU_FOLD: "ic-menu-fold",
   LOGS: "ic-logs",
@@ -33,6 +35,9 @@ export const NmxIconFontSymbol = {
   MARK_ALL: "ic-mark-all",
   FILTER: "ic-filter",
   DELETE: "ic-delete",
+  TIME: "ic-time",
+  RAM: "ic-ram",
+  CPU: "ic-cpu",
 } as const
 
 export type NmxIconFontSymbol =

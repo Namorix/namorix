@@ -1,0 +1,20 @@
+.nmx-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nmx-spacing-md);
+
+  &__label {
+    display: flex;
+    align-items: center;
+    gap: var(--nmx-spacing-sm);
+    font-size: var(--nmx-font-size-xs);
+    font-weight: var(--nmx-font-weight-semibold);
+    color: var(--nmx-color-on-surface-variant);
+    text-transform: uppercase;
+    letter-spacing: var(--nmx-letter-spacing-wide);
+  }
+
+  &__icon {
+    font-size: var(--nmx-font-size-lg);
+  }
+}

@@ -7,6 +7,13 @@
   align-items: start;
   text-align: start;
 
+  &--contained {
+    background: var(--nmx-color-surface-low);
+    border-radius: var(--nmx-radius-md);
+    box-shadow: var(--nmx-shadow-sm);
+    padding: var(--nmx-spacing-md);
+  }
+
   &__item {
     display: contents;
     font-family: var(--nmx-font-mono), serif;

@@ -3,9 +3,9 @@
 @font-face {
   font-family: '#{$icomoon-font-family}';
   src:
-    url('#{$icomoon-font-path}/#{$icomoon-font-family}.ttf?9vxehx') format('truetype'),
-    url('#{$icomoon-font-path}/#{$icomoon-font-family}.woff?9vxehx') format('woff'),
-    url('#{$icomoon-font-path}/#{$icomoon-font-family}.svg?9vxehx##{$icomoon-font-family}') format('svg');
+    url('#{$icomoon-font-path}/#{$icomoon-font-family}.ttf?3hbcra') format('truetype'),
+    url('#{$icomoon-font-path}/#{$icomoon-font-family}.woff?3hbcra') format('woff'),
+    url('#{$icomoon-font-path}/#{$icomoon-font-family}.svg?3hbcra##{$icomoon-font-family}') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -26,6 +26,31 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.ic-ram {
+  &:before {
+    content: $ic-ram; 
+  }
+}
+.ic-time {
+  &:before {
+    content: $ic-time; 
+  }
+}
+.ic-cpu {
+  &:before {
+    content: $ic-cpu; 
+  }
+}
+.ic-arrow-bar-up {
+  &:before {
+    content: $ic-arrow-bar-up; 
+  }
+}
+.ic-arrow-bar-down {
+  &:before {
+    content: $ic-arrow-bar-down; 
+  }
+}
 .ic-delete {
   &:before {
     content: $ic-delete; 

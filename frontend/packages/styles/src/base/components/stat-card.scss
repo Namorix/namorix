@@ -8,10 +8,22 @@
   box-shadow: var(--nmx-shadow-sm);
 
   &__header {
+    display: flex;
+    flex-direction: row;
+    gap: var(--nmx-spacing-xs);
+    align-items: center;
+  }
+
+  &__label {
+    color: var(--nmx-color-on-surface-variant);
+    letter-spacing: var(--nmx-letter-spacing-wide);
     font-size: var(--nmx-font-size-xs);
     text-transform: uppercase;
-    letter-spacing: var(--nmx-letter-spacing-wide);
+  }
+
+  &__icon {
     color: var(--nmx-color-on-surface-variant);
+    font-size: var(--nmx-font-size-sm);
   }
 
   &__main {
@@ -22,9 +34,14 @@
 
   &__value {
     font-family: var(--nmx-font-mono), monospace;
-    font-size: 28px;
-    font-weight: 600;
-    color: var(--nmx-stat-card-accent, var(--nmx-color-on-surface));
+    font-size: var(--nmx-font-size-3xl);
+    font-weight: var(--nmx-font-weight-bold);
+    color: var(--nmx-color-on-surface);
+  }
+
+  &__description {
+    color: var(--nmx-color-on-surface);
+    font-size: var(--nmx-font-size-sm);
   }
 
   &__unit {

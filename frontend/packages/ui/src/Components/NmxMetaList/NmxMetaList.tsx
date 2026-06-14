@@ -2,9 +2,12 @@ import type { WithBaseProps } from "../../types"
 import React from "react"
 import { cx } from "../../utils"
 
-type NmxMetaListProps = WithBaseProps
+interface NmxMetaListProps extends WithBaseProps {
+  contained?: boolean
+}
 
 export const NmxMetaList: React.FC<NmxMetaListProps> = ({
+  contained = false,
   shouldRender = true,
   children,
   className,
@@ -15,7 +18,14 @@ export const NmxMetaList: React.FC<NmxMetaListProps> = ({
   }
 
   return (
-    <div {...rest} className={cx("nmx-meta-list", className)}>
+    <div
+      {...rest}
+      className={cx(
+        "nmx-meta-list",
+        { "nmx-meta-list--contained": contained },
+        className,
+      )}
+    >
       {children}
     </div>
   )

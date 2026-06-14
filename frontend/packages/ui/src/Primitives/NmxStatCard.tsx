@@ -1,10 +1,13 @@
 import type { NmxSemanticColor, WithBaseProps } from "../types"
 import React, { useEffect, useRef } from "react"
 import { cx, cxSemantic, drawSparkline } from "../utils"
+import { NmxIconFont, type NmxIconFontSymbol } from "./NmxIcon"
 
 export interface NmxStatCardProps extends WithBaseProps {
   label: string
+  description?: string
   value: string | number | null | undefined
+  icon?: NmxIconFontSymbol
   unit?: string
   semantic?: NmxSemanticColor
   trend?: {
@@ -16,7 +19,9 @@ export interface NmxStatCardProps extends WithBaseProps {
 
 export const NmxStatCard: React.FC<NmxStatCardProps> = ({
   label,
+  description,
   value,
+  icon,
   unit,
   semantic = "info",
   trend,
@@ -80,11 +85,17 @@ export const NmxStatCard: React.FC<NmxStatCardProps> = ({
 
   return (
     <div {...rest} className={cx("nmx-stat-card", className)}>
-      <span className="nmx-stat-card__header">{label}</span>
+      <div className="nmx-stat-card__header">
+        {icon && <NmxIconFont symbol={icon} className="nmx-stat-card__icon" />}
+        <span className="nmx-stat-card__label">{label}</span>
+      </div>
       <div className="nmx-stat-card__main">
         <span className="nmx-stat-card__value">{displayValue}</span>
         {unit && <span className="nmx-stat-card__unit">{unit}</span>}
       </div>
+      {description && (
+        <span className="nmx-stat-card__description">{description}</span>
+      )}
       {sparkData && sparkData.length >= 1 && (
         <canvas ref={canvasRef} className="nmx-stat-card__spark" />
       )}
