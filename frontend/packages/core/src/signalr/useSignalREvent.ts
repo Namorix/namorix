@@ -2,10 +2,10 @@ import { useEffect } from "react"
 import { getConnection } from "./signalr.service"
 import type { SignalREvent } from "./constants"
 
-export function useSignalREvent<T = unknown>(
-  eventName: SignalREvent,
-  handler: (data: T) => void,
-) {
+export function useSignalREvent<
+  T = unknown,
+  SE extends SignalREvent | (string & {}) = SignalREvent,
+>(eventName: SE, handler: (data: T) => void) {
   useEffect(() => {
     const conn = getConnection()
     if (!conn) return

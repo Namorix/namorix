@@ -79,3 +79,23 @@ export function formatRelativeTime(
     minute: "2-digit",
   }).format(dateTime)
 }
+
+export function formatBytes(bytes: number): string {
+  const units = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]
+  let unit = 0
+  let size = bytes
+  while (size >= 1024 && unit < units.length - 1) {
+    size /= 1024
+    unit++
+  }
+  return unit <= 1
+    ? `${size.toFixed(0)}${units[unit]}`
+    : `${size.toFixed(1)}${units[unit]}`
+}
+
+export function formatBytesSec(
+  bytes: number | null | undefined,
+): string | null {
+  if (bytes == null) return null
+  return formatBytes(bytes) + "/s"
+}
