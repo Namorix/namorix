@@ -27,6 +27,13 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-06-13 — SystemMonitor full implementation, ServerSignalR, MainHub
+
+- Backend: SystemStatsWorker push CPU/memory/uptime/disk/IO/network mỗi 1s. MainHub extends NmxHub. ServerSignalR constants. ISystemMonitorNotifier + SignalRSystemMonitorNotifier. Workers moved từ Namorix.Workers sang Server/Workers.
+- Core: formatBytes/Sec utils. useSignalREvent chờ connection. useSignalRGroup generic string. groupMethod fix kebab→Pascal.
+- UI/Styles: DiskUsage (progress bar + badge), NmxSection, stat-card icon, meta-list contained, addon scrolled. Icomoon rebuild với CPU/RAM/TIME/ARROW_BAR icons.
+- Frontend: SystemMonitor full — Process section (CPU, Memory, Uptime), Disk Space (DiskUsageList), IO (disk read/write, net rx/tx), Environment (meta-list). signalr/ constants + hooks.
+
 ### 2026-06-12 — LogCleanupWorker, wallpaper CSS var, cleanup freezePanelSize
 
 - Backend: Thêm LogCleanupWorker — cleanup log files cũ hơn 7 ngày. DI register.

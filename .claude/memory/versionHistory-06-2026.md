@@ -1,5 +1,15 @@
 # Version History — June 2026
 
+## 2026-06-13 — SystemMonitor full implementation, ServerSignalR, MainHub
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.34.1 → 0.35.0 | NEW: `utils/format.ts` — formatBytes, formatBytesSec. MODIFIED: `signalr/useSignalREvent.ts` — chờ connection. `signalr/useSignalRGroup.ts` — generic string, kebab→Pascal fix. `signalr/utils.ts` — groupMethod fix. |
+| @namorix/ui | 0.21.6 → 0.22.0 | NEW: `Components/DiskUsage/` — DiskUsageList + DiskUsageItem với progress bar + badge %. `Components/NmxSection.tsx` — section label wrapper. MODIFIED: `NmxAddonRoot.tsx` — scrolled prop. `NmxMetaList.tsx` — contained prop. `NmxStatCard.tsx` — icon prop. `NmxIconFont.types.ts` — new icons (CPU, RAM, TIME, ARROW_BAR). |
+| @namorix/styles | 0.30.2 → 0.31.0 | NEW: `disk-usage.scss`, `section.scss`, `shell/addon/system-monitor.scss`. MODIFIED: `addon.scss` — scrolled variant. `meta-list.scss` — contained variant. `stat-card.scss` — icon support. Icomoon rebuild. Themes rebuilt. |
+| frontend | 0.43.1 → 0.44.0 | NEW: `addons/SystemMonitor/SystemMonitor.tsx` — full implement (4 sections: Process, Disk Space, IO, Environment). `signalr/` — constants + hooks. MODIFIED: `en.json` — systemMonitor i18n keys. |
+| Namorix.Server | 0.36.3 → 0.37.0 | NEW: `Workers/SystemStatsWorker.cs` — push stats mỗi 1s (CPU, RAM, disk, IO, network, environment). `Hubs/MainHub.cs` — extends NmxHub, Subscribe/UnsubscribeSystemMonitor. `Constants/ServerSignalRGroups.cs`, `Infrastructure/ISystemMonitorNotifier.cs`, `Hubs/SignalRSystemMonitorNotifier.cs`. RENAMED: TokenCleanupWorker, NotificationCleanupWorker từ Workers → Server/Workers. MODIFIED: `ApplicationBuilderExtensions.cs` — generic `UseNamorixCore<THub>`. `Program.cs` — register workers + hub. |
+
 ## 2026-06-12 — LogCleanupWorker, wallpaper CSS var, cleanup freezePanelSize
 
 | Package | Version | Changes |

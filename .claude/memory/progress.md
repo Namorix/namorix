@@ -101,7 +101,9 @@
 - [x] Theme system: types (`@namorix/core`), theme loader/registry (frontend), backend theme repository API
 - [x] **Zustand → Redux migration** (4 stores → 3 slices, normalized state, memoized selectors, 10 component files rewritten)
 - [x] **NetworkTraffic backend Phase 1** — models, middleware, service, controller, workers, DI
-- [ ] Internal addon: Terminal
+- [ ] Internal addon: File Manager (scaffold)
+- [ ] Internal addon: Terminal (scaffold)
+- [ ] Internal addon: Package Center (scaffold)
 - [x] Internal addon: Settings (includes theme picker UI)
 
 ### M4 — External Addon System (Docker)
@@ -125,12 +127,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.43.1 | M3 (Remove freezePanelSize, addons reorder) |
-| @namorix/core | 0.34.1 | M3 (useDoubleTap hook, apiRoutes deleteRead) |
-| @namorix/styles | 0.30.2 | M3 (Wallpaper CSS var, shadow tweaks, remove dark icons) |
-| @namorix/ui | 0.21.6 | M3 (New NmxIconFontSymbol entries) |
-| Namorix.Core | 0.36.3 | M3 (LogCleanupWorker — cleanup logs sau 7 ngày) |
-| Namorix.Server | 0.36.3 | M3 (DeleteRead endpoint + service) |
+| frontend | 0.44.0 | M3 (SystemMonitor full: CPU, memory, uptime, disk, IO) |
+| @namorix/core | 0.35.0 | M3 (formatBytes/Sec, useSignalRGroup generic fix, formatSeconds) |
+| @namorix/styles | 0.31.0 | M3 (disk-usage, section, system-monitor SCSS, scrolled/contained variants) |
+| @namorix/ui | 0.22.0 | M3 (DiskUsage, NmxSection, NmxStatCard icon prop, NmxExpandable) |
+| Namorix.Core | 0.36.3 | M3 (No changes) |
+| Namorix.Server | 0.37.0 | M3 (SystemStatsWorker, MainHub, ServerSignalR, worker rename) |
 
 ## Version Rules
 

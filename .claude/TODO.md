@@ -30,19 +30,6 @@
 
 ---
 
-## Version bump — localeKey addon i18n system
-
-**Context**: Đã thêm `localeKey` vào `NmxAddonManifest` + `AddonItem`, resolve displayName/description qua i18n. Cần bump version và update memory bank.
-
-**Bumps**:
-- `@namorix/core` 0.23.1 → 0.24.0 (MINOR — new `LocaleKeys` type + `localeKey` field)
-- `@namorix/styles` 0.22.0 → 0.22.1 (PATCH — token tweaks, `semantic.scss`)
-- `frontend` 0.28.0 → 0.29.0 (MINOR — localeKey i18n system, descriptions, backend version defines, search fix)
-
-**Docs**: Update `progress.md` (Current Version + history), `activeContext.md` (recent changes).
-
----
-
 ## NmxDataTable — Virtual Scrolling (TanStack Virtual)
 
 **Context**: Current NmxDataTable renders ALL rows in DOM. For datasets >200 rows, need virtual scrolling.
@@ -199,4 +186,6 @@ public class AppearanceSettingsData
 - `frontend/packages/styles/src/base/shell/components/`
 
 **Note**: Nghiên cứu sau.
+
+---
 

@@ -43,7 +43,7 @@ frontend/
 │   │   ├── NetworkTraffic/          # Network traffic overview, logs (SignalR + flat file), detail dialog
 │   │   ├── About/                   # Version info, meta-list, GitHub links
 │   │   ├── Settings/                # Appearance (theme, accent, density, font, language, date/time format), System, Account tabs
-│   │   ├── SystemMonitor/           # System resource monitoring
+│   │   ├── SystemMonitor/           # Full addon with CPU, memory, uptime, disk, IO real-time (SignalR)
 │   │   ├── FileManager/             # File browser scaffold
 │   │   ├── Terminal/                # Terminal emulator scaffold
 │   │   └── PackageCenter/           # External addon management scaffold
