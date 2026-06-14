@@ -11,6 +11,13 @@ public static class ApplicationBuilderExtensions
         this IApplicationBuilder app,
         Action<IApplicationBuilder>? configurePipeline = null)
     {
+        return app.UseNamorixCore<NmxHub>(configurePipeline);
+    }
+    
+    public static IApplicationBuilder UseNamorixCore<THub>(
+        this IApplicationBuilder app,
+        Action<IApplicationBuilder>? configurePipeline = null) where THub : NmxHub
+    {
         app.UseApiErrorHandling();
         app.UseSecurityHeaders();
     
@@ -23,7 +30,7 @@ public static class ApplicationBuilderExtensions
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapControllers();
-            endpoints.MapHub<NmxHub>(SignalRPath.HubMain);
+            endpoints.MapHub<THub>(SignalRPath.HubMain);
         });
     
         return app;

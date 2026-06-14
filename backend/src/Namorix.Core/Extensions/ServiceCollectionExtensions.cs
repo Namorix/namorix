@@ -22,7 +22,8 @@ namespace Namorix.Core.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddNamorixCore(this IServiceCollection services, bool isDevelopment = false)
+    public static IServiceCollection AddNamorixCore<THub>(this IServiceCollection services, bool isDevelopment = false)
+        where THub: NmxHub
     {
         services.Configure<KestrelServerOptions>(options =>
         {
@@ -34,7 +35,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<DataDirectory>(_ => new DataDirectory("data"));
         services.AddSingleton<TrafficMonitorService>();
         services.AddSingleton<LogService>();
-        services.AddSingleton<ILogNotifier, SignalRLogNotifier>();
+        services.AddSingleton<ILogNotifier, SignalRLogNotifier<THub>>();
         
         services.AddSingleton<ILoggerProvider>(sp =>
         {
@@ -42,9 +43,9 @@ public static class ServiceCollectionExtensions
             return new FileLoggerProvider(() => options.MinLogLevel);
         });
         
-        services.AddScoped<ITrafficNotifier, SignalRTrafficNotifier>();
-        services.AddScoped<ISystemNotifier, SignalRSystemNotifier>();
-        services.AddScoped<IUserSettingsNotifier, SignalRUserSettingsNotifier>();
+        services.AddScoped<ITrafficNotifier, SignalRTrafficNotifier<THub>>();
+        services.AddScoped<ISystemNotifier, SignalRSystemNotifier<THub>>();
+        services.AddScoped<IUserSettingsNotifier, SignalRUserSettingsNotifier<THub>>();
         services.AddHostedService<LogFlushWorker>();
         services.AddHostedService<TrafficFlushWorker>();
         services.AddHostedService<TrafficCleanupWorker>();

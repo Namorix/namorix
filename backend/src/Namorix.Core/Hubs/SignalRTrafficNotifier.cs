@@ -5,8 +5,8 @@ using Namorix.Core.Services;
 
 namespace Namorix.Core.Hubs;
 
-public class SignalRTrafficNotifier(IHubContext<NmxHub> hubContext,
-    TrafficMonitorService monitorService): ITrafficNotifier
+public class SignalRTrafficNotifier<THub>(IHubContext<THub> hubContext,
+    TrafficMonitorService monitorService): ITrafficNotifier where THub: NmxHub
 {
     public async Task NotifyFlushAsync() {
         var stats = monitorService.GetStats();

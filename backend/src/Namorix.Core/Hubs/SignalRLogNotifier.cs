@@ -5,7 +5,7 @@ using Namorix.Core.Infrastructure;
 
 namespace Namorix.Core.Hubs;
 
-public class SignalRLogNotifier(IHubContext<NmxHub> hubContext) : ILogNotifier
+public class SignalRLogNotifier<THub>(IHubContext<THub> hubContext) : ILogNotifier where THub: NmxHub
 {
     public async Task NotifyFlushAsync(IReadOnlyList<LogEntrySerializer> entries)
     {

@@ -5,7 +5,7 @@ using Namorix.Core.Responses;
 
 namespace Namorix.Core.Hubs;
 
-public class SignalRNotificationNotifier(IHubContext<NmxHub> hubContext) : INotificationNotifier
+public class SignalRNotificationNotifier<THub>(IHubContext<THub> hubContext) : INotificationNotifier where THub: NmxHub
 {
     public Task NotifyReceivedAsync(int userId, NotificationDto notification) =>
         hubContext.Clients.User(userId.ToString())

@@ -10,6 +10,9 @@ using Namorix.Core.Helpers;
 using Namorix.Core.Hubs;
 using Namorix.Core.Infrastructure;
 using Namorix.Server.Extensions;
+using Namorix.Server.Hubs;
+using Namorix.Server.Infrastructure;
+using Namorix.Server.Workers;
 using Namorix.Workers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,12 +29,14 @@ builder.Services.AddScoped<SettingsService>();
 builder.Services.AddScoped<PermissionService>();
 builder.Services.AddScoped<ThemeService>();
 builder.Services.AddScoped<NotificationService>();
-builder.Services.AddScoped<INotificationNotifier, SignalRNotificationNotifier>();
+builder.Services.AddScoped<INotificationNotifier, SignalRNotificationNotifier<MainHub>>();
+builder.Services.AddScoped<ISystemMonitorNotifier, SignalRSystemMonitorNotifier>();
 
 
-builder.Services.AddNamorixCore(builder.Environment.IsDevelopment());
+builder.Services.AddNamorixCore<MainHub>(builder.Environment.IsDevelopment());
 builder.Services.AddHostedService<TokenCleanupWorker>();
 builder.Services.AddHostedService<NotificationCleanupWorker>();
+builder.Services.AddHostedService<SystemStatsWorker>();
 
 var app = builder.Build();
 
@@ -40,7 +45,7 @@ var appConfig = app.Services.GetRequiredService<IOptions<AppConfig>>().Value;
 var configOrigins = appConfig.AllowedOrigins
     .Split(",", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
-app.UseNamorixCore(core =>
+app.UseNamorixCore<MainHub>(core =>
 {
     core.UseCors(policy =>
     {

@@ -11,12 +11,12 @@ public static class SignalRGroups
     public const string Traffic = "traffic";
     public const string Logs = "logs";
 }
+
 public static class SignalREvents
 {
-    public const string TrafficNewLogs = "traffic:new-logs";
-    public const string TrafficStatsInit = "traffic:stats-init";
-    public const string LogsNewEntry = "logs:new-entry";
-    public const string LogsHistory = "logs:history";
+    public const string TrafficNewLogs = $"{SignalRGroups.Traffic}:new-logs";
+    public const string TrafficStatsInit = $"{SignalRGroups.Traffic}:stats-init";
+    public const string LogsNewEntry = $"{SignalRGroups.Logs}:new-entry";
     public const string SystemConfigChanged = "system:config-changed";
     public const string UserSettingsChanged = "user:settings-changed";
     public const string NotificationReceived = "notification:received";
