@@ -1,3 +1,5 @@
+@use "../abstract/variables" as *;
+
 .nmx-disk-list {
   display: flex;
   flex-direction: column;
@@ -6,6 +8,7 @@
   border-radius: var(--nmx-radius-md);
   box-shadow: var(--nmx-shadow-sm);
   padding: var(--nmx-spacing-md);
+  container-type: inline-size;
 }
 
 .nmx-disk-item {
@@ -22,6 +25,7 @@
     width: 64px;
     text-overflow: ellipsis;
     white-space: nowrap;
+    overflow: hidden;
     flex-shrink: 0;
   }
 
@@ -56,5 +60,23 @@
     width: 120px;
     text-align: right;
     flex-shrink: 0;
+  }
+}
+
+.nmx-disk-item__name {
+  @container (min-width: #{$nmx-breakpoint-lg}) {
+    width: 160px;
+  }
+
+  @container (max-width: #{$nmx-breakpoint-lg}) {
+    width: 128px;
+  }
+
+  @container (max-width: #{$nmx-breakpoint-md}) {
+    width: 96px;
+  }
+
+  @container (max-width: #{$nmx-breakpoint-sm}) {
+    width: 64px;
   }
 }

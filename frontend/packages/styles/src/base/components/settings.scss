@@ -90,7 +90,7 @@
   container-name: settings;
 }
 
-@container settings (max-width: 580px) {
+@container settings (max-width: #{$nmx-breakpoint-sm}) {
   .nmx-settings-row:not(:has(input[type="checkbox"])) {
     flex-wrap: wrap;
   }
