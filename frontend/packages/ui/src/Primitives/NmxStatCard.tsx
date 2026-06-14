@@ -21,6 +21,8 @@ export interface NmxStatCardProps extends WithBaseProps {
   }
   sparkData?: number[]
   thresholdEnabled?: boolean
+  thresholdCurrent?: number
+  thresholdTotal?: number
   thresholds?: Threshold[]
 }
 
@@ -40,6 +42,8 @@ export const NmxStatCard: React.FC<NmxStatCardProps> = ({
   trend,
   sparkData,
   thresholdEnabled = false,
+  thresholdCurrent,
+  thresholdTotal,
   thresholds = DEFAULT_THRESHOLDS,
   shouldRender = true,
   className,
@@ -48,18 +52,35 @@ export const NmxStatCard: React.FC<NmxStatCardProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const resolvedColor = useMemo(() => {
-    if (!thresholdEnabled || !thresholds || value == null) {
+    if (!thresholdEnabled || !thresholds) {
       return semantic
     }
-
-    const num = typeof value === "number" ? value : parseFloat(value)
-    if (isNaN(num)) return semantic
-
+    let num: number | null = null
+    if (
+      thresholdCurrent != null &&
+      thresholdTotal != null &&
+      thresholdTotal > 0
+    ) {
+      num = (thresholdCurrent / thresholdTotal) * 100
+    } else if (thresholdCurrent != null) {
+      num = thresholdCurrent
+    } else if (value != null) {
+      num = typeof value === "number" ? value : parseFloat(value)
+      if (isNaN(num)) num = null
+    }
+    if (num == null) return semantic
     const matched = [...thresholds]
       .sort((a, b) => a.value - b.value)
-      .find((t) => num <= t.value)
+      .find((t) => num! <= t.value)
     return matched?.semantic ?? semantic
-  }, [thresholdEnabled, thresholds, value, semantic])
+  }, [
+    thresholdEnabled,
+    thresholds,
+    value,
+    semantic,
+    thresholdCurrent,
+    thresholdTotal,
+  ])
 
   useEffect(() => {
     const canvas = canvasRef.current

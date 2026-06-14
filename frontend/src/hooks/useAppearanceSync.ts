@@ -8,22 +8,18 @@ import {
   useSignalREvent,
   useUserStore,
 } from "@namorix/core"
-import { authController, loadAppearanceSystem } from "../controllers"
+import { authController } from "../controllers"
 
 export function useAppearanceSync() {
   const user = useUserStore()
 
   useEffect(() => {
-    if (!user) {
-      loadAppearanceSystem().catch((err) => nmxToast.error(err))
-    } else {
-      authController.loadAppearance().catch((err) => nmxToast.error(err))
-    }
+    authController.loadAppearance().catch((err) => nmxToast.error(err))
   }, [user])
 
   useSignalREvent(SignalREvent.SystemConfigChanged, (data: ConfigChanged) => {
     if (data.key === NMX_APPEARANCE_DEFAULTS_KEY) {
-      loadAppearanceSystem().catch((err) => nmxToast.error(err))
+      authController.loadAppearance().catch((err) => nmxToast.error(err))
     }
   })
 

@@ -280,7 +280,7 @@
       "memory": "System memory",
       "memoryDescription": "{{used}} / {{total}}",
       "processMemory": "Process Memory",
-      "processMemoryDescription": "Heap {{heap}} of {{total}}",
+      "processMemoryDescription": "Heap {{heap}}",
       "uptime": "Uptime",
       "uptimeDescription": "{{count}} threads",
       "diskSpaceSection": "Disk space",

@@ -11,7 +11,6 @@ import {
   type AppearanceSettings,
   ApiSettingsRoutes,
   applyTheme,
-  type ApiResponse,
   applyAppearanceTokens,
   AppearanceDefaults,
 } from "@namorix/core"
@@ -53,16 +52,17 @@ async function logout(): Promise<void> {
   if (!data.success) throw ApiError.fromResponse(data)
 }
 
-async function loadAppearance(res?: ApiResponse<AppearanceSettings>) {
-  if (!res) {
-    res = await nmxHttp
-      .url(getApiBaseUrl() + ApiUserRoutes.settings)
+async function loadAppearance() {
+  const [sysRes, userRes] = await Promise.all([
+    nmxHttp
+      .url(ApiSettingsRoutes.appearanceSystem)
       .get()
-      .json<AppearanceSettings>()
-  }
+      .json<AppearanceSettings>(),
+    nmxHttp.url(ApiUserRoutes.settings).get().json<AppearanceSettings>(),
+  ])
 
-  if (res.success && res.data) {
-    const merged = { ...AppearanceDefaults, ...res.data }
+  if (sysRes.success && userRes.success) {
+    const merged = { ...AppearanceDefaults, ...sysRes.data, ...userRes.data }
 
     setAppearanceStore(merged)
     applyAppearanceTokens(merged)
@@ -77,14 +77,4 @@ async function loadAppearance(res?: ApiResponse<AppearanceSettings>) {
   }
 }
 
-async function loadAppearanceSystem() {
-  const res = await nmxHttp
-    .url(getApiBaseUrl() + ApiSettingsRoutes.appearanceSystem)
-    .get()
-    .json<AppearanceSettings>()
-
-  await loadAppearance(res)
-}
-
 export const authController = { login, register, logout, loadAppearance }
-export { loadAppearanceSystem }

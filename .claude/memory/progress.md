@@ -127,12 +127,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.44.1 | M3 (SystemMonitor sparklines, system CPU, formatUptime) |
-| @namorix/core | 0.35.1 | M3 (formatUptime new) |
-| @namorix/styles | 0.31.1 | M3 (disk-usage container queries, settings hardcoded → variable) |
-| @namorix/ui | 0.22.2 | M3 (NmxStatCard canvas resolution fix) |
+| frontend | 0.44.3 | M3 (Appearance 3-layer cascade, xoá loadAppearanceSystem) |
+| @namorix/core | 0.35.1 | M3 (No changes) |
+| @namorix/styles | 0.31.2 | M3 (disk-usage flex/container queries → CSS Grid) |
+| @namorix/ui | 0.22.3 | M3 (NmxStatCard thresholdCurrent/thresholdTotal props, resolvedColor % calc) |
 | Namorix.Core | 0.36.3 | M3 (No changes) |
-| Namorix.Server | 0.37.2 | M3 (SystemMonitorStatsWorker rename, disk filter improvements) |
+| Namorix.Server | 0.37.2 | M3 (No changes) |
 
 ## Version Rules
 
@@ -164,6 +164,14 @@
 - @namorix/styles 0.31.0 → 0.31.1: DiskUsage container queries `.nmx-disk-item__name`, settings hardcoded 580px → variable
 - @namorix/ui 0.22.1 → 0.22.2: NmxStatCard canvas resolution fix (getBoundingClientRect → clientWidth/clientHeight)
 - Namorix.Server 0.37.1 → 0.37.2: SystemStatsWorker rename → SystemMonitorStatsWorker, DriveType/overlay filter, Namorix.Workers project removal
+
+### 2026-06-14 (2) — NmxStatCard threshold refactor, disk-usage CSS Grid
+- @namorix/ui 0.22.2 → 0.22.3: NmxStatCard thresholdCurrent/thresholdTotal props. resolvedColor tính % từ `current/total*100` thay vì parseFloat(value).
+- @namorix/styles 0.31.1 → 0.31.2: DiskUsage flex + container queries → CSS Grid (display: contents, grid-template-columns). Xoá @container queries.
+- frontend 0.44.1 → 0.44.2: SystemMonitor — CPU, CPU process, Memory, Process Memory dùng thresholdCurrent/thresholdTotal. en.json: processMemoryDescription bỏ `of {{total}}`.
+
+### 2026-06-14 (3) — Appearance 3-layer cascade fix
+- frontend 0.44.2 → 0.44.3: `auth.controller.ts` — `loadAppearance()` gọi song song `GET /api/settings/appearance` (system defaults) + `GET /api/user/settings` (user overrides), merge đúng 3-layer (`AppearanceDefaults ← sysRes ← userRes`). Xoá `loadAppearanceSystem()`. `useAppearanceSync.ts` — dùng `authController.loadAppearance()` cho mọi case.
 
 Xem chi tiết tại:
 - [versionHistory-06-2026.md](versionHistory-06-2026.md) — June 2026

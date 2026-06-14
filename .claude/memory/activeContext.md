@@ -27,6 +27,14 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-06-14 (3) — Appearance 3-layer cascade fix
+- Frontend: `loadAppearance()` gọi song song `GET /api/settings/appearance` (layer 1+2) + `GET /api/user/settings` (layer 3). Merge `{ ...AppearanceDefaults, ...sysRes.data, ...userRes.data }`. Xoá `loadAppearanceSystem()`. `useAppearanceSync` dùng `authController.loadAppearance()` cho cả login chưa login.
+
+### 2026-06-14 (2) — NmxStatCard thresholdCurrent/thresholdTotal, disk-usage CSS Grid
+- UI: NmxStatCard thêm `thresholdCurrent`/`thresholdTotal` props. `resolvedColor` tính % từ `current/total*100` — tách threshold khỏi display value. CPU, Memory, Process Memory dùng raw numbers.
+- Styles: DiskUsage flex + container queries → CSS Grid (`display: contents`, `grid-template-columns: max-content 1fr auto auto`). Xóa hết `@container` queries.
+- Frontend: SystemMonitor — thêm `thresholdCurrent`/`thresholdTotal` cho CPU, CPU process, Memory, Process Memory. i18n: processMemoryDescription bỏ `" of {{total}}"` (không cần vì display value đã show).
+
 ### 2026-06-14 — Worker rename, disk filter, NmxStatCard canvas fix, styles container queries
 
 - Backend: SystemStatsWorker renamed → SystemMonitorStatsWorker. Disk filter improved (DriveType.Fixed, overlay/fs exclusion, DistinctBy). Namorix.Workers project removed (workers moved to Server/Workers in previous commit).

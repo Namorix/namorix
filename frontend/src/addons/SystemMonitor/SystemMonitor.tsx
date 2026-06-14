@@ -91,6 +91,7 @@ export const SystemMonitor: React.FC = () => {
               count: stats?.environment.cores ?? 0,
             })}
             thresholdEnabled={true}
+            thresholdCurrent={stats?.cpu}
           />
           <NmxStatCard
             label={t("addon.systemMonitor.cpuProcess")}
@@ -105,6 +106,7 @@ export const SystemMonitor: React.FC = () => {
               count: stats?.environment.cores ?? 0,
             })}
             thresholdEnabled={true}
+            thresholdCurrent={stats?.cpuProcess}
           />
         </NmxGrid>
       </NmxSection>
@@ -124,6 +126,10 @@ export const SystemMonitor: React.FC = () => {
               total: formatBytes(stats?.memory.total ?? 0),
             })}
             thresholdEnabled={true}
+            thresholdCurrent={
+              stats ? stats.memory.total - stats.memory.available : undefined
+            }
+            thresholdTotal={stats?.memory.total}
           />
           <NmxStatCard
             label={t("addon.systemMonitor.processMemory")}
@@ -135,6 +141,8 @@ export const SystemMonitor: React.FC = () => {
               total: formatBytes(stats?.process.total ?? 0),
             })}
             thresholdEnabled={true}
+            thresholdCurrent={stats?.process.rss}
+            thresholdTotal={stats?.process.total}
           />
         </NmxGrid>
       </NmxSection>

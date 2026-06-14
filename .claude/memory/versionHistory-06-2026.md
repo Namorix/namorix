@@ -1,5 +1,19 @@
 # Version History — June 2026
 
+## 2026-06-14 (2) — Appearance 3-layer cascade fix
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| frontend | 0.44.2 → 0.44.3 | MODIFIED: `auth.controller.ts` — `loadAppearance()` gọi song song `GET /api/settings/appearance` (system defaults) + `GET /api/user/settings` (user overrides), merge 3-layer. Xoá `loadAppearanceSystem()`. `useAppearanceSync.ts` — dùng `authController.loadAppearance()` cho mọi case. |
+
+## 2026-06-14 — NmxStatCard threshold refactor, disk-usage CSS Grid
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/ui | 0.22.2 → 0.22.3 | MODIFIED: `NmxStatCard.tsx` — thêm thresholdCurrent/thresholdTotal props. resolvedColor tính % từ `current/total*100` thay parseFloat(value). |
+| @namorix/styles | 0.31.1 → 0.31.2 | MODIFIED: `disk-usage.scss` — flex + container queries → CSS Grid (display: contents, grid-template-columns: max-content 1fr auto auto). Xoá @container queries. Themes rebuilt. |
+| frontend | 0.44.1 → 0.44.2 | MODIFIED: `SystemMonitor.tsx` — CPU, CPU process, Memory, Process Memory dùng thresholdCurrent/thresholdTotal. `en.json` — processMemoryDescription bỏ `of {{total}}`. |
+
 ## 2026-06-13 — SystemMonitor refinements: system CPU, sparklines, threshold auto-color
 
 | Package | Version | Changes |
