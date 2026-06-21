@@ -19,6 +19,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IOptions<AppCo
     public DbSet<AddonManifest> AddonManifests { get; set; }
     public DbSet<Notification> Notifications { get; set; }
     
+    public DbSet<OAuthAuthorizationCode> OAuthAuthorizationCodes { get; set; }
+    public DbSet<OAuthToken> OAuthTokens { get; set; }
+    public DbSet<OAuthConsent> OAuthConsents { get; set; }
+    
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (!optionsBuilder.IsConfigured && _config != null)
@@ -57,5 +61,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IOptions<AppCo
             .HasIndex(n => new { n.UserId, n.CreatedAt });
         modelBuilder.Entity<Notification>()
             .HasIndex(n => new { n.UserId, n.IsRead });
+        
+        modelBuilder.Entity<OAuthConsent>()
+            .HasKey(c => new { c.UserId, c.ClientId });
     }
 }

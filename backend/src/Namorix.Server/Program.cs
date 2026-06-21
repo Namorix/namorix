@@ -28,14 +28,17 @@ builder.Services.AddScoped<SettingsService>();
 builder.Services.AddScoped<PermissionService>();
 builder.Services.AddScoped<ThemeService>();
 builder.Services.AddScoped<NotificationService>();
+builder.Services.AddSingleton<DockerService>();
+builder.Services.AddScoped<AddonService>();
 builder.Services.AddScoped<INotificationNotifier, SignalRNotificationNotifier<MainHub>>();
 builder.Services.AddScoped<ISystemMonitorNotifier, SignalRSystemMonitorNotifier>();
-
+builder.Services.AddScoped<IAddonNotifier, SignalRAddonNotifier>();
 
 builder.Services.AddNamorixCore<MainHub>(builder.Environment.IsDevelopment());
 builder.Services.AddHostedService<TokenCleanupWorker>();
 builder.Services.AddHostedService<NotificationCleanupWorker>();
 builder.Services.AddHostedService<SystemMonitorStatsWorker>();
+builder.Services.AddHostedService<DockerMonitorWorker>();
 
 var app = builder.Build();
 
@@ -73,6 +76,7 @@ app.UseNamorixCore<MainHub>(core =>
     });
     
     app.UseAuth();
+    app.UseOAuth2();
     app.UseTrustedProxy();
 });
 

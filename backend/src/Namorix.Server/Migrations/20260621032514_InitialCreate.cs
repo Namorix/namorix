@@ -18,7 +18,17 @@ namespace Namorix.Server.Migrations
                     Id = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     DisplayName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "TEXT", maxLength: 250, nullable: true),
-                    Icon = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true)
+                    Icon = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    Image = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
+                    HostPort = table.Column<int>(type: "INTEGER", nullable: false),
+                    Status = table.Column<string>(type: "TEXT", maxLength: 20, nullable: true),
+                    Version = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
+                    Author = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    InstalledAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    ClientId = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    PublicKey = table.Column<string>(type: "TEXT", nullable: true),
+                    RedirectUri = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    Scope = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -44,6 +54,52 @@ namespace Namorix.Server.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Notifications", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OAuthAuthorizationCodes",
+                columns: table => new
+                {
+                    Code = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
+                    ClientId = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    UserId = table.Column<int>(type: "INTEGER", nullable: false),
+                    Scope = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    ExpiresAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    RedirectUri = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OAuthAuthorizationCodes", x => x.Code);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OAuthConsents",
+                columns: table => new
+                {
+                    UserId = table.Column<int>(type: "INTEGER", nullable: false),
+                    ClientId = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    Scope = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    GrantedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OAuthConsents", x => new { x.UserId, x.ClientId });
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OAuthTokens",
+                columns: table => new
+                {
+                    TokenId = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
+                    ClientId = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    UserId = table.Column<int>(type: "INTEGER", nullable: false),
+                    Scope = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    ExpiresAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    Revoked = table.Column<bool>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OAuthTokens", x => x.TokenId);
                 });
 
             migrationBuilder.CreateTable(
@@ -258,6 +314,15 @@ namespace Namorix.Server.Migrations
 
             migrationBuilder.DropTable(
                 name: "Notifications");
+
+            migrationBuilder.DropTable(
+                name: "OAuthAuthorizationCodes");
+
+            migrationBuilder.DropTable(
+                name: "OAuthConsents");
+
+            migrationBuilder.DropTable(
+                name: "OAuthTokens");
 
             migrationBuilder.DropTable(
                 name: "RefreshTokens");

@@ -15,5 +15,9 @@ public static class ApplicationBuilderExtensions
      {
          applicationBuilder.UseMiddleware<AuthMiddleware>();
      }
-    
+
+     public static void UseOAuth2(this IApplicationBuilder app)
+     {
+         app.UseMiddleware<OAuth2Middleware>();
+     }
 }
