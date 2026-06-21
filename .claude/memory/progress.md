@@ -127,12 +127,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.44.3 | M3 (Appearance 3-layer cascade, xoá loadAppearanceSystem) |
+| frontend | 0.44.4 | M3 (DesktopIcon fix) |
 | @namorix/core | 0.35.1 | M3 (No changes) |
-| @namorix/styles | 0.31.2 | M3 (disk-usage flex/container queries → CSS Grid) |
-| @namorix/ui | 0.22.3 | M3 (NmxStatCard thresholdCurrent/thresholdTotal props, resolvedColor % calc) |
-| Namorix.Core | 0.36.3 | M3 (No changes) |
-| Namorix.Server | 0.37.2 | M3 (No changes) |
+| @namorix/styles | 0.31.3 | M3 (SCSS fixes, theme CSS update) |
+| @namorix/ui | 0.22.3 | M3 (No changes) |
+| Namorix.Core | 0.36.4 | M3 (Minor data + string fixes) |
+| Namorix.Server | 0.38.0 | M3 (Merge Adapters into Server, clean Core) |
 
 ## Version Rules
 
@@ -173,7 +173,13 @@
 ### 2026-06-14 (3) — Appearance 3-layer cascade fix
 - frontend 0.44.2 → 0.44.3: `auth.controller.ts` — `loadAppearance()` gọi song song `GET /api/settings/appearance` (system defaults) + `GET /api/user/settings` (user overrides), merge đúng 3-layer (`AppearanceDefaults ← sysRes ← userRes`). Xoá `loadAppearanceSystem()`. `useAppearanceSync.ts` — dùng `authController.loadAppearance()` cho mọi case.
 
+### 2026-06-21 — Merge Namorix.Adapters into Namorix.Server
+
+- Namorix.Server 0.37.2 → 0.38.0: Merged Persistence (AppDbContext), Services (Auth, User, Settings, Permission, Theme, Notification, UserSettings), Migrations from Adapters. Updated namespaces, csproj packages, solution file.
+- Namorix.Core 0.36.3 → 0.36.4: LogEntrySerializer string update, AppearanceOptionsData minor fix.
+- @namorix/styles 0.31.2 → 0.31.3: SCSS fixes (split, desktop, window, typography), theme CSS updates.
+- frontend 0.44.3 → 0.44.4: DesktopIcon.tsx minor fix.
+
 Xem chi tiết tại:
 - [versionHistory-06-2026.md](versionHistory-06-2026.md) — June 2026
 - [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md) — May 2026
-

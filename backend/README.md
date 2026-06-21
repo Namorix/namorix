@@ -148,38 +148,42 @@ backend/
     │   │       └── RegisterSchema.cs
     │   └── Data/
     │       └── AppearanceOptionsData.cs  # Static valid appearance options
-    ├── Namorix.Adapters/             # Persistence + Business Services
-    │   ├── Migrations/               # EF Core migrations
-    │   ├── Persistence/
-    │   │   └── AppDbContext.cs       # EF Core DbContext
-    │   └── Services/
-    │       ├── AuthService.cs        # Login, Register (email/name), RefreshToken, RevokeToken, VerifyAccessToken
-    │       ├── PermissionService.cs  # User permission management
-    │       ├── SettingsService.cs    # IsRegisterEnabled, GetTrustedProxies, AllowedOrigins, GetAppearanceDefaults (IMemoryCache)
-    │       ├── UserSettingsService.cs  # User appearance settings (IMemoryCache)
-    │       ├── ThemeService.cs       # Built-in theme list (light + dark)
-│       ├── NotificationService.cs  # Notification CRUD, pagination, SignalR push
-    │       └── UserService.cs        # User CRUD (including email, name)
-    ├── Namorix.Server/               # API + Middleware Pipeline
-    │   ├── Controllers/
-    │   │   ├── AuthController.cs     # 7 auth endpoints (login, register with email/name, logout, session, refresh, status)
-    │   │   ├── HealthController.cs   # Health check endpoint
-    │   │   ├── SettingsController.cs # System settings + appearance defaults + options
-    │   │   ├── ThemeController.cs    # Theme list query
-    │   │   ├── UserController.cs     # Profile, password, settings (all validated)
-│   │   ├── NotificationController.cs  # Notification list, unread, mark read, delete
-    │   │   └── ...
-    │   ├── Extensions/
-    │   │   └── ApplicationBuilderExtensions.cs  # Server middleware pipeline wrapper
-    │   ├── Middleware/
-    │   │   ├── AuthMiddleware.cs     # Session validation
-    │   │   ├── RequirePermissionAttribute.cs
-    │   │   └── TrustedProxyMiddleware.cs
-    │   ├── Program.cs
-    │   ├── appsettings.json
-    │   └── appsettings.Development.json
-    └── Namorix.Workers/              # Server-level background services
-        └── TokenCleanupWorker.cs     # Cleans expired tokens every 24h
+    └── Namorix.Server/               # Persistence + Services + API + Workers
+        ├── Migrations/               # EF Core migrations
+        ├── Persistence/
+        │   └── AppDbContext.cs       # EF Core DbContext
+        ├── Services/
+        │   ├── AuthService.cs        # Login, Register, RefreshToken, RevokeToken, VerifyAccessToken
+        │   ├── PermissionService.cs  # User permission management
+        │   ├── SettingsService.cs    # IsRegisterEnabled, GetTrustedProxies, AllowedOrigins, GetAppearanceDefaults
+        │   ├── UserSettingsService.cs  # User appearance settings (IMemoryCache)
+        │   ├── ThemeService.cs       # Built-in theme list (light + dark)
+        │   ├── NotificationService.cs  # Notification CRUD, pagination, SignalR push
+        │   └── UserService.cs        # User CRUD (including email, name)
+        ├── Controllers/
+        │   ├── AuthController.cs     # 7 auth endpoints (login, register, logout, session, refresh, status)
+        │   ├── HealthController.cs   # Health check endpoint
+        │   ├── SettingsController.cs # System settings + appearance defaults + options
+        │   ├── ThemeController.cs    # Theme list query
+        │   ├── UserController.cs     # Profile, password, settings (all validated)
+        │   ├── NotificationController.cs  # Notification list, unread, mark read, delete
+        │   └── ...
+        ├── Workers/
+        │   ├── TokenCleanupWorker.cs     # Cleans expired tokens every 24h
+        │   ├── LogCleanupWorker.cs       # Cleans old log files
+        │   └── SystemMonitorStatsWorker.cs  # System metrics collection
+        ├── Hubs/
+        │   ├── NmxHub.cs             # Base SignalR hub
+        │   └── MainHub.cs            # Real-time events (system stats, notifications)
+        ├── Extensions/
+        │   └── ApplicationBuilderExtensions.cs  # Server middleware pipeline wrapper
+        ├── Middleware/
+        │   ├── AuthMiddleware.cs     # Session validation
+        │   ├── RequirePermissionAttribute.cs
+        │   └── TrustedProxyMiddleware.cs
+        ├── Program.cs
+        ├── appsettings.json
+        └── appsettings.Development.json
 ```
 
 ## API Endpoints

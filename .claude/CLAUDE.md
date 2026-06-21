@@ -551,10 +551,10 @@ backend/
 ├── Makefile
 ├── Namorix.sln
 └── src/
-    ├── Namorix.Core/        # Config, Constants, Models, Exceptions, Responses, Validation
-    ├── Namorix.Adapters/    # Persistence (AppDbContext, migrations), Services (Auth, Permission, Settings, Theme, User)
-    ├── Namorix.Server/      # Controllers, Middleware, Extensions, Helpers, Program.cs
-    └── Namorix.Workers/     # TokenCleanupWorker (background service)
+    ├── Namorix.Core/        # Models, Abstractions, Config, Constants, Exceptions, Responses, Validation
+    └── Namorix.Server/      # Persistence (AppDbContext, migrations),
+                              # Services (Auth, Permission, Settings, Theme, User, Notification),
+                              # Controllers, Middleware, Workers, Hubs, Extensions, Program.cs
 ```
 
 ---

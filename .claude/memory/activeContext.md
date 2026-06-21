@@ -27,6 +27,12 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-06-21 — Merge Adapters into Server, restructure backend
+- Backend: Merged `Namorix.Adapters` (Persistence, Services, Migrations) vào `Namorix.Server`. Xoá project Namorix.Adapters. Cập nhật namespace, csproj packages, solution. Regenerated migration.
+- Core: `LogEntrySerializer.cs` — string reference `Namorix.Adapters` → `Namorix.Server`.
+- Styles: SCSS fixes across split/desktop/window/typography, theme CSS updates.
+- Frontend: DesktopIcon.tsx minor fix.
+
 ### 2026-06-14 (3) — Appearance 3-layer cascade fix
 - Frontend: `loadAppearance()` gọi song song `GET /api/settings/appearance` (layer 1+2) + `GET /api/user/settings` (layer 3). Merge `{ ...AppearanceDefaults, ...sysRes.data, ...userRes.data }`. Xoá `loadAppearanceSystem()`. `useAppearanceSync` dùng `authController.loadAppearance()` cho cả login chưa login.
 

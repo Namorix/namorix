@@ -135,17 +135,14 @@ namorix/
     ├── Makefile               # Build/EF commands
     ├── Namorix.sln            # Solution file
     └── src/
-        ├── Namorix.Core/      # Shared infrastructure (FlatFile, Hubs, Middleware, Workers, Services,
-        │                       # Extensions, Logger, Infrastructure, Constants, Config, Responses, Validation, Filters,
-        │                       # Attributes, Helpers, IO)
-        ├── Namorix.Adapters/  # Persistence (AppDbContext, SQLite migrations),
-        │                       # Services (Auth, Permission, Settings, Theme, User)
-        ├── Namorix.Server/    # Controllers (Auth, Health, Permission, Settings, Theme, User),
-        │                       # Middleware (Auth, TrustedProxy, RequirePermission, Csrf, Exception,
-        │                       # JsonError, NotFound, SecurityHeaders, TrafficMonitor),
-        │                       # Extensions, Program.cs
-        └── Namorix.Workers/   # TokenCleanupWorker, LogFlushWorker, TrafficCleanupWorker,
-                                # TrafficFlushWorker, TrafficStatsWorker
+        ├── Namorix.Core/      # Models, Abstractions, Config, Constants, Exceptions, Responses, Validation
+        └── Namorix.Server/    # Persistence (AppDbContext, SQLite migrations),
+                                # Services (Auth, Permission, Settings, Theme, User, Notification),
+                                # Controllers (Auth, Health, Permission, Settings, Theme, User, Notification),
+                                # Middleware (Auth, TrustedProxy, RequirePermission, Csrf, Exception,
+                                #   JsonError, NotFound, SecurityHeaders, TrafficMonitor),
+                                # Workers (TokenCleanup, LogCleanup, SystemMonitorStats, Traffic*),
+                                # Hubs (MainHub, NmxHub), Extensions, Program.cs
 ```
 
 ## Packages

@@ -103,7 +103,7 @@ App → Guard → isAuthenticated()
 | `frontend/src/controllers/auth.controller.ts` | `login()`, `register()`, `logout()`, `loadAppearance()`, `loadSystemDefaults()` |
 | `frontend/packages/core/src/auth/auth.service.ts` | `isAuthenticated()`, `checkHasUsers()`, `isRegistrationOpen()` |
 | `backend/src/Namorix.Server/Controllers/AuthController.cs` | Login, register, refresh, logout, session |
-| `backend/src/Namorix.Adapters/Services/AuthService.cs` | Token logic, fingerprint, refresh rotation |
+| `backend/src/Namorix.Server/Services/AuthService.cs` | Token logic, fingerprint, refresh rotation |
 
 ### What external addon needs
 
@@ -193,8 +193,8 @@ applyTheme(themeId)
 | `frontend/packages/core/src/types/appearance.ts` | `AppearanceSettings` interface, `AppearanceDefaults` |
 | `frontend/src/hooks/useAppearanceSync.ts` | Hook gắn appearance + SignalR listener |
 | `frontend/src/controllers/auth.controller.ts` | `loadAppearance()`, `loadSystemDefaults()` |
-| `backend/src/Namorix.Adapters/Services/SettingsService.cs` | `GetAppearanceDefaultsAsync()` + cache |
-| `backend/src/Namorix.Adapters/Services/UserSettingsService.cs` | `GetAllAsync()`, `SetBatchAsync()` + cache |
+| `backend/src/Namorix.Server/Services/SettingsService.cs` | `GetAppearanceDefaultsAsync()` + cache |
+| `backend/src/Namorix.Server/Services/UserSettingsService.cs` | `GetAllAsync()`, `SetBatchAsync()` + cache |
 | `backend/src/Namorix.Core/Constants/Settings.cs` | `AppearanceSettingKeys`, `AppearanceDefaults` |
 | `backend/src/Namorix.Core/Data/AppearanceOptionsData.cs` | Valid options for each key |
 
@@ -266,8 +266,8 @@ SetSettingsSchema (IValidationSchema)
 |------|------|
 | `backend/src/Namorix.Core/Validation/Schemas/SetSettingsSchema.cs` | DTO + schema |
 | `backend/src/Namorix.Core/Validation/ValidationRule.cs` | `AllowedValuesValidationRule` |
-| `backend/src/Namorix.Adapters/Services/SettingsService.cs` | System settings logic |
-| `backend/src/Namorix.Adapters/Services/UserSettingsService.cs` | User settings logic + SignalR notify on change |
+| `backend/src/Namorix.Server/Services/SettingsService.cs` | System settings logic |
+| `backend/src/Namorix.Server/Services/UserSettingsService.cs` | User settings logic + SignalR notify on change |
 | `backend/src/Namorix.Core/Infrastructure/IUserSettingsNotifier.cs` | Interface for user settings SignalR notification |
 | `backend/src/Namorix.Core/Hubs/SignalRUserSettingsNotifier.cs` | Sends `user:settings-changed` to user's connections |
 | `backend/src/Namorix.Core/Constants/Settings.cs` | Setting keys + defaults |
@@ -713,10 +713,8 @@ bỏ qua `register_enabled` setting — user đầu tiên luôn có thể regist
 
 | Project | Role |
 |---------|------|
-| `Namorix.Core` | Config, constants, models, validation, middleware, SignalR notifiers (system + user settings) |
-| `Namorix.Adapters` | EF Core, services (Auth, Permission, Settings, Theme, User), migrations |
-| `Namorix.Server` | Controllers, Program.cs, middleware (Auth, TrustedProxy) |
-| `Namorix.Workers` | TokenCleanupWorker |
+| `Namorix.Core` | Models, Config, Constants, Abstractions, Responses, NmxHub, Validation infrastructure |
+| `Namorix.Server` | **Everything else:** Persistence, Services, Controllers, Middleware, Workers, Hubs, Extensions, Program.cs |
 
 ---
 
