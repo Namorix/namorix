@@ -3,7 +3,10 @@
   height: 100%;
   width: 100%;
   justify-content: center;
-  grid-template-columns: minmax(0, 1fr) minmax(var(--nmx-split-panel-min-width), min(var(--nmx-split-panel-max-width), 45%));
+  grid-template-columns: minmax(0, 1fr) minmax(
+      var(--nmx-split-panel-min-width),
+      min(var(--nmx-split-panel-max-width), 45%)
+    );
 }
 
 .nmx-split-panel__hero {
@@ -21,7 +24,7 @@
   letter-spacing: var(--nmx-letter-spacing-tight);
   line-height: var(--nmx-line-height-base);
   font-size: clamp(var(--nmx-font-size-2xl), 6vw, var(--nmx-font-size-6xl));
-  color: var(--nmx-color-on-surface);
+  color: var(--nmx-color-on-primary);
 }
 
 .nmx-split-panel__hero-text {

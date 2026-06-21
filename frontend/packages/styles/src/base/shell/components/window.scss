@@ -89,7 +89,10 @@
 
     &:hover {
       background: var(--nmx-color-surface-high);
-      color: var(--nmx-color-on-surface);
+
+      & .nmx-window-frame__btn-icon {
+        color: var(--nmx-color-on-surface);
+      }
     }
 
     &--minimize:hover {
@@ -98,7 +101,10 @@
 
     &--close:hover {
       background: var(--nmx-color-error);
-      color: var(--nmx-color-on-primary);
+
+      & .nmx-window-frame__btn-icon {
+        color: var(--nmx-color-on-primary);
+      }
     }
   }
 

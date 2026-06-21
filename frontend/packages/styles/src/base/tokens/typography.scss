@@ -1,7 +1,7 @@
 :root {
   /** Fonts */
-  --nmx-font-family-system: Inter, system-ui, sans-serif;
-  --nmx-font-family-nunito: Nunito, sans-serif;
+  --nmx-font-family-system: Nunito, sans-serif;
+  --nmx-font-family-inter: Inter, system-ui, sans-serif;
 
   --nmx-font-sans: var(--nmx-font-family-system);
   --nmx-font-mono: "JetBrains Mono", ui-monospace, monospace;
@@ -11,30 +11,36 @@
   --nmx-font-icommon: "icomoon";
 
   /* Font sizes */
-  --nmx-font-size-unit-sm:  0.21875rem; /* 3.5px - small  */
-  --nmx-font-size-unit-md:  0.25rem;    /* 4px   - default */
-  --nmx-font-size-unit-lg:  0.28125rem; /* 4.5px - large  */
+  --nmx-font-size-unit-sm: 0.21875rem; /* 3.5px - small  */
+  --nmx-font-size-unit-md: 0.25rem; /* 4px   - default */
+  --nmx-font-size-unit-lg: 0.28125rem; /* 4.5px - large  */
 
-  --nmx-font-size-preview-sm: calc(var(--nmx-font-size-unit-sm) * 4);  /* ~14px */
-  --nmx-font-size-preview-md: calc(var(--nmx-font-size-unit-md) * 4);  /* 16px  */
-  --nmx-font-size-preview-lg: calc(var(--nmx-font-size-unit-lg) * 4);  /* ~18px */
+  --nmx-font-size-preview-sm: calc(
+    var(--nmx-font-size-unit-sm) * 4
+  ); /* ~14px */
+  --nmx-font-size-preview-md: calc(
+    var(--nmx-font-size-unit-md) * 4
+  ); /* 16px  */
+  --nmx-font-size-preview-lg: calc(
+    var(--nmx-font-size-unit-lg) * 4
+  ); /* ~18px */
 
   --nmx-font-size-unit: var(--nmx-font-size-unit-md);
 
-  --nmx-font-size-2xs:  calc(var(--nmx-font-size-unit) * 2.5);
-  --nmx-font-size-xs:   calc(var(--nmx-font-size-unit) * 3);
-  --nmx-font-size-sm:   calc(var(--nmx-font-size-unit) * 3.5);
-  --nmx-font-size-md:   calc(var(--nmx-font-size-unit) * 4);
-  --nmx-font-size-lg:   calc(var(--nmx-font-size-unit) * 4.5);
-  --nmx-font-size-xl:   calc(var(--nmx-font-size-unit) * 5);
-  --nmx-font-size-2xl:  calc(var(--nmx-font-size-unit) * 6);
-  --nmx-font-size-3xl:  calc(var(--nmx-font-size-unit) * 7.5);
-  --nmx-font-size-4xl:  calc(var(--nmx-font-size-unit) * 9);
-  --nmx-font-size-5xl:  calc(var(--nmx-font-size-unit) * 10);
-  --nmx-font-size-6xl:  calc(var(--nmx-font-size-unit) * 12);
-  --nmx-font-size-7xl:  calc(var(--nmx-font-size-unit) * 14);
-  --nmx-font-size-8xl:  calc(var(--nmx-font-size-unit) * 16);
-  --nmx-font-size-9xl:  calc(var(--nmx-font-size-unit) * 18);
+  --nmx-font-size-2xs: calc(var(--nmx-font-size-unit) * 2.5);
+  --nmx-font-size-xs: calc(var(--nmx-font-size-unit) * 3);
+  --nmx-font-size-sm: calc(var(--nmx-font-size-unit) * 3.5);
+  --nmx-font-size-md: calc(var(--nmx-font-size-unit) * 4);
+  --nmx-font-size-lg: calc(var(--nmx-font-size-unit) * 4.5);
+  --nmx-font-size-xl: calc(var(--nmx-font-size-unit) * 5);
+  --nmx-font-size-2xl: calc(var(--nmx-font-size-unit) * 6);
+  --nmx-font-size-3xl: calc(var(--nmx-font-size-unit) * 7.5);
+  --nmx-font-size-4xl: calc(var(--nmx-font-size-unit) * 9);
+  --nmx-font-size-5xl: calc(var(--nmx-font-size-unit) * 10);
+  --nmx-font-size-6xl: calc(var(--nmx-font-size-unit) * 12);
+  --nmx-font-size-7xl: calc(var(--nmx-font-size-unit) * 14);
+  --nmx-font-size-8xl: calc(var(--nmx-font-size-unit) * 16);
+  --nmx-font-size-9xl: calc(var(--nmx-font-size-unit) * 18);
   --nmx-font-size-10xl: calc(var(--nmx-font-size-unit) * 20);
 
   /* Font weight */

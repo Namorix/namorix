@@ -48,9 +48,9 @@
     margin-bottom: var(--nmx-spacing-xs);
   }
 
-  &__icon-label {
+  &__label {
     font-size: var(--nmx-font-size-sm);
-    color: var(--nmx-color-on-surface);
+    color: var(--nmx-color-on-primary);
     max-width: 100%;
     min-height: calc(var(--nmx-font-size-sm) * var(--nmx-line-height-base) * 2);
     display: -webkit-box;

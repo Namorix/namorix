@@ -216,7 +216,7 @@ textarea,
   letter-spacing: var(--nmx-letter-spacing-tight);
   line-height: var(--nmx-line-height-base);
   font-size: clamp(var(--nmx-font-size-2xl), 6vw, var(--nmx-font-size-6xl));
-  color: var(--nmx-color-on-surface);
+  color: var(--nmx-color-on-primary);
 }
 .nmx-split-panel__hero-text {
   margin: 0;
@@ -2714,8 +2714,8 @@ textarea,
 }
 :root {
   /** Fonts */
-  --nmx-font-family-system: Inter, system-ui, sans-serif;
-  --nmx-font-family-nunito: Nunito, sans-serif;
+  --nmx-font-family-system: Nunito, sans-serif;
+  --nmx-font-family-inter: Inter, system-ui, sans-serif;
   --nmx-font-sans: var(--nmx-font-family-system);
   --nmx-font-mono: "JetBrains Mono", ui-monospace, monospace;
   --nmx-font-logo: Rajdhani, sans-serif;
@@ -2726,9 +2726,15 @@ textarea,
   --nmx-font-size-unit-sm: 0.21875rem; /* 3.5px - small  */
   --nmx-font-size-unit-md: 0.25rem; /* 4px   - default */
   --nmx-font-size-unit-lg: 0.28125rem; /* 4.5px - large  */
-  --nmx-font-size-preview-sm: calc(var(--nmx-font-size-unit-sm) * 4); /* ~14px */
-  --nmx-font-size-preview-md: calc(var(--nmx-font-size-unit-md) * 4); /* 16px  */
-  --nmx-font-size-preview-lg: calc(var(--nmx-font-size-unit-lg) * 4); /* ~18px */
+  --nmx-font-size-preview-sm: calc(
+    var(--nmx-font-size-unit-sm) * 4
+  ); /* ~14px */
+  --nmx-font-size-preview-md: calc(
+    var(--nmx-font-size-unit-md) * 4
+  ); /* 16px  */
+  --nmx-font-size-preview-lg: calc(
+    var(--nmx-font-size-unit-lg) * 4
+  ); /* ~18px */
   --nmx-font-size-unit: var(--nmx-font-size-unit-md);
   --nmx-font-size-2xs: calc(var(--nmx-font-size-unit) * 2.5);
   --nmx-font-size-xs: calc(var(--nmx-font-size-unit) * 3);
