@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit"
 import {
+  externalAddonsSliceReducer,
   launcherReducer,
   notificationsReducer,
   taskbarReducer,
@@ -12,6 +13,7 @@ export const store = configureStore({
     launcher: launcherReducer,
     taskbar: taskbarReducer,
     notifications: notificationsReducer,
+    externalAddons: externalAddonsSliceReducer,
   },
 })
 
