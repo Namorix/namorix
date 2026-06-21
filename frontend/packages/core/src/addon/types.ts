@@ -57,6 +57,10 @@ export interface AddonContext {
   addonId: string
   nmxStore: typeof nmxStore
   store?: Store
+
+  isExternal?: boolean
+  containerUrl?: string
+  sendCommand?: (command: string, payload?: unknown) => Promise<unknown>
 }
 
 export interface AddonEntry {
@@ -67,4 +71,23 @@ export interface AddonEntry {
 export interface AddonModule {
   manifest: NmxAddonManifest
   entry: AddonEntry
+}
+
+export interface ExternalAddonManifest extends NmxAddonManifest {
+  image?: string
+  hostPort?: number
+  status?: AddonContainerStatus
+  version?: string
+  author?: string
+  installedAt?: string
+}
+
+export type AddonContainerStatus = "installed" | "running" | "stopped" | "error"
+
+export interface InstallAddonRequest {
+  image: string
+  port?: number
+  displayName?: string
+  description?: string
+  icon?: string
 }

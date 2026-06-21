@@ -6,6 +6,7 @@ export const API_USER_BASE = API_BASE + "/user"
 export const API_TRAFFIC_BASE = API_BASE + "/traffic"
 export const API_SETTINGS_BASE = API_BASE + "/settings"
 export const API_NOTIFICATION_BASE = API_BASE + "/notifications"
+export const API_ADDON_BASE = API_BASE + "/addons"
 
 export const ApiAuthRoutes = {
   status: API_AUTH_BASE + "/status",
@@ -58,3 +59,11 @@ export const ApiNotificationRoutes = {
 export const ThemeRoutes = {
   themes: "/themes/{id}/{path}",
 }
+
+export const ApiAddonRoutes = {
+  list: API_ADDON_BASE,
+  install: API_ADDON_BASE + "/install",
+  start: (id: string) => `${API_ADDON_BASE}/${id}/start`,
+  stop: (id: string) => `${API_ADDON_BASE}/${id}/stop`,
+  remove: (id: string) => `${API_ADDON_BASE}/${id}`,
+} as const
