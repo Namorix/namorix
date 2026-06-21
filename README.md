@@ -31,7 +31,7 @@ Browser-based desktop shell, self-hosted.
 | Terminal | xterm.js |
 | Realtime | SignalR |
 | Server-to-server | gRPC (planned) |
-| Docker | Docker.DotNet.Enhanced (planned) |
+| Docker | Docker.DotNet |
 
 ## Quick Start
 
@@ -137,12 +137,17 @@ namorix/
     └── src/
         ├── Namorix.Core/      # Models, Abstractions, Config, Constants, Exceptions, Responses, Validation
         └── Namorix.Server/    # Persistence (AppDbContext, SQLite migrations),
-                                # Services (Auth, Permission, Settings, Theme, User, Notification),
-                                # Controllers (Auth, Health, Permission, Settings, Theme, User, Notification),
+                                # Services (Auth, Permission, Settings, Theme, User, Notification,
+                                #   Docker, Addon, OAuth),
+                                # Controllers (Auth, Health, Permission, Settings, Theme, User,
+                                #   Notification, Addon, OAuth),
                                 # Middleware (Auth, TrustedProxy, RequirePermission, Csrf, Exception,
-                                #   JsonError, NotFound, SecurityHeaders, TrafficMonitor),
-                                # Workers (TokenCleanup, LogCleanup, SystemMonitorStats, Traffic*),
-                                # Hubs (MainHub, NmxHub), Extensions, Program.cs
+                                #   JsonError, NotFound, SecurityHeaders, TrafficMonitor, OAuth2),
+                                # Workers (TokenCleanup, LogCleanup, SystemMonitorStats,
+                                #   DockerMonitor, Traffic*),
+                                # Hubs (MainHub, NmxHub, SignalRAddonNotifier),
+                                # Infrastructure (IAddonNotifier),
+                                # Extensions, Program.cs
 ```
 
 ## Packages
@@ -243,5 +248,5 @@ Addon có 3 mode tích hợp:
 1. **M1** — Static shell UI + mock auth page ✅
 2. **M2** — Full auth backend (login/register/logout/refresh/session, decorators, i18n, validation) ✅
 3. **M3** — System Addons (Built-in): addon contract + registry, About, Log Viewer, NetworkTraffic (SignalR + flat file storage), SystemMonitor, Settings (Appearance/System/Account), theme system (hot swap CSS, server-driven), File Manager, Terminal, Package Center
-4. **M4** — External addon system (Docker lifecycle, addon manager)
+4. **M4** — External addon system (Docker lifecycle, addon manager) 🔜
 5. **M5** — @namorix/core publish npm + addon integration guide

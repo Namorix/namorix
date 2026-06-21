@@ -8,15 +8,19 @@ Cho phép cài đặt, quản lý, và chạy addon từ Docker containers bên 
 
 - **Addon contract** (`NmxAddonManifest`, `AddonEntry`, `AddonContext`, `AddonModule`) đã sẵn sàng — external addon chỉ cần implement các interface này
 - **Registry** (`registerAddon`, `resolveAddon`, `listAddons`) đã support runtime registration
-- **Backend `AddonManifest` model** đã có trong DB (table `AddonManifests`) — chỉ cần controller/service
-- **PackageCenter addon** đang là placeholder trống
-- **Chưa có:** Docker.DotNet, AddonController, AddonService, DockerMonitor, frontend dynamic loading, OAuth2 flow
+- **Backend `AddonManifest` model** đã expand fields (Image, HostPort, Status, Version, Author, ClientId, PublicKey, RedirectUri, Scope) + migration `AddonManifestFields` ✅
+- **OAuth2 Authorization Server** hoàn tất: models + service + controller + middleware ✅
+- **Frontend core**: ApiAddonRoutes, external types, addon controller, AddonContext mở rộng ✅
+- **Iframe entry** (`externalAddonEntry.ts`) ✅
+- **Redux slice** (`externalAddonsSlice`) + store registration ✅
+- **PackageCenter addon** đang là placeholder trống (chưa cần UI)
+- **Chưa có:** SSE stream, useAddonEvents hook, PackageCenter UI
 
 ---
 
 ## Phase 1 — Backend Docker Integration
 
-### 1.1 Docker.DotNet Package
+### 1.1 Docker.DotNet Package ✅
 
 Add `Docker.DotNet` NuGet package to `Namorix.Server.csproj`:
 
@@ -26,7 +30,7 @@ Add `Docker.DotNet` NuGet package to `Namorix.Server.csproj`:
 
 Connect via Unix socket: `/var/run/docker.sock`
 
-### 1.2 DockerService (`Services/DockerService.cs`)
+### 1.2 DockerService (`Services/DockerService.cs`) ✅
 
 Wrapper quanh Docker.DotNet client:
 
@@ -49,7 +53,7 @@ Wrapper quanh Docker.DotNet client:
 - `Labels` — `namorix-addon=true`, `namorix-addon-id={id}`
 - `MemoryLimit`, `CpuLimit` — resource constraints
 
-### 1.3 AddonService (`Services/AddonService.cs`)
+### 1.3 AddonService (`Services/AddonService.cs`) ✅
 
 Business logic layer:
 
@@ -61,7 +65,7 @@ Business logic layer:
 | `StartAddonAsync(string id)` | Start container, update status |
 | `StopAddonAsync(string id)` | Stop container, update status |
 
-### 1.4 AddonManifest DB Model — Expand
+### 1.4 AddonManifest DB Model — Expand ✅
 
 Thêm fields vào `AddonManifest.cs`:
 
@@ -82,7 +86,7 @@ public class AddonManifest {
 
 Cần migration mới.
 
-### 1.5 AddonController (`Controllers/AddonController.cs`)
+### 1.5 AddonController (`Controllers/AddonController.cs`) ✅
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
@@ -94,15 +98,19 @@ Cần migration mới.
 | GET | `/api/addons/{id}/stream` | OAuth2 (addon) | SSE stream cho widget events |
 | POST | `/api/addons/{id}/command` | Admin | Send command to addon |
 
-### 1.6 DockerMonitor (`Workers/DockerMonitor.cs`)
+### 1.6 DockerMonitor (`Workers/DockerMonitorWorker.cs`) ✅
 
 BackgroundService chạy tuần tự:
 1. Poll Docker API mỗi 10s (hoặc watch events)
 2. Detect container mới có label `namorix-addon=true`
 3. Sync trạng thái container với `AddonManifests` DB
-4. Push SignalR event `addon:status-changed` khi có thay đổi
+4. Push SignalR event `addon:status-changed` khi có thay đổi qua `IAddonNotifier`/`SignalRAddonNotifier`
 
-### 1.7 OAuth2 Authorization Server
+**Created alongside:**
+- `Namorix.Core/Infrastructure/IAddonNotifier.cs` — interface
+- `Namorix.Server/Infrastructure/SignalRAddonNotifier.cs` — SignalR implementation
+
+### 1.7 OAuth2 Authorization Server ✅
 
 Namorix Server đóng vai trò **Authorization Server (AS)** cho external addon. Addon là **OAuth2 confidential client** (có client_secret).
 
@@ -240,7 +248,7 @@ oauth_consents: user_id, client_id, scope, granted_at
 
 ## Phase 2 — Frontend Core Changes
 
-### 2.1 API Routes
+### 2.1 API Routes ✅
 
 Add `ApiAddonRoutes` in `@namorix/core/src/apiRoutes.ts`:
 
@@ -256,7 +264,7 @@ export const ApiAddonRoutes = {
 }
 ```
 
-### 2.2 Addon Types — External Addon
+### 2.2 Addon Types — External Addon ✅
 
 Add vào `@namorix/core/src/addon/types.ts`:
 
@@ -285,7 +293,7 @@ export interface InstallAddonRequest {
 }
 ```
 
-### 2.3 External Addon Controller
+### 2.3 External Addon Controller ✅
 
 Add `frontend/src/controllers/addon.controller.ts` theo pattern controller hiện có:
 
@@ -294,7 +302,7 @@ Add `frontend/src/controllers/addon.controller.ts` theo pattern controller hiệ
 // Dùng nmxHttp pattern, handle ApiError
 ```
 
-### 2.4 External Addon Context Provider
+### 2.4 External Addon Context Provider ✅
 
 Mở rộng `AddonContext` để support external addon:
 
@@ -317,7 +325,7 @@ interface AddonContext {
 
 ## Phase 3 — External Addon Mount Strategies
 
-### Option A: Iframe (Recommended cho M4)
+### Option A: Iframe (Recommended cho M4) ✅
 
 ```typescript
 // externalAddonEntry.ts
@@ -407,7 +415,7 @@ Hiện tại là placeholder (`frontend/src/addons/PackageCenter/`). Cần imple
 - Progress indicator khi pull image
 - Validation: image format, port conflict, trùng addon ID
 
-### State Management
+### State Management ✅
 
 Add `externalAddonsSlice` vào Redux store (hoặc mở rộng `windowsSlice`):
 
@@ -468,81 +476,86 @@ function useAddonEvents() {
 
 ## Files Changed/Added
 
-### Backend (New)
+### Backend (New) ✅
 | File | Phase |
 |------|-------|
-| `Namorix.Server/Services/DockerService.cs` | P1 |
-| `Namorix.Server/Services/AddonService.cs` | P1 |
-| `Namorix.Server/Controllers/AddonController.cs` | P1 |
-| `Namorix.Server/Workers/DockerMonitor.cs` | P1 |
-| Migration update for `AddonManifests` table | P1 |
+| `Namorix.Server/Services/DockerService.cs` | P1 ✅ |
+| `Namorix.Server/Services/AddonService.cs` | P1 ✅ |
+| `Namorix.Server/Services/OAuthService.cs` | P1 ✅ |
+| `Namorix.Server/Controllers/AddonController.cs` | P1 ✅ |
+| `Namorix.Server/Controllers/OAuthController.cs` | P1 ✅ |
+| `Namorix.Server/Workers/DockerMonitorWorker.cs` | P1 ✅ |
+| `Namorix.Server/Middleware/OAuth2Middleware.cs` | P1 ✅ |
+| `Namorix.Core/Models/OAuthAuthorizationCode.cs` | P1 ✅ |
+| `Namorix.Core/Models/OAuthToken.cs` | P1 ✅ |
+| `Namorix.Core/Models/OAuthConsent.cs` | P1 ✅ |
+| `Namorix.Core/Infrastructure/IAddonNotifier.cs` | P1 ✅ |
+| `Namorix.Server/Infrastructure/SignalRAddonNotifier.cs` | P1 ✅ |
+| `Namorix.Server/Constants/Addon.cs` | P1 ✅ |
+| Migration `AddonManifestFields`, `InitialCreate` (OAuth) | P1 ✅ |
 
-### Backend (Modified)
+### Backend (Modified) ✅
 | File | Change |
 |------|--------|
-| `Namorix.Server/Program.cs` | DI: DockerService, AddonService, DockerMonitor |
+| `Namorix.Server/Persistence/AppDbContext.cs` | Add OAuth DbSets + OAuthConsent composite key |
+| `Namorix.Server/Program.cs` | DI: DockerService, AddonService, IAddonNotifier, DockerMonitorWorker; pipeline: UseOAuth2 |
+| `Namorix.Server/Extensions/ApplicationBuilderExtensions.cs` | Add UseOAuth2() |
 | `Namorix.Server/Namorix.Server.csproj` | Add Docker.DotNet package |
-| `Namorix.Core/Models/AddonManifest.cs` | Expand fields |
+| `Namorix.Core/Models/AddonManifest.cs` | Expand fields (Docker + OAuth2) |
 
-### Frontend Core (Modified)
+### Frontend Core (Modified) ✅
 | File | Change |
 |------|--------|
 | `packages/core/src/apiRoutes.ts` | Add `ApiAddonRoutes` |
-| `packages/core/src/addon/types.ts` | Add `ExternalAddonManifest`, `AddonContainerStatus` |
-| `packages/core/src/addon/index.ts` | Re-export new types |
+| `packages/core/src/addon/types.ts` | Add `ExternalAddonManifest`, `AddonContainerStatus`, `InstallAddonRequest`, AddonContext mở rộng |
 
-### Frontend (New)
+### Frontend (New) ✅
 | File | Phase |
 |------|-------|
-| `src/controllers/addon.controller.ts` | P2 |
-| `src/addons/PackageCenter/PackageCenter.tsx` | P4 |
-| `src/addons/PackageCenter/PackageCenter.module.scss` | P4 |
-| `src/hooks/useAddonEvents.ts` | P5 |
-| `src/store/slices/externalAddonsSlice.ts` | P4 |
-| `src/store/selectors/externalAddonsSelectors.ts` | P4 |
-| `src/services/externalAddonEntry.ts` | P3 (iframe strategy) |
+| `src/controllers/addon.controller.ts` | P2 ✅ |
+| `src/store/slices/externalAddonsSlice.ts` | P4 ✅ |
+| `src/services/externalAddonEntry.ts` | P3 ✅ |
 
-### Frontend (Modified)
+### Frontend (Modified) ✅
 | File | Change |
 |------|--------|
-| `src/addons/PackageCenter/PackageCenter.addon.tsx` | Update registration |
-| `src/addons/index.ts` | Uncomment/import PackageCenter |
-| `src/store/store.ts` | Register externalAddonsSlice |
-| `src/components/Desktop/Desktop.tsx` | Mount `useAddonEvents` |
+| `src/store/index.ts` | Register externalAddonsSlice ✅ |
 
 ---
 
 ## Execution Order
 
 ```
-Phase 1 (Backend Docker)
-  ├── 1.1 Docker.DotNet package
-  ├── 1.5 AddonController (CRUD endpoints)
-  ├── 1.2 DockerService (container operations)
-  ├── 1.3 AddonService (business logic + DB)
-  ├── 1.4 AddonManifest model expand + migration
-  ├── 1.6 DockerMonitor (background service)
-  └── 1.7 OAuth2 Authorization Server + 1.8 SSE stream
+Phase 1 (Backend Docker) ✅ (trừ SSE)
+  ├── 1.1 Docker.DotNet package ✅
+  ├── 1.5 AddonController (CRUD endpoints) ✅
+  ├── 1.2 DockerService (container operations) ✅
+  ├── 1.3 AddonService (business logic + DB) ✅
+  ├── 1.4 AddonManifest model expand + migration ✅
+  ├── 1.6 DockerMonitor (background service) ✅
+  ├── 1.7 OAuth2 Authorization Server ✅
+  └── 1.8 SSE Stream ← **pending**
 
-Phase 2 (Frontend Core)
-  ├── 2.1 ApiAddonRoutes
-  ├── 2.2 External addon types
-  └── 2.3 Addon controller
+Phase 2 (Frontend Core) ✅
+  ├── 2.1 ApiAddonRoutes ✅
+  ├── 2.2 External addon types ✅
+  ├── 2.3 Addon controller ✅
+  └── 2.4 AddonContext mở rộng ✅
 
-Phase 3 (Mount Strategy)
-  └── 3.1 Iframe entry (externalAddonEntry.ts)
+Phase 3 (Mount Strategy) ✅
+  └── 3.1 Iframe entry (externalAddonEntry.ts) ✅
 
-Phase 4 (PackageCenter UI)
-  ├── 4.1 Redux slice
-  ├── 4.2 Main PackageCenter component
-  └── 4.3 SCSS styles
+Phase 4 (PackageCenter UI) ← **hiện tại**
+  ├── 4.1 Redux slice ✅
+  ├── 4.2 PackageCenter component (chưa cần)
+  └── 4.3 SCSS styles (chưa cần)
 
 Phase 5 (SignalR Events)
-  ├── 5.1 Backend hub methods
+  ├── 5.1 Backend hub methods (addon:status-changed có sẵn qua SignalRAddonNotifier)
   └── 5.2 Frontend useAddonEvents hook
 
 Phase 6 (Integration)
-  ├── Wire up DI + store
+  ├── Wire up DI + store ✅
   ├── Test OAuth2 flow
   └── Documentation + version bump
 ```
@@ -551,7 +564,7 @@ Phase 6 (Integration)
 
 | Package | Version | Reason |
 |---------|---------|--------|
-| Namorix.Server | 0.37.2 → 0.38.0 | New module: AddonController, DockerService, DockerMonitor |
-| Namorix.Core | 0.36.3 → 0.37.0 | AddonManifest model expanded |
+| Namorix.Server | 0.38.0 (bumped) | New module: AddonController, DockerService, DockerMonitor, OAuth2 |
+| Namorix.Core | 0.36.4 (bumped) | AddonManifest model expanded |
 | @namorix/core | 0.35.1 → 0.36.0 | New types, API routes |
 | frontend | 0.44.3 → 0.45.0 | PackageCenter UI, new hooks, controller |

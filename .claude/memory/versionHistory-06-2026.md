@@ -1,5 +1,14 @@
 # Version History — June 2026
 
+## 2026-06-21 (2) — M4 External Addon System Phase 1-4 (Backend Docker + OAuth2, Frontend Core)
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.35.1 → 0.36.0 | MODIFIED: `addon/types.ts` — ExternalAddonManifest, AddonContainerStatus, InstallAddonRequest; extended AddonContext. `apiRoutes.ts` — ApiAddonRoutes. |
+| frontend | 0.44.4 → 0.45.0 | NEW: `controllers/addon.controller.ts`, `services/externalAddonEntry.ts`, `store/slices/externalAddonsSlice.ts`. MODIFIED: store/index.ts, slices/index.ts, controllers/index.ts (barrel exports). |
+| Namorix.Core | 0.36.4 → 0.37.0 | NEW: OAuth models (OAuthAuthorizationCode, OAuthConsent, OAuthToken). MODIFIED: AddonManifest.cs (expanded fields). |
+| Namorix.Server | 0.38.0 → 0.39.0 | NEW: DockerService, AddonService, OAuthService, AddonController, OAuthController, OAuth2Middleware, DockerMonitorWorker, SignalRAddonNotifier, IAddonNotifier, AddonStatus constants. MODIFIED: Program.cs, AppDbContext, ServerSignalR, ApplicationBuilderExtensions. New migration. |
+
 ## 2026-06-14 (2) — Appearance 3-layer cascade fix
 
 | Package | Version | Changes |

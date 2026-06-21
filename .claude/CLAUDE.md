@@ -124,7 +124,7 @@ cd frontend && pnpm test            # Run tests
 1. **M1** — Static shell UI + mock auth ✅
 2. **M2** — Full auth backend ✅
 3. **M3** — System Addons (Built-in) ✅ (Desktop shell UI, addon contract + registry, Log Viewer, NetworkTraffic, theme system; File Manager, Settings 🔜)
-4. **M4** — External addon system (Docker lifecycle, addon manager UI)
+4. **M4** — External addon system (Docker lifecycle, addon manager UI) 🔜
 5. **M5** — `@namorix/core` publish npm + addon integration guide
 
 ---
@@ -553,8 +553,13 @@ backend/
 └── src/
     ├── Namorix.Core/        # Models, Abstractions, Config, Constants, Exceptions, Responses, Validation
     └── Namorix.Server/      # Persistence (AppDbContext, migrations),
-                              # Services (Auth, Permission, Settings, Theme, User, Notification),
-                              # Controllers, Middleware, Workers, Hubs, Extensions, Program.cs
+                              # Services (Auth, Permission, Settings, Theme, User,
+                              #   Notification, Docker, Addon, OAuth),
+                              # Controllers, Middleware, Workers (TokenCleanup, LogCleanup,
+                              #   SystemMonitorStats, DockerMonitor, Traffic*),
+                              # Hubs (MainHub, NmxHub, SignalRAddonNotifier),
+                              # Infrastructure (IAddonNotifier),
+                              # Extensions, Program.cs
 ```
 
 ---

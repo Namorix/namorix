@@ -107,11 +107,16 @@
 - [x] Internal addon: Settings (includes theme picker UI)
 
 ### M4 — External Addon System (Docker)
-**Status:** Not Started
+**Status:** Phase 1-4 ✅
 
-- Dùng chung contract với internal addon (AddonEntry, NmxAddonManifest)
-- External addon load động qua `import()` từ Docker container
-- Khác biệt: handshake token auth, EventBus sandbox, Docker lifecycle
+- [x] Docker integration (DockerService, AddonService, DockerMonitorWorker, SignalR notifier)
+- [x] OAuth2 authorization code flow (models, service, controller, middleware)
+- [x] Backend Addon REST API (CRUD install/start/stop/remove)
+- [x] Frontend core changes (types, API routes, addon controller, externalAddonEntry service, Redux slice)
+- [x] Addon container lifecycle monitoring + SignalR status push
+- [ ] Phase 5: useAddonEvents hook (SignalR frontend integration)
+- [ ] PackageCenter UI component (addon manager page)
+- [ ] OAuth2 private_key_jwt full implementation (RSA key pair gen, client_assertion verify)
 
 ### M5 — @namorix/core npm Publishing
 **Status:** Not Started
@@ -127,12 +132,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.44.4 | M3 (DesktopIcon fix) |
-| @namorix/core | 0.35.1 | M3 (No changes) |
-| @namorix/styles | 0.31.3 | M3 (SCSS fixes, theme CSS update) |
+| frontend | 0.45.0 | M4 (External addon Redux slice, controller, service) |
+| @namorix/core | 0.36.0 | M4 (External addon types, API routes) |
+| @namorix/styles | 0.31.3 | M3 (No changes) |
 | @namorix/ui | 0.22.3 | M3 (No changes) |
-| Namorix.Core | 0.36.4 | M3 (Minor data + string fixes) |
-| Namorix.Server | 0.38.0 | M3 (Merge Adapters into Server, clean Core) |
+| Namorix.Core | 0.37.0 | M4 (OAuth models, expanded AddonManifest) |
+| Namorix.Server | 0.39.0 | M4 (Docker integration, OAuth2, addon API, worker) |
 
 ## Version Rules
 
@@ -172,6 +177,13 @@
 
 ### 2026-06-14 (3) — Appearance 3-layer cascade fix
 - frontend 0.44.2 → 0.44.3: `auth.controller.ts` — `loadAppearance()` gọi song song `GET /api/settings/appearance` (system defaults) + `GET /api/user/settings` (user overrides), merge đúng 3-layer (`AppearanceDefaults ← sysRes ← userRes`). Xoá `loadAppearanceSystem()`. `useAppearanceSync.ts` — dùng `authController.loadAppearance()` cho mọi case.
+
+### 2026-06-21 (2) — M4 External Addon System Phase 1-4 (Backend Docker + OAuth2, Frontend Core)
+
+- @namorix/core 0.35.1 → 0.36.0: MODIFIED: `addon/types.ts` — ExternalAddonManifest, AddonContainerStatus, InstallAddonRequest. `apiRoutes.ts` — ApiAddonRoutes.
+- frontend 0.44.4 → 0.45.0: NEW: `controllers/addon.controller.ts`, `services/externalAddonEntry.ts`, `store/slices/externalAddonsSlice.ts`. MODIFIED: store/index.ts, slices/index.ts, controllers/index.ts.
+- Namorix.Core 0.36.4 → 0.37.0: NEW: `Models/OAuthAuthorizationCode.cs`, `OAuthConsent.cs`, `OAuthToken.cs`. MODIFIED: `Models/AddonManifest.cs` (expanded).
+- Namorix.Server 0.38.0 → 0.39.0: NEW: Docker integration (DockerService, AddonService, DockerMonitorWorker, SignalRAddonNotifier, IAddonNotifier). OAuth2 (OAuthService, OAuthController, OAuth2Middleware). AddonController, AddonStatus constants. MODIFIED: Program.cs, AppDbContext, ServerSignalR.
 
 ### 2026-06-21 — Merge Namorix.Adapters into Namorix.Server
 

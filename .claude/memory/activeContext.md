@@ -2,7 +2,7 @@
 
 ## Current Work Focus
 
-M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + Settings Addon ✅
+M4 — External Addon System (Phase 1-4 ✅, Phase 5 🔜)
 
 - Desktop shell: Taskbar, DesktopArea, WindowManager, Launcher ✅
 - DesktopArea + Taskbar refactored into modular sub-components (DesktopIcon, DesktopAreaView, TaskbarAppButton, TaskbarView) ✅
@@ -27,7 +27,12 @@ M3 — Desktop Shell UI ✅ + Addon System ✅ + NetworkTraffic (SignalR) ✅ + 
 
 Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
-### 2026-06-21 — Merge Adapters into Server, restructure backend
+### 2026-06-21 — M4 External Addon System Phase 1-4
+- Backend: Docker integration (DockerService, AddonService, DockerMonitorWorker, SignalRAddonNotifier). OAuth2 full flow (models, service, controller, middleware). Addon REST API. New migration with OAuth tables.
+- Core: External addon types (ExternalAddonManifest, AddonContainerStatus, InstallAddonRequest), API routes.
+- Frontend: addon.controller.ts, externalAddonEntry iframe service, externalAddonsSlice Redux store.
+
+## Active Decisions
 - Backend: Merged `Namorix.Adapters` (Persistence, Services, Migrations) vào `Namorix.Server`. Xoá project Namorix.Adapters. Cập nhật namespace, csproj packages, solution. Regenerated migration.
 - Core: `LogEntrySerializer.cs` — string reference `Namorix.Adapters` → `Namorix.Server`.
 - Styles: SCSS fixes across split/desktop/window/typography, theme CSS updates.
@@ -193,6 +198,7 @@ Cả 3 attribute filter (`RequireAuthAttribute`, `RequireAdminAttribute`, `Requi
 
 ## Next Steps
 
-1. M3 — Internal addon: File Manager
-2. M3 — Permission tree UI (deferred)
-3. Write Vitest tests for auth.service
+1. M4 Phase 5 — useAddonEvents hook (SignalR frontend integration)
+2. M4 — PackageCenter UI component (addon manager page)
+3. M4 — OAuth2 private_key_jwt full implementation (RSA key pair gen, client_assertion verify)
+4. M3 — Internal addon: File Manager

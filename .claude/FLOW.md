@@ -423,6 +423,7 @@ On disconnect
 | `system:config-changed` | Server → Client | `{ key: string }` | useAppearanceSync |
 | `user:settings-changed` | Server → Client | `{ userId: number }` | useAppearanceSync (re-fetch user settings) |
 | `user:theme-changed` | Server → Client | `{ themeId: string }` | (planned) |
+| `addon:status-changed` | Server → Client | `{ addonId: string, status: string }` | External addon UI (planned) |
 
 ### Hooks
 
@@ -438,7 +439,8 @@ On disconnect
 NmxHub (IHubContext)
   ├── ISystemNotifier → NotifyConfigChangedAsync(key)
   ├── ITrafficNotifier → NotifyFlushAsync()
-  └── ILogNotifier → NotifyNewEntriesAsync()
+  ├── ILogNotifier → NotifyNewEntriesAsync()
+  └── IAddonNotifier → NotifyAddonStatusChanged(addonId, status)
 ```
 
 ### Key files
@@ -526,24 +528,60 @@ Window open
 "addon:request-focus"   → { addonId }
 ```
 
-### Addon modes (planned M4)
+### Addon modes
 
-| Mode | Auth | DOM slot | Token needed |
-|------|------|----------|-------------|
-| Widget (cùng DOM) | Cookie shell | ✅ | ❌ |
-| Full app (window.open) | Handshake token | ❌ | ✅ |
-| Direct URL | Redirect → handshake | ❌ | ✅ |
+| Mode | Auth | DOM slot | Token needed | Status |
+|------|------|----------|-------------|--------|
+| Widget (iframe) | HttpOnly cookie | ✅ (DOM slot) | ❌ | M4 backend + frontend core done |
+| Full app (window.open) | Handshake token | ❌ | ✅ | Planned |
+| Direct URL | Redirect → handshake | ❌ | ✅ | Planned |
+
+### External Addons (M4 — Docker)
+
+External addon lifecycle:
+```
+User installs addon
+  └── POST /api/addons/install { image, hostPort, displayName }
+        ├── DockerService.PullImageAsync()
+        ├── AddonService generates RSA key pair (OAuth client credentials)
+        ├── DockerService.CreateContainerAsync() with env vars + port mapping
+        ├── DockerService.StartContainerAsync()
+        └── Save to DB + return manifest
+
+DockerMonitorWorker (every 10s)
+  └── DockerService.ListContainersAsync() (filter by namorix-addon label)
+  └── Compare states with DB
+  └── IAddonNotifier.NotifyAddonStatusChanged() via SignalR
+
+External addon auth (OAuth2)
+  └── Addon calls POST /oauth/token with client_assertion (private_key_jwt)
+  └── OAuthService validates JWT against stored public key
+  └── Returns access_token (bearer) — verified by OAuth2Middleware
+```
 
 ### Key files
 
 | File | Role |
 |------|------|
-| `frontend/packages/core/src/addon/types.ts` | AddonEntry, NmxAddonManifest, AddonContext |
+| `frontend/packages/core/src/addon/types.ts` | AddonEntry, NmxAddonManifest, AddonContext, ExternalAddonManifest |
 | `frontend/packages/core/src/addon/factory.tsx` | `defineAddon()` |
 | `frontend/packages/core/src/addon/registry.ts` | `registerAddon()`, `resolveAddon()`, `listAddons()` |
 | `frontend/packages/core/src/addon/context.tsx` | `AddonContextProvider`, `useAddonContext()` |
+| `frontend/packages/core/src/apiRoutes.ts` | ApiAddonRoutes (list, install, start, stop, remove) |
 | `frontend/packages/core/src/eventBus.ts` | `emit()`, `on()`, `off()` |
 | `frontend/src/addons/` | All built-in addons (LogViewer, Settings, etc.) |
+| `frontend/src/controllers/addon.controller.ts` | Addon API controller |
+| `frontend/src/services/externalAddonEntry.ts` | Iframe mount/unmount for external addons |
+| `frontend/src/store/slices/externalAddonsSlice.ts` | Redux state for external addons |
+| `backend/src/Namorix.Server/Services/DockerService.cs` | Docker.DotNet wrapper |
+| `backend/src/Namorix.Server/Services/AddonService.cs` | Addon CRUD business logic |
+| `backend/src/Namorix.Server/Services/OAuthService.cs` | OAuth2 authorization code + token exchange |
+| `backend/src/Namorix.Server/Controllers/AddonController.cs` | REST API endpoints |
+| `backend/src/Namorix.Server/Controllers/OAuthController.cs` | OAuth token endpoints |
+| `backend/src/Namorix.Server/Middleware/OAuth2Middleware.cs` | Bearer token verification |
+| `backend/src/Namorix.Server/Workers/DockerMonitorWorker.cs` | Container status polling |
+| `backend/src/Namorix.Server/Infrastructure/IAddonNotifier.cs` | Addon status notification interface |
+| `backend/src/Namorix.Server/Hubs/SignalRAddonNotifier.cs` | SignalR addon:status-changed |
 
 ---
 
