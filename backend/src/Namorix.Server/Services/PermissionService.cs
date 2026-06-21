@@ -1,11 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
-using Namorix.Adapters.Persistence;
 using Namorix.Core.Constants;
 using Namorix.Core.Models;
+using Namorix.Server.Persistence;
 
-namespace Namorix.Adapters.Services;
+namespace Namorix.Server.Services;
 
 public class PermissionService(AppDbContext appDbContext, IMemoryCache memoryCache, ILogger<PermissionService> logger)
 {

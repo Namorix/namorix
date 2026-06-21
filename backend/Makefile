@@ -1,4 +1,4 @@
-EF_PROJECT = --project src/Namorix.Adapters
+EF_PROJECT = --project src/Namorix.Server
 EF_STARTUP = --startup-project src/Namorix.Server
 EF_MIGRATE = dotnet ef migrations add $(EF_PROJECT) $(EF_STARTUP)
 EF_UPDATE = dotnet ef database update $(EF_PROJECT) $(EF_STARTUP)

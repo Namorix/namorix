@@ -3,7 +3,7 @@ using Microsoft.Extensions.Options;
 using Namorix.Core.Config;
 using Namorix.Core.Models;
 
-namespace Namorix.Adapters.Persistence;
+namespace Namorix.Server.Persistence;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options, IOptions<AppConfig>? config) : DbContext(options)
 {

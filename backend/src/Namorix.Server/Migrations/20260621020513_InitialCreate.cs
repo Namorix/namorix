@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Namorix.Adapters.Migrations
+namespace Namorix.Server.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration

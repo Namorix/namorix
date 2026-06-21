@@ -4,14 +4,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Namorix.Adapters.Persistence;
+using Namorix.Server.Persistence;
 
 #nullable disable
 
-namespace Namorix.Adapters.Migrations
+namespace Namorix.Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260611073917_InitialCreate")]
+    [Migration("20260621020513_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

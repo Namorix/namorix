@@ -1,6 +1,6 @@
 using System.Security.Claims;
-using Namorix.Adapters.Services;
 using Namorix.Core.Constants;
+using Namorix.Server.Services;
 
 namespace Namorix.Server.Middleware;
 

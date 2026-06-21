@@ -1,10 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Namorix.Adapters.Persistence;
+using Namorix.Server.Persistence;
 
-namespace Namorix.Workers;
+namespace Namorix.Server.Workers;
 
 public class TokenCleanupWorker(IServiceProvider serviceProvider,
     ILogger<TokenCleanupWorker> logger): BackgroundService

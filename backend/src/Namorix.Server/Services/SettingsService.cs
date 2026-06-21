@@ -1,13 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
-using Namorix.Adapters.Persistence;
 using Namorix.Core.Constants;
 using Namorix.Core.Data;
 using Namorix.Core.Infrastructure;
 using Namorix.Core.Models;
+using Namorix.Server.Persistence;
 
-namespace Namorix.Adapters.Services;
+namespace Namorix.Server.Services;
 
 public class SettingsService(AppDbContext dbContext, IMemoryCache memoryCache,
     ISystemNotifier systemNotifier, ILogger<SettingsService> logger)

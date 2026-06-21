@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using Namorix.Adapters.Services;
 using Namorix.Core.Middleware;
 using Namorix.Core.Models;
 using Namorix.Core.Responses;
+using Namorix.Server.Services;
 
 namespace Namorix.Server.Controllers;
 

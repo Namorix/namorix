@@ -3,8 +3,6 @@ using Namorix.Core.Constants;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using Namorix.Adapters.Persistence;
-using Namorix.Adapters.Services;
 using Namorix.Core.Extensions;
 using Namorix.Core.Helpers;
 using Namorix.Core.Hubs;
@@ -12,8 +10,9 @@ using Namorix.Core.Infrastructure;
 using Namorix.Server.Extensions;
 using Namorix.Server.Hubs;
 using Namorix.Server.Infrastructure;
+using Namorix.Server.Persistence;
+using Namorix.Server.Services;
 using Namorix.Server.Workers;
-using Namorix.Workers;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -3,11 +3,11 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Namorix.Adapters.Persistence;
+using Namorix.Server.Persistence;
 
 #nullable disable
 
-namespace Namorix.Adapters.Migrations
+namespace Namorix.Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     partial class AppDbContextModelSnapshot : ModelSnapshot

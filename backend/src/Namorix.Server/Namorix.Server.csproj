@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <Version>0.37.2</Version>
+    <Version>0.38.0</Version>
     <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>Namorix.Server</RootNamespace>
     <UseRazorBuildServer>false</UseRazorBuildServer>
@@ -17,9 +17,16 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Namorix.Core\Namorix.Core.csproj" />
-    <ProjectReference Include="..\Namorix.Adapters\Namorix.Adapters.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+  </ItemGroup>
+  
   <ItemGroup>
     <Folder Include="data\" />
   </ItemGroup>

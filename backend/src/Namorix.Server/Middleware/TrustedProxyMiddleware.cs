@@ -1,7 +1,7 @@
 using System.Net;
-using Namorix.Adapters.Services;
 using Namorix.Core.Constants;
 using Namorix.Core.Responses;
+using Namorix.Server.Services;
 
 namespace Namorix.Server.Middleware;
 

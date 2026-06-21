@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
-using Namorix.Adapters.Services;
 using Namorix.Core.Attributes;
 using Namorix.Core.Middleware;
 using Namorix.Core.Responses;
 using Namorix.Server.Middleware;
+using Namorix.Server.Services;
 
 namespace Namorix.Server.Controllers;
 

@@ -1,12 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
-using Namorix.Adapters.Persistence;
 using Namorix.Core.Constants;
 using Namorix.Core.Infrastructure;
 using Namorix.Core.Models;
+using Namorix.Server.Persistence;
 
-namespace Namorix.Adapters.Services;
+namespace Namorix.Server.Services;
 
 public class UserSettingsService(AppDbContext dbContext, IMemoryCache memoryCache,
     IUserSettingsNotifier userSettingsNotifier)

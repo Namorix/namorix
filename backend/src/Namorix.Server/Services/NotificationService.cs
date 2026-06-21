@@ -1,13 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Namorix.Adapters.Persistence;
+﻿using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Namorix.Core.Constants;
 using Namorix.Core.Infrastructure;
 using Namorix.Core.Models;
 using Namorix.Core.Responses;
-using System.Text.Json;
-using Microsoft.Extensions.Caching.Memory;
-using Namorix.Core.Constants;
+using Namorix.Server.Persistence;
 
-namespace Namorix.Adapters.Services;
+namespace Namorix.Server.Services;
 
 public class NotificationService(AppDbContext db, INotificationNotifier notifier, IMemoryCache memoryCache)
 {

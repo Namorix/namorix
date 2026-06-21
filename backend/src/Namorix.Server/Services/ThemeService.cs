@@ -1,7 +1,6 @@
-using Namorix.Adapters.Persistence;
 using Namorix.Core.Models;
 
-namespace Namorix.Adapters.Services;
+namespace Namorix.Server.Services;
 
 public class ThemeService()
 {

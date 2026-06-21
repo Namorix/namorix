@@ -47,7 +47,9 @@ public class SystemMonitorStatsWorker(IServiceScopeFactory scopeFactory, ILogger
                                 && !d.Name.StartsWith("/dev")
                                 && !d.Name.StartsWith("/run")
                                 && !d.Name.StartsWith("/usr/lib")
-                                && !d.Name.StartsWith("/mnt/wslg"))
+                                && !d.Name.StartsWith("/mnt/wslg")
+                                && !d.Name.StartsWith("/snap")
+                                && !d.Name.StartsWith("/boot"))
                     .DistinctBy(d => d.TotalSize)
                     .Select(d => new
                     {

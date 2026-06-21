@@ -1,10 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Namorix.Adapters.Persistence;
 using Namorix.Core.Constants;
 using Namorix.Core.Exceptions;
+using Namorix.Server.Persistence;
 
-namespace Namorix.Adapters.Services;
+namespace Namorix.Server.Services;
 
 public class UserService(AppDbContext appDbContext, ILogger<UserService> logger)
 {

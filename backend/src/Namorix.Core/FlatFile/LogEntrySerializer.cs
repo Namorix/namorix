@@ -78,7 +78,7 @@ public class LogEntrySerializer : IFlatFileSerializer<LogEntrySerializer>
     {
         if (source.StartsWith("Namorix.Core.Workers") || source.StartsWith("Namorix.Core.")) return LogGroups.Core;
         if (source.StartsWith("Namorix.Server.Controllers")) return LogGroups.Controller;
-        if (source.StartsWith("Namorix.Adapters.Services.AuthService") ||
+        if (source.StartsWith("Namorix.Server.Services.AuthService") ||
             source.StartsWith("Namorix.Server.Controllers.Auth")) return LogGroups.Auth;
         if (source.StartsWith("Microsoft.EntityFrameworkCore")) return LogGroups.Database;
         if (source.StartsWith("Namorix.Workers") || source.StartsWith("Namorix.Server") ||

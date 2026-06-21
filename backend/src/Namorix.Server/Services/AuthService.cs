@@ -3,16 +3,15 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Namorix.Adapters.Persistence;
 using Namorix.Core.Config;
 using Namorix.Core.Constants;
 using Namorix.Core.Exceptions;
 using Namorix.Core.Models;
+using Namorix.Server.Persistence;
 
-namespace Namorix.Adapters.Services;
+namespace Namorix.Server.Services;
 
 public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig,
     ILogger<AuthService> logger, NotificationService notificationService)
