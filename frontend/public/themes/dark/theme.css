@@ -771,9 +771,9 @@ textarea,
   align-items: center;
   justify-content: center;
   gap: var(--nmx-spacing-md);
-  padding: var(--nmx-spacing-md) var(--nmx-spacing-2xl);
-  font-size: var(--nmx-font-size-sm);
-  font-weight: var(--nmx-font-weight-semibold);
+  padding: var(--nmx-spacing-sm) var(--nmx-spacing-2xl);
+  font-size: var(--nmx-font-size-xs);
+  font-weight: var(--nmx-font-weight-extrabold);
   font-family: inherit;
   color: var(--nmx-color-on-primary);
   background: var(--nmx-button-bg);
@@ -836,7 +836,7 @@ textarea,
 .nmx-button--full-width {
   width: 100%;
 }
-.nmx-button--upper-case {
+.nmx-button--uppercase {
   text-transform: uppercase;
   letter-spacing: var(--nmx-letter-spacing-wide);
 }
