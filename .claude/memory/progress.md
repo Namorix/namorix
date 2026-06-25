@@ -107,7 +107,7 @@
 - [x] Internal addon: Settings (includes theme picker UI)
 
 ### M4 — External Addon System (Docker)
-**Status:** Phase 1-5 ✅
+**Status:** Phase 1-5 ✅ + DockerMonitor refactoring ✅
 
 - [x] Docker integration (DockerService, AddonService, DockerMonitorWorker, SignalR notifier)
 - [x] OAuth2 authorization code flow (models, service, controller, middleware)
@@ -135,12 +135,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.46.0 | M4 (Docker setup, federation config, external addon wiring) |
+| frontend | 0.47.0 | M4 (PackageCenter uncomment, Desktop cleanup, button styles) |
 | @namorix/core | 0.36.0 | M4 (External addon types, API routes) |
-| @namorix/styles | 0.31.4 | M4 (Theme import default → dark) |
-| @namorix/ui | 0.22.3 | M3 (No changes) |
-| Namorix.Core | 0.37.0 | M4 (OAuth models, expanded AddonManifest) |
-| Namorix.Server | 0.39.0 | M4 (Docker integration, OAuth2, addon API, worker) |
+| @namorix/styles | 0.31.5 | M4 (Button SCSS tweaks: padding, font, uppercase class) |
+| @namorix/ui | 0.22.4 | M4 (NmxAlertDialog uppercase, NmxButton class fix) |
+| Namorix.Core | 0.38.0 | M4 (Docker constants, AddonManifest init→set fix) |
+| Namorix.Server | 0.40.0 | M4 (DockerMonitor refactor, DockerService, AddonLabels) |
 
 ## Version Rules
 
@@ -187,6 +187,15 @@
 - frontend 0.44.4 → 0.45.0: NEW: `controllers/addon.controller.ts`, `services/externalAddonEntry.ts`, `store/slices/externalAddonsSlice.ts`. MODIFIED: store/index.ts, slices/index.ts, controllers/index.ts.
 - Namorix.Core 0.36.4 → 0.37.0: NEW: `Models/OAuthAuthorizationCode.cs`, `OAuthConsent.cs`, `OAuthToken.cs`. MODIFIED: `Models/AddonManifest.cs` (expanded).
 - Namorix.Server 0.38.0 → 0.39.0: NEW: Docker integration (DockerService, AddonService, DockerMonitorWorker, SignalRAddonNotifier, IAddonNotifier). OAuth2 (OAuthService, OAuthController, OAuth2Middleware). AddonController, AddonStatus constants. MODIFIED: Program.cs, AppDbContext, ServerSignalR.
+
+### 2026-06-25 (2) — DockerMonitor refactoring, Docker constants, button/alert dialog fixes
+
+- @namorix/styles 0.31.4 → 0.31.5: MODIFIED: `button.scss` — padding/font-size/font-weight tweaks, class rename `upper-case` → `uppercase`. Theme CSS rebuilt.
+- @namorix/ui 0.22.3 → 0.22.4: MODIFIED: `NmxAlertDialog.tsx` — thêm uppercase prop, confirm button semantic → info. `NmxButton.tsx` — class fix `upper-case` → `uppercase`.
+- @namorix/core 0.36.0 (no bump): No changes.
+- frontend 0.46.0 → 0.47.0: MODIFIED: `PackageCenter.tsx` — uncomment + refactor (190+265 lines). `Desktop.tsx` — xoá external addon test registration. `vite.config.ts` — comment out optimizeDeps. `SettingsAccount.tsx` — button size=sm.
+- Namorix.Core 0.37.0 → 0.38.0: NEW: `Constants/Docker.cs` — DockerState, DockerEvent, DockerFilter. MODIFIED: `Models/AddonManifest.cs` — DisplayName, HostPort init-only → get/set (build error fix).
+- Namorix.Server 0.39.0 → 0.40.0: MODIFIED: `Constants/Addon.cs` — AddonLabels constants. `Services/DockerService.cs` — Client public (private _client → public Client). `Workers/DockerMonitorWorker.cs` — event stream + health check poll + auto-discover + action-based handling.
 
 ### 2026-06-25 — M4 Phase 5: Docker setup, federation config, external addon wiring
 

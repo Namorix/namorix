@@ -103,11 +103,18 @@ Cần migration mới.
 
 ### 1.6 DockerMonitor (`Workers/DockerMonitorWorker.cs`) ✅
 
-BackgroundService chạy tuần tự:
-1. Poll Docker API mỗi 10s (hoặc watch events)
-2. Detect container mới có label `namorix-addon=true`
-3. Sync trạng thái container với `AddonManifests` DB
-4. Push SignalR event `addon:status-changed` khi có thay đổi qua `IAddonNotifier`/`SignalRAddonNotifier`
+BackgroundService với cơ chế **event stream + health check poll**:
+1. **Khởi tạo**: `SyncAllContainersAsync` full sync một lần
+2. **Watcher**: Subscribe Docker events (`MonitorEventsAsync`) filter label `namorix-addon=true`
+   - `start` → query container info, sync/discover
+   - `stop`/`die` → set `AddonStatus.Stopped` trực tiếp, không query Docker
+   - `destroy` → set `AddonStatus.Error` trực tiếp
+   - Reconnect → auto full sync
+3. **Health check poll**: 30s check `_lastEventTime`, im lặng >5 phút → full sync (safety net)
+4. Auto-discover container mới → tạo `AddonManifest` entry
+5. Sync metadata (DisplayName, HostPort) từ labels
+6. Orphaned DB entries không còn container → set `AddonStatus.Error`
+7. Push SignalR `addon:status-changed` qua `IAddonNotifier`/`SignalRAddonNotifier`
 
 **Created alongside:**
 - `Namorix.Core/Infrastructure/IAddonNotifier.cs` — interface
@@ -538,7 +545,7 @@ Phase 1 (Backend Docker) ✅ (trừ SSE)
   ├── 1.3 AddonService ✅
   ├── 1.4 AddonManifest model expand + migration ✅
   ├── 1.5 AddonController ✅
-  ├── 1.6 DockerMonitor ✅
+  ├── 1.6 DockerMonitor ✅ (event stream + health check, auto-discover, action-based)
   ├── 1.7 OAuth2 Authorization Server ✅
   └── 1.8 SSE Stream ← **pending**
 
@@ -568,6 +575,8 @@ Phase 6 (Integration)
   ├── Docker dev setup (Dockerfile.dev/prod, docker-compose.yml, node:22-alpine) ✅
   ├── vite.config.ts: try/catch backend csproj read cho Docker build ✅
   ├── namorix-thread addon mẫu (Hello World, standalone + desktop mount) ✅
+  ├── namorix-thread Dockerfile + docker-compose + scripts (pnpm docker:prod) ✅
+  ├── namorix-thread container labels (namorix-addon=true, namorix-addon-id, namorix-addon-name) ✅
   ├── Xác định @namorix/core thiếu 4 transitive deps (react-dom, react-redux, @reduxjs/toolkit, @microsoft/signalr)
   ├── PackageCenter: cần uncomment code + wire external addon vào registry
   ├── handleRemove: đổi sang dispatch(removeAddon(id)) thay vì setAddons rebuild thủ công

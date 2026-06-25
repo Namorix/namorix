@@ -548,9 +548,15 @@ User installs addon
         ├── DockerService.StartContainerAsync()
         └── Save to DB + return manifest
 
-DockerMonitorWorker (every 10s)
-  └── DockerService.ListContainersAsync() (filter by namorix-addon label)
-  └── Compare states with DB
+DockerMonitorWorker
+  ├── [Init] SyncAllContainersAsync — full sync once on startup
+  ├── [Primary] WatchContainerEventsAsync — real-time Docker event stream
+  │     └── MonitorEventsAsync with label filter (namorix-addon=true)
+  │           ├── start → query container info, sync/discover
+  │           ├── stop/die → set AddonStatus.Stopped (no Docker query)
+  │           └── destroy → set AddonStatus.Error
+  ├── [Safety] PollLoopAsync (every 30s, check _lastEventTime)
+  │     └── If silent >5 min → full sync (reconnect safety net)
   └── IAddonNotifier.NotifyAddonStatusChanged() via SignalR
 
 External addon auth (OAuth2)
@@ -579,7 +585,8 @@ External addon auth (OAuth2)
 | `backend/src/Namorix.Server/Controllers/AddonController.cs` | REST API endpoints |
 | `backend/src/Namorix.Server/Controllers/OAuthController.cs` | OAuth token endpoints |
 | `backend/src/Namorix.Server/Middleware/OAuth2Middleware.cs` | Bearer token verification |
-| `backend/src/Namorix.Server/Workers/DockerMonitorWorker.cs` | Container status polling |
+| `backend/src/Namorix.Server/Workers/DockerMonitorWorker.cs` | Container event stream + health check poll + auto-discover |
+| `backend/src/Namorix.Core/Constants/Docker.cs` | Docker state/event/filter constants |
 | `backend/src/Namorix.Server/Infrastructure/IAddonNotifier.cs` | Addon status notification interface |
 | `backend/src/Namorix.Server/Hubs/SignalRAddonNotifier.cs` | SignalR addon:status-changed |
 

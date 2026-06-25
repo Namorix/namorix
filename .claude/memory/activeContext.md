@@ -37,6 +37,11 @@ Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và 
 - Styles: Theme import changed from default → dark.
 - External: namorix-thread addon test thành công (Hello World via federation mount).
 
+### 2026-06-25 (2) — DockerMonitor refactoring, Docker constants, PackageCenter uncomment, button fixes
+- Backend: DockerMonitorWorker refactored với event stream + health check poll + auto-discover. New DockerState/DockerEvent/DockerFilter constants. DockerService.Client public. AddonLabels constants. AddonManifest init-only → get/set fix.
+- Frontend: PackageCenter uncomment + refactor. Desktop cleanup (xoá test registration code). vite.config.ts comment out optimizeDeps (Vite cache fix). SettingsAccount button size=sm.
+- UI/Styles: Button padding/font-size/font-weight tweaks. uppercase class rename (upper-case → uppercase). NmxAlertDialog thêm uppercase prop + semantic fix. Theme CSS rebuilt.
+
 ## Active Decisions
 - Backend: Merged `Namorix.Adapters` (Persistence, Services, Migrations) vào `Namorix.Server`. Xoá project Namorix.Adapters. Cập nhật namespace, csproj packages, solution. Regenerated migration.
 - Core: `LogEntrySerializer.cs` — string reference `Namorix.Adapters` → `Namorix.Server`.
