@@ -5,17 +5,17 @@ namespace Namorix.Server.Services;
 
 public class DockerService
 {
-    private readonly DockerClient _client;
+    public readonly DockerClient Client;
 
     public DockerService()
     {
         var uri = new Uri("unix:///var/run/docker.sock");
-        _client = new DockerClientConfiguration(uri).CreateClient();
+        Client = new DockerClientConfiguration(uri).CreateClient();
     }
 
     public async Task<IList<ContainerListResponse>> ListContainersAsync()
     {
-        return await _client.Containers.ListContainersAsync(new ContainersListParameters
+        return await Client.Containers.ListContainersAsync(new ContainersListParameters
         {
             All = true,
             Filters = new Dictionary<string, IDictionary<string, bool>>
@@ -27,14 +27,14 @@ public class DockerService
 
     public async Task<ContainerInspectResponse?> InspectContainerAsync(string id)
     {
-        return await _client.Containers.InspectContainerAsync(id);
+        return await Client.Containers.InspectContainerAsync(id);
     }
 
     public async Task PullImageAsync(string image, IProgress<JSONMessage>? progress = null)
     {
         var credentials = new AuthConfig();
         var parameters = new ImagesCreateParameters { FromImage = image };
-        await _client.Images.CreateImageAsync(parameters, credentials, progress ?? new Progress<JSONMessage>());
+        await Client.Images.CreateImageAsync(parameters, credentials, progress ?? new Progress<JSONMessage>());
     }
 
     public async Task<string> CreateContainerAsync(AddonContainerSpec spec)
@@ -49,7 +49,7 @@ public class DockerService
         if (!string.IsNullOrEmpty(spec.PrivateKey))
             envVars.Add($"NMX_PRIVATE_KEY={spec.PrivateKey}");
 
-        var response = await _client.Containers.CreateContainerAsync(new CreateContainerParameters
+        var response = await Client.Containers.CreateContainerAsync(new CreateContainerParameters
         {
             Image = spec.Image,
             Env = envVars,
@@ -78,17 +78,17 @@ public class DockerService
 
     public async Task StartContainerAsync(string id)
     {
-        await _client.Containers.StartContainerAsync(id, null);
+        await Client.Containers.StartContainerAsync(id, null);
     }
 
     public async Task StopContainerAsync(string id)
     {
-        await _client.Containers.StopContainerAsync(id, new ContainerStopParameters());
+        await Client.Containers.StopContainerAsync(id, new ContainerStopParameters());
     }
 
     public async Task RemoveContainerAsync(string id)
     {
-        await _client.Containers.RemoveContainerAsync(id, new ContainerRemoveParameters
+        await Client.Containers.RemoveContainerAsync(id, new ContainerRemoveParameters
         {
             Force = true
         });
@@ -102,7 +102,7 @@ public class DockerService
             ShowStderr = true,
         };
 
-        using var multiplexedStream = await _client.Containers.GetContainerLogsAsync(
+        using var multiplexedStream = await Client.Containers.GetContainerLogsAsync(
             id, tty, parameters, cancellationToken);
 
         using var stdout = new MemoryStream();
