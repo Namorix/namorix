@@ -32,6 +32,11 @@ Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và 
 - Core: External addon types (ExternalAddonManifest, AddonContainerStatus, InstallAddonRequest), API routes.
 - Frontend: addon.controller.ts, externalAddonEntry iframe service, externalAddonsSlice Redux store.
 
+### 2026-06-25 — M4 Phase 5: Docker setup, federation config, external addon wiring
+- Frontend: Docker dev/prod setup (Dockerfile.dev, Dockerfile.prod, docker-compose.yml). Federation config via @module-federation/vite. useAddonEvents hook, externalAddonSelectors. externalAddonEntry.ts federation API fix. HMR config for Docker dev.
+- Styles: Theme import changed from default → dark.
+- External: namorix-thread addon test thành công (Hello World via federation mount).
+
 ## Active Decisions
 - Backend: Merged `Namorix.Adapters` (Persistence, Services, Migrations) vào `Namorix.Server`. Xoá project Namorix.Adapters. Cập nhật namespace, csproj packages, solution. Regenerated migration.
 - Core: `LogEntrySerializer.cs` — string reference `Namorix.Adapters` → `Namorix.Server`.

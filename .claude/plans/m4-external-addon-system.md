@@ -6,15 +6,18 @@ Cho phép cài đặt, quản lý, và chạy addon từ Docker containers bên 
 
 ## Current State
 
-- **Addon contract** (`NmxAddonManifest`, `AddonEntry`, `AddonContext`, `AddonModule`) đã sẵn sàng — external addon chỉ cần implement các interface này
-- **Registry** (`registerAddon`, `resolveAddon`, `listAddons`) đã support runtime registration
+- **Addon contract** (`NmxAddonManifest`, `AddonEntry`, `AddonContext`, `AddonModule`) đã sẵn sàng — external addon chỉ cần implement các interface này ✅
+- **Registry** (`registerAddon`, `resolveAddon`, `listAddons`) đã support runtime registration ✅
 - **Backend `AddonManifest` model** đã expand fields (Image, HostPort, Status, Version, Author, ClientId, PublicKey, RedirectUri, Scope) + migration `AddonManifestFields` ✅
 - **OAuth2 Authorization Server** hoàn tất: models + service + controller + middleware ✅
 - **Frontend core**: ApiAddonRoutes, external types, addon controller, AddonContext mở rộng ✅
-- **Iframe entry** (`externalAddonEntry.ts`) ✅
+- **Module Federation** — `@module-federation/vite` (v1.15.4) installed, `externalAddonEntry.ts` dùng `@module-federation/runtime` (`registerRemotes` + `loadRemote`) ✅
 - **Redux slice** (`externalAddonsSlice`) + store registration ✅
-- **PackageCenter addon** đang là placeholder trống (chưa cần UI)
-- **Chưa có:** SSE stream, useAddonEvents hook, PackageCenter UI
+- **PackageCenter addon** — đã implement UI nhưng đang bị comment hết, chỉ còn placeholder ✅
+- **Docker dev/prod setup** — Dockerfile.dev (node:22-alpine), Dockerfile.prod (multi-stage), docker-compose.yml (desktop-dev + desktop-prod) ✅
+- **namorix-thread** — external addon mẫu tại `~/namorix-thread/`, federation mount Hello World trên desktop đã hoạt động ✅
+- **`@namorix/core`** — thiếu 4 transitive deps trong `package.json`: `react-dom`, `react-redux`, `@reduxjs/toolkit`, `@microsoft/signalr`. Cần bổ sung. ✅
+- **Chưa có:** SSE stream, OAuth2 private_key_jwt full implementation, wire Redux ↔ addon registry, PackageCenter uncommented
 
 ---
 
@@ -325,69 +328,61 @@ interface AddonContext {
 
 ## Phase 3 — External Addon Mount Strategies
 
-### Option A: Iframe (Recommended cho M4) ✅
+### Module Federation (@module-federation/runtime) ✅
+
+Dùng `@module-federation/runtime` để load remote entry từ container:
 
 ```typescript
-// externalAddonEntry.ts
+// externalAddonEntry.ts (thực tế)
+import { loadRemote, registerRemotes } from "@module-federation/runtime"
+
 export function createExternalAddonEntry(manifest: ExternalAddonManifest): AddonEntry {
+  let unmount: (() => void) | null = null
+
   return {
-    mount(container: HTMLElement, context: AddonContext) {
-      const iframe = document.createElement("iframe")
-      iframe.src = context.containerUrl ?? `http://localhost:${manifest.hostPort}`
-      iframe.className = "nmx-external-addon-frame"
-      iframe.allow = "cross-origin-isolated"
-      container.appendChild(iframe)
+    async mount(container: HTMLElement, context: AddonContext) {
+      const baseUrl = context.containerUrl ?? `http://localhost:${manifest.hostPort}`
+      const remoteName = `addon_${manifest.id}`
+
+      registerRemotes([
+        { name: remoteName, entry: `${baseUrl}/assets/remoteEntry.js` },
+      ])
+
+      const Addon = (await loadRemote(`${remoteName}/Addon`)) as AddonModule
+      unmount = Addon.mount(container, context)
     },
-    unmount(container: HTMLElement) {
-      container.querySelector("iframe")?.remove()
-    },
+    unmount() { unmount?.() },
   }
 }
 ```
 
-**Pros:**
-- Isolation tuyệt đối (DOM, CSS, JS)
-- Không cần dynamic import/build tooling
-- Addon tự quản lý tech stack (React, Vue, vanilla JS đều được)
-- Bảo mật tốt (sandbox attribute)
+**Lưu ý:**
+- Dùng `@module-federation/runtime` (`registerRemotes` + `loadRemote`), **không phải** `vite-plugin-federation/runtime` (`loadRemoteFromManifest`)
+- File entry là `remoteEntry.js` (cấu hình `filename: "remoteEntry.js"` trong federation plugin của addon), **không phải** `mf-manifest.json`
+- Shell expose `react`, `react-dom`, `@namorix/core` qua `shared` trong `vite.config.ts`
+- Addon khai báo `shared` trong federation config của nó, runtime tự động dùng singleton từ shell
 
-**Cons:**
-- Communication qua `postMessage` — cần protocol chuẩn hóa
-- Chia sẻ theme CSS phức tạp (cần inject `--nmx-*` vars vào iframe)
-- Không share được Redux store trực tiếp
+**Lợi ích so với iframe:**
+- Chia sẻ `@namorix/core`, React, Redux store trực tiếp
+- Theme cascade tự nhiên (CSS variables)
+- Gọi function trực tiếp, không cần postMessage
+- Cùng context với shell
 
-**postMessage Protocol:**
+**Hạn chế:**
+- Addon phải build bằng Vite + `@module-federation/vite` plugin
+- `@namorix/core` có transitive deps không được declare (`react-dom`, `react-redux`, `@reduxjs/toolkit`, `@microsoft/signalr`) — addon phải add thêm vào `dependencies` của nó
 
-```typescript
-// Shell → Addon
-interface ShellToAddonMessage {
-  type: "nmx:theme-change" | "nmx:command" | "nmx:resize" | "nmx:locale-change"
-  payload: unknown
-}
+### Standalone Mode (window.open)
 
-// Addon → Shell
-interface AddonToShellMessage {
-  type: "nmx:widget-event" | "nmx:open-url" | "nmx:notify"
-  payload: unknown
-}
-```
+Container serve `index.html` riêng (`bootstrap.tsx` → `mount()`), bundle riêng, không qua federation. Addon chạy như web app độc lập, tự quản lý dependencies của nó. Dùng chung file `mount.tsx` với federation mode, chỉ khác entry point load.
 
-### Option B: Dynamic Script Injection (Future — M4.1)
+### Option A: Iframe (Discarded)
 
-Dùng `import(/* webpackIgnore: true */ url)` hoặc `<script>` injection để load JS bundle từ container.
-
-**Pros:**
-- Chia sẻ được `@namorix/core`, Redux store, theme
-- Render trực tiếp trong DOM shell (không iframe)
-- UX mượt hơn
-
-**Cons:**
-- Rủi ro bảo mật (arbitrary code execution trong cùng origin)
-- Cần sandbox (Web Worker? Shadow DOM?)
-- CORS configuration phức tạp
-- Phụ thuộc vào build tooling của addon
-
-**Decision:** Bắt đầu với **Option A (Iframe)** cho M4. Chuyển sang Option B khi có use case cụ thể.
+Iframe đã bị loại bỏ vì:
+- Không share được `@namorix/core` trực tiếp
+- postMessage protocol thay vì function call
+- Mất Redux store, theme cascade
+- "Đéo ai gà làm iframe"
 
 ---
 
@@ -514,12 +509,23 @@ function useAddonEvents() {
 |------|-------|
 | `src/controllers/addon.controller.ts` | P2 ✅ |
 | `src/store/slices/externalAddonsSlice.ts` | P4 ✅ |
-| `src/services/externalAddonEntry.ts` | P3 ✅ |
+| `src/services/externalAddonEntry.ts` | P3 ✅ (federation runtime, dùng `@module-federation/runtime`) |
+| `src/hooks/useAddonEvents.ts` | P5 ✅ |
+| `src/store/selectors/externalAddonSelectors.ts` | P4 ✅ |
+| `Dockerfile.dev` | P6 ✅ (dev container) |
+| `Dockerfile.prod` | P6 ✅ (prod multi-stage) |
+| `docker-compose.yml` | P6 ✅ (desktop-dev + desktop-prod) |
 
 ### Frontend (Modified) ✅
 | File | Change |
 |------|--------|
 | `src/store/index.ts` | Register externalAddonsSlice ✅ |
+| `src/store/selectors/index.ts` | Barrel export externalAddonSelectors ✅ |
+| `src/hooks/index.ts` | Barrel export useAddonEvents ✅ |
+| `src/pages/Desktop.tsx` | Mount useAddonEvents ✅ |
+| `src/addons/PackageCenter/PackageCenter.tsx` | Từ placeholder → full UI, nhưng đang bị comment hết |
+| `frontend/package.json` | Add @module-federation/vite dep, docker scripts ✅ |
+| `frontend/vite.config.ts` | Federation config cho shell, try/catch backend csproj read ✅ |
 
 ---
 
@@ -528,11 +534,11 @@ function useAddonEvents() {
 ```
 Phase 1 (Backend Docker) ✅ (trừ SSE)
   ├── 1.1 Docker.DotNet package ✅
-  ├── 1.5 AddonController (CRUD endpoints) ✅
-  ├── 1.2 DockerService (container operations) ✅
-  ├── 1.3 AddonService (business logic + DB) ✅
+  ├── 1.2 DockerService ✅
+  ├── 1.3 AddonService ✅
   ├── 1.4 AddonManifest model expand + migration ✅
-  ├── 1.6 DockerMonitor (background service) ✅
+  ├── 1.5 AddonController ✅
+  ├── 1.6 DockerMonitor ✅
   ├── 1.7 OAuth2 Authorization Server ✅
   └── 1.8 SSE Stream ← **pending**
 
@@ -542,29 +548,38 @@ Phase 2 (Frontend Core) ✅
   ├── 2.3 Addon controller ✅
   └── 2.4 AddonContext mở rộng ✅
 
-Phase 3 (Mount Strategy) ✅
-  └── 3.1 Iframe entry (externalAddonEntry.ts) ✅
+Phase 3 (Mount Strategy — Module Federation) ✅
+  ├── 3.1 @module-federation/vite + @module-federation/runtime installed ✅
+  ├── 3.2 createExternalAddonEntry dùng registerRemotes + loadRemote ✅
+  ├── 3.3 Fix: remoteEntry.js thay vì mf-manifest.json ✅
+  └── 3.4 namorix-thread: federation mount Hello World trên desktop đã hoạt động ✅
 
-Phase 4 (PackageCenter UI) ← **hiện tại**
+Phase 4 (PackageCenter UI) ☑️ (code cũ bị comment)
   ├── 4.1 Redux slice ✅
-  ├── 4.2 PackageCenter component (chưa cần)
-  └── 4.3 SCSS styles (chưa cần)
+  ├── 4.2 PackageCenter component (danh sách, install form, start/stop/remove) ⏸️ (bị comment)
+  └── 4.3 SCSS styles ✅
 
-Phase 5 (SignalR Events)
-  ├── 5.1 Backend hub methods (addon:status-changed có sẵn qua SignalRAddonNotifier)
-  └── 5.2 Frontend useAddonEvents hook
+Phase 5 (SignalR Events) ✅
+  ├── 5.1 Backend hub methods (addon:status-changed qua SignalRAddonNotifier) ✅
+  └── 5.2 Frontend useAddonEvents hook ✅
 
 Phase 6 (Integration)
   ├── Wire up DI + store ✅
+  ├── Docker dev setup (Dockerfile.dev/prod, docker-compose.yml, node:22-alpine) ✅
+  ├── vite.config.ts: try/catch backend csproj read cho Docker build ✅
+  ├── namorix-thread addon mẫu (Hello World, standalone + desktop mount) ✅
+  ├── Xác định @namorix/core thiếu 4 transitive deps (react-dom, react-redux, @reduxjs/toolkit, @microsoft/signalr)
+  ├── PackageCenter: cần uncomment code + wire external addon vào registry
+  ├── handleRemove: đổi sang dispatch(removeAddon(id)) thay vì setAddons rebuild thủ công
   ├── Test OAuth2 flow
-  └── Documentation + version bump
+  └── Documentation + version bump ✅
 ```
 
 ## Version Bumps
 
 | Package | Version | Reason |
 |---------|---------|--------|
-| Namorix.Server | 0.38.0 (bumped) | New module: AddonController, DockerService, DockerMonitor, OAuth2 |
-| Namorix.Core | 0.36.4 (bumped) | AddonManifest model expanded |
+| Namorix.Server | 0.38.0 → 0.39.0 | New module: AddonController, DockerService, DockerMonitor, OAuth2 |
+| Namorix.Core | 0.36.4 → 0.37.0 | AddonManifest model expanded |
 | @namorix/core | 0.35.1 → 0.36.0 | New types, API routes |
-| frontend | 0.44.3 → 0.45.0 | PackageCenter UI, new hooks, controller |
+| frontend | 0.44.4 → 0.45.0 | PackageCenter UI, hooks, controller, vite-plugin-federation |

@@ -107,14 +107,17 @@
 - [x] Internal addon: Settings (includes theme picker UI)
 
 ### M4 — External Addon System (Docker)
-**Status:** Phase 1-4 ✅
+**Status:** Phase 1-5 ✅
 
 - [x] Docker integration (DockerService, AddonService, DockerMonitorWorker, SignalR notifier)
 - [x] OAuth2 authorization code flow (models, service, controller, middleware)
 - [x] Backend Addon REST API (CRUD install/start/stop/remove)
 - [x] Frontend core changes (types, API routes, addon controller, externalAddonEntry service, Redux slice)
 - [x] Addon container lifecycle monitoring + SignalR status push
-- [ ] Phase 5: useAddonEvents hook (SignalR frontend integration)
+- [x] Phase 5: useAddonEvents hook (SignalR frontend integration)
+- [x] Docker dev/prod setup (Dockerfile.dev, Dockerfile.prod, docker-compose.yml)
+- [x] Federation config fix (@module-federation/vite, externalAddonEntry federation API)
+- [x] namorix-thread external addon test (Hello World trên desktop ✅)
 - [ ] PackageCenter UI component (addon manager page)
 - [ ] OAuth2 private_key_jwt full implementation (RSA key pair gen, client_assertion verify)
 
@@ -132,9 +135,9 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.45.0 | M4 (External addon Redux slice, controller, service) |
+| frontend | 0.46.0 | M4 (Docker setup, federation config, external addon wiring) |
 | @namorix/core | 0.36.0 | M4 (External addon types, API routes) |
-| @namorix/styles | 0.31.3 | M3 (No changes) |
+| @namorix/styles | 0.31.4 | M4 (Theme import default → dark) |
 | @namorix/ui | 0.22.3 | M3 (No changes) |
 | Namorix.Core | 0.37.0 | M4 (OAuth models, expanded AddonManifest) |
 | Namorix.Server | 0.39.0 | M4 (Docker integration, OAuth2, addon API, worker) |
@@ -184,6 +187,11 @@
 - frontend 0.44.4 → 0.45.0: NEW: `controllers/addon.controller.ts`, `services/externalAddonEntry.ts`, `store/slices/externalAddonsSlice.ts`. MODIFIED: store/index.ts, slices/index.ts, controllers/index.ts.
 - Namorix.Core 0.36.4 → 0.37.0: NEW: `Models/OAuthAuthorizationCode.cs`, `OAuthConsent.cs`, `OAuthToken.cs`. MODIFIED: `Models/AddonManifest.cs` (expanded).
 - Namorix.Server 0.38.0 → 0.39.0: NEW: Docker integration (DockerService, AddonService, DockerMonitorWorker, SignalRAddonNotifier, IAddonNotifier). OAuth2 (OAuthService, OAuthController, OAuth2Middleware). AddonController, AddonStatus constants. MODIFIED: Program.cs, AppDbContext, ServerSignalR.
+
+### 2026-06-25 — M4 Phase 5: Docker setup, federation config, external addon wiring
+
+- frontend 0.45.0 → 0.46.0: NEW: Docker dev/prod setup (Dockerfile.dev, Dockerfile.prod, docker-compose.yml, .dockerignore). @module-federation/runtime dep. useAddonEvents hook, externalAddonSelectors. MODIFIED: vite.config.ts (federation config, Docker csproj read fix), externalAddonEntry.ts (federation API), Desktop.tsx, main.tsx, signalr/constants.ts. Docker scripts in package.json.
+- @namorix/styles 0.31.3 → 0.31.4: MODIFIED: index.scss — `@forward "themes/default"` → `@forward "themes/dark"`.
 
 ### 2026-06-21 — Merge Namorix.Adapters into Namorix.Server
 
