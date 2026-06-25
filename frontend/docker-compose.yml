@@ -1,0 +1,27 @@
+services:
+  desktop-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: namorix/desktop:dev
+    container_name: namorix-desktop
+    ports:
+      - "5174:5174"
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./index.html:/app/index.html
+      - ./vite.config.ts:/app/vite.config.ts
+    environment:
+      - NODE_ENV=development
+
+  desktop-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    image: namorix/desktop:prod
+    container_name: namorix-desktop-prod
+    ports:
+      - "4173:5174"
+    environment:
+      - NODE_ENV=production

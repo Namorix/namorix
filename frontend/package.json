@@ -1,7 +1,7 @@
 {
   "name": "@namorix/frontend",
   "private": true,
-  "version": "0.45.0",
+  "version": "0.46.0",
   "license": "AGPL-3.0-only",
   "author": "IzeroCs",
   "keywords": [
@@ -23,10 +23,15 @@
     "dev": "concurrently \"pnpm --parallel -r --filter @namorix/styles dev\" \"vite\"",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "docker:dev": "docker compose down desktop-dev && docker compose up desktop-dev",
+    "docker:prod": "docker compose down desktop-prod && docker compose up --build desktop-prod",
+    "docker:build": "docker compose build",
+    "docker:down": "docker compose down"
   },
   "dependencies": {
     "@microsoft/signalr": "10.0.0",
+    "@module-federation/runtime": "2.6.0",
     "@namorix/core": "workspace:*",
     "@namorix/styles": "workspace:*",
     "@namorix/ui": "workspace:*",
@@ -41,6 +46,7 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "@module-federation/vite": "1.15.4",
     "@types/node": "25.9.0",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",

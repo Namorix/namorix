@@ -1,0 +1,25 @@
+FROM node:22-alpine AS builder
+WORKDIR /app
+RUN corepack enable
+
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json tsconfig*.json vite.config.ts ./
+COPY packages/ packages/
+COPY src/ src/
+COPY public/ public/
+COPY index.html ./
+COPY .env ./
+RUN pnpm install --frozen-lockfile
+RUN pnpm build
+
+FROM node:22-alpine
+WORKDIR /app
+ENV CI=true
+RUN corepack enable
+
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-workspace.yaml ./
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+
+EXPOSE 5174
+CMD ["pnpm", "preview", "--port", "5174", "--host", "0.0.0.0"]

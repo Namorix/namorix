@@ -1,3 +1,6 @@
+.vite
+.env
+
 public/themes
 public/fonts/icomoon/demo-files
 public/fonts/icomoon/demo.html
