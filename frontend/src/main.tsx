@@ -9,9 +9,10 @@ import "./addons"
 
 configureCore({
   apiBaseUrl:
-    (import.meta.env.VITE_API_URL ?? window.location.host === "izerocs.space")
+    import.meta.env.VITE_API_URL ??
+    (window.location.host === "izerocs.space"
       ? "https://api.izerocs.space"
-      : window.location.origin,
+      : window.location.origin),
 })
 
 generateFingerprint().catch(console.error)
