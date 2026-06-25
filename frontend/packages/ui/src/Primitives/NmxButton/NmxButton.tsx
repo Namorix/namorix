@@ -40,7 +40,7 @@ export const NmxButton: React.FC<NmxButtonProps> = ({
       className={cx(
         "nmx-button",
         { "nmx-button--full-width": fullWidth },
-        { "nmx-button--upper-case": uppercase },
+        { "nmx-button--uppercase": uppercase },
         cxVariant("nmx-button", variant),
         cxSemantic("nmx-button", semantic),
         className,

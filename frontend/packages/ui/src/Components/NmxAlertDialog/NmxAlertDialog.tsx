@@ -51,14 +51,16 @@ export const NmxAlertDialog = ({
           label={cancel}
           onClick={onClose ?? onCancel}
           disabled={loading}
+          uppercase={true}
           className="nmx-dialog__button"
         />
         <NmxButton
-          semantic="primary"
+          semantic="info"
           label={confirm}
           onClick={onConfirm}
           disabled={loading}
           shouldRender={!!onConfirm}
+          uppercase={true}
           className="nmx-dialog__button"
         />
       </NmxDialogFooter>
