@@ -1,18 +1,8 @@
 import React, { useEffect } from "react"
 import { DesktopArea, Launcher, Taskbar, WindowManager } from "../components"
 import { defocusAll, useAppDispatch } from "../store"
-import { type ExternalAddonManifest, useSignalR } from "@namorix/core"
+import { useSignalR } from "@namorix/core"
 import { useAddonEvents, useNotificationEvents } from "../hooks"
-import { registerAddon } from "../addons"
-import { createExternalAddonEntry } from "../services/externalAddonEntry"
-
-registerAddon({
-  manifest: { id: "thread", displayName: "Thread", icon: "app-terminal" },
-  entry: createExternalAddonEntry({
-    id: "thread",
-    hostPort: 5180,
-  } as ExternalAddonManifest),
-})
 
 export const Desktop: React.FC = () => {
   const dispatch = useAppDispatch()

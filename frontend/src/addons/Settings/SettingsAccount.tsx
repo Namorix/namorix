@@ -117,6 +117,7 @@ export const SettingsAccount: React.FC = () => {
               <NmxMetaItem label={t("addon.settings.account.role")}>
                 <NmxBadge
                   semantic={user?.role === UserRole.Admin ? "success" : "info"}
+                  size="sm"
                 >
                   {user?.role === UserRole.Admin
                     ? t("user.role.admin")

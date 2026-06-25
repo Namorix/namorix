@@ -72,9 +72,9 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
   },
-  optimizeDeps: {
-    include: ["@namorix/core", "@namorix/ui"],
-  },
+  // optimizeDeps: {
+  //   include: ["@namorix/core", "@namorix/ui"],
+  // },
   plugins: [
     react(),
     // federation({
