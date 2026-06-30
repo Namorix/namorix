@@ -42,7 +42,7 @@ export type NmxAddonInstanceMode =
 
 export interface NmxAddonManifest {
   id: string
-  displayName: string
+  name: string
   description?: string
   localeKey?: NmxAddonLocaleKeys
   icon?: NmxAddonIconType
@@ -55,7 +55,7 @@ export interface NmxAddonManifest {
 
 export interface AddonContext {
   addonId: string
-  nmxStore: typeof nmxStore
+  nmxStore?: typeof nmxStore
   store?: Store
 
   isExternal?: boolean
@@ -87,7 +87,7 @@ export type AddonContainerStatus = "installed" | "running" | "stopped" | "error"
 export interface InstallAddonRequest {
   image: string
   port?: number
-  displayName?: string
+  name?: string
   description?: string
   icon?: string
 }
