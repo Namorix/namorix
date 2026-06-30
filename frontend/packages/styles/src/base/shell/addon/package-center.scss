@@ -1,0 +1,43 @@
+.nmx-addon-package-center {
+  &__main {
+    width: 100%;
+  }
+
+  &__list {
+    padding: var(--nmx-spacing-md);
+  }
+
+  &__card {
+    padding: var(--nmx-spacing-xl);
+  }
+
+  &__card-header {
+    margin: 0;
+  }
+
+  &__card-icon-title {
+    display: flex;
+    align-items: center;
+    gap: var(--nmx-spacing-lg);
+  }
+
+  &__card-icon {
+    font-size: var(--nmx-font-size-5xl);
+  }
+
+  &__card-title {
+    font-size: var(--nmx-font-size-xl);
+    margin: var(--nmx-spacing-xs) 0;
+  }
+
+  &__card-description {
+    font-size: var(--nmx-font-size-xs);
+    margin: 0;
+  }
+
+  &__card-body {
+    color: var(--nmx-color-on-surface);
+    margin-top: var(--nmx-spacing-md);
+    font-size: var(--nmx-font-size-sm);
+  }
+}

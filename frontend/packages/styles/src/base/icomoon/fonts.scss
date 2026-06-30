@@ -3,9 +3,9 @@
 @font-face {
   font-family: '#{$icomoon-font-family}';
   src:
-    url('#{$icomoon-font-path}/#{$icomoon-font-family}.ttf?3hbcra') format('truetype'),
-    url('#{$icomoon-font-path}/#{$icomoon-font-family}.woff?3hbcra') format('woff'),
-    url('#{$icomoon-font-path}/#{$icomoon-font-family}.svg?3hbcra##{$icomoon-font-family}') format('svg');
+    url('#{$icomoon-font-path}/#{$icomoon-font-family}.ttf?ndgzjp') format('truetype'),
+    url('#{$icomoon-font-path}/#{$icomoon-font-family}.woff?ndgzjp') format('woff'),
+    url('#{$icomoon-font-path}/#{$icomoon-font-family}.svg?ndgzjp##{$icomoon-font-family}') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -26,69 +26,9 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.ic-ram {
+.ic-apps {
   &:before {
-    content: $ic-ram; 
-  }
-}
-.ic-time {
-  &:before {
-    content: $ic-time; 
-  }
-}
-.ic-cpu {
-  &:before {
-    content: $ic-cpu; 
-  }
-}
-.ic-arrow-bar-up {
-  &:before {
-    content: $ic-arrow-bar-up; 
-  }
-}
-.ic-arrow-bar-down {
-  &:before {
-    content: $ic-arrow-bar-down; 
-  }
-}
-.ic-delete {
-  &:before {
-    content: $ic-delete; 
-  }
-}
-.ic-filter {
-  &:before {
-    content: $ic-filter; 
-  }
-}
-.ic-mark-all {
-  &:before {
-    content: $ic-mark-all; 
-  }
-}
-.ic-info {
-  &:before {
-    content: $ic-info; 
-  }
-}
-.ic-warning {
-  &:before {
-    content: $ic-warning; 
-  }
-}
-.ic-density-spacious {
-  &:before {
-    content: $ic-density-spacious; 
-  }
-}
-.ic-density-compact {
-  &:before {
-    content: $ic-density-compact; 
-  }
-}
-.ic-density-default {
-  &:before {
-    content: $ic-density-default; 
+    content: $ic-apps; 
   }
 }
 .ic-link {
