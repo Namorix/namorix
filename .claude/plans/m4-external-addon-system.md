@@ -15,7 +15,7 @@ Cho phép cài đặt, quản lý, và chạy addon từ Docker containers bên 
 - **Redux slice** (`externalAddonsSlice`) + store registration ✅
 - **PackageCenter addon** — đã implement UI nhưng đang bị comment hết, chỉ còn placeholder ✅
 - **Docker dev/prod setup** — Dockerfile.dev (node:22-alpine), Dockerfile.prod (multi-stage), docker-compose.yml (desktop-dev + desktop-prod) ✅
-- **namorix-thread** — external addon mẫu tại `~/namorix-thread/`, federation mount Hello World trên desktop đã hoạt động ✅
+- **namorix-weave** — external addon mẫu tại `~/namorix-weave/`, federation mount Hello World trên desktop đã hoạt động ✅
 - **`@namorix/core`** — thiếu 4 transitive deps trong `package.json`: `react-dom`, `react-redux`, `@reduxjs/toolkit`, `@microsoft/signalr`. Cần bổ sung. ✅
 - **Chưa có:** SSE stream, OAuth2 private_key_jwt full implementation, wire Redux ↔ addon registry, PackageCenter uncommented
 
@@ -559,7 +559,7 @@ Phase 3 (Mount Strategy — Module Federation) ✅
   ├── 3.1 @module-federation/vite + @module-federation/runtime installed ✅
   ├── 3.2 createExternalAddonEntry dùng registerRemotes + loadRemote ✅
   ├── 3.3 Fix: remoteEntry.js thay vì mf-manifest.json ✅
-  └── 3.4 namorix-thread: federation mount Hello World trên desktop đã hoạt động ✅
+  └── 3.4 namorix-weave: federation mount Hello World trên desktop đã hoạt động ✅
 
 Phase 4 (PackageCenter UI) ☑️ (code cũ bị comment)
   ├── 4.1 Redux slice ✅
@@ -574,9 +574,9 @@ Phase 6 (Integration)
   ├── Wire up DI + store ✅
   ├── Docker dev setup (Dockerfile.dev/prod, docker-compose.yml, node:22-alpine) ✅
   ├── vite.config.ts: try/catch backend csproj read cho Docker build ✅
-  ├── namorix-thread addon mẫu (Hello World, standalone + desktop mount) ✅
-  ├── namorix-thread Dockerfile + docker-compose + scripts (pnpm docker:prod) ✅
-  ├── namorix-thread container labels (namorix-addon=true, namorix-addon-id, namorix-addon-name) ✅
+  ├── namorix-weave addon mẫu (Hello World, standalone + desktop mount) ✅
+  ├── namorix-weave Dockerfile + docker-compose + scripts (pnpm docker:prod) ✅
+  ├── namorix-weave container labels (namorix-addon=true, namorix-addon-id, namorix-addon-name) ✅
   ├── Xác định @namorix/core thiếu 4 transitive deps (react-dom, react-redux, @reduxjs/toolkit, @microsoft/signalr)
   ├── PackageCenter: cần uncomment code + wire external addon vào registry
   ├── handleRemove: đổi sang dispatch(removeAddon(id)) thay vì setAddons rebuild thủ công

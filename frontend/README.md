@@ -181,7 +181,7 @@ Auto-reconnects with exponential backoff (5s → 30s cap, infinite retry).
 Built-in addons use the same contract as external addons (M4):
 
 - **AddonEntry**: `mount(container, context)` / `unmount()` lifecycle
-- **NmxAddonManifest**: id, displayName, description?, icon?
+- **NmxAddonManifest**: id, name, description?, icon?
 - **AddonContext**: addonId, locale, theme
 
 Four system addons are implemented: LogViewer, NetworkTraffic (SignalR + flat file), Settings, SystemMonitor.

@@ -469,13 +469,16 @@ interface AddonEntry {
 
 interface AddonContext {
   addonId: string
-  locale: string
-  theme: 'light' | 'dark'
+  nmxStore?: typeof nmxStore
+  store?: Store
+  isExternal?: boolean
+  containerUrl?: string
+  sendCommand?: (command: string, payload?: unknown) => Promise<unknown>
 }
 
 interface NmxAddonManifest {
   id: string
-  displayName: string
+  name: string
   version: string
   icon?: string
   defaultWidth?: number
@@ -541,7 +544,7 @@ Window open
 External addon lifecycle:
 ```
 User installs addon
-  └── POST /api/addons/install { image, hostPort, displayName }
+  └── POST /api/addons/install { image, hostPort, name }
         ├── DockerService.PullImageAsync()
         ├── AddonService generates RSA key pair (OAuth client credentials)
         ├── DockerService.CreateContainerAsync() with env vars + port mapping

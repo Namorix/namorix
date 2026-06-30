@@ -319,7 +319,7 @@ SQLite database file (`namorix.db`), tạo tự động khi chạy migrations.
 - **Permission** — `id`, `name`, `description`
 - **UserPermission** — `userId`, `permissionId`
 - **ThemeManifest** — `id`, `name`, `version`, `author`, `description`, `preview`, `cssPath`, `tags`, `isBuiltIn`
-- **AddonManifest** — `id`, `displayName`, `description`, `icon` (for M4)
+- **AddonManifest** — `id`, `name`, `description`, `icon` (for M4)
 - **Notification** — `id`, `userId`, `type`, `titleKey`, `descriptionKey?`, `params?`, `source?`, `isRead`, `createdAt`
 
 ### Migrations

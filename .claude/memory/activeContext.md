@@ -27,6 +27,12 @@ M4 — External Addon System (Phase 1-4 ✅, Phase 5 🔜)
 
 Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-06-30 — displayName→name refactor, PackageCenter, Description/Author labels
+- Core: `addon/types.ts` — `displayName`→`name`, `nmxStore` optional. Icomoon rebuild + new icon symbols. NmxIcon types updated.
+- Backend: AddonManifest `DisplayName`→`Name`, `Description`/`Author` set. DockerMonitor reads Description/Author from container labels. AddonLabels constants expanded.
+- Frontend: All 8 builtin addon manifests renamed `displayName`→`name`. PackageCenter full refactor (Rail+Grid+Card). Controllers, components, selectors updated. New i18n keys.
+- Styles: New `package-center.scss`, icon tokens, theme CSS rebuilt.
+
 ### 2026-06-21 — M4 External Addon System Phase 1-4
 - Backend: Docker integration (DockerService, AddonService, DockerMonitorWorker, SignalRAddonNotifier). OAuth2 full flow (models, service, controller, middleware). Addon REST API. New migration with OAuth tables.
 - Core: External addon types (ExternalAddonManifest, AddonContainerStatus, InstallAddonRequest), API routes.
@@ -208,7 +214,6 @@ Cả 3 attribute filter (`RequireAuthAttribute`, `RequireAdminAttribute`, `Requi
 
 ## Next Steps
 
-1. M4 Phase 5 — useAddonEvents hook (SignalR frontend integration)
-2. M4 — PackageCenter UI component (addon manager page)
-3. M4 — OAuth2 private_key_jwt full implementation (RSA key pair gen, client_assertion verify)
-4. M3 — Internal addon: File Manager
+1. M4 — OAuth2 private_key_jwt full implementation (RSA key pair gen, client_assertion verify)
+2. M3 — Internal addon: File Manager
+3. M3 — Internal addon: Terminal

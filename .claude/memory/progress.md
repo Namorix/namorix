@@ -117,8 +117,8 @@
 - [x] Phase 5: useAddonEvents hook (SignalR frontend integration)
 - [x] Docker dev/prod setup (Dockerfile.dev, Dockerfile.prod, docker-compose.yml)
 - [x] Federation config fix (@module-federation/vite, externalAddonEntry federation API)
-- [x] namorix-thread external addon test (Hello World trên desktop ✅)
-- [ ] PackageCenter UI component (addon manager page)
+- [x] namorix-weave external addon test (Hello World trên desktop ✅)
+- [x] PackageCenter UI component (addon manager page — Rail+Grid+Card với All/Installed/Updated tabs)
 - [ ] OAuth2 private_key_jwt full implementation (RSA key pair gen, client_assertion verify)
 
 ### M5 — @namorix/core npm Publishing
@@ -135,12 +135,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.47.0 | M4 (PackageCenter uncomment, Desktop cleanup, button styles) |
-| @namorix/core | 0.36.0 | M4 (External addon types, API routes) |
-| @namorix/styles | 0.31.5 | M4 (Button SCSS tweaks: padding, font, uppercase class) |
-| @namorix/ui | 0.22.4 | M4 (NmxAlertDialog uppercase, NmxButton class fix) |
-| Namorix.Core | 0.38.0 | M4 (Docker constants, AddonManifest init→set fix) |
-| Namorix.Server | 0.40.0 | M4 (DockerMonitor refactor, DockerService, AddonLabels) |
+| frontend | 0.48.0 | M4 (PackageCenter refactor, displayName→name, new i18n) |
+| @namorix/core | 0.37.0 | M4 (displayName→name rename, nmxStore optional) |
+| @namorix/styles | 0.32.0 | M4 (New addon icons, package-center SCSS) |
+| @namorix/ui | 0.23.0 | M4 (New icon type symbols) |
+| Namorix.Core | 0.39.0 | M4 (AddonManifest Name/Description/Author updates) |
+| Namorix.Server | 0.41.0 | M4 (DockerMonitor Description/Author label reading, AddonLabels) |
 
 ## Version Rules
 
@@ -167,6 +167,15 @@
 - Không bao giờ bump cả Core + Server cùng lúc nếu chỉ 1 trong 2 thay đổi
 
 ## Version History
+
+### 2026-06-30 — displayName→name refactor, PackageCenter, Description/Author labels
+
+- @namorix/core 0.36.0 → 0.37.0: MODIFIED: `addon/types.ts` — `displayName`→`name`, `nmxStore` optional, `ExternalAddonManifest`, `AddonContext` updated.
+- @namorix/styles 0.31.5 → 0.32.0: MODIFIED: Icomoon rebuild, `tokens/icons.scss` — new icon symbols. NEW: `shell/addon/package-center.scss`.
+- @namorix/ui 0.22.4 → 0.23.0: MODIFIED: `NmxIconFont.types.ts`, `NmxIconSvg.types.ts` — new icon type symbols.
+- frontend 0.47.0 → 0.48.0: MODIFIED: All 8 builtin addon manifests (`displayName`→`name`). `PackageCenter.tsx` — full Rail+Grid+Card refactor. `DesktopIcon.tsx`, `LauncherView.tsx`, `useLauncherSearch.ts`, `WindowFrameView.tsx`, `taskbarSelectors.ts` — `displayName`→`name`. `controllers/addon.controller.ts` — DTO/request fields. `i18n/locales/en.json` — new PackageCenter keys.
+- Namorix.Core 0.38.0 → 0.39.0: MODIFIED: `Models/AddonManifest.cs` — `DisplayName`→`Name`, `Description`/`Author` set accessor.
+- Namorix.Server 0.40.0 → 0.41.0: MODIFIED: `Constants/Addon.cs` — thêm `Description`, `Author` constants. `Services/AddonService.cs` — `DisplayName`→`Name`. `Workers/DockerMonitorWorker.cs` — Description/Author label reading trong auto-discover + SyncExisting.
 
 ### 2026-06-14
 - @namorix/styles 0.31.0 → 0.31.1: DiskUsage container queries `.nmx-disk-item__name`, settings hardcoded 580px → variable
