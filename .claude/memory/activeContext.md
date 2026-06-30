@@ -33,6 +33,13 @@ Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và 
 - Frontend: All 8 builtin addon manifests renamed `displayName`→`name`. PackageCenter full refactor (Rail+Grid+Card). Controllers, components, selectors updated. New i18n keys.
 - Styles: New `package-center.scss`, icon tokens, theme CSS rebuilt.
 
+### 2026-06-30 (2) — Addon catalog sync, NmxIconSvg URL support, NmxGrid cols fix, AddonManifest→AddonInstallation
+- Backend: CatalogSyncWorker (dual-delay background sync, success=SyncInterval, failure=RetryDelay). CatalogService (catalog index fetch + manifest sync + TTL check). AddonCatalogConfig. AddonCatalogEntry DB entity. Catalog DTOs. AddonController GET catalog + POST sync. DI wiring in Program.cs. AddonService GetCatalogAsync/RefreshCatalogAsync. AddonManifest→AddonInstallation rename (AppDbContext migration, DockerMonitorWorker, OAuthService).
+- Core: AddonCatalogEntry type, catalog API routes. NmxIconSvg src prop for external URL icon.
+- UI: NmxIconSvg src prop — renders `<img>` with fallback to SVG symbol on error. NmxGrid cols fix — numeric cols uses `repeat(N, 1fr)`.
+- Styles: icon-svg.scss `.symbol` class with background-image support. Theme CSS rebuilt.
+- Frontend: AddonGrid component (catalog+installed merge). PackageCenter catalog tab + refresh button. Catalog loading/empty i18n keys.
+
 ### 2026-06-21 — M4 External Addon System Phase 1-4
 - Backend: Docker integration (DockerService, AddonService, DockerMonitorWorker, SignalRAddonNotifier). OAuth2 full flow (models, service, controller, middleware). Addon REST API. New migration with OAuth tables.
 - Core: External addon types (ExternalAddonManifest, AddonContainerStatus, InstallAddonRequest), API routes.

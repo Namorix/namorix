@@ -135,12 +135,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.48.0 | M4 (PackageCenter refactor, displayName→name, new i18n) |
-| @namorix/core | 0.37.0 | M4 (displayName→name rename, nmxStore optional) |
-| @namorix/styles | 0.32.0 | M4 (New addon icons, package-center SCSS) |
-| @namorix/ui | 0.23.0 | M4 (New icon type symbols) |
-| Namorix.Core | 0.39.0 | M4 (AddonManifest Name/Description/Author updates) |
-| Namorix.Server | 0.41.0 | M4 (DockerMonitor Description/Author label reading, AddonLabels) |
+| frontend | 0.49.0 | M4 (PackageCenter AddonGrid, catalog+installed merge, NmxGrid cols fix) |
+| @namorix/core | 0.38.0 | M4 (AddonCatalogEntry type, catalog API routes, NmxIconSvg src prop) |
+| @namorix/styles | 0.33.0 | M4 (NmxIconSvg external URL icon support, package-center SCSS updates) |
+| @namorix/ui | 0.24.0 | M4 (NmxIconSvg src prop, NmxGrid cols fix) |
+| Namorix.Core | 0.40.0 | M4 (AddonCatalogConfig, Catalog models) |
+| Namorix.Server | 0.42.0 | M4 (CatalogSyncWorker, CatalogService, catalog endpoints, AddonManifest→AddonInstallation) |
 
 ## Version Rules
 
@@ -176,6 +176,15 @@
 - frontend 0.47.0 → 0.48.0: MODIFIED: All 8 builtin addon manifests (`displayName`→`name`). `PackageCenter.tsx` — full Rail+Grid+Card refactor. `DesktopIcon.tsx`, `LauncherView.tsx`, `useLauncherSearch.ts`, `WindowFrameView.tsx`, `taskbarSelectors.ts` — `displayName`→`name`. `controllers/addon.controller.ts` — DTO/request fields. `i18n/locales/en.json` — new PackageCenter keys.
 - Namorix.Core 0.38.0 → 0.39.0: MODIFIED: `Models/AddonManifest.cs` — `DisplayName`→`Name`, `Description`/`Author` set accessor.
 - Namorix.Server 0.40.0 → 0.41.0: MODIFIED: `Constants/Addon.cs` — thêm `Description`, `Author` constants. `Services/AddonService.cs` — `DisplayName`→`Name`. `Workers/DockerMonitorWorker.cs` — Description/Author label reading trong auto-discover + SyncExisting.
+
+### 2026-06-30 (2) — Addon catalog sync system, NmxIconSvg URL support, NmxGrid cols fix, AddonManifest→AddonInstallation
+
+- @namorix/core 0.37.0 → 0.38.0: MODIFIED: `addon/types.ts` — AddonCatalogEntry type. `apiRoutes.ts` — catalog API routes. NEW: `NmxIconSvg src` prop for external URL icon loading.
+- @namorix/styles 0.32.0 → 0.33.0: MODIFIED: `components/icon/icon-svg.scss` — `.symbol` class with `background-image` support for external icon URLs. Theme CSS rebuilt.
+- @namorix/ui 0.23.0 → 0.24.0: MODIFIED: `NmxIconSvg.tsx` — added `src` prop, renders `<img>` with fallback to SVG symbol on error. `NmxGrid.tsx` — cols fix: numeric `cols` uses `repeat(N, 1fr)` instead of `auto-fit`.
+- frontend 0.48.0 → 0.49.0: NEW: `AddonGrid.tsx` — catalog+installed merge grid for PackageCenter. MODIFIED: `PackageCenter.tsx` — catalog tab integration, refresh button. `en.json` — catalog loading/empty i18n keys.
+- Namorix.Core 0.39.0 → 0.40.0: NEW: `Config/AddonCatalogConfig.cs` — CatalogUrl, TtlSeconds, SyncIntervalSeconds, RetryDelaySeconds. `Models/AddonInstallation.cs` — model rename from AddonManifest (via migration).
+- Namorix.Server 0.41.0 → 0.42.0: NEW: `Workers/CatalogSyncWorker.cs` — dual-delay background sync (success=SyncInterval, failure=RetryDelay). `Services/CatalogService.cs` — catalog index fetch + manifest sync + TTL check. `Models/AddonCatalogEntry.cs` — DB entity for catalog cache. `Models/Catalog/CatalogIndex.cs` — DTOs. MODIFIED: `Controllers/AddonController.cs` — GET /api/addons/catalog, POST /api/addons/catalog/sync. `Program.cs` — AddonCatalogConfig DI, CatalogService HttpClient, CatalogSyncWorker hosted service. `Services/AddonService.cs` — GetCatalogAsync, RefreshCatalogAsync. `Persistence/AppDbContext.cs` — AddonInstallations rename. `Workers/DockerMonitorWorker.cs` — AddonManifest→AddonInstallation. `Services/OAuthService.cs` — AddonManifest→AddonInstallation.
 
 ### 2026-06-14
 - @namorix/styles 0.31.0 → 0.31.1: DiskUsage container queries `.nmx-disk-item__name`, settings hardcoded 580px → variable

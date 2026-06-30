@@ -593,6 +593,62 @@ External addon auth (OAuth2)
 | `backend/src/Namorix.Server/Infrastructure/IAddonNotifier.cs` | Addon status notification interface |
 | `backend/src/Namorix.Server/Hubs/SignalRAddonNotifier.cs` | SignalR addon:status-changed |
 
+### Addon Catalog Sync (M4 — PackageCenter)
+
+Addon catalog sync fetches available addons from a remote index for display in the PackageCenter:
+
+```
+CatalogSyncWorker (BackgroundService)
+  ├── [Loop] Wait delay (success=SyncIntervalSeconds, failure=RetryDelaySeconds)
+  ├── Fetch catalog index from CatalogUrl (catalog/addons.json)
+  │     ├── Success → parse CatalogIndex with entries
+  │     └── Failure → log error, retry after RetryDelaySeconds
+  └── Sync each entry:
+        ├── Check TTL (skip if not expired, unless force sync)
+        ├── Fetch manifest from manifestUrl
+        ├── Upsert AddonCatalogEntry in DB
+        ├── Mark orphans (entries not in index) as outdated
+        └── Update LastSyncedAt timestamp
+
+Manual sync (force)
+  └── POST /api/addons/catalog/sync
+        ├── Adds force query param to CatalogService
+        ├── Bypasses cutoff (DateTime.MinValue → all entries re-synced)
+        └── Returns updated catalog entries
+
+Get catalog
+  └── GET /api/addons/catalog
+        ├── Returns all AddonCatalogEntry from DB
+        ├── Includes outdated entries (client decides display)
+        └── Cached by TTL
+```
+
+Frontend flow:
+```
+PackageCenter → "All" tab
+  └── AddonGrid component
+        ├── GET /api/addons/catalog (catalog entries)
+        ├── GET /api/addons (installed addons)
+        ├── Merge by ID: catalog entry enriched with install status
+        └── Display: icon (from url), name, description, install button
+```
+
+### Key files (catalog sync)
+
+| File | Role |
+|------|------|
+| `backend/src/Namorix.Core/Config/AddonCatalogConfig.cs` | Catalog URL, TTL, sync interval, retry delay |
+| `backend/src/Namorix.Server/Workers/CatalogSyncWorker.cs` | Background sync with dual delay |
+| `backend/src/Namorix.Server/Services/CatalogService.cs` | Catalog fetch, manifest sync, TTL check |
+| `backend/src/Namorix.Server/Models/AddonCatalogEntry.cs` | DB entity (cached catalog entries) |
+| `backend/src/Namorix.Server/Models/Catalog/CatalogIndex.cs` | DTOs (CatalogIndex, CatalogEntry) |
+| `backend/src/Namorix.Server/Controllers/AddonController.cs` | GET /api/addons/catalog, POST /api/addons/catalog/sync |
+| `backend/src/Namorix.Server/Services/AddonService.cs` | GetCatalogAsync, RefreshCatalogAsync |
+| `frontend/src/addons/PackageCenter/AddonGrid.tsx` | Catalog+installed merge grid |
+| `frontend/packages/core/src/addon/types.ts` | AddonCatalogEntry type |
+| `frontend/packages/core/src/apiRoutes.ts` | Catalog API routes |
+| `catalog/addons.json` | Catalog index file |
+
 ---
 
 ## 9. Window Management

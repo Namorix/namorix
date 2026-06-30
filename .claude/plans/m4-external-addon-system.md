@@ -13,11 +13,11 @@ Cho phép cài đặt, quản lý, và chạy addon từ Docker containers bên 
 - **Frontend core**: ApiAddonRoutes, external types, addon controller, AddonContext mở rộng ✅
 - **Module Federation** — `@module-federation/vite` (v1.15.4) installed, `externalAddonEntry.ts` dùng `@module-federation/runtime` (`registerRemotes` + `loadRemote`) ✅
 - **Redux slice** (`externalAddonsSlice`) + store registration ✅
-- **PackageCenter addon** — đã implement UI nhưng đang bị comment hết, chỉ còn placeholder ✅
+- **PackageCenter addon** — đã implement UI với Rail+Grid+Card (All/Installed/Updated tabs) ✅
 - **Docker dev/prod setup** — Dockerfile.dev (node:22-alpine), Dockerfile.prod (multi-stage), docker-compose.yml (desktop-dev + desktop-prod) ✅
 - **namorix-weave** — external addon mẫu tại `~/namorix-weave/`, federation mount Hello World trên desktop đã hoạt động ✅
 - **`@namorix/core`** — thiếu 4 transitive deps trong `package.json`: `react-dom`, `react-redux`, `@reduxjs/toolkit`, `@microsoft/signalr`. Cần bổ sung. ✅
-- **Chưa có:** SSE stream, OAuth2 private_key_jwt full implementation, wire Redux ↔ addon registry, PackageCenter uncommented
+- **Chưa có:** SSE stream, OAuth2 private_key_jwt full implementation, catalog sync worker
 
 ---
 
@@ -476,6 +476,127 @@ function useAddonEvents() {
 
 ---
 
+## Phase 7 — Addon Catalog Sync
+
+### 7.1 Catalog Index
+
+**`catalog/addons.json`** (trong namorix repo) — index file lists tất cả addon có sẵn:
+
+```json
+{
+  "version": 1,
+  "ttl": 3600,
+  "addons": [
+    {
+      "id": "namorix-weave",
+      "manifestUrl": "https://raw.githubusercontent.com/Namorix/namorix-weave/main/addon.json"
+    }
+  ]
+}
+```
+
+- `version` — schema version của catalog index
+- `ttl` — cache TTL (giây), gợi ý backend cache trong DB
+- `addons[].id` — addon ID, phải match `id` trong remote manifest
+- `addons[].manifestUrl` — URL tới `addon.json` của từng addon
+
+Mỗi addon repo tự publish `addon.json` (validate bởi `addon-v1.json` schema). Catalog index chỉ chứa `id` + `manifestUrl`.
+
+### 7.2 Backend Model
+
+**`Namorix.Core/Models/AddonCatalogEntry.cs`** — DB model cache remote manifest:
+
+```csharp
+public class AddonCatalogEntry
+{
+    [Key, MaxLength(100)]
+    public string Id { get; init; } = string.Empty;
+
+    [MaxLength(100)] public string Name { get; set; } = string.Empty;
+    [MaxLength(250)] public string? Description { get; set; }
+    [MaxLength(500)] public string? Icon { get; set; }
+    [MaxLength(50)]  public string? Category { get; set; }
+    [MaxLength(200)] public string? Author { get; set; }
+    [MaxLength(500)] public string? Repo { get; set; }
+    [MaxLength(100)] public string? License { get; set; }
+
+    [MaxLength(500)] public string Image { get; set; } = string.Empty;
+    [MaxLength(100)] public string? ImageTag { get; set; }
+    public string? Arch { get; set; }               // JSON array serialized
+
+    public string? Ports { get; set; }               // JSON array serialized
+    public string? Volumes { get; set; }             // JSON array serialized
+
+    [MaxLength(50)] public string? MinCoreVersion { get; set; }
+    [MaxLength(50)] public string? MinServerVersion { get; set; }
+    [MaxLength(50)] public string? Boot { get; set; }
+
+    [MaxLength(1000)] public string ManifestUrl { get; init; } = string.Empty;
+    public DateTime CachedAt { get; set; }
+}
+```
+
+**JSON fields** (Ports, Volumes, Arch): dùng `string?` + `System.Text.Json` serialize/deserialize trong service.
+
+### 7.3 CatalogSyncWorker
+
+**`Namorix.Server/Workers/CatalogSyncWorker.cs`** — BackgroundService chạy định kỳ:
+
+```
+On startup + mỗi N phút (CatalogSyncInterval từ config)
+  └── GET catalog/addons.json từ configured URL
+        ├── Parse JSON Index (version, ttl, addons[])
+        ├── Check CachedAt trong DB
+        │     ├── cachedAt + ttl > now → skip (còn cache)
+        │     └── expired/chưa có → fetch manifestUrl
+        │           ├── GET addon.json
+        │           ├── Parse + validate basic fields
+        │           └── Upsert AddonCatalogEntry
+        └── Xóa entries không còn trong index
+```
+
+**Config** — mặc định trong `appsettings.json`:
+```json
+{
+  "AddonCatalog": {
+    "Url": "https://raw.githubusercontent.com/Namorix/namorix/main/catalog/addons.json",
+    "SyncIntervalMinutes": 60
+  }
+}
+```
+
+### 7.4 Catalog API
+
+Thêm endpoint trong AddonController:
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/addons/catalog` | Admin | Danh sách addon từ catalog cache |
+
+### 7.5 Frontend — PackageCenter "All" Tab
+
+Tab "All" trong PackageCenter merge 2 nguồn:
+1. **Catalog** (có sẵn để cài) — `GET /api/addons/catalog`
+2. **Installed** — `GET /api/addons` (existing)
+
+Card hiển thị:
+- **Chưa cài** (catalog-only): "Install" button, thông tin từ catalog (name, description, author)
+- **Đã cài** (installed): status badge, Start/Stop/Remove buttons
+
+### 7.6 Files
+
+| File | Role |
+|------|------|
+| `Namorix.Core/Models/AddonCatalogEntry.cs` | NEW: DB model |
+| `Namorix.Server/Workers/CatalogSyncWorker.cs` | NEW: BackgroundService |
+| `Namorix.Server/Services/CatalogService.cs` | NEW: Fetch + parse + cache logic |
+| `Namorix.Server/Persistence/AppDbContext.cs` | MODIFIED: Add DbSet |
+| `Namorix.Server/Controllers/AddonController.cs` | MODIFIED: Add GET catalog |
+| `Namorix.Server/Program.cs` | MODIFIED: DI + worker |
+| `catalog/addons.json` | NEW: Catalog index |
+
+---
+
 ## Files Changed/Added
 
 ### Backend (New) ✅
@@ -487,10 +608,13 @@ function useAddonEvents() {
 | `Namorix.Server/Controllers/AddonController.cs` | P1 ✅ |
 | `Namorix.Server/Controllers/OAuthController.cs` | P1 ✅ |
 | `Namorix.Server/Workers/DockerMonitorWorker.cs` | P1 ✅ |
+| `Namorix.Server/Workers/CatalogSyncWorker.cs` | P7 ⏳ |
+| `Namorix.Server/Services/CatalogService.cs` | P7 ⏳ |
 | `Namorix.Server/Middleware/OAuth2Middleware.cs` | P1 ✅ |
 | `Namorix.Core/Models/OAuthAuthorizationCode.cs` | P1 ✅ |
 | `Namorix.Core/Models/OAuthToken.cs` | P1 ✅ |
 | `Namorix.Core/Models/OAuthConsent.cs` | P1 ✅ |
+| `Namorix.Core/Models/AddonCatalogEntry.cs` | P7 ⏳ |
 | `Namorix.Core/Infrastructure/IAddonNotifier.cs` | P1 ✅ |
 | `Namorix.Server/Infrastructure/SignalRAddonNotifier.cs` | P1 ✅ |
 | `Namorix.Server/Constants/Addon.cs` | P1 ✅ |
@@ -499,8 +623,8 @@ function useAddonEvents() {
 ### Backend (Modified) ✅
 | File | Change |
 |------|--------|
-| `Namorix.Server/Persistence/AppDbContext.cs` | Add OAuth DbSets + OAuthConsent composite key |
-| `Namorix.Server/Program.cs` | DI: DockerService, AddonService, IAddonNotifier, DockerMonitorWorker; pipeline: UseOAuth2 |
+| `Namorix.Server/Persistence/AppDbContext.cs` | Add OAuth DbSets + OAuthConsent composite key, AddonCatalogEntry |
+| `Namorix.Server/Program.cs` | DI: DockerService, AddonService, IAddonNotifier, DockerMonitorWorker, CatalogSyncWorker, CatalogService; pipeline: UseOAuth2 |
 | `Namorix.Server/Extensions/ApplicationBuilderExtensions.cs` | Add UseOAuth2() |
 | `Namorix.Server/Namorix.Server.csproj` | Add Docker.DotNet package |
 | `Namorix.Core/Models/AddonManifest.cs` | Expand fields (Docker + OAuth2) |
@@ -516,12 +640,12 @@ function useAddonEvents() {
 |------|-------|
 | `src/controllers/addon.controller.ts` | P2 ✅ |
 | `src/store/slices/externalAddonsSlice.ts` | P4 ✅ |
-| `src/services/externalAddonEntry.ts` | P3 ✅ (federation runtime, dùng `@module-federation/runtime`) |
+| `src/services/externalAddonEntry.ts` | P3 ✅ (federation runtime) |
 | `src/hooks/useAddonEvents.ts` | P5 ✅ |
 | `src/store/selectors/externalAddonSelectors.ts` | P4 ✅ |
-| `Dockerfile.dev` | P6 ✅ (dev container) |
-| `Dockerfile.prod` | P6 ✅ (prod multi-stage) |
-| `docker-compose.yml` | P6 ✅ (desktop-dev + desktop-prod) |
+| `Dockerfile.dev` | P6 ✅ |
+| `Dockerfile.prod` | P6 ✅ |
+| `docker-compose.yml` | P6 ✅ |
 
 ### Frontend (Modified) ✅
 | File | Change |
@@ -530,9 +654,9 @@ function useAddonEvents() {
 | `src/store/selectors/index.ts` | Barrel export externalAddonSelectors ✅ |
 | `src/hooks/index.ts` | Barrel export useAddonEvents ✅ |
 | `src/pages/Desktop.tsx` | Mount useAddonEvents ✅ |
-| `src/addons/PackageCenter/PackageCenter.tsx` | Từ placeholder → full UI, nhưng đang bị comment hết |
+| `src/addons/PackageCenter/PackageCenter.tsx` | Từ placeholder → full UI ✅ |
 | `frontend/package.json` | Add @module-federation/vite dep, docker scripts ✅ |
-| `frontend/vite.config.ts` | Federation config cho shell, try/catch backend csproj read ✅ |
+| `frontend/vite.config.ts` | Federation config, csproj read fix ✅ |
 
 ---
 
@@ -577,11 +701,20 @@ Phase 6 (Integration)
   ├── namorix-weave addon mẫu (Hello World, standalone + desktop mount) ✅
   ├── namorix-weave Dockerfile + docker-compose + scripts (pnpm docker:prod) ✅
   ├── namorix-weave container labels (namorix-addon=true, namorix-addon-id, namorix-addon-name) ✅
-  ├── Xác định @namorix/core thiếu 4 transitive deps (react-dom, react-redux, @reduxjs/toolkit, @microsoft/signalr)
-  ├── PackageCenter: cần uncomment code + wire external addon vào registry
-  ├── handleRemove: đổi sang dispatch(removeAddon(id)) thay vì setAddons rebuild thủ công
+  ├── Xác định @namorix/core thiếu 4 transitive deps ✅
+  ├── PackageCenter: full UI với Rail+Grid+Card ✅
+  ├── handleRemove: dispatch(removeAddon(id)) ✅
   ├── Test OAuth2 flow
   └── Documentation + version bump ✅
+
+Phase 7 (Catalog Sync)
+  ├── 7.1 Catalog index JSON (catalog/addons.json) ✅
+  ├── 7.2 AddonCatalogEntry DB model
+  ├── 7.3 CatalogSyncWorker (BackgroundService)
+  ├── 7.4 CatalogService (fetch + parse + cache)
+  ├── 7.5 AppDbContext + DI wiring
+  ├── 7.6 GET /api/addons/catalog endpoint
+  └── 7.7 PackageCenter "All" tab merge catalog + installed
 ```
 
 ## Version Bumps
