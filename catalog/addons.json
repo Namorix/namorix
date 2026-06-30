@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "ttl": 3600,
+  "addons": [
+    {
+      "id": "namorix-weave",
+      "manifestUrl": "https://raw.githubusercontent.com/Namorix/namorix-weave/main/addon.json"
+    }
+  ]
+}
