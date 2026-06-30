@@ -91,3 +91,28 @@ export interface InstallAddonRequest {
   description?: string
   icon?: string
 }
+
+export interface AddonCatalogEntry {
+  id: string
+  name: string
+  description?: string
+  version: string
+  author?: string
+  category?: string
+  icon?: string
+  repo?: string
+  license?: string
+  image: string
+  imageTag?: string
+  arch?: string[]
+  ports?: {
+    container: number
+    protocol?: string
+    description?: string
+  }[]
+  boot?: string
+  minCoreVersion?: string
+  minServerVersion?: string
+  manifestUrl: string
+  cachedAt: string
+}

@@ -66,4 +66,6 @@ export const ApiAddonRoutes = {
   start: (id: string) => `${API_ADDON_BASE}/${id}/start`,
   stop: (id: string) => `${API_ADDON_BASE}/${id}/stop`,
   remove: (id: string) => `${API_ADDON_BASE}/${id}`,
+  listCatalog: `${API_ADDON_BASE}/catalog`,
+  syncCatalog: `${API_ADDON_BASE}/catalog/sync`,
 } as const
