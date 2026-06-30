@@ -1,0 +1,150 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/Namorix/namorix/catalog/schema/addon-v1.json",
+  "title": "Namorix Addon Manifest",
+  "description": "Manifest describing a Namorix addon (used to render the Package Center and to tell the Server how to deploy the container).",
+  "type": "object",
+  "required": ["id", "name", "version", "image"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "URL of this schema, used by editors for autocomplete/validation."
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$",
+      "description": "Unique addon identifier, lowercase with hyphens. Example: weave"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 40,
+      "description": "Display name shown in the Package Center and sidebar. Example: Weave"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 160,
+      "description": "Short description shown under the addon name in its card."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the addon. Example: 0.3.1"
+    },
+    "category": {
+      "type": "string",
+      "enum": ["net", "dev", "media", "system", "automation", "other"],
+      "default": "other",
+      "description": "Category used for sidebar filtering in the Package Center."
+    },
+    "icon": {
+      "type": "string",
+      "description": "Relative path to the icon file in the repo (e.g. assets/icon.svg), or an absolute URL."
+    },
+    "author": {
+      "type": "string",
+      "description": "Person or organization maintaining the addon."
+    },
+    "repo": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL of the repository containing the addon's source code."
+    },
+    "license": {
+      "type": "string",
+      "description": "Example: AGPL-3.0, MIT"
+    },
+
+    "image": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Docker image name, without tag. Example: ghcr.io/namorix/weave"
+    },
+    "imageTag": {
+      "type": "string",
+      "description": "Image tag for this release. Defaults to the value of version if not set."
+    },
+    "arch": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["amd64", "arm64"] },
+      "minItems": 1,
+      "default": ["amd64"],
+      "description": "CPU architectures supported by this addon."
+    },
+
+    "ports": {
+      "type": "array",
+      "description": "Ports exposed by the container.",
+      "items": {
+        "type": "object",
+        "required": ["container", "protocol"],
+        "additionalProperties": false,
+        "properties": {
+          "container": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 65535
+          },
+          "protocol": {
+            "type": "string",
+            "enum": ["tcp", "udp"]
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    },
+
+    "volumes": {
+      "type": "array",
+      "description": "Paths that need to be mounted for persistent data inside the container.",
+      "items": {
+        "type": "object",
+        "required": ["container"],
+        "additionalProperties": false,
+        "properties": {
+          "container": {
+            "type": "string",
+            "description": "Path inside the container. Example: /data"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    },
+
+    "options": {
+      "type": "object",
+      "description": "Default config values, keys must match the keys in schema.",
+      "additionalProperties": true
+    },
+    "schema": {
+      "type": "object",
+      "description": "Validation rule for each key in options, using a Hassio-style type syntax: str, str?, int(min,max), bool, port, password, list(a|b|c), url, email...",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+
+    "boot": {
+      "type": "string",
+      "enum": ["auto", "manual"],
+      "default": "manual",
+      "description": "Whether the addon should auto-start with Namorix."
+    },
+
+    "minNamorixVersion": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Minimum Namorix core version this addon is compatible with."
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp this manifest was last updated (ISO 8601)."
+    }
+  }
+}
