@@ -1,4 +1,4 @@
-import { ApiAddonRoutes, nmxHttp } from "@namorix/core"
+import { type AddonCatalogEntry, ApiAddonRoutes, nmxHttp } from "@namorix/core"
 
 export interface AddonManifestDto {
   id: string
@@ -56,5 +56,23 @@ export const addonController = {
   async remove(id: string) {
     const res = await nmxHttp.url(ApiAddonRoutes.remove(id)).delete().json()
     if (!res.success) throw new Error(res.error)
+  },
+
+  async getCatalog(): Promise<AddonCatalogEntry[]> {
+    const res = await nmxHttp
+      .url(ApiAddonRoutes.listCatalog)
+      .get()
+      .json<AddonCatalogEntry[]>()
+    if (!res.success) throw Error(res.error)
+    return res.data
+  },
+
+  async refreshCatalog(): Promise<AddonCatalogEntry[]> {
+    const res = await nmxHttp
+      .url(ApiAddonRoutes.syncCatalog)
+      .post()
+      .json<AddonCatalogEntry[]>()
+    if (!res.success) throw Error(res.error)
+    return res.data
   },
 }

@@ -305,8 +305,10 @@
     },
     "packageCenter": {
       "title": "Package Center",
-      "description": "Manage external addons and packages",
-      "searchPlaceholder": "Search apps...",
+      "description": "Manage external applications and packages",
+      "searchPlaceholder": "Search application...",
+      "loading": "Loading catalog...",
+      "empty": "No applications found",
       "tabs": {
         "all": "All",
         "installed": "Installed",
