@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://raw.githubusercontent.com/Namorix/namorix/catalog/schema/addon-v1.json",
+  "$id": "https://raw.githubusercontent.com/Namorix/namorix/refs/heads/main/catalog/schema/addon-v1.json",
   "title": "Namorix Addon Manifest",
   "description": "Manifest describing a Namorix addon (used to render the Package Center and to tell the Server how to deploy the container).",
   "type": "object",
