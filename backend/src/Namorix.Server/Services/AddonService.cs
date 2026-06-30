@@ -9,7 +9,7 @@ public class AddonService(AppDbContext appDbContext, DockerService dockerService
 {
     public async Task<List<AddonManifest>> GetInstalledAddonsAsync()
     {
-        return await appDbContext.AddonManifests.OrderBy(a => a.DisplayName).ToListAsync();
+        return await appDbContext.AddonManifests.OrderBy(a => a.Name).ToListAsync();
     }
 
     public async Task<AddonManifest> InstallAddonAsync(InstallRequest request)
@@ -44,7 +44,7 @@ public class AddonService(AppDbContext appDbContext, DockerService dockerService
         var manifest = new AddonManifest
         {
             Id = addonId,
-            DisplayName = request.DisplayName ?? addonId,
+            Name = request.Name ?? addonId,
             Description = request.Description,
             Icon = request.Icon,
             Image = request.Image,
@@ -112,7 +112,7 @@ public class InstallRequest
     public string Image { get; init; } = string.Empty;
     public int ContainerPort { get; init; } = 80;
     public int HostPort { get; init; }
-    public string? DisplayName { get; init; }
+    public string? Name { get; init; }
     public string? Description { get; init; }
     public string? Icon { get; init; }
     public string? Version { get; init; }

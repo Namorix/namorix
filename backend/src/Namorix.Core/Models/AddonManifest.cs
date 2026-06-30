@@ -5,8 +5,8 @@ namespace Namorix.Core.Models;
 public class AddonManifest
 {
     [MaxLength(100)] public string Id { get; init; } = string.Empty;
-    [MaxLength(100)] public string DisplayName { get; set; } = string.Empty;
-    [MaxLength(250)] public string? Description { get; init; }
+    [MaxLength(100)] public string Name { get; set; } = string.Empty;
+    [MaxLength(250)] public string? Description { get; set; }
     [MaxLength(500)] public string? Icon { get; init; }
     [MaxLength(200)] public string Image { get; init; } = string.Empty;
 
@@ -14,7 +14,7 @@ public class AddonManifest
 
     [MaxLength(20)] public string? Status { get; set; }   // installed|running|stopped|error
     [MaxLength(50)] public string? Version { get; init; }
-    [MaxLength(100)] public string? Author { get; init; }
+    [MaxLength(100)] public string? Author { get; set; }
 
     public DateTime InstalledAt { get; init; }
 

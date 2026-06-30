@@ -68,18 +68,25 @@ public class DockerMonitorWorker(
             if (!dbAddonIds.Contains(addonId))
             {
                 // Auto-discover
-                container.Labels.TryGetValue(AddonLabels.DisplayName, out var displayName);
+                container.Labels.TryGetValue(AddonLabels.Name, out var name);
+                container.Labels.TryGetValue(AddonLabels.Description, out var description);
+                container.Labels.TryGetValue(AddonLabels.Author, out var author);
+                
                 var hostPort = container.Ports?.FirstOrDefault()?.PublicPort ?? 0;
+                
                 db.AddonManifests.Add(new AddonManifest
                 {
                     Id = addonId,
-                    DisplayName = displayName ?? addonId,
+                    Name = name ?? addonId,
+                    Description = description,
+                    Author = author,
                     Image = container.Image ?? addonId,
                     HostPort = hostPort,
                     Status = container.State == DockerState.Running
                         ? AddonStatus.Running : AddonStatus.Stopped,
                     InstalledAt = DateTime.UtcNow,
                 });
+                
                 await notifier.NotifyAddonStatusChanged(addonId, AddonStatus.Running);
                 logger.LogInformation("Auto-discovered addon {Id}", addonId);
             }
@@ -116,8 +123,13 @@ public class DockerMonitorWorker(
             _ => AddonStatus.Stopped,
         };
 
-        if (container.Labels.TryGetValue(AddonLabels.DisplayName, out var name))
-            addon.DisplayName = name;
+        if (container.Labels.TryGetValue(AddonLabels.Name, out var name))
+            addon.Name = name;
+
+        if (container.Labels.TryGetValue(AddonLabels.Description, out var desc))
+            addon.Description = desc;
+        if (container.Labels.TryGetValue(AddonLabels.Author, out var author))
+            addon.Author = author;
         
         if (container.Ports?.FirstOrDefault()?.PublicPort is { } port and > 0)
             addon.HostPort = port;
