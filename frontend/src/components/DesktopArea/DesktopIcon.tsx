@@ -28,7 +28,7 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({ addon, onOpen }) => {
     >
       <NmxIconSvg symbol={addon.icon} className="nmx-desktop-area__icon" />
       <span className="nmx-desktop-area__label">
-        {resolveAddonLocaleTitle(t, addon) ?? addon.displayName}
+        {resolveAddonLocaleTitle(t, addon) ?? addon.name}
       </span>
     </button>
   )

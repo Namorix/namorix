@@ -60,7 +60,7 @@ export const LauncherView: React.FC<
               >
                 <NmxIconSvg symbol={item.icon} className="nmx-launcher__icon" />
                 <span className="nmx-launcher__label">
-                  {resolveAddonLocaleTitle(t, item) ?? item.displayName}
+                  {resolveAddonLocaleTitle(t, item) ?? item.name}
                 </span>
               </button>
             ))

@@ -7,7 +7,7 @@ registerAddon(
   defineAddon(
     {
       id: NmxAddonId.about,
-      displayName: "About",
+      name: "About",
       description:
         "View system information, version details, and legal notices",
       localeKey: NmxAddonLocaleKeys.about,

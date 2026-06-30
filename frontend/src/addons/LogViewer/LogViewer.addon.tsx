@@ -12,7 +12,7 @@ registerAddon(
   defineAddon(
     {
       id: NmxAddonId.logViewer,
-      displayName: "Logs Viewer",
+      name: "Logs Viewer",
       description:
         "View and filter system logs by severity level, source, and time range",
       localeKey: NmxAddonLocaleKeys.logViewer,

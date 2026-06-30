@@ -7,7 +7,7 @@ registerAddon(
   defineAddon(
     {
       id: NmxAddonId.systemMonitor,
-      displayName: "System Monitor",
+      name: "System Monitor",
       description:
         "Track system resource usage, performance metrics, and running processes",
       localeKey: NmxAddonLocaleKeys.systemMonitor,

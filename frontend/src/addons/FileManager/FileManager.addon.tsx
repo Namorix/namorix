@@ -7,7 +7,7 @@ registerAddon(
   defineAddon(
     {
       id: NmxAddonId.fileManager,
-      displayName: "File Manager",
+      name: "File Manager",
       description: "Browse and manage files and directories on the server",
       localeKey: NmxAddonLocaleKeys.fileManager,
       icon: NmxIconSvgSymbol.APP_FILE_MANAGER,

@@ -7,7 +7,7 @@ registerAddon(
   defineAddon(
     {
       id: NmxAddonId.packageCenter,
-      displayName: "Package Center",
+      name: "Package Center",
       description: "Manage external addons and packages",
       localeKey: NmxAddonLocaleKeys.packageCenter,
       icon: NmxIconSvgSymbol.APP_PACKAGE_CENTER,

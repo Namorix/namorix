@@ -84,7 +84,7 @@ export default defineConfig({
     //     : {
     //         react: { singleton: true, requiredVersion: "^19.0.0" },
     //         "react-dom": { singleton: true, requiredVersion: "^19.0.0" },
-    //         "@namorix/core": { singleton: true, requiredVersion: "^0.36.0" },
+    //         "@namorix/core": { singleton: true, requiredVersion: "^0.37.0" },
     //         "@namorix/ui": { singleton: true, requiredVersion: "^0.22.3" },
     //       },
     // }),

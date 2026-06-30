@@ -305,7 +305,13 @@
     },
     "packageCenter": {
       "title": "Package Center",
-      "description": "Manage external addons and packages"
+      "description": "Manage external addons and packages",
+      "searchPlaceholder": "Search apps...",
+      "tabs": {
+        "all": "All",
+        "installed": "Installed",
+        "updated": "Updated"
+      }
     }
   }
 }

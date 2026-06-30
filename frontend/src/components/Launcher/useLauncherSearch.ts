@@ -23,7 +23,7 @@ export const useLauncherSearch = (isOpen: boolean) => {
     }
 
     return all.filter((addon) => {
-      const title = resolveAddonLocaleTitle(t, addon) ?? addon.displayName
+      const title = resolveAddonLocaleTitle(t, addon) ?? addon.name
       return title.toLowerCase().includes(query.toLowerCase())
     })
   }, [query, t, user?.role])

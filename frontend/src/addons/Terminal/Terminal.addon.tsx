@@ -7,7 +7,7 @@ registerAddon(
   defineAddon(
     {
       id: NmxAddonId.terminal,
-      displayName: "Terminal",
+      name: "Terminal",
       description: "Command-line terminal with shell access",
       localeKey: NmxAddonLocaleKeys.terminal,
       icon: NmxIconSvgSymbol.APP_TERMINAL,

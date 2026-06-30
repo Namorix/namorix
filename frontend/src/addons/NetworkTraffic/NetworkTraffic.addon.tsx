@@ -12,7 +12,7 @@ registerAddon(
   defineAddon(
     {
       id: NmxAddonId.networkTraffic,
-      displayName: "Network Traffic",
+      name: "Network Traffic",
       description:
         "Monitor HTTP requests and network traffic with real-time filtering and analysis",
       localeKey: NmxAddonLocaleKeys.networkTraffic,

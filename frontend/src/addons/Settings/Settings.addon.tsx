@@ -7,7 +7,7 @@ registerAddon(
   defineAddon(
     {
       id: NmxAddonId.settings,
-      displayName: "Settings",
+      name: "Settings",
       description:
         "Configure appearance, system preferences, and account settings",
       localeKey: NmxAddonLocaleKeys.settings,

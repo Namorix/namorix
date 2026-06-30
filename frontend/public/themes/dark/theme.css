@@ -7,7 +7,7 @@
 
 @font-face {
   font-family: "icomoon";
-  src: url("/public/fonts/icomoon/fonts/icomoon.ttf?3hbcra") format("truetype"), url("/public/fonts/icomoon/fonts/icomoon.woff?3hbcra") format("woff"), url("/public/fonts/icomoon/fonts/icomoon.svg?3hbcra#icomoon") format("svg");
+  src: url("/public/fonts/icomoon/fonts/icomoon.ttf?ndgzjp") format("truetype"), url("/public/fonts/icomoon/fonts/icomoon.woff?ndgzjp") format("woff"), url("/public/fonts/icomoon/fonts/icomoon.svg?ndgzjp#icomoon") format("svg");
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -25,44 +25,8 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-.ic-ram:before {
-  content: "\e922";
-}
-.ic-time:before {
-  content: "\e923";
-}
-.ic-cpu:before {
-  content: "\e924";
-}
-.ic-arrow-bar-up:before {
-  content: "\e925";
-}
-.ic-arrow-bar-down:before {
-  content: "\e926";
-}
-.ic-delete:before {
-  content: "\e921";
-}
-.ic-filter:before {
-  content: "\e920";
-}
-.ic-mark-all:before {
-  content: "\e91f";
-}
-.ic-info:before {
-  content: "\e91e";
-}
-.ic-warning:before {
-  content: "\e91d";
-}
-.ic-density-spacious:before {
+.ic-apps:before {
   content: "\e916";
-}
-.ic-density-compact:before {
-  content: "\e91c";
-}
-.ic-density-default:before {
-  content: "\e91b";
 }
 .ic-link:before {
   content: "\e910";
@@ -2654,6 +2618,7 @@ textarea,
 }
 :root {
   --nmx-icon-logo: url("/icons/logo.svg");
+  --nmx-icon-app-unknown: url("/icons/app-unknown.svg");
   --nmx-icon-app-system: url("/icons/app-system.svg");
   --nmx-icon-app-about: url("/icons/app-about.svg");
   --nmx-icon-app-logs: url("/icons/app-logs.svg");
