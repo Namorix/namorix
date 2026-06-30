@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Namorix.Core.Models;
 
-public class AddonManifest
+public class AddonInstallation
 {
     [MaxLength(100)] public string Id { get; init; } = string.Empty;
     [MaxLength(100)] public string Name { get; set; } = string.Empty;

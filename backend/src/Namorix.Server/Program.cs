@@ -18,6 +18,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<AppConfig>(builder.Configuration);
 builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("Jwt"));
+builder.Services.Configure<AddonCatalogConfig>(builder.Configuration.GetSection("AddonCatalog"));
+
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -34,11 +36,18 @@ builder.Services.AddScoped<INotificationNotifier, SignalRNotificationNotifier<Ma
 builder.Services.AddScoped<ISystemMonitorNotifier, SignalRSystemMonitorNotifier>();
 builder.Services.AddScoped<IAddonNotifier, SignalRAddonNotifier>();
 
+builder.Services.AddHttpClient<CatalogService>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(15);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("Namorix/1.0");
+});
+
 builder.Services.AddNamorixCore<MainHub>(builder.Environment.IsDevelopment());
 builder.Services.AddHostedService<TokenCleanupWorker>();
 builder.Services.AddHostedService<NotificationCleanupWorker>();
 builder.Services.AddHostedService<SystemMonitorStatsWorker>();
 builder.Services.AddHostedService<DockerMonitorWorker>();
+builder.Services.AddHostedService<CatalogSyncWorker>();
 
 var app = builder.Build();
 

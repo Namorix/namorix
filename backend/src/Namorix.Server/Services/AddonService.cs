@@ -1,18 +1,20 @@
 using Microsoft.EntityFrameworkCore;
+using Namorix.Core.Config;
 using Namorix.Core.Models;
 using Namorix.Server.Constants;
+using Namorix.Server.Models;
 using Namorix.Server.Persistence;
 
 namespace Namorix.Server.Services;
 
 public class AddonService(AppDbContext appDbContext, DockerService dockerService)
 {
-    public async Task<List<AddonManifest>> GetInstalledAddonsAsync()
+    public async Task<List<AddonInstallation>> GetInstalledAddonsAsync()
     {
-        return await appDbContext.AddonManifests.OrderBy(a => a.Name).ToListAsync();
+        return await appDbContext.AddonInstallations.OrderBy(a => a.Name).ToListAsync();
     }
 
-    public async Task<AddonManifest> InstallAddonAsync(InstallRequest request)
+    public async Task<AddonInstallation> InstallAddonAsync(InstallRequest request)
     {
         var addonId = request.Image.Replace("/", "-").Replace(":", "-");
 
@@ -41,7 +43,7 @@ public class AddonService(AppDbContext appDbContext, DockerService dockerService
         await dockerService.StartContainerAsync(containerId);
 
         // Save to DB
-        var manifest = new AddonManifest
+        var manifest = new AddonInstallation
         {
             Id = addonId,
             Name = request.Name ?? addonId,
@@ -58,7 +60,7 @@ public class AddonService(AppDbContext appDbContext, DockerService dockerService
             RedirectUri = $"http://localhost:{request.HostPort}/oauth/callback",
         };
 
-        appDbContext.AddonManifests.Add(manifest);
+        appDbContext.AddonInstallations.Add(manifest);
         await appDbContext.SaveChangesAsync();
 
         return manifest;
@@ -66,20 +68,20 @@ public class AddonService(AppDbContext appDbContext, DockerService dockerService
 
     public async Task UninstallAddonAsync(string id)
     {
-        var addon = await appDbContext.AddonManifests.FindAsync(id)
+        var addon = await appDbContext.AddonInstallations.FindAsync(id)
             ?? throw new KeyNotFoundException($"Addon {id} not found");
 
         await dockerService.StopContainerAsync(id);
         await dockerService.RemoveContainerAsync(id);
 
-        appDbContext.AddonManifests.Remove(addon);
+        appDbContext.AddonInstallations.Remove(addon);
         await appDbContext.SaveChangesAsync();
     }
 
     public async Task StartAddonAsync(string id)
     {
         await dockerService.StartContainerAsync(id);
-        var addon = await appDbContext.AddonManifests.FindAsync(id);
+        var addon = await appDbContext.AddonInstallations.FindAsync(id);
         if (addon is not null)
         {
             addon.Status = AddonStatus.Running;
@@ -90,12 +92,31 @@ public class AddonService(AppDbContext appDbContext, DockerService dockerService
     public async Task StopAddonAsync(string id)
     {
         await dockerService.StopContainerAsync(id);
-        var addon = await appDbContext.AddonManifests.FindAsync(id);
+        var addon = await appDbContext.AddonInstallations.FindAsync(id);
         if (addon is not null)
         {
             addon.Status = AddonStatus.Stopped;
             await appDbContext.SaveChangesAsync();
         }
+    }
+    
+    public async Task<List<AddonCatalogEntry>> GetCatalogAsync()
+    {
+        return await appDbContext.AddonCatalogEntries
+            .Where(e => !e.IsOrphaned)
+            .OrderBy(e => e.Name)
+            .ToListAsync();
+    }
+    
+    public async Task<List<AddonCatalogEntry>> RefreshCatalogAsync(
+        CatalogService catalog, AddonCatalogConfig config)
+    {
+        await catalog.SyncCatalogAsync(
+            config.CatalogUrl, config.TtlSeconds, appDbContext, CancellationToken.None, true);
+        return await appDbContext.AddonCatalogEntries
+            .Where(e => !e.IsOrphaned)
+            .OrderBy(e => e.Name)
+            .ToListAsync();
     }
 
     private static (string publicKey, string privateKey) GenerateKeyPair()

@@ -14,4 +14,6 @@ public class AppConfig
 
     // Default false for development/testing (HTTP). Set to true in production (HTTPS).
     public bool SecureCookie { get; init; } = false;
+    
+    public AddonCatalogConfig AddonCatalog { get; init; } = new();
 }

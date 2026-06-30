@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using Namorix.Core.Config;
 using Namorix.Core.Models;
+using Namorix.Server.Models;
 
 namespace Namorix.Server.Persistence;
 
@@ -16,7 +17,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IOptions<AppCo
     public DbSet<Permission> Permissions { get; set; }
     public DbSet<UserPermission> UserPermissions { get; set; }
     public DbSet<ThemeManifest> ThemeManifests { get; set; }
-    public DbSet<AddonManifest> AddonManifests { get; set; }
+    public DbSet<AddonInstallation> AddonInstallations { get; set; }
+    public DbSet<AddonCatalogEntry> AddonCatalogEntries { get; set; }
     public DbSet<Notification> Notifications { get; set; }
     
     public DbSet<OAuthAuthorizationCode> OAuthAuthorizationCodes { get; set; }
@@ -53,7 +55,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IOptions<AppCo
             .HasIndex(t => t.Id)
             .IsUnique();
 
-        modelBuilder.Entity<AddonManifest>()
+        modelBuilder.Entity<AddonInstallation>()
+            .HasIndex(a => a.Id)
+            .IsUnique();
+        
+        modelBuilder.Entity<AddonCatalogEntry>()
             .HasIndex(a => a.Id)
             .IsUnique();
         

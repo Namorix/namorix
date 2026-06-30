@@ -8,7 +8,7 @@ public class OAuthService(AppDbContext db)
 {
     public async Task<string?> ValidateAuthorizationAsync(string clientId, string redirectUri)
     {
-        var addon = await db.AddonManifests.FirstOrDefaultAsync(a => a.ClientId == clientId);
+        var addon = await db.AddonInstallations.FirstOrDefaultAsync(a => a.ClientId == clientId);
         if (addon?.RedirectUri != redirectUri)
             return null;
         return addon.Id;
@@ -40,7 +40,7 @@ public class OAuthService(AppDbContext db)
             return null;
 
         // Verify client_assertion (JWT signed by addon's private key)
-        var addon = await db.AddonManifests.FirstOrDefaultAsync(a => a.ClientId == clientId);
+        var addon = await db.AddonInstallations.FirstOrDefaultAsync(a => a.ClientId == clientId);
         if (addon?.PublicKey is null)
             return null;
 

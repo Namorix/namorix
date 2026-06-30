@@ -59,7 +59,7 @@ public class DockerMonitorWorker(
         IList<ContainerListResponse> containers,
         CancellationToken ct)
     {
-        var dbAddons = await db.AddonManifests.ToListAsync(ct);
+        var dbAddons = await db.AddonInstallations.ToListAsync(ct);
         var dbAddonIds = dbAddons.Select(a => a.Id).ToHashSet();
         foreach (var container in containers)
         {
@@ -74,7 +74,7 @@ public class DockerMonitorWorker(
                 
                 var hostPort = container.Ports?.FirstOrDefault()?.PublicPort ?? 0;
                 
-                db.AddonManifests.Add(new AddonManifest
+                db.AddonInstallations.Add(new AddonInstallation
                 {
                     Id = addonId,
                     Name = name ?? addonId,
@@ -114,7 +114,7 @@ public class DockerMonitorWorker(
     private void SyncSingleAddon(
         ContainerListResponse container,
         string addonId,
-        List<AddonManifest> dbAddons)
+        List<AddonInstallation> dbAddons)
     {
         var addon = dbAddons.First(a => a.Id == addonId);
         var newStatus = container.State switch
@@ -200,7 +200,7 @@ public class DockerMonitorWorker(
         string status,
         CancellationToken ct)
     {
-        var addon = await db.AddonManifests.FindAsync([addonId], ct);
+        var addon = await db.AddonInstallations.FindAsync([addonId], ct);
         if (addon == null) return;
         addon.Status = status;
         await notifier.NotifyAddonStatusChanged(addonId, status);
