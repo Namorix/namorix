@@ -1,11 +1,15 @@
 .nmx-icon-svg {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background-image: var(--nmx-icon-src);
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
   width: 1em;
   height: 1em;
+  object-fit: contain;
+
+  &.symbol {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-image: var(--nmx-icon-src);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
 }

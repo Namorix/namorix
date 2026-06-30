@@ -539,7 +539,7 @@ textarea,
   background: var(--nmx-color-surface-low);
   border-radius: var(--nmx-radius-md);
   padding: var(--nmx-spacing-3xl);
-  box-shadow: var(--nmx-shadow-md);
+  box-shadow: var(--nmx-shadow-sm);
 }
 .nmx-card__content {
   width: 100%;
@@ -884,6 +884,11 @@ textarea,
   --nmx-icon-box-text: var(--nmx-color-success);
 }
 .nmx-icon-svg {
+  width: 1em;
+  height: 1em;
+  object-fit: contain;
+}
+.nmx-icon-svg.symbol {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -891,8 +896,6 @@ textarea,
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-  width: 1em;
-  height: 1em;
 }
 .nmx-meta-list {
   display: grid;

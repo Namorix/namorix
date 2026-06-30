@@ -7,6 +7,19 @@
     padding: var(--nmx-spacing-md);
   }
 
+  &__loading,
+  &__empty {
+    display: flex;
+    justify-content: center;
+    font-size: var(--nmx-font-size-md);
+    font-style: italic;
+    color: var(--nmx-color-on-surface);
+  }
+
+  &__empty {
+    color: var(--nmx-color-warning);
+  }
+
   &__card {
     padding: var(--nmx-spacing-xl);
   }
@@ -26,8 +39,11 @@
   }
 
   &__card-title {
-    font-size: var(--nmx-font-size-xl);
+    font-size: var(--nmx-font-size-md);
     margin: var(--nmx-spacing-xs) 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
   }
 
   &__card-description {
