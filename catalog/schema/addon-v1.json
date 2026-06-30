@@ -136,15 +136,15 @@
       "description": "Whether the addon should auto-start with Namorix."
     },
 
-    "minNamorixVersion": {
+    "minCoreVersion": {
       "type": "string",
       "pattern": "^\\d+\\.\\d+\\.\\d+$",
-      "description": "Minimum Namorix core version this addon is compatible with."
+      "description": "Minimum @namorix/core (npm) version this addon requires."
     },
-    "updatedAt": {
+    "minServerVersion": {
       "type": "string",
-      "format": "date-time",
-      "description": "Timestamp this manifest was last updated (ISO 8601)."
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Minimum Namorix.Server (backend) version this addon requires."
     }
   }
 }
