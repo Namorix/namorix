@@ -24,7 +24,7 @@ export const NmxGrid: React.FC<NmxGridProps> = ({
   const gridCols =
     cols === "auto"
       ? `repeat(auto-fit, minmax(${minColWidth}px, 1fr))`
-      : `repeat(${cols}, 1fr)`
+      : `repeat(auto-fill, minmax(max(${minColWidth}px, calc(${(100 / cols).toFixed(2)}% - var(--nmx-grid-spacing, 0px))), 1fr))`
 
   return (
     <div
