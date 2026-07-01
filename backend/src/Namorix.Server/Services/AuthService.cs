@@ -265,11 +265,11 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig,
 
     public async Task RevokeAllUserTokens(int userId)
     {
-        var tokens = await dbContext.RefreshTokens
-            .Where(rt => rt.UserId == userId).ToListAsync();
-        logger.LogWarning("Revoking {Count} tokens for userId={UserId}", tokens.Count, userId);
-        dbContext.RefreshTokens.RemoveRange(tokens);
-        await dbContext.SaveChangesAsync();
+        var count = await dbContext.RefreshTokens
+            .Where(rt => rt.UserId == userId)
+            .ExecuteDeleteAsync();
+
+        logger.LogWarning("Revoked {Count} tokens for userId={UserId}", count, userId);
     }
 
     public async Task<(User user, string accessToken, string refreshToken)> LoginWithTokens(
