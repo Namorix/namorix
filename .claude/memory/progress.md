@@ -135,12 +135,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.49.0 | M4 (PackageCenter AddonGrid, catalog+installed merge, NmxGrid cols fix) |
+| frontend | 0.49.1 | M4 (AddonGrid wrapping fix) |
 | @namorix/core | 0.38.0 | M4 (AddonCatalogEntry type, catalog API routes, NmxIconSvg src prop) |
-| @namorix/styles | 0.33.0 | M4 (NmxIconSvg external URL icon support, package-center SCSS updates) |
-| @namorix/ui | 0.24.0 | M4 (NmxIconSvg src prop, NmxGrid cols fix) |
+| @namorix/styles | 0.33.1 | M4 (icon-svg SCSS tweaks, package-center AddonGrid layout) |
+| @namorix/ui | 0.24.1 | M4 (NmxGrid wrap fix) |
 | Namorix.Core | 0.40.0 | M4 (AddonCatalogConfig, Catalog models) |
-| Namorix.Server | 0.42.0 | M4 (CatalogSyncWorker, CatalogService, catalog endpoints, AddonManifest→AddonInstallation) |
+| Namorix.Server | 0.42.1 | M4 (AuthService ExecuteDeleteAsync concurrency fix) |
 
 ## Version Rules
 
@@ -228,5 +228,6 @@
 - frontend 0.44.3 → 0.44.4: DesktopIcon.tsx minor fix.
 
 Xem chi tiết tại:
+- [versionHistory-07-2026.md](versionHistory-07-2026.md) — July 2026
 - [versionHistory-06-2026.md](versionHistory-06-2026.md) — June 2026
 - [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md) — May 2026

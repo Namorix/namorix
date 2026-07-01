@@ -40,6 +40,12 @@ Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và 
 - Styles: icon-svg.scss `.symbol` class with background-image support. Theme CSS rebuilt.
 - Frontend: AddonGrid component (catalog+installed merge). PackageCenter catalog tab + refresh button. Catalog loading/empty i18n keys.
 
+### 2026-07-01 — AuthService ExecuteDeleteAsync concurrency fix, NmxGrid wrapping fix
+- Backend: AuthService `RevokeAllUserTokens` refactored to `ExecuteDeleteAsync` — eliminates `DbUpdateConcurrencyException` khi concurrent revoke (fingerprint mismatch race condition).
+- UI: NmxGrid dùng `repeat(auto-fill, minmax(...))` thay `repeat(N, 1fr)` khi có `minColWidth` — items wrap đúng khi container hẹp.
+- Styles: icon-svg.scss, package-center.scss tweaks. Theme CSS rebuilt.
+- Frontend: AddonGrid wrapping fix.
+
 ### 2026-06-21 — M4 External Addon System Phase 1-4
 - Backend: Docker integration (DockerService, AddonService, DockerMonitorWorker, SignalRAddonNotifier). OAuth2 full flow (models, service, controller, middleware). Addon REST API. New migration with OAuth tables.
 - Core: External addon types (ExternalAddonManifest, AddonContainerStatus, InstallAddonRequest), API routes.
