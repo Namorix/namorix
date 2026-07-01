@@ -186,7 +186,7 @@ export const AddonGrid: React.FC = () => {
             <p>{t("addon.packageCenter.empty")}</p>
           </div>
         ) : (
-          <NmxGrid cols={3}>
+          <NmxGrid cols={3} minColWidth={220}>
             {displayAddons.map((addon) => (
               <NmxCard
                 key={addon.id}
