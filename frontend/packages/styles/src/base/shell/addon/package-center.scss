@@ -52,6 +52,18 @@
   }
 
   &__card-body {
+    font-size: var(--nmx-font-size-sm);
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+    min-height: calc(1.4em * 2);
+  }
+
+  &__card-body {
     color: var(--nmx-color-on-surface);
     margin-top: var(--nmx-spacing-md);
     font-size: var(--nmx-font-size-sm);

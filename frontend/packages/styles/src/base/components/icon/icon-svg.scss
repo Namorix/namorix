@@ -1,6 +1,8 @@
 .nmx-icon-svg {
   width: 1em;
   height: 1em;
+  min-width: 0;
+  min-height: 0;
   object-fit: contain;
 
   &.symbol {
