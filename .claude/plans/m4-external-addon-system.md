@@ -685,14 +685,17 @@ Phase 3 (Mount Strategy — Module Federation) ✅
   ├── 3.3 Fix: remoteEntry.js thay vì mf-manifest.json ✅
   └── 3.4 namorix-weave: federation mount Hello World trên desktop đã hoạt động ✅
 
-Phase 4 (PackageCenter UI) ☑️ (code cũ bị comment)
+Phase 4 (PackageCenter UI) ✅
   ├── 4.1 Redux slice ✅
-  ├── 4.2 PackageCenter component (danh sách, install form, start/stop/remove) ⏸️ (bị comment)
-  └── 4.3 SCSS styles ✅
+  ├── 4.2 PackageCenter component (danh sách, install form, start/stop/remove) ✅
+  ├── 4.3 AddonGrid stats bar (total/running/stopped), optimistic pending, installed-first sort ✅
+  └── 4.4 SCSS styles ✅
 
 Phase 5 (SignalR Events) ✅
   ├── 5.1 Backend hub methods (addon:status-changed qua SignalRAddonNotifier) ✅
-  └── 5.2 Frontend useAddonEvents hook ✅
+  ├── 5.2 Frontend AddonEventWatcher (globalComponent, active) ✅
+  ├── 5.3 useSignalREvent deferred registration (addStatusHandler/removeStatusHandler) ✅
+  └── 5.4 Removed dead useAddonEvents hook ✅
 
 Phase 6 (Integration)
   ├── Wire up DI + store ✅
@@ -716,6 +719,33 @@ Phase 7 (Catalog Sync)
   ├── 7.6 GET /api/addons/catalog endpoint
   └── 7.7 PackageCenter "All" tab merge catalog + installed
 ```
+
+## PendingTaskPhase — Addons Task Invariant
+
+Thêm field `PendingTaskPhase` vào `AddonInstallation`, đồng bộ lifecycle với `PendingTaskId`.
+
+### Rationale
+
+`PendingTaskId` chỉ biết "có task đang chạy" nhưng không biết "đang làm gì". `PendingTaskPhase` bổ sung phase (installing/starting/stopping/...). Quan trọng: 2 field này phải luôn **set cùng lúc, clear cùng lúc** — không được lệch pha.
+
+### Các file cần sửa
+
+| File | Change |
+|------|--------|
+| `Namorix.Core/Models/AddonInstallation.cs:20` | Thêm `[MaxLength(20)] public string? PendingTaskPhase` |
+| `Namorix.Server/Constants/Addon.cs:17-22` | Thêm `Installing`, `Updating`, `Pulling` constants |
+| Migration: `AddPendingTaskPhase` | `AddColumn<string>("PendingTaskPhase", maxLength: 20)` |
+| `Namorix.Server/Services/AddonService.cs:35-42` | `SetTaskPending`: thêm `.SetProperty(a => a.PendingTaskPhase, status)` |
+| `Namorix.Server/Services/AddonTaskExecutor.cs:98-118` | `SetStatusAsync`: thêm `.SetProperty(a => a.PendingTaskPhase, (string?)null)` ở cả 2 nhánh |
+| `Namorix.Server/Services/AddonTaskQueue.cs:60-79` | `SetErrorStatusAsync`: thêm `.SetProperty(a => a.PendingTaskPhase, null as string)` |
+| `Namorix.Server/Workers/DockerMonitorWorker.cs:55-60` | `SyncAllContainersAsync`: thêm `.SetProperty(a => a.PendingTaskPhase, null as string)` |
+
+### Invariant rule
+
+**Set:** `PendingTaskId` + `PendingTaskPhase` luôn set cùng nhau (trong cùng `ExecuteUpdateAsync`).
+**Clear:** Cả 2 luôn clear cùng nhau (null đồng thời). Không clear 1 trong 2.
+
+---
 
 ## Version Bumps
 

@@ -423,14 +423,14 @@ On disconnect
 | `system:config-changed` | Server → Client | `{ key: string }` | useAppearanceSync |
 | `user:settings-changed` | Server → Client | `{ userId: number }` | useAppearanceSync (re-fetch user settings) |
 | `user:theme-changed` | Server → Client | `{ themeId: string }` | (planned) |
-| `addon:status-changed` | Server → Client | `{ addonId: string, status: string }` | PackageCenter AddonEventWatcher (global) |
+| `addon:status-changed` | Server → Client | `AddonStatusPayload` (`{ addonId: string, status: AddonContainerStatus }`) | PackageCenter AddonEventWatcher (global) |
 
 ### Hooks
 
 | Hook | Usage |
 |------|-------|
 | `useSignalR(enabled)` | Mount/unmount connection lifecycle |
-| `useSignalREvent<T>(event, handler)` | Subscribe event with cleanup (useRef handler, `[eventName]` deps) |
+| `useSignalREvent<T>(event, handler)` | Subscribe event with cleanup. If connection not ready, defers via `addStatusHandler`/`removeStatusHandler`. useRef handler, `[eventName]` deps. |
 | `useSignalRGroup(group)` | Join/leave group with reconnect handler |
 | `useServerSignalREvent(event, handler)` | Typed wrapper for ServerSignalREvent |
 | `useServerSignalRGroup(group)` | Typed wrapper for ServerSignalRGroups |

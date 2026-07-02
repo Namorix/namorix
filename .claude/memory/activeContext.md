@@ -46,6 +46,13 @@ Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và 
 - Styles: icon-svg.scss, package-center.scss tweaks. Theme CSS rebuilt.
 - Frontend: AddonGrid wrapping fix.
 
+### 2026-07-02 (2) — AddonTaskExecutor full impl, useSignalREvent deferred registration, AddonGrid stats/optimistic pending
+- Core: `AddonStatusPayload` type, `"starting"` in `AddonContainerStatus` union. `useSignalREvent` deferred registration via `addStatusHandler`/`removeStatusHandler` (registers callback when connection not ready).
+- Backend: `AddonTaskPending` extracted constants. `AddonTaskExecutor` full impl — `StartAsync`/`StopAsync`/`UninstallAsync` with Docker calls + `SetStatusAsync` + `IAddonNotifier`. Controller `SetTaskPending` calls with typed constants.
+- Frontend: AddonGrid stats bar (total/running/stopped), handleStart optimistic pending with error rollback, installed-first sort, updated tab filters by `hasUpdate`. `AddonEventWatcher` uses `AddonStatusPayload`, `useServerSignalREvent` uncommented (now active). Removed dead `useAddonEvents` hook + Desktop import.
+- Styles: `package-center.scss` — `__stats` block, rail `flex: 1`.
+- Versions: core 0.40.0, styles 0.35.0, frontend 0.51.0, Namorix.Server 0.44.0.
+
 ### 2026-07-02 — Backend task queue, SignalR event fix, global addon events, AddonGrid refactor
 - Core: New modules (`error.ts`, `markup.ts`, `semver.ts`). `AddonModule.globalComponent` field. `defineAddon` accepts `globalComponent` param. `useSignalREvent` useRef fix — handler deps `[eventName]` only. `signalr.service.ts` — `intentionalStop` flag, `hasBeenConnected` reset. `ApiError.fromResponse` fallback `data.error ?? data.code`.
 - Backend: New AddonTask model + AddonTaskQueue (Channel-based) + AddonTaskExecutor (max 2 concurrent). New migration `AddTaskFields`. `SetTaskPending` sets both `PendingTaskId` and `Status`. DockerMonitorWorker startup sync clears stale `PendingTaskId`. Removed dead methods from AddonService.

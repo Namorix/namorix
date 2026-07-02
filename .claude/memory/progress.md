@@ -135,12 +135,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.50.0 | M4 (Global addon events, AddonGrid refactor, AddonEventWatcher) |
-| @namorix/core | 0.39.0 | M4 (globalComponent field, new utils modules, signalr bug fixes) |
-| @namorix/styles | 0.34.0 | M4 (NmxSpinner SCSS, new icomoon icons, package-center SCSS) |
+| frontend | 0.51.0 | M4 (AddonGrid stats/optimistic pending, AddonEventWatcher active, i18n status keys) |
+| @namorix/core | 0.40.0 | M4 (AddonStatusPayload, starting status, deferred SignalR registration) |
+| @namorix/styles | 0.35.0 | M4 (package-center stats block, rail flex fix) |
 | @namorix/ui | 0.25.0 | M4 (NmxSpinner, NmxLoadingOverlay rename) |
 | Namorix.Core | 0.41.0 | M4 (New error codes, AddonInstallation fields, extensions refactor) |
-| Namorix.Server | 0.43.0 | M4 (AddonTask queue/executor, new migration, server signalr event) |
+| Namorix.Server | 0.44.0 | M4 (AddonTaskExecutor full impl, AddonTaskPending constants, SetTaskPending) |
 
 ## Version Rules
 
@@ -176,6 +176,13 @@
 - frontend 0.49.1 → 0.50.0: NEW: `PackageCenter/AddonEventWatcher.tsx` — global SignalR handler for addon status. `PackageCenter/addonError.ts`. `constants/` directory. MODIFIED: `Root.tsx` — global addon component mounting. `App.tsx` — unauthorized handler: `setHasBeenConnected(false)`, `stopConnection()`, navigate login. `registry.ts` — `listGlobalComponents()`. `PackageCenter/PackageCenter.addon.tsx` — passes `AddonEventWatcher` as `globalComponent`. `PackageCenter/AddonGrid.tsx` — 307-line refactor. `controllers/addon.controller.ts` — addon API changes. `hooks/useAddonEvents.ts` — updated. `i18n/locales/en.json` — new addon i18n keys (24 lines). `utils/notification.ts` — cleanup.
 - Namorix.Core 0.40.0 → 0.41.0: MODIFIED: `Constants/Error.cs` — new error codes. `Controllers/LogController.cs` — changes. `Extensions/ApplicationBuilderExtensions.cs` — refactored. `Models/AddonInstallation.cs` — new fields (`PendingTaskId`, `LastStatusChangedAt`). `Services/TrafficMonitorService.cs` — changes.
 - Namorix.Server 0.42.1 → 0.43.0: NEW: `Models/AddonTask.cs`. `Services/AddonTaskExecutor.cs` — async task executor with concurrent worker limit. `Services/AddonTaskQueue.cs` — Channel-based async queue. `Migrations/20260702075451_AddTaskFields.*` — new migration. MODIFIED: `Constants/Addon.cs` — new constants. `Constants/ServerSignalR.cs` — `AddonStatusChanged` event. `Controllers/AddonController.cs` — task enqueue endpoints, `SetTaskPending` with status. `Extensions/ApplicationBuilderExtensions.cs` — DI registration for task services. `Middleware/OAuth2Middleware.cs` — fixes. `Program.cs` — DI setup. `Services/DockerService.cs` — DockerClient extensions. `Services/AddonService.cs` — removed dead methods (Install/Uninstall/Start/Stop). `Workers/DockerMonitorWorker.cs` — startup PendingTaskId cleanup in `SyncAllContainersAsync`.
+
+### 2026-07-02 (2) — AddonTaskExecutor full impl, useSignalREvent deferred registration, AddonGrid stats/optimistic pending
+
+- @namorix/core 0.39.0 → 0.40.0: MODIFIED: `addon/types.ts` — new `AddonStatusPayload` interface, `"starting"` added to `AddonContainerStatus` union. `signalr/useSignalREvent.ts` — deferred registration via `addStatusHandler`/`removeStatusHandler` when connection not ready; removed console.log.
+- @namorix/styles 0.34.0 → 0.35.0: MODIFIED: `package-center.scss` — `__stats` block (centered summary text), `flex: 1` on rail, smaller placeholder font.
+- frontend 0.50.0 → 0.51.0: MODIFIED: `PackageCenter/AddonGrid.tsx` — stats bar (total/running/stopped), handleStart returns Promise with optimistic pending state, installed-first alphabetical sort, updated tab filters by `hasUpdate`, uninstall action rename. MODIFIED: `PackageCenter/AddonEventWatcher.tsx` — uses `AddonStatusPayload`, removed console.log, `useServerSignalREvent` uncommented (now active). REMOVED: `hooks/useAddonEvents.ts` (dead commented code). MODIFIED: `pages/Desktop.tsx` — removed `useAddonEvents` call. MODIFIED: `store/slices/externalAddonsSlice.ts` — `AddonStatusPayload` type for `updateAddonStatus`. MODIFIED: `i18n/locales/en.json` — new `stats` key, `starting`/`stopping` tab labels.
+- Namorix.Server 0.43.0 → 0.44.0: MODIFIED: `Constants/Addon.cs` — extracted `AddonTaskPending` class from `AddonStatus`. MODIFIED: `Services/AddonTaskExecutor.cs` — `StartAsync`/`StopAsync`/`UninstallAsync` full implementation with Docker calls + `SetStatusAsync` with `ExecuteUpdateAsync` (clears `PendingTaskId`). MODIFIED: `Controllers/AddonController.cs` — `SetTaskPending` calls with `AddonTaskPending.{Starting,Stopping,Uninstalling}`. `AddonStatus.Uninstalling` → `AddonTaskPending.Uninstalling`.
 
 ### 2026-06-30 — displayName→name refactor, PackageCenter, Description/Author labels
 
