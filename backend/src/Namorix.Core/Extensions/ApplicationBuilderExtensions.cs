@@ -7,53 +7,52 @@ namespace Namorix.Core.Extensions;
 
 public static class ApplicationBuilderExtensions
 {
-    public static IApplicationBuilder UseNamorixCore(
-        this IApplicationBuilder app,
-        Action<IApplicationBuilder>? configurePipeline = null)
+    extension(IApplicationBuilder app)
     {
-        return app.UseNamorixCore<NmxHub>(configurePipeline);
-    }
-    
-    public static IApplicationBuilder UseNamorixCore<THub>(
-        this IApplicationBuilder app,
-        Action<IApplicationBuilder>? configurePipeline = null) where THub : NmxHub
-    {
-        app.UseApiErrorHandling();
-        app.UseSecurityHeaders();
-    
-        configurePipeline?.Invoke(app); // CORS → Auth → TrustedProxy
-    
-        app.UseNotFoundHandler();
-        app.UseCsrfProtection();
-        app.UseRouting();
-        app.UseRateLimiter();
-        app.UseEndpoints(endpoints =>
+        public IApplicationBuilder UseNamorixCore(Action<IApplicationBuilder>? configurePipeline = null)
         {
-            endpoints.MapControllers();
-            endpoints.MapHub<THub>(SignalRPath.HubMain);
-        });
+            return app.UseNamorixCore<NmxHub>(configurePipeline);
+        }
+
+        public IApplicationBuilder UseNamorixCore<THub>(Action<IApplicationBuilder>? configurePipeline = null) where THub : NmxHub
+        {
+            app.UseApiErrorHandling();
+            app.UseSecurityHeaders();
     
-        return app;
-    }
+            configurePipeline?.Invoke(app); // CORS → Auth → TrustedProxy
+    
+            app.UseNotFoundHandler();
+            app.UseCsrfProtection();
+            app.UseRouting();
+            app.UseRateLimiter();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapHub<THub>(SignalRPath.HubMain);
+            });
+    
+            return app;
+        }
 
-    private static void UseApiErrorHandling(this IApplicationBuilder applicationBuilder)
-    {
-        applicationBuilder.UseMiddleware<ExceptionMiddleware>();
-        applicationBuilder.UseMiddleware<JsonErrorMiddleware>();
-    }
+        private void UseApiErrorHandling()
+        {
+            app.UseMiddleware<ExceptionMiddleware>();
+            app.UseMiddleware<JsonErrorMiddleware>();
+        }
 
-    private static void UseCsrfProtection(this IApplicationBuilder applicationBuilder)
-    {
-        applicationBuilder.UseMiddleware<CsrfMiddleware>();
-    }
+        private void UseCsrfProtection()
+        {
+            app.UseMiddleware<CsrfMiddleware>();
+        }
 
-    private static void UseSecurityHeaders(this IApplicationBuilder applicationBuilder)
-    {
-        applicationBuilder.UseMiddleware<SecurityHeadersMiddleware>();
-    }
+        private void UseSecurityHeaders()
+        {
+            app.UseMiddleware<SecurityHeadersMiddleware>();
+        }
 
-    private static void UseNotFoundHandler(this IApplicationBuilder applicationBuilder)
-    {
-        applicationBuilder.UseMiddleware<NotFoundMiddleware>();
+        private void UseNotFoundHandler()
+        {
+            app.UseMiddleware<NotFoundMiddleware>();
+        }
     }
 }

@@ -10,4 +10,5 @@ public static class ServerSignalREvent
 {
     public const string SystemMonitorStatsUpdate = $"{ServerSignalRGroups.SystemMonitor}:stats-update";
     public const string AddonStatusChanged = $"{ServerSignalRGroups.Addon}:status-changed";
+
 }

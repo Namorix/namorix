@@ -8,7 +8,7 @@ namespace Namorix.Core.Services;
 public class TrafficMonitorService(IFlatFileStore flatFileStore, DataDirectory dataDir)
 {
     private HourlyBucket[] _buckets = new HourlyBucket[24];
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
     private long _totalRequests;
     private long _errorCount;
     private double _avgDurationMs;

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Namorix.Core.FlatFile;
 using Namorix.Core.Middleware;
+using Namorix.Core.Responses;
 using Namorix.Core.Services;
 
 namespace Namorix.Core.Controllers;
@@ -32,7 +33,7 @@ public class LogController(LogService logService) : ControllerBase
         await foreach (var e in logService.QueryAsync(filter))
             entries.Add(e);
         var total = await logService.CountAsync(filter);
-        return Ok(new { success = true, data = new { entries, total } });
+        return Ok(ApiResponse.Ok(new { entries, total }));
     }
 }
 

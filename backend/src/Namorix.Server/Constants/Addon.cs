@@ -2,10 +2,12 @@ namespace Namorix.Server.Constants;
 
 public static class AddonStatus
 {
+    public const string Installing = "installing";
     public const string Installed = "installed";
     public const string Running = "running";
     public const string Stopped = "stopped";
     public const string Error = "error";
+    public const string Uninstalling = "uninstalling";
 }
 
 public static class AddonLabels

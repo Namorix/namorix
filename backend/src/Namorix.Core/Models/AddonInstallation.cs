@@ -16,6 +16,10 @@ public class AddonInstallation
     [MaxLength(50)] public string? Version { get; init; }
     [MaxLength(100)] public string? Author { get; set; }
 
+    [MaxLength(100)] public string? PendingTaskId { get; set; }
+    [MaxLength(500)] public string? LastErrorMessage { get; set; }
+
+    public DateTime? LastStatusChangedAt { get; set; }
     public DateTime InstalledAt { get; init; }
 
     [MaxLength(100)] public string? ClientId { get; set; }

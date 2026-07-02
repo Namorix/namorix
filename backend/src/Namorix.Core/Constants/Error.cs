@@ -44,3 +44,10 @@ public static class MiddlewareErrorCodes
     public const string RateLimitExceeded = "RATE_LIMIT_EXCEEDED";
     public const string UntrustedProxy = "UNTRUSTED_PROXY";
 }
+
+public static class AddonErrors
+{
+    public const string NotFound = "ADDON_NOT_FOUND";
+    public const string ContainerNotFound = "CONTAINER_NOT_FOUND";
+    public const string InstallFailed = "INSTALL_FAILED";
+}

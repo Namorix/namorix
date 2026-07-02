@@ -6,18 +6,21 @@ namespace Namorix.Server.Extensions;
 public static class ApplicationBuilderExtensions
 {
 
-     public static void UseTrustedProxy(this IApplicationBuilder applicationBuilder)
+     extension(IApplicationBuilder applicationBuilder)
      {
-         applicationBuilder.UseMiddleware<TrustedProxyMiddleware>();
-     }
+         public void UseTrustedProxy()
+         {
+             applicationBuilder.UseMiddleware<TrustedProxyMiddleware>();
+         }
 
-     public static void UseAuth(this IApplicationBuilder applicationBuilder)
-     {
-         applicationBuilder.UseMiddleware<AuthMiddleware>();
-     }
+         public void UseAuth()
+         {
+             applicationBuilder.UseMiddleware<AuthMiddleware>();
+         }
 
-     public static void UseOAuth2(this IApplicationBuilder app)
-     {
-         app.UseMiddleware<OAuth2Middleware>();
+         public void UseOAuth2()
+         {
+             applicationBuilder.UseMiddleware<OAuth2Middleware>();
+         }
      }
 }

@@ -17,12 +17,11 @@ public class OAuth2Middleware(RequestDelegate next)
 
             if (token is not null && !token.Revoked && token.ExpiresAt > DateTime.UtcNow)
             {
-                var identity = new ClaimsIdentity(new[]
-                {
+                var identity = new ClaimsIdentity([
                     new Claim(ClaimTypes.NameIdentifier, token.ClientId),
                     new Claim("client_id", token.ClientId),
-                    new Claim("user_id", token.UserId.ToString()),
-                }, "oauth2");
+                    new Claim("user_id", token.UserId.ToString())
+                ], "oauth2");
                 context.User = new ClaimsPrincipal(identity);
             }
         }

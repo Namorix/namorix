@@ -51,6 +51,12 @@ public class DockerMonitorWorker(
         var notifier = scope.ServiceProvider.GetRequiredService<IAddonNotifier>();
         var containers = await docker.ListContainersAsync();
         await SyncContainersAsync(db, notifier, containers, ct);
+        
+        await db.AddonInstallations
+            .Where(a => a.PendingTaskId != null)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(a => a.PendingTaskId, null as string)
+                .SetProperty(a => a.LastStatusChangedAt, DateTime.UtcNow), ct);
     }
 
     private async Task SyncContainersAsync(
@@ -200,11 +206,13 @@ public class DockerMonitorWorker(
         string status,
         CancellationToken ct)
     {
-        var addon = await db.AddonInstallations.FindAsync([addonId], ct);
-        if (addon == null) return;
-        addon.Status = status;
-        await notifier.NotifyAddonStatusChanged(addonId, status);
-        await db.SaveChangesAsync(ct);
+        var count = await db.AddonInstallations
+            .Where(a => a.Id == addonId)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(a => a.Status, status),
+                ct);
+        if (count > 0)
+            await notifier.NotifyAddonStatusChanged(addonId, status);
         logger.LogInformation("Addon {Id} → {Status}", addonId, status);
     }
     

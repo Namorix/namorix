@@ -1,5 +1,6 @@
 using Docker.DotNet;
 using Docker.DotNet.Models;
+using Namorix.Server.Constants;
 
 namespace Namorix.Server.Services;
 
@@ -20,7 +21,7 @@ public class DockerService
             All = true,
             Filters = new Dictionary<string, IDictionary<string, bool>>
             {
-                ["label"] = new Dictionary<string, bool> { ["namorix-addon"] = true }
+                ["label"] = new Dictionary<string, bool> { [AddonLabels.Addon] = true }
             }
         });
     }
@@ -55,14 +56,13 @@ public class DockerService
             Env = envVars,
             Labels = new Dictionary<string, string>
             {
-                ["namorix-addon"] = "true",
-                ["namorix-addon-id"] = spec.AddonId,
+                [AddonLabels.Addon] = "true",
+                [AddonLabels.Id] = spec.AddonId,
             },
             HostConfig = new HostConfig
             {
                 PortBindings = spec.PortMappings?.ToDictionary(
-                    p => $"{p.InternalPort}/tcp",
-                    p => (IList<PortBinding>)new List<PortBinding>
+                    p => $"{p.InternalPort}/tcp", IList<PortBinding> (p) => new List<PortBinding>
                     {
                         new() { HostPort = p.HostPort.ToString() }
                     }
