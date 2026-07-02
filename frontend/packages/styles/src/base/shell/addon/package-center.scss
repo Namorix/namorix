@@ -15,6 +15,7 @@
   }
 
   &__list {
+    flex: 1;
     padding: var(--nmx-spacing-md);
     overflow-x: hidden;
     overflow-y: auto;
@@ -26,7 +27,7 @@
   &__empty {
     display: flex;
     justify-content: center;
-    font-size: var(--nmx-font-size-md);
+    font-size: var(--nmx-font-size-sm);
     font-style: italic;
     color: var(--nmx-color-on-surface);
   }
@@ -113,6 +114,13 @@
 
     &__cancel {
     }
+  }
+
+  &__stats {
+    color: var(--nmx-color-on-surface-variant);
+    font-size: var(--nmx-font-size-sm);
+    padding: var(--nmx-spacing-sm) var(--nmx-spacing-md);
+    text-align: center;
   }
 
   &__btn {
