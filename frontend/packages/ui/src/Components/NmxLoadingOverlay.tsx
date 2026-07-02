@@ -1,6 +1,7 @@
 import React from "react"
 import type { WithBaseProps } from "../types"
 import { cx } from "../utils"
+import { NmxSpinner } from "../Primitives"
 
 interface NmxLoadingProps extends WithBaseProps {
   overlay?: boolean
@@ -21,7 +22,7 @@ export const NmxLoading: React.FC<NmxLoadingProps> = ({
           "nmx-loading__overlay--solid": overlay,
         })}
       >
-        <div className="nmx-loading__spinner" />
+        <NmxSpinner size="lg" />
       </div>
     </div>
   )

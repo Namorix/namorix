@@ -3,6 +3,9 @@ import type {
   NmxToastEvent,
   NmxToastType,
 } from "./toast.types"
+import { ApiError } from "../http"
+import { resolveAuthError } from "../i18n"
+import i18n from "i18next"
 
 type ToastListener = (event: NmxToastEvent) => void
 
@@ -15,7 +18,7 @@ class NmxToastBus {
   }
 
   private emit(
-    message: string,
+    message: string | unknown,
     type: NmxToastType,
     duration: NmxToastDuration,
   ) {
@@ -40,9 +43,20 @@ class NmxToastBus {
   success(message: string) {
     this.emit(message, "success", "short")
   }
-  error(message: string) {
-    this.emit(message, "error", "long")
+
+  error(message: string | unknown) {
+    if (message instanceof Error) {
+      const resolved = resolveAuthError(message as ApiError)
+      if (resolved) {
+        this.emit(i18n.t(resolved.key), "error", "long")
+        return
+      }
+      this.emit(message.message, "error", "long")
+      return
+    }
+    this.emit(String(message), "error", "long")
   }
+
   warning(message: string) {
     this.emit(message, "warning", "long")
   }

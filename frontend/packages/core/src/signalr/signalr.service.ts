@@ -14,6 +14,7 @@ let onCloseHandlers: Array<(error?: Error) => void> = []
 let statusHandlers: Array<(status: SignalRStatus) => void> = []
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null
 let reconnectDelay = 5000
+let intentionalStop = false
 
 export function getConnection(): HubConnection | null {
   return connection
@@ -56,7 +57,10 @@ export async function startConnection(): Promise<void> {
     console.warn("[signalr] disconnected", error?.message)
     emitStatus("disconnected")
     onCloseHandlers.forEach((handler) => handler(error ?? undefined))
-    scheduleReconnect()
+
+    if (!intentionalStop) {
+      scheduleReconnect()
+    }
   })
 
   await connection.start().then(() => {
@@ -80,6 +84,8 @@ export async function stopConnection(): Promise<void> {
   }
 
   if (!connection) return
+  intentionalStop = true
+  hasBeenConnected = false
   await connection.stop()
   connection = null
 }

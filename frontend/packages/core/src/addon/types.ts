@@ -2,6 +2,7 @@ import type { Store } from "@reduxjs/toolkit"
 import { NmxIconSvgSymbol } from "@namorix/ui"
 import { nmxStore } from "../store"
 import type { UserRole } from "../types"
+import React from "react"
 
 export type NmxAddonIconType = NmxIconSvgSymbol
 
@@ -71,6 +72,7 @@ export interface AddonEntry {
 export interface AddonModule {
   manifest: NmxAddonManifest
   entry: AddonEntry
+  globalComponent?: React.ComponentType
 }
 
 export interface ExternalAddonManifest extends NmxAddonManifest {
@@ -80,9 +82,16 @@ export interface ExternalAddonManifest extends NmxAddonManifest {
   version?: string
   author?: string
   installedAt?: string
+  pendingTaskId?: string
 }
 
-export type AddonContainerStatus = "installed" | "running" | "stopped" | "error"
+export type AddonContainerStatus =
+  | "installing"
+  | "installed"
+  | "running"
+  | "stopped"
+  | "error"
+  | "uninstalling"
 
 export interface InstallAddonRequest {
   image: string

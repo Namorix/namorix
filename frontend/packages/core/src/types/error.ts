@@ -36,12 +36,16 @@ export const ValidationErrorCodes = {
 
 export type AuthErrorCodes =
   (typeof AuthErrorCodes)[keyof typeof AuthErrorCodes]
+
 export type HttpErrorCodes =
   (typeof HttpErrorCodes)[keyof typeof HttpErrorCodes]
+
 export type MiddlewareErrorCodes =
   (typeof MiddlewareErrorCodes)[keyof typeof MiddlewareErrorCodes]
+
 export type ValidationErrorCodes =
   (typeof ValidationErrorCodes)[keyof typeof ValidationErrorCodes]
+
 export type ApiErrorCode =
   | AuthErrorCodes
   | HttpErrorCodes

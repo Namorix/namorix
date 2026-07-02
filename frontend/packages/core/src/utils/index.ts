@@ -1,3 +1,5 @@
 export * from "./sanitizePath"
 export * from "./isMobile"
 export * from "./format"
+export * from "./semver"
+export * from "./markup"

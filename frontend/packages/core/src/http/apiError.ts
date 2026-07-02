@@ -21,6 +21,7 @@ export class ApiError extends Error {
     if (data.success) {
       throw new Error("Cannot create ApiError from success response")
     }
+
     return new ApiError(data.error, data.code, data.field, data.meta)
   }
 }

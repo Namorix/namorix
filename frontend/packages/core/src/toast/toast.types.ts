@@ -3,7 +3,7 @@ export type NmxToastDuration = "long" | "short"
 
 export interface NmxToastEvent {
   id: string
-  message: string
+  message: string | unknown
   type: NmxToastType
   duration: NmxToastDuration
 }

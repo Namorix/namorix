@@ -1,6 +1,6 @@
 import React from "react"
 import { createRoot, type Root } from "react-dom/client"
-import type { AddonContext, AddonEntry, NmxAddonManifest } from "./types"
+import type { AddonContext, AddonModule, NmxAddonManifest } from "./types"
 import { AddonContextProvider } from "./context"
 import { Provider } from "react-redux"
 
@@ -11,7 +11,8 @@ const rootMap = new WeakMap<HTMLElement, Root>()
 export function defineAddon(
   manifest: NmxAddonManifest,
   Component: NmxComponent,
-): { manifest: NmxAddonManifest; entry: AddonEntry } {
+  globalComponent?: React.ComponentType,
+): AddonModule {
   return {
     manifest,
     entry: {
@@ -39,5 +40,6 @@ export function defineAddon(
         }
       },
     },
+    globalComponent,
   }
 }

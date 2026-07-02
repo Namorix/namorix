@@ -9,6 +9,9 @@ import {
 } from "../types"
 import { ApiAuthRoutes } from "../apiRoutes"
 
+type UnauthorizedHandler = () => void
+let onUnauthorized: UnauthorizedHandler | null = null
+
 class RequestBuilder {
   private _url: string
   private _options: RequestInit = { credentials: "include" }
@@ -102,13 +105,17 @@ class RequestBuilder {
           .post()
           .json()
 
+        if (!refreshResponse.success) {
+          onUnauthorized?.()
+          return refreshResponse as unknown as ApiResponse<T>
+        }
+
         if (refreshResponse.success) {
           this._retried = true
           return await this.json<T>()
         }
-
-        return refreshResponse as unknown as ApiResponse<T>
       }
+
       return (await result.json()) as Promise<ApiResponse<T>>
     } catch {
       return apiHttpError(
@@ -140,4 +147,8 @@ export const nmxHttp = {
       ) as ApiResponse<T>
     }
   },
+}
+
+export function setOnUnauthorized(handler: UnauthorizedHandler) {
+  onUnauthorized = handler
 }
