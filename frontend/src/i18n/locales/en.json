@@ -311,6 +311,7 @@
       "empty": "No applications found",
       "uninstallTitle": "Uninstall addon",
       "uninstallConfirm": "Are you sure you want to uninstall **{{name}}**?",
+      "stats": "{{total}} total · {{running}} running · {{stopped}} stopped",
       "cancelAction": "Cancel",
       "tabs": {
         "all": "All",
@@ -318,6 +319,8 @@
         "updated": "Updated"
       },
       "status": {
+        "starting": "Starting",
+        "stopping": "Stopping",
         "uninstalling": "Uninstalling"
       },
       "actions": {

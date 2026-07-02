@@ -7,7 +7,7 @@ import {
   useAppDispatch,
   useAppSelector,
 } from "../../store"
-import { type AddonContainerStatus, nmxToast } from "@namorix/core"
+import { type AddonStatusPayload, nmxToast } from "@namorix/core"
 import { ServerSignalREvent, useServerSignalREvent } from "../../signalr"
 
 export const AddonEventWatcher: React.FC = () => {
@@ -18,14 +18,12 @@ export const AddonEventWatcher: React.FC = () => {
 
   useEffect(() => {
     addonMapRef.current = externalAddonsMap
-    console.log(externalAddonsMap)
   }, [externalAddonsMap])
 
   const handler = useCallback(
-    (data: { addonId: string; status: AddonContainerStatus }) => {
-      console.log("Watcher changed", data)
-
+    (data: AddonStatusPayload) => {
       const name = addonMapRef.current[data.addonId]?.name ?? data.addonId
+
       if (data.status === "uninstalling") {
         dispatch(removeAddon(data.addonId))
         nmxToast.success(t("addon.packageCenter.success.uninstalled", { name }))
@@ -38,6 +36,6 @@ export const AddonEventWatcher: React.FC = () => {
     [dispatch, t],
   )
 
-  // useServerSignalREvent(ServerSignalREvent.AddonStatusChanged, handler)
+  useServerSignalREvent(ServerSignalREvent.AddonStatusChanged, handler)
   return null
 }

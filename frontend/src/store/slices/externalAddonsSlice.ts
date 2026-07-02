@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
-import type { AddonContainerStatus, ExternalAddonManifest } from "@namorix/core"
+import type { AddonStatusPayload, ExternalAddonManifest } from "@namorix/core"
 
 export interface ExternalAddonsState {
   items: Record<string, ExternalAddonManifest>
@@ -31,10 +31,7 @@ export const externalAddonsSlice = createSlice({
       state.order = order
     },
 
-    updateAddonStatus(
-      state,
-      action: PayloadAction<{ addonId: string; status: AddonContainerStatus }>,
-    ) {
+    updateAddonStatus(state, action: PayloadAction<AddonStatusPayload>) {
       const addon = state.items[action.payload.addonId]
       if (addon) addon.status = action.payload.status
     },
