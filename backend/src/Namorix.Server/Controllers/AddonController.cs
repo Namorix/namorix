@@ -46,6 +46,7 @@ public class AddonController(AddonService addonService, AddonTaskQueue taskQueue
     public async Task<IActionResult> Start(string id)
     {
         var task = new AddonTask { Type = AddonTaskType.Start, AddonId = id };
+        await addonService.SetTaskPending(id, AddonTaskPending.Starting);
         await taskQueue.EnqueueAsync(task);
         return Ok(ApiResponse.Ok(new
         {
@@ -57,6 +58,7 @@ public class AddonController(AddonService addonService, AddonTaskQueue taskQueue
     public async Task<IActionResult> Stop(string id)
     {
         var task = new AddonTask { Type = AddonTaskType.Stop, AddonId = id };
+        await addonService.SetTaskPending(id, AddonTaskPending.Stopping);
         await taskQueue.EnqueueAsync(task);
         return Ok(ApiResponse.Ok(new
         {
@@ -68,7 +70,7 @@ public class AddonController(AddonService addonService, AddonTaskQueue taskQueue
     public async Task<IActionResult> Remove(string id)
     {
         var task = new AddonTask { Type = AddonTaskType.Uninstall, AddonId = id };
-        await addonService.SetTaskPending(id, AddonStatus.Uninstalling);
+        await addonService.SetTaskPending(id, AddonTaskPending.Uninstalling);
         await taskQueue.EnqueueAsync(task);
         return Ok(ApiResponse.Ok(new
         {

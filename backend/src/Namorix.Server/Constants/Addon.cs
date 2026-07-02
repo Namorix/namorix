@@ -7,7 +7,6 @@ public static class AddonStatus
     public const string Running = "running";
     public const string Stopped = "stopped";
     public const string Error = "error";
-    public const string Uninstalling = "uninstalling";
 }
 
 public static class AddonLabels
@@ -17,4 +16,11 @@ public static class AddonLabels
     public const string Name = "namorix-addon-name";
     public const string Description = "namorix-addon-description";
     public const string Author = "namorix-addon-author";
+}
+
+public static class AddonTaskPending
+{
+    public const string Starting = "starting";
+    public const string Stopping = "stopping";
+    public const string Uninstalling = "uninstalling";
 }
