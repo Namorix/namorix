@@ -1,6 +1,6 @@
 {
   "name": "@namorix/styles",
-  "version": "0.33.1",
+  "version": "0.34.0",
   "license": "AGPL-3.0-only",
   "author": "IzeroCs",
   "keywords": ["namorix", "scss", "tokens", "design-system", "themes"],
