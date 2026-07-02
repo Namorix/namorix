@@ -39,6 +39,9 @@ export const NmxIconFontSymbol = {
   RAM: "ic-ram",
   CPU: "ic-cpu",
   APPS: "ic-apps",
+  UPDATE: "ic-update",
+  STOP: "ic-stop",
+  INSTALL: "ic-install",
 } as const
 
 export type NmxIconFontSymbol =

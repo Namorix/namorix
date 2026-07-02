@@ -7,7 +7,7 @@ interface NmxLoadingProps extends WithBaseProps {
   overlay?: boolean
 }
 
-export const NmxLoading: React.FC<NmxLoadingProps> = ({
+export const NmxLoadingOverlay: React.FC<NmxLoadingProps> = ({
   overlay = false,
   shouldRender = true,
   className,
