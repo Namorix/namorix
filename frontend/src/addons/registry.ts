@@ -1,4 +1,5 @@
 import { type AddonModule, UserRole } from "@namorix/core"
+import React from "react"
 
 const registries = new Map<string, AddonModule>()
 
@@ -19,4 +20,10 @@ export const listAddons = (userRole?: UserRole): AddonModule[] => {
       !addon.manifest.role ||
       (userRole !== undefined && userRole === addon.manifest.role),
   )
+}
+
+export function listGlobalComponents(): React.ComponentType[] {
+  return Array.from(registries.values())
+    .map((m) => m.globalComponent)
+    .filter((c): c is React.ComponentType => !!c)
 }

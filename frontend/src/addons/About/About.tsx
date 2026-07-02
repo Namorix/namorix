@@ -55,7 +55,7 @@ export const About: React.FC = () => {
           />
           <NmxMetaItem
             label={t("addon.about.meta.stack")}
-            value="React · .NET 8 · SQLite"
+            value="React · .NET 10 · SQLite"
             className="nmx-addon-about__meta-item"
             alignValue="end"
           />

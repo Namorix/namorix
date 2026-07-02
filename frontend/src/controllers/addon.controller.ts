@@ -1,4 +1,9 @@
-import { type AddonCatalogEntry, ApiAddonRoutes, nmxHttp } from "@namorix/core"
+import {
+  type AddonCatalogEntry,
+  ApiAddonRoutes,
+  ApiError,
+  nmxHttp,
+} from "@namorix/core"
 
 export interface AddonManifestDto {
   id: string
@@ -11,6 +16,7 @@ export interface AddonManifestDto {
   version?: string
   author?: string
   installedAt: string
+  pendingTaskId?: string
 }
 
 export interface InstallAddonDto {
@@ -30,7 +36,7 @@ export const addonController = {
       .url(ApiAddonRoutes.list)
       .get()
       .json<AddonManifestDto[]>()
-    if (!res.success) throw new Error(res.error)
+    if (!res.success) throw ApiError.fromResponse(res)
     return res.data
   },
 
@@ -39,23 +45,23 @@ export const addonController = {
       .url(ApiAddonRoutes.install)
       .post(request)
       .json<AddonManifestDto>()
-    if (!res.success) throw new Error(res.error)
+    if (!res.success) throw ApiError.fromResponse(res)
     return res.data
   },
 
   async start(id: string) {
     const res = await nmxHttp.url(ApiAddonRoutes.start(id)).post().json()
-    if (!res.success) throw new Error(res.error)
+    if (!res.success) throw ApiError.fromResponse(res)
   },
 
   async stop(id: string) {
     const res = await nmxHttp.url(ApiAddonRoutes.stop(id)).post().json()
-    if (!res.success) throw new Error(res.error)
+    if (!res.success) throw ApiError.fromResponse(res)
   },
 
   async remove(id: string) {
     const res = await nmxHttp.url(ApiAddonRoutes.remove(id)).delete().json()
-    if (!res.success) throw new Error(res.error)
+    if (!res.success) throw ApiError.fromResponse(res)
   },
 
   async getCatalog(): Promise<AddonCatalogEntry[]> {
@@ -63,7 +69,7 @@ export const addonController = {
       .url(ApiAddonRoutes.listCatalog)
       .get()
       .json<AddonCatalogEntry[]>()
-    if (!res.success) throw Error(res.error)
+    if (!res.success) throw ApiError.fromResponse(res)
     return res.data
   },
 
@@ -72,7 +78,7 @@ export const addonController = {
       .url(ApiAddonRoutes.syncCatalog)
       .post()
       .json<AddonCatalogEntry[]>()
-    if (!res.success) throw Error(res.error)
+    if (!res.success) throw ApiError.fromResponse(res)
     return res.data
   },
 }

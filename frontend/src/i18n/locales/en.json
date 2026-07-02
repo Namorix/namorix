@@ -309,10 +309,34 @@
       "searchPlaceholder": "Search application...",
       "loading": "Loading catalog...",
       "empty": "No applications found",
+      "uninstallTitle": "Uninstall addon",
+      "uninstallConfirm": "Are you sure you want to uninstall **{{name}}**?",
+      "cancelAction": "Cancel",
       "tabs": {
         "all": "All",
         "installed": "Installed",
         "updated": "Updated"
+      },
+      "status": {
+        "uninstalling": "Uninstalling"
+      },
+      "actions": {
+        "install": "Install",
+        "start": "Start",
+        "stop": "Stop",
+        "update": "Update",
+        "uninstall": "Uninstall"
+      },
+      "errors": {
+        "notFound": "{{name}} not found",
+        "containerNotFound": "Container for {{name}} not found",
+        "installFailed": "Failed to install {{name}}"
+      },
+      "success": {
+        "installed": "{{name}} installed",
+        "uninstalled": "{{name}} uninstalled",
+        "started": "{{name}} started",
+        "stopped": "{{name}} stopped"
       }
     }
   }

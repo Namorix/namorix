@@ -2,6 +2,7 @@ import { defineAddon, NmxAddonId, NmxAddonLocaleKeys } from "@namorix/core"
 import { registerAddon } from "../"
 import { NmxIconSvgSymbol } from "@namorix/ui"
 import { PackageCenter } from "./PackageCenter"
+import { AddonEventWatcher } from "./AddonEventWatcher"
 
 registerAddon(
   defineAddon(
@@ -13,5 +14,6 @@ registerAddon(
       icon: NmxIconSvgSymbol.APP_PACKAGE_CENTER,
     },
     PackageCenter,
+    AddonEventWatcher,
   ),
 )

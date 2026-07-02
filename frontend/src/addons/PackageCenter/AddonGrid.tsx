@@ -3,6 +3,8 @@ import {
   type AddonContainerStatus,
   type ExternalAddonManifest,
   nmxToast,
+  semverCompare,
+  toHtml,
 } from "@namorix/core"
 import { addonController } from "../../controllers"
 import React, { useCallback, useEffect, useMemo, useState } from "react"
@@ -14,10 +16,13 @@ import {
   selectorExternalAddonsOrder,
   setAddonLoading,
   setAddons,
+  updateAddonStatus,
   useAppDispatch,
   useAppSelector,
 } from "../../store"
 import {
+  NmxAlertDialog,
+  NmxButton,
   NmxButtonRefresh,
   NmxCard,
   NmxCardBody,
@@ -25,11 +30,16 @@ import {
   NmxCardHeader,
   NmxGrid,
   NmxHorizontalWrap,
+  NmxIconFont,
+  NmxIconFontSymbol,
   NmxIconSvg,
   NmxIconSvgSymbol,
   NmxSearchInput,
+  NmxSpinner,
   useActiveTab,
 } from "@namorix/ui"
+import { resolveAddonError } from "./addonError"
+import { ServerSignalREvent, useServerSignalREvent } from "../../signalr"
 
 interface DisplayAddon {
   id: string
@@ -39,6 +49,12 @@ interface DisplayAddon {
   version: string
   author?: string
   isInstalled: boolean
+  hasUpdate: boolean
+  status?: AddonContainerStatus
+}
+
+interface PendingAction {
+  id: string
   status?: AddonContainerStatus
 }
 
@@ -46,6 +62,13 @@ export const AddonGrid: React.FC = () => {
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
   const [catalog, setCatalog] = useState<AddonCatalogEntry[]>([])
+  const [pendingMap, setPendingMap] = useState<Record<string, PendingAction>>(
+    {},
+  )
+  const [uninstallTarget, setUninstallTarget] = useState<DisplayAddon | null>(
+    null,
+  )
+
   const activeTab = useActiveTab<PackageCenterTab>()
   const dispatch = useAppDispatch()
 
@@ -53,8 +76,14 @@ export const AddonGrid: React.FC = () => {
   const externalAddonsOrder = useAppSelector(selectorExternalAddonsOrder)
   const loading = useAppSelector(selectorExternalAddonsLoading)
 
+  const catalogById = useMemo(
+    () => new Map(catalog.map((c) => [c.id, c])),
+    [catalog],
+  )
+
   const loadData = useCallback(async () => {
     dispatch(setAddonLoading(true))
+
     try {
       const [list, catalogList] = await Promise.all([
         addonController.list(),
@@ -62,25 +91,36 @@ export const AddonGrid: React.FC = () => {
       ])
 
       setCatalog(catalogList)
-      dispatch(
-        setAddons(
-          list.map(
-            (dto) =>
-              ({
-                id: dto.id,
-                name: dto.name,
-                description: dto.description,
-                icon: dto.icon,
-                image: dto.image,
-                hostPort: dto.hostPort,
-                status: dto.status as AddonContainerStatus,
-                version: dto.version,
-                author: dto.author,
-                installedAt: dto.installedAt,
-              }) as ExternalAddonManifest,
-          ),
-        ),
+      const addons = list.map(
+        (dto) =>
+          ({
+            id: dto.id,
+            name: dto.name,
+            description: dto.description,
+            icon: dto.icon,
+            image: dto.image,
+            hostPort: dto.hostPort,
+            status: dto.status as AddonContainerStatus,
+            version: dto.version,
+            author: dto.author,
+            installedAt: dto.installedAt,
+            pendingTaskId: dto.pendingTaskId,
+          }) as ExternalAddonManifest,
       )
+
+      dispatch(setAddons(addons))
+
+      const pendingRecovered: Record<string, PendingAction> = {}
+      for (const a of addons) {
+        if (a.pendingTaskId) {
+          pendingRecovered[a.id] = {
+            id: a.id,
+            status: a.status,
+          }
+        }
+      }
+
+      setPendingMap(pendingRecovered)
     } finally {
       dispatch(setAddonLoading(false))
     }
@@ -89,6 +129,21 @@ export const AddonGrid: React.FC = () => {
   useEffect(() => {
     loadData().catch((err) => nmxToast.error(err))
   }, [loadData])
+
+  useServerSignalREvent<{ addonId: string; status: AddonContainerStatus }>(
+    ServerSignalREvent.AddonStatusChanged,
+    (data) => {
+      dispatch(
+        updateAddonStatus({ addonId: data.addonId, status: data.status }),
+      )
+
+      setPendingMap((prev) => {
+        const n = { ...prev }
+        delete n[data.addonId]
+        return n
+      })
+    },
+  )
 
   const displayAddons = useMemo(() => {
     let items: DisplayAddon[] = []
@@ -101,6 +156,11 @@ export const AddonGrid: React.FC = () => {
       // Merge catalog entries with installed status
       for (const cat of catalog) {
         const installed = installedById.get(cat.id)
+        const installedVersion = installed?.version
+        const hasUpdate = !!(
+          installedVersion && semverCompare(cat.version, installedVersion) > 0
+        )
+
         items.push({
           id: cat.id,
           name: installed?.name ?? cat.name,
@@ -109,6 +169,7 @@ export const AddonGrid: React.FC = () => {
           version: cat.version,
           author: installed?.author ?? cat.author,
           isInstalled: !!installed,
+          hasUpdate,
           status: installed?.status,
         })
       }
@@ -126,6 +187,7 @@ export const AddonGrid: React.FC = () => {
               version: inst.version ?? "0.0.0",
               author: inst.author,
               isInstalled: true,
+              hasUpdate: false,
               status: inst.status,
             })
         }
@@ -135,16 +197,26 @@ export const AddonGrid: React.FC = () => {
       items = externalAddonsOrder
         .map((id) => externalAddonsMap[id])
         .filter((a): a is ExternalAddonManifest => !!a)
-        .map((a) => ({
-          id: a.id,
-          name: a.name,
-          description: a.description,
-          icon: a.icon,
-          version: a.version ?? "0.0.0",
-          author: a.author,
-          isInstalled: true,
-          status: a.status,
-        }))
+        .map((a) => {
+          const catalogEntry = a.version ? catalogById.get(a.id) : undefined
+          const version = a.version ?? "0.0.0"
+          const hasUpdate = !!(
+            catalogEntry?.version &&
+            semverCompare(catalogEntry.version, version) > 0
+          )
+
+          return {
+            id: a.id,
+            name: a.name,
+            description: a.description,
+            icon: a.icon,
+            version,
+            author: a.author,
+            isInstalled: true,
+            hasUpdate,
+            status: a.status,
+          }
+        })
 
       if (activeTab === "installed")
         items = items.filter(
@@ -164,11 +236,82 @@ export const AddonGrid: React.FC = () => {
     }
 
     return items
-  }, [activeTab, search, catalog, externalAddonsMap, externalAddonsOrder])
+  }, [
+    activeTab,
+    search,
+    externalAddonsOrder,
+    externalAddonsMap,
+    catalog,
+    catalogById,
+  ])
+
+  const handleStart = useCallback(
+    async (e: React.MouseEvent, addon: DisplayAddon) => {
+      e.preventDefault()
+
+      addonController
+        .start(addon.id)
+        .then(() => {
+          dispatch(updateAddonStatus({ addonId: addon.id, status: "running" }))
+          nmxToast.success(
+            t("addon.packageCenter.success.started", { name: addon.name }),
+          )
+        })
+        .catch((err) => nmxToast.error(resolveAddonError(t, err, addon.name)))
+    },
+    [dispatch, t],
+  )
+
+  const handleStop = useCallback(
+    async (e: React.MouseEvent, addon: DisplayAddon) => {
+      e.preventDefault()
+      addonController
+        .stop(addon.id)
+        .then(() => {
+          dispatch(updateAddonStatus({ addonId: addon.id, status: "stopped" }))
+          nmxToast.success(
+            t("addon.packageCenter.success.stopped", { name: addon.name }),
+          )
+        })
+        .catch((err) => nmxToast.error(resolveAddonError(t, err, addon.name)))
+    },
+    [dispatch, t],
+  )
+
+  const handleRemove = useCallback(
+    (e: React.MouseEvent, addon: DisplayAddon) => {
+      e.preventDefault()
+      setUninstallTarget(addon)
+    },
+    [],
+  )
+
+  const handleUninstallConfirm = useCallback(() => {
+    if (!uninstallTarget) return
+    const target = uninstallTarget
+    setUninstallTarget(null)
+
+    setPendingMap((prev) => ({
+      ...prev,
+      [target.id]: {
+        id: target.id,
+        status: "uninstalling",
+      },
+    }))
+
+    addonController.remove(target.id).catch((err) => {
+      setPendingMap((prev) => {
+        const n = { ...prev }
+        delete n[target.id]
+        return n
+      })
+      nmxToast.error(resolveAddonError(t, err, target.name))
+    })
+  }, [uninstallTarget, t])
 
   return (
     <div className="nmx-addon-package-center__main">
-      <NmxHorizontalWrap>
+      <NmxHorizontalWrap className="nmx-addon-package-center__horizontal-wrap">
         <NmxSearchInput
           placeholder={t("addon.packageCenter.searchPlaceholder")}
           value={search}
@@ -186,7 +329,7 @@ export const AddonGrid: React.FC = () => {
             <p>{t("addon.packageCenter.empty")}</p>
           </div>
         ) : (
-          <NmxGrid cols={3} minColWidth={220}>
+          <NmxGrid cols={3} minColWidth={240}>
             {displayAddons.map((addon) => (
               <NmxCard
                 key={addon.id}
@@ -209,18 +352,110 @@ export const AddonGrid: React.FC = () => {
                 <NmxCardBody className="nmx-addon-package-center__card-body">
                   {addon.description}
                 </NmxCardBody>
-                <NmxCardFooter>
-                  {addon.isInstalled && addon.status && (
-                    <span className="nmx-addon-package-center__status">
-                      {addon.status}
-                    </span>
+                <NmxCardFooter className="nmx-addon-package-center__card-footer">
+                  {!addon.isInstalled && (
+                    <NmxButton fullWidth>
+                      <NmxIconFont symbol={NmxIconFontSymbol.INSTALL} />
+                      <span className="nmx-addon-package-center__btn-label">
+                        {t("addon.packageCenter.actions.install")}
+                      </span>
+                    </NmxButton>
+                  )}
+                  {addon.isInstalled && addon.status !== "running" && (
+                    <NmxButton
+                      semantic="success"
+                      className="nmx-addon-package-center__btn"
+                      onClick={(e) => handleStart(e, addon)}
+                    >
+                      <NmxIconFont symbol={NmxIconFontSymbol.PLAY} />
+                      <span className="nmx-addon-package-center__btn-label">
+                        {t("addon.packageCenter.actions.start")}
+                      </span>
+                    </NmxButton>
+                  )}
+                  {addon.isInstalled && addon.status === "running" && (
+                    <NmxButton
+                      semantic="success"
+                      uppercase
+                      className="nmx-addon-package-center__btn"
+                      onClick={(e) => handleStop(e, addon)}
+                    >
+                      <NmxIconFont symbol={NmxIconFontSymbol.STOP} />
+                      <span className="nmx-addon-package-center__btn-label">
+                        {t("addon.packageCenter.actions.stop")}
+                      </span>
+                    </NmxButton>
+                  )}
+                  {addon.hasUpdate && (
+                    <NmxButton
+                      semantic="warning"
+                      className="nmx-addon-package-center__btn"
+                    >
+                      <NmxIconFont symbol={NmxIconFontSymbol.UPDATE} />
+                      <span className="nmx-addon-package-center__btn-label">
+                        {t("addon.packageCenter.actions.update")}
+                      </span>
+                    </NmxButton>
+                  )}
+                  {addon.isInstalled && (
+                    <NmxButton
+                      semantic="error"
+                      variant="outline"
+                      className="nmx-addon-package-center__btn"
+                      onClick={(e) => handleRemove(e, addon)}
+                    >
+                      <NmxIconFont symbol={NmxIconFontSymbol.DELETE} />
+                      <span className="nmx-addon-package-center__btn-label">
+                        {t("addon.packageCenter.actions.uninstall")}
+                      </span>
+                    </NmxButton>
                   )}
                 </NmxCardFooter>
+                {pendingMap[addon.id] && (
+                  <div className="nmx-addon-package-center__card-overlay">
+                    <div className="nmx-addon-package-center__card-overlay__content">
+                      <NmxSpinner size="md" />
+                      <span>
+                        {t(
+                          "addon.packageCenter.status." +
+                            (pendingMap[addon.id]?.status ?? "unknown"),
+                        )}
+                      </span>
+                    </div>
+                    <NmxButton
+                      semantic="error"
+                      variant="ghost"
+                      uppercase
+                      className="nmx-addon-package-center__card-overlay__cancel"
+                    >
+                      {t("addon.packageCenter.cancelAction")}
+                    </NmxButton>
+                  </div>
+                )}
               </NmxCard>
             ))}
           </NmxGrid>
         )}
       </div>
+
+      <NmxAlertDialog
+        open={!!uninstallTarget}
+        title={t("addon.packageCenter.uninstallTitle")}
+        confirmLabel={t("addon.packageCenter.actions.uninstall")}
+        onConfirm={handleUninstallConfirm}
+        onCancel={() => setUninstallTarget(null)}
+        onClose={() => setUninstallTarget(null)}
+      >
+        <span
+          dangerouslySetInnerHTML={{
+            __html: toHtml(
+              t("addon.packageCenter.uninstallConfirm", {
+                name: uninstallTarget?.name,
+              }),
+            ),
+          }}
+        />
+      </NmxAlertDialog>
     </div>
   )
 }

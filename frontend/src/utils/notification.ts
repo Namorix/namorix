@@ -1,5 +1,9 @@
 import type { TFunction } from "i18next"
-import type { NmxAddonLocaleKeys, NmxNotificationDto } from "@namorix/core"
+import {
+  type NmxAddonLocaleKeys,
+  type NmxNotificationDto,
+  toHtml,
+} from "@namorix/core"
 import { resolveAddonLocaleTitleByKey } from "./addon"
 import { NmxIconFontSymbol, NmxIconSvgSymbol } from "@namorix/ui"
 
@@ -23,48 +27,6 @@ function parseParams(raw?: string): Record<string, string> | undefined {
   } catch {
     return undefined
   }
-}
-
-type ColorToken =
-  | "primary"
-  | "muted"
-  | "error"
-  | "warning"
-  | "success"
-  | "info"
-  | "text"
-
-const COLOR_MAP: Record<ColorToken, string> = {
-  primary: "var(--nmx-color-primary)",
-  error: "var(--nmx-color-error)",
-  warning: "var(--nmx-color-warning)",
-  success: "var(--nmx-color-success)",
-  info: "var(--nmx-color-info)",
-  text: "var(--nmx-color-on-surface)",
-  muted: "var(--nmx-color-on-surface-variant)",
-}
-
-function safe(str: string) {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-}
-
-function toHtml(str: string) {
-  const escaped = safe(str)
-  return escaped
-    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*(.*?)\*/g, "<em>$1</em>")
-    .replace(/`(.*?)`/g, "<code>$1</code>")
-    .replace(
-      /\[color:(primary|muted|error|warning|success|info|text)](.*?)\[\/color]/g,
-      (_, token: ColorToken, content: string) => {
-        const cssVar = COLOR_MAP[token]
-        return `<span style="color:${cssVar}">${content}</span>`
-      },
-    )
 }
 
 export function resolveNotificationDescription(
