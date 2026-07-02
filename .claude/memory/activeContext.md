@@ -46,6 +46,13 @@ Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và 
 - Styles: icon-svg.scss, package-center.scss tweaks. Theme CSS rebuilt.
 - Frontend: AddonGrid wrapping fix.
 
+### 2026-07-02 — Backend task queue, SignalR event fix, global addon events, AddonGrid refactor
+- Core: New modules (`error.ts`, `markup.ts`, `semver.ts`). `AddonModule.globalComponent` field. `defineAddon` accepts `globalComponent` param. `useSignalREvent` useRef fix — handler deps `[eventName]` only. `signalr.service.ts` — `intentionalStop` flag, `hasBeenConnected` reset. `ApiError.fromResponse` fallback `data.error ?? data.code`.
+- Backend: New AddonTask model + AddonTaskQueue (Channel-based) + AddonTaskExecutor (max 2 concurrent). New migration `AddTaskFields`. `SetTaskPending` sets both `PendingTaskId` and `Status`. DockerMonitorWorker startup sync clears stale `PendingTaskId`. Removed dead methods from AddonService.
+- Frontend: AddonEventWatcher global SignalR handler. Root.tsx mounts global addon components. App.tsx unauthorized handler — `setHasBeenConnected(false)`, `stopConnection()`. registry `listGlobalComponents()`. AddonGrid 307-line refactor. New i18n keys. PackageCenter passes AddonEventWatcher as globalComponent.
+- UI: New NmxSpinner primitive. NmxLoading → NmxLoadingOverlay rename.
+- Styles: New spinner SCSS, icomoon rebuild (new icons), package-center SCSS refactor.
+
 ### 2026-06-21 — M4 External Addon System Phase 1-4
 - Backend: Docker integration (DockerService, AddonService, DockerMonitorWorker, SignalRAddonNotifier). OAuth2 full flow (models, service, controller, middleware). Addon REST API. New migration with OAuth tables.
 - Core: External addon types (ExternalAddonManifest, AddonContainerStatus, InstallAddonRequest), API routes.

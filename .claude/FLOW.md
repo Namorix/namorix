@@ -423,15 +423,17 @@ On disconnect
 | `system:config-changed` | Server → Client | `{ key: string }` | useAppearanceSync |
 | `user:settings-changed` | Server → Client | `{ userId: number }` | useAppearanceSync (re-fetch user settings) |
 | `user:theme-changed` | Server → Client | `{ themeId: string }` | (planned) |
-| `addon:status-changed` | Server → Client | `{ addonId: string, status: string }` | External addon UI (planned) |
+| `addon:status-changed` | Server → Client | `{ addonId: string, status: string }` | PackageCenter AddonEventWatcher (global) |
 
 ### Hooks
 
 | Hook | Usage |
 |------|-------|
 | `useSignalR(enabled)` | Mount/unmount connection lifecycle |
-| `useSignalREvent<T>(event, handler)` | Subscribe event with cleanup |
+| `useSignalREvent<T>(event, handler)` | Subscribe event with cleanup (useRef handler, `[eventName]` deps) |
 | `useSignalRGroup(group)` | Join/leave group with reconnect handler |
+| `useServerSignalREvent(event, handler)` | Typed wrapper for ServerSignalREvent |
+| `useServerSignalRGroup(group)` | Typed wrapper for ServerSignalRGroups |
 
 ### Backend
 
@@ -495,7 +497,7 @@ interface NmxAddonManifest {
 export default defineAddon(manifest, (container, context) => {
   // mount logic
   return () => { /* unmount */ }
-})
+}, GlobalComponent?)  // optional global component (renders in Root.tsx)
 
 // addons/index.ts
 import "./LogViewer/LogViewer.addon"
@@ -553,6 +555,7 @@ User installs addon
 
 DockerMonitorWorker
   ├── [Init] SyncAllContainersAsync — full sync once on startup
+  │     └── Also clears stale `PendingTaskId` fields (server restart recovery)
   ├── [Primary] WatchContainerEventsAsync — real-time Docker event stream
   │     └── MonitorEventsAsync with label filter (namorix-addon=true)
   │           ├── start → query container info, sync/discover
@@ -566,6 +569,20 @@ External addon auth (OAuth2)
   └── Addon calls POST /oauth/token with client_assertion (private_key_jwt)
   └── OAuthService validates JWT against stored public key
   └── Returns access_token (bearer) — verified by OAuth2Middleware
+
+### Addon Task Queue (Backend)
+
+Async task execution for addon operations (install, uninstall, start, stop):
+
+```
+AddonController action
+  └── SetTaskPending(addonId, status) — sets PendingTaskId + Status in DB
+  └── AddonTaskQueue.Enqueue(addonId, taskType)
+        └── Channel<AddonTask> (unbounded)
+              └── AddonTaskExecutor (max 2 concurrent workers)
+                    ├── Dequeue → execute Docker operation
+                    └── On complete: clear PendingTaskId, update Status
+```
 ```
 
 ### Key files
@@ -578,6 +595,9 @@ External addon auth (OAuth2)
 | `frontend/packages/core/src/addon/context.tsx` | `AddonContextProvider`, `useAddonContext()` |
 | `frontend/packages/core/src/apiRoutes.ts` | ApiAddonRoutes (list, install, start, stop, remove) |
 | `frontend/packages/core/src/eventBus.ts` | `emit()`, `on()`, `off()` |
+| `frontend/packages/core/src/signalr/constants.ts` | SignalR event names + ServerSignalR types (shared với frontend) |
+| `frontend/src/signalr/constants.ts` | ServerSignalR constants mirroring backend (SystemMonitor, Addon groups/events) |
+| `frontend/src/signalr/useSignalR.ts` | `useServerSignalREvent`, `useServerSignalRGroup` wrappers |
 | `frontend/src/addons/` | All built-in addons (LogViewer, Settings, etc.) |
 | `frontend/src/controllers/addon.controller.ts` | Addon API controller |
 | `frontend/src/services/externalAddonEntry.ts` | Iframe mount/unmount for external addons |
@@ -592,6 +612,10 @@ External addon auth (OAuth2)
 | `backend/src/Namorix.Core/Constants/Docker.cs` | Docker state/event/filter constants |
 | `backend/src/Namorix.Server/Infrastructure/IAddonNotifier.cs` | Addon status notification interface |
 | `backend/src/Namorix.Server/Hubs/SignalRAddonNotifier.cs` | SignalR addon:status-changed |
+| `backend/src/Namorix.Server/Services/AddonTaskQueue.cs` | Channel-based async task queue |
+| `backend/src/Namorix.Server/Services/AddonTaskExecutor.cs` | Concurrent worker (max 2) for addon operations |
+| `backend/src/Namorix.Server/Models/AddonTask.cs` | Task model for queue |
+| `frontend/src/addons/PackageCenter/AddonEventWatcher.tsx` | Global SignalR handler for addon status events |
 
 ### Addon Catalog Sync (M4 — PackageCenter)
 

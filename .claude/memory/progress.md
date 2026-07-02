@@ -135,12 +135,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.49.1 | M4 (AddonGrid wrapping fix) |
-| @namorix/core | 0.38.0 | M4 (AddonCatalogEntry type, catalog API routes, NmxIconSvg src prop) |
-| @namorix/styles | 0.33.1 | M4 (icon-svg SCSS tweaks, package-center AddonGrid layout) |
-| @namorix/ui | 0.24.1 | M4 (NmxGrid wrap fix) |
-| Namorix.Core | 0.40.0 | M4 (AddonCatalogConfig, Catalog models) |
-| Namorix.Server | 0.42.1 | M4 (AuthService ExecuteDeleteAsync concurrency fix) |
+| frontend | 0.50.0 | M4 (Global addon events, AddonGrid refactor, AddonEventWatcher) |
+| @namorix/core | 0.39.0 | M4 (globalComponent field, new utils modules, signalr bug fixes) |
+| @namorix/styles | 0.34.0 | M4 (NmxSpinner SCSS, new icomoon icons, package-center SCSS) |
+| @namorix/ui | 0.25.0 | M4 (NmxSpinner, NmxLoadingOverlay rename) |
+| Namorix.Core | 0.41.0 | M4 (New error codes, AddonInstallation fields, extensions refactor) |
+| Namorix.Server | 0.43.0 | M4 (AddonTask queue/executor, new migration, server signalr event) |
 
 ## Version Rules
 
@@ -167,6 +167,15 @@
 - Không bao giờ bump cả Core + Server cùng lúc nếu chỉ 1 trong 2 thay đổi
 
 ## Version History
+
+### 2026-07-02 — Backend task queue, SignalR event fix, global addon events, AddonGrid refactor, NmxSpinner
+
+- @namorix/core 0.38.0 → 0.39.0: NEW: `http/error.ts`, `utils/markup.ts`, `utils/semver.ts`. MODIFIED: `addon/types.ts` — `AddonModule.globalComponent` field. `addon/factory.tsx` — `defineAddon` extended with `globalComponent` param. MODIFIED: `http/apiError.ts` — `fromResponse` fallback (`data.error ?? data.code`). `http/client.ts` — unauthorized flow với `apiAuthError` return. `signalr/signalr.service.ts` — `intentionalStop` flag, `hasBeenConnected` reset trong `stopConnection()`. `signalr/useSignalREvent.ts` — useRef cho handler, deps `[eventName]` only. `toast/` — error handling improvements. `types/error.ts` — new auth error types.
+- @namorix/styles 0.33.1 → 0.34.0: NEW: `base/components/spinner.scss`. MODIFIED: `base/components/index.scss` — spinner + loading-overlay. `base/components/loading.scss` → `loading-overlay.scss`. Icomoon rebuild (fonts.scss, variables.scss) — new icon symbols. `base/shell/addon/package-center.scss` — AddonGrid layout refactor. Theme CSS rebuilt.
+- @namorix/ui 0.24.1 → 0.25.0: NEW: `Primitives/NmxSpinner.tsx`. MODIFIED: `Primitives/NmxLoading.tsx` → `Components/NmxLoadingOverlay.tsx`. `Primitives/NmxIcon/NmxIconFont.types.ts` — new icon type symbols. `Components/index.ts`, `Primitives/index.ts` — updated exports.
+- frontend 0.49.1 → 0.50.0: NEW: `PackageCenter/AddonEventWatcher.tsx` — global SignalR handler for addon status. `PackageCenter/addonError.ts`. `constants/` directory. MODIFIED: `Root.tsx` — global addon component mounting. `App.tsx` — unauthorized handler: `setHasBeenConnected(false)`, `stopConnection()`, navigate login. `registry.ts` — `listGlobalComponents()`. `PackageCenter/PackageCenter.addon.tsx` — passes `AddonEventWatcher` as `globalComponent`. `PackageCenter/AddonGrid.tsx` — 307-line refactor. `controllers/addon.controller.ts` — addon API changes. `hooks/useAddonEvents.ts` — updated. `i18n/locales/en.json` — new addon i18n keys (24 lines). `utils/notification.ts` — cleanup.
+- Namorix.Core 0.40.0 → 0.41.0: MODIFIED: `Constants/Error.cs` — new error codes. `Controllers/LogController.cs` — changes. `Extensions/ApplicationBuilderExtensions.cs` — refactored. `Models/AddonInstallation.cs` — new fields (`PendingTaskId`, `LastStatusChangedAt`). `Services/TrafficMonitorService.cs` — changes.
+- Namorix.Server 0.42.1 → 0.43.0: NEW: `Models/AddonTask.cs`. `Services/AddonTaskExecutor.cs` — async task executor with concurrent worker limit. `Services/AddonTaskQueue.cs` — Channel-based async queue. `Migrations/20260702075451_AddTaskFields.*` — new migration. MODIFIED: `Constants/Addon.cs` — new constants. `Constants/ServerSignalR.cs` — `AddonStatusChanged` event. `Controllers/AddonController.cs` — task enqueue endpoints, `SetTaskPending` with status. `Extensions/ApplicationBuilderExtensions.cs` — DI registration for task services. `Middleware/OAuth2Middleware.cs` — fixes. `Program.cs` — DI setup. `Services/DockerService.cs` — DockerClient extensions. `Services/AddonService.cs` — removed dead methods (Install/Uninstall/Start/Stop). `Workers/DockerMonitorWorker.cs` — startup PendingTaskId cleanup in `SyncAllContainersAsync`.
 
 ### 2026-06-30 — displayName→name refactor, PackageCenter, Description/Author labels
 

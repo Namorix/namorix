@@ -67,7 +67,7 @@ namorix/
 │   │   │       ├── env/      # Dev/prod config via package.json exports
 │   │   │       ├── fingerprint/ # FingerprintComponents, generateFingerprint()
 │   │   │       ├── hooks/    # usePageSize, useLocalStorage
-│   │   │       ├── http/     # ApiError, http client with auto-refresh + CSRF
+│   │   │       ├── http/     # ApiError, http client with auto-refresh + CSRF, error types
 │   │   │       ├── i18n/     # NmxI18n, ValidationRunner, validation-messages
 │   │   │       ├── router/   # GuardedRoute, createAuthGuard/LoginGuard/RegisterGuard
 │   │   │       ├── signalr/  # SignalR service, hooks (useSignalR, useSignalREvent, useSignalRGroup, useSignalRStatus), constants
@@ -90,12 +90,13 @@ namorix/
 │   │       └── src/
 │   │           ├── Primitives/    # Self-contained: NmxButton, NmxForm, NmxIcon, NmxInlineAlert,
 │   │           │                   # NmxToggle, NmxSelect, NmxSelectMultiple, NmxSlider,
-│   │           │                   # NmxSegmentedGroup, NmxBadge, NmxChip, NmxLoading,
-│   │           │                   # NmxPagination, NmxPulseDot, NmxSearchInput,
+│   │           │                   # NmxSegmentedGroup, NmxBadge, NmxChip, NmxLoadingOverlay,
+│   │           │                   # NmxSpinner, NmxPagination, NmxPulseDot, NmxSearchInput,
 │   │           │                   # NmxStatCard, NmxTagInput
 │   │           ├── Components/    # Composite: NmxCard, NmxDataTable, NmxDialog, NmxMetaList, NmxRail,
 │   │           │                   # NmxSettings, NmxToolbar, NmxAddon, NmxAlertDialog,
-│   │           │                   # NmxToastProvider, NmxTabContext, NmxTabProvider
+│   │           │                   # NmxToastProvider, NmxTabContext, NmxTabProvider,
+│   │           │                   # NmxLoadingOverlay
 │   │           ├── hooks/         # useHorizontalDrag
 │   │           ├── context/       # NmxHostContext, useIsWindowed
 │   │           ├── Layouts/       # NmxHorizontalWrap, NmxGrid
@@ -156,7 +157,7 @@ namorix/
 |---------|---------|---------------|
 | `@namorix/core` | Types, auth guards, http client with auto-refresh + CSRF, `ApiError`, i18n (NmxI18n, ValidationRunner), SignalR hooks (useSignalR, useSignalREvent, useSignalRGroup, useSignalRStatus), store (nmxStore), theme, addon contract, fingerprint, cache (useTabCache, Show), hooks (usePageSize, useLocalStorage), toast (NmxToastBus), notification (NmxNotificationDto, SignalR events, API routes) | frontend, @namorix/ui, external addons |
 | `@namorix/styles` | SCSS tokens, reset, fonts, icomoon icons, component/layout SCSS (shared by all themes), shell-specific SCSS | frontend, @namorix/ui, external addons |
-| `@namorix/ui` | Primitives (NmxButton, NmxForm, NmxIcon, NmxInlineAlert, NmxToggle, NmxSelect, NmxSelectMultiple, NmxSlider, NmxSegmentedGroup, NmxBadge, NmxChip, NmxLoading, NmxPagination, NmxPulseDot, NmxSearchInput, NmxStatCard, NmxTagInput) + Composite (NmxCard, NmxDataTable, NmxMetaList, NmxRail, NmxSettings, NmxToolbar, NmxAddon, NmxDialog, NmxAlertDialog, NmxToastProvider, NmxTabContext, NmxTabProvider) + NmxHostContext + Layouts (NmxHorizontalWrap, NmxGrid) | frontend |
+| `@namorix/ui` | Primitives (NmxButton, NmxForm, NmxIcon, NmxInlineAlert, NmxToggle, NmxSelect, NmxSelectMultiple, NmxSlider, NmxSegmentedGroup, NmxBadge, NmxChip, NmxLoadingOverlay, NmxSpinner, NmxPagination, NmxPulseDot, NmxSearchInput, NmxStatCard, NmxTagInput) + Composite (NmxCard, NmxDataTable, NmxMetaList, NmxRail, NmxSettings, NmxToolbar, NmxAddon, NmxDialog, NmxAlertDialog, NmxToastProvider, NmxTabContext, NmxTabProvider) + NmxHostContext + Layouts (NmxHorizontalWrap, NmxGrid) | frontend |
 | `backend` | ASP.NET Core 8 API server (SignalR, flat file traffic + logs, SQLite, Log pipeline, FileLogger, ValidationFilter, SecurityHeaders, CSRF, CORS) | - |
 | `frontend` | Vite React shell (Redux Toolkit, SignalR client, addon system) | - |
 
