@@ -88,6 +88,7 @@ export interface ExternalAddonManifest extends NmxAddonManifest {
 export type AddonContainerStatus =
   | "installing"
   | "installed"
+  | "starting"
   | "running"
   | "stopped"
   | "error"
@@ -124,4 +125,9 @@ export interface AddonCatalogEntry {
   minServerVersion?: string
   manifestUrl: string
   cachedAt: string
+}
+
+export interface AddonStatusPayload {
+  addonId: string
+  status: AddonContainerStatus
 }

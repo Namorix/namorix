@@ -1,6 +1,11 @@
 import { useEffect, useRef } from "react"
-import { getConnection } from "./signalr.service"
+import {
+  addStatusHandler,
+  getConnection,
+  removeStatusHandler,
+} from "./signalr.service"
 import type { SignalREvent } from "./constants"
+import type { SignalRStatus } from "./types"
 
 export function useSignalREvent<
   T = unknown,
@@ -13,16 +18,22 @@ export function useSignalREvent<
   }, [handler])
 
   useEffect(() => {
-    console.log("[useSignalREvent] register", eventName)
     const wrapped = (data: T) => saveHandler.current(data)
 
     const conn = getConnection()
     if (conn) {
       conn.on(eventName, wrapped)
-      return () => {
-        console.log("[useSignalREvent] unregister", eventName)
-        conn.off(eventName, wrapped)
+      return () => conn.off(eventName, wrapped)
+    }
+
+    const onStatus = (status: SignalRStatus) => {
+      if (status === "connected") {
+        const c = getConnection()
+        if (c) c.on(eventName, wrapped)
       }
     }
+
+    addStatusHandler(onStatus)
+    return () => removeStatusHandler(onStatus)
   }, [eventName])
 }
