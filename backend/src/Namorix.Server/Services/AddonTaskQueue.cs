@@ -69,12 +69,17 @@ public class AddonTaskQueue(IServiceScopeFactory scopeFactory, ILogger<AddonTask
                 .Where(a => a.Id == addonId)
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(a => a.Status, AddonStatus.Error)
-                    .SetProperty(a => a.LastErrorMessage, error)
+                    .SetProperty(a => a.LastErrorCode, error)
                     .SetProperty(a => a.PendingTaskId, null as string)
+                    .SetProperty(a => a.PendingTaskPhase, null as string)
                     .SetProperty(a => a.LastStatusChangedAt, DateTime.UtcNow));
 
-            await notifier.NotifyAddonStatusChanged(addonId, AddonStatus.Error);
+            await notifier.NotifyPendingTaskChanged(addonId, null);
+            await notifier.NotifyAddonStatusChanged(addonId, AddonStatus.Error, error);
         }
-        catch { /* silent */ }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to set error status for addon {Id}", addonId);
+        }
     }
 }

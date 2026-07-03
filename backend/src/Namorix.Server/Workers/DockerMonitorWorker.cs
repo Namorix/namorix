@@ -56,6 +56,7 @@ public class DockerMonitorWorker(
             .Where(a => a.PendingTaskId != null)
             .ExecuteUpdateAsync(s => s
                 .SetProperty(a => a.PendingTaskId, null as string)
+                .SetProperty(a => a.PendingTaskPhase, null as string)
                 .SetProperty(a => a.LastStatusChangedAt, DateTime.UtcNow), ct);
     }
 

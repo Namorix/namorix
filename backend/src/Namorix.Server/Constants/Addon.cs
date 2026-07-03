@@ -18,9 +18,12 @@ public static class AddonLabels
     public const string Author = "namorix-addon-author";
 }
 
-public static class AddonTaskPending
+public static class AddonTaskPendingStatus
 {
     public const string Starting = "starting";
     public const string Stopping = "stopping";
     public const string Uninstalling = "uninstalling";
+    public const string Installing = "installing";
+    public const string Updating = "updating";
+    public const string Pulling = "pulling";
 }

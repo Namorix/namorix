@@ -1,5 +1,6 @@
 using Docker.DotNet;
 using Microsoft.EntityFrameworkCore;
+using Namorix.Core.Constants;
 using Namorix.Server.Constants;
 using Namorix.Server.Infrastructure;
 using Namorix.Server.Models;
@@ -39,65 +40,79 @@ public class AddonTaskExecutor(
 
     private async Task StartAsync(string addonId, CancellationToken ct)
     {
-        try
+        var addon = await db.AddonInstallations.FindAsync([addonId], ct);
+        if (addon is not null)
         {
-            await docker.StartContainerAsync(addonId);
-        }
-        catch (DockerContainerNotFoundException)
-        {
-            logger.LogWarning("Container {Id} not found — cannot start", addonId);
+            try
+            {
+                await docker.StartContainerAsync(addonId);
+                await SetStatusAsync(addonId, AddonStatus.Running);
+                await notifier.NotifyAddonStatusChanged(addonId, AddonStatus.Running);
+            }
+            catch (DockerContainerNotFoundException)
+            {
+                logger.LogWarning("Container {Id} not found — cannot start", addonId);
+                await SetStatusAsync(addonId, AddonStatus.Error, AddonErrors.ContainerNotFound);
+                await notifier.NotifyAddonStatusChanged(addonId, AddonStatus.Error, AddonErrors.ContainerNotFound);
+            }
+
         }
         
-        await SetStatusAsync(addonId, AddonStatus.Running);
-        await notifier.NotifyAddonStatusChanged(addonId, AddonStatus.Running);
+        await notifier.NotifyPendingTaskChanged(addonId, null);
     }
     
     private async Task StopAsync(string addonId, CancellationToken ct)
     {
-        try
+        var addon = await db.AddonInstallations.FindAsync([addonId], ct);
+        if (addon is not null)
         {
-            await docker.StopContainerAsync(addonId);
-        }
-        catch (DockerContainerNotFoundException)
-        {
-            logger.LogWarning("Container {Id} not found — cannot stop", addonId);
+            try
+            {
+                await docker.StopContainerAsync(addonId);
+                await SetStatusAsync(addonId, AddonStatus.Stopped);
+                await notifier.NotifyAddonStatusChanged(addonId, AddonStatus.Stopped);
+            }
+            catch (DockerContainerNotFoundException)
+            {
+                logger.LogWarning("Container {Id} not found — cannot stop", addonId);
+                await SetStatusAsync(addonId, AddonStatus.Error, AddonErrors.ContainerNotFound);
+                await notifier.NotifyAddonStatusChanged(addonId, AddonStatus.Error, AddonErrors.ContainerNotFound);
+            }
+
         }
         
-        await SetStatusAsync(addonId, AddonStatus.Stopped);
-        await notifier.NotifyAddonStatusChanged(addonId, AddonStatus.Stopped);
+        await notifier.NotifyPendingTaskChanged(addonId, null);
     }
 
     private async Task UninstallAsync(string addonId, CancellationToken ct)
     {
         var addon = await db.AddonInstallations.FindAsync([addonId], ct);
-        
-        if (addon is null)
+        if (addon is not null)
         {
-            await notifier.NotifyAddonStatusChanged(addonId, AddonTaskPending.Uninstalling);
-            return;
-        }
-        
-        try
-        {
-            await docker.StopContainerAsync(addonId);
-            await docker.RemoveContainerAsync(addonId);
-        }
-        catch (DockerContainerNotFoundException)
-        {
-            logger.LogWarning("Container {Id} already gone during uninstall", addonId);
+            try
+            {
+                await docker.StopContainerAsync(addonId);
+                await docker.RemoveContainerAsync(addonId);
+            }
+            catch (DockerContainerNotFoundException)
+            {
+                logger.LogWarning("Container {Id} already gone during uninstall", addonId);
+            }
+
+            db.AddonInstallations.Remove(addon);
+            await db.SaveChangesAsync(ct);
         }
 
-        db.AddonInstallations.Remove(addon);
-        await db.SaveChangesAsync(ct);
-        await notifier.NotifyAddonStatusChanged(addonId, AddonTaskPending.Uninstalling);
+        await notifier.NotifyPendingTaskChanged(addonId, null);
+        await notifier.NotifyAddonUninstalled(addonId);
     }
     
     
     private async Task InstallAsync(InstallRequest request, CancellationToken ct) {  }
 
-    private async Task SetStatusAsync(string addonId, string status, string? error = null)
+    private async Task SetStatusAsync(string addonId, string status, string? errorCode = null)
     {
-        if (error != null)
+        if (errorCode != null)
         {
             await db.AddonInstallations
                 .Where(a => a.Id == addonId)
@@ -105,7 +120,8 @@ public class AddonTaskExecutor(
                     .SetProperty(a => a.Status, status)
                     .SetProperty(a => a.LastStatusChangedAt, DateTime.UtcNow)
                     .SetProperty(a => a.PendingTaskId, (string?)null)
-                    .SetProperty(a => a.LastErrorMessage, error));
+                    .SetProperty(a => a.PendingTaskPhase, (string?)null)
+                    .SetProperty(a => a.LastErrorCode, errorCode));
         }
         else
         {
@@ -114,7 +130,8 @@ public class AddonTaskExecutor(
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(a => a.Status, status)
                     .SetProperty(a => a.LastStatusChangedAt, DateTime.UtcNow)
-                    .SetProperty(a => a.PendingTaskId, (string?)null));
+                    .SetProperty(a => a.PendingTaskId, (string?)null)
+                    .SetProperty(a => a.PendingTaskPhase, (string?)null));
         }
     }
     

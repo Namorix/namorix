@@ -1,12 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Namorix.Core.Config;
 using Namorix.Core.Models;
+using Namorix.Server.Infrastructure;
 using Namorix.Server.Models;
 using Namorix.Server.Persistence;
 
 namespace Namorix.Server.Services;
 
-public class AddonService(AppDbContext appDbContext)
+public class AddonService(AppDbContext appDbContext, IAddonNotifier notifier)
 {
     public async Task<List<AddonInstallation>> GetInstalledAddonsAsync()
     {
@@ -32,13 +33,14 @@ public class AddonService(AppDbContext appDbContext)
             .ToListAsync();
     }
     
-    public async Task SetTaskPending(string addonId, string status)
+    public async Task SetTaskPending(string addonId, string pendingStatus)
     {
+        await notifier.NotifyPendingTaskChanged(addonId, pendingStatus);
         await appDbContext.AddonInstallations
             .Where(a => a.Id == addonId)
             .ExecuteUpdateAsync(s => s
                 .SetProperty(a => a.PendingTaskId, Guid.NewGuid().ToString("N"))
-                .SetProperty(a => a.Status, status));
+                .SetProperty(a => a.PendingTaskPhase, pendingStatus));
     }
 }
 
