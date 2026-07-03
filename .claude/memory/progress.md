@@ -135,12 +135,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.51.0 | M4 (AddonGrid stats/optimistic pending, AddonEventWatcher active, i18n status keys) |
-| @namorix/core | 0.40.0 | M4 (AddonStatusPayload, starting status, deferred SignalR registration) |
-| @namorix/styles | 0.35.0 | M4 (package-center stats block, rail flex fix) |
-| @namorix/ui | 0.25.0 | M4 (NmxSpinner, NmxLoadingOverlay rename) |
-| Namorix.Core | 0.41.0 | M4 (New error codes, AddonInstallation fields, extensions refactor) |
-| Namorix.Server | 0.44.0 | M4 (AddonTaskExecutor full impl, AddonTaskPending constants, SetTaskPending) |
+| frontend | 0.52.0 | M4 (NotifyPendingTaskChanged handler, AddonPendingTaskPayload, stats rename, error toast) |
+| @namorix/core | 0.41.0 | M4 (AddonPendingPhase, AddonPendingTaskPayload, lastErrorCode fields) |
+| @namorix/styles | 0.36.0 | M4 (Error icon SCSS, __icon-status block, icomoon rebuild) |
+| @namorix/ui | 0.26.0 | M4 (ERROR icon symbol) |
+| Namorix.Core | 0.42.0 | M4 (LastErrorMessage → LastErrorCode rename) |
+| Namorix.Server | 0.45.0 | M4 (NotifyPendingTaskChanged/NotifAddonUninstalled, AddonErrorCodes, executor refactor) |
 
 ## Version Rules
 
@@ -183,6 +183,15 @@
 - @namorix/styles 0.34.0 → 0.35.0: MODIFIED: `package-center.scss` — `__stats` block (centered summary text), `flex: 1` on rail, smaller placeholder font.
 - frontend 0.50.0 → 0.51.0: MODIFIED: `PackageCenter/AddonGrid.tsx` — stats bar (total/running/stopped), handleStart returns Promise with optimistic pending state, installed-first alphabetical sort, updated tab filters by `hasUpdate`, uninstall action rename. MODIFIED: `PackageCenter/AddonEventWatcher.tsx` — uses `AddonStatusPayload`, removed console.log, `useServerSignalREvent` uncommented (now active). REMOVED: `hooks/useAddonEvents.ts` (dead commented code). MODIFIED: `pages/Desktop.tsx` — removed `useAddonEvents` call. MODIFIED: `store/slices/externalAddonsSlice.ts` — `AddonStatusPayload` type for `updateAddonStatus`. MODIFIED: `i18n/locales/en.json` — new `stats` key, `starting`/`stopping` tab labels.
 - Namorix.Server 0.43.0 → 0.44.0: MODIFIED: `Constants/Addon.cs` — extracted `AddonTaskPending` class from `AddonStatus`. MODIFIED: `Services/AddonTaskExecutor.cs` — `StartAsync`/`StopAsync`/`UninstallAsync` full implementation with Docker calls + `SetStatusAsync` with `ExecuteUpdateAsync` (clears `PendingTaskId`). MODIFIED: `Controllers/AddonController.cs` — `SetTaskPending` calls with `AddonTaskPending.{Starting,Stopping,Uninstalling}`. `AddonStatus.Uninstalling` → `AddonTaskPending.Uninstalling`.
+
+### 2026-07-03 — NotifyPendingTaskChanged wiring, error toast, LastErrorCode rename
+
+- @namorix/core 0.40.0 → 0.41.0: MODIFIED: `addon/types.ts` — `AddonPendingPhase` type, `AddonPendingTaskPayload` interface, `lastErrorCode` + `pendingTaskPhase` fields on `ExternalAddonManifest`, `lastErrorCode` on `AddonStatusPayload`. `AddonContainerStatus` type promoted before `AddonModule`.
+- @namorix/styles 0.35.0 → 0.36.0: MODIFIED: `package-center.scss` — new `__icon-status` BEM block (error icon styling). Icomoon icons rebuilt (fonts, variables, ttf, woff).
+- @namorix/ui 0.25.0 → 0.26.0: MODIFIED: `NmxIconFont.types.ts` — `ERROR = "ic-error"` symbol.
+- frontend 0.51.0 → 0.52.0: MODIFIED: `AddonEventWatcher.tsx` — toast on start/stop success + error via `formatAddonErrorCode`, `AddonUninstalled` handler. `AddonGrid.tsx` — `AddonPendingTaskChanged` handler for pending overlay, stats rename `total`→`installed` + `available` count, error badge on card. `addonError.ts` — `formatAddonErrorCode` function. `addon.controller.ts` — `pendingTaskPhase` + `lastErrorCode` in `AddonManifestDto`. `signalr/constants.ts` — `AddonPendingTaskChanged` + `AddonUninstalled` events. `externalAddonsSlice.ts` — `lastErrorCode` in `updateAddonStatus`. `en.json` — new error locale keys, `generic` error, stats template.
+- Namorix.Core 0.41.0 → 0.42.0: MODIFIED: `Models/AddonInstallation.cs` — `LastErrorMessage` → `LastErrorCode`.
+- Namorix.Server 0.44.0 → 0.45.0: MODIFIED: `Infrastructure/IAddonNotifier.cs` — `NotifyPendingTaskChanged` + `NotifyAddonUninstalled`. `Hubs/SignalRAddonNotifier.cs` — implementations for both. `Services/AddonTaskExecutor.cs` — `StartAsync`/`StopAsync` DB null check, Docker error → `AddonErrorCodes`, `UninstallAsync` uses `NotifyPendingTaskChanged` + `NotifyAddonUninstalled`. `Services/AddonTaskQueue.cs` — `NotifyPendingTaskChanged` in `SetErrorStatusAsync`, logger in catch. `Infrastructure/IAddonNotifier.cs`. NEW: `Constants/AddonError.cs`. MODIFIED: `Constants/Addon.cs` — `AddonTaskPending` renamed → `AddonTaskPendingStatus` + new constants (Installing, Updating, Pulling). `Constants/ServerSignalR.cs` — `AddonUninstalled` event. `Services/AddonService.cs` — inject `IAddonNotifier`, `SetTaskPending` calls `NotifyPendingTaskChanged`. NEW migration `RenameLastErrorCode`.`
 
 ### 2026-06-30 — displayName→name refactor, PackageCenter, Description/Author labels
 

@@ -53,6 +53,13 @@ Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và 
 - Styles: `package-center.scss` — `__stats` block, rail `flex: 1`.
 - Versions: core 0.40.0, styles 0.35.0, frontend 0.51.0, Namorix.Server 0.44.0.
 
+### 2026-07-03 — NotifyPendingTaskChanged wiring, error toast, LastErrorCode rename
+- Core: `AddonPendingPhase` type (6 phases), `AddonPendingTaskPayload` interface, `lastErrorCode` + `pendingTaskPhase` on ExternalAddonManifest, `lastErrorCode` on AddonStatusPayload.
+- Backend: `IAddonNotifier` extended with `NotifyPendingTaskChanged` + `NotifyAddonUninstalled`. `AddonTaskExecutor` refactored — Start/Stop DB null check, Docker error → `AddonErrorCodes`, UninstallAsync uses new notifier methods. `SetTaskPending` calls `NotifyPendingTaskChanged`. `AddonErrorCodes` constants. `LastErrorMessage` → `LastErrorCode` rename + migration. SignalR events: `addon:pending-task-changed`, `addon:uninstalled`.
+- Frontend: `AddonEventWatcher` toast on start/stop success + error via `formatAddonErrorCode`. `AddonGrid` — `AddonPendingTaskChanged` handler, stats rename (`total`→`installed` + `available`), error badge on card. `formatAddonErrorCode` function. New SignalR events in constants. `lastErrorCode` in `updateAddonStatus` reducer.
+- Styles/UI: `ERROR` icon symbol in Icomoon + NmxIconFont. `__icon-status` error block in package-center SCSS.
+- Versions: core 0.41.0, styles 0.36.0, ui 0.26.0, frontend 0.52.0, Namorix.Core 0.42.0, Namorix.Server 0.45.0.
+
 ### 2026-07-02 — Backend task queue, SignalR event fix, global addon events, AddonGrid refactor
 - Core: New modules (`error.ts`, `markup.ts`, `semver.ts`). `AddonModule.globalComponent` field. `defineAddon` accepts `globalComponent` param. `useSignalREvent` useRef fix — handler deps `[eventName]` only. `signalr.service.ts` — `intentionalStop` flag, `hasBeenConnected` reset. `ApiError.fromResponse` fallback `data.error ?? data.code`.
 - Backend: New AddonTask model + AddonTaskQueue (Channel-based) + AddonTaskExecutor (max 2 concurrent). New migration `AddTaskFields`. `SetTaskPending` sets both `PendingTaskId` and `Status`. DockerMonitorWorker startup sync clears stale `PendingTaskId`. Removed dead methods from AddonService.

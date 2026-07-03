@@ -720,38 +720,55 @@ Phase 7 (Catalog Sync)
   └── 7.7 PackageCenter "All" tab merge catalog + installed
 ```
 
-## PendingTaskPhase — Addons Task Invariant
+## PendingTaskPhase + NotifyPendingTaskChanged — Completed ✅
 
-Thêm field `PendingTaskPhase` vào `AddonInstallation`, đồng bộ lifecycle với `PendingTaskId`.
+### Core
 
-### Rationale
+- `AddonPendingPhase` type với 6 phase: starting, stopping, uninstalling, installing, updating, pulling
+- `AddonPendingTaskPayload` interface (`{ addonId, taskPhase }`)
+- `lastErrorCode` + `pendingTaskPhase` fields trên `ExternalAddonManifest`
+- `lastErrorCode` trên `AddonStatusPayload`
 
-`PendingTaskId` chỉ biết "có task đang chạy" nhưng không biết "đang làm gì". `PendingTaskPhase` bổ sung phase (installing/starting/stopping/...). Quan trọng: 2 field này phải luôn **set cùng lúc, clear cùng lúc** — không được lệch pha.
-
-### Các file cần sửa
+### Backend
 
 | File | Change |
 |------|--------|
-| `Namorix.Core/Models/AddonInstallation.cs:20` | Thêm `[MaxLength(20)] public string? PendingTaskPhase` |
-| `Namorix.Server/Constants/Addon.cs:17-22` | Thêm `Installing`, `Updating`, `Pulling` constants |
-| Migration: `AddPendingTaskPhase` | `AddColumn<string>("PendingTaskPhase", maxLength: 20)` |
-| `Namorix.Server/Services/AddonService.cs:35-42` | `SetTaskPending`: thêm `.SetProperty(a => a.PendingTaskPhase, status)` |
-| `Namorix.Server/Services/AddonTaskExecutor.cs:98-118` | `SetStatusAsync`: thêm `.SetProperty(a => a.PendingTaskPhase, (string?)null)` ở cả 2 nhánh |
-| `Namorix.Server/Services/AddonTaskQueue.cs:60-79` | `SetErrorStatusAsync`: thêm `.SetProperty(a => a.PendingTaskPhase, null as string)` |
-| `Namorix.Server/Workers/DockerMonitorWorker.cs:55-60` | `SyncAllContainersAsync`: thêm `.SetProperty(a => a.PendingTaskPhase, null as string)` |
+| `Namorix.Core/Models/AddonInstallation.cs` | Thêm `PendingTaskPhase` field, `LastErrorMessage` → `LastErrorCode` |
+| `Namorix.Server/Constants/Addon.cs` | `AddonTaskPendingStatus` renamed + thêm Installing/Updating/Pulling |
+| `Namorix.Server/Constants/AddonError.cs` | NEW — error code constants (ContainerNotFound, PortConflict, ...) |
+| `Namorix.Server/Constants/ServerSignalR.cs` | Thêm `AddonPendingTaskChanged`, `AddonUninstalled` events |
+| `Namorix.Server/Infrastructure/IAddonNotifier.cs` | Thêm `NotifyPendingTaskChanged(phase?)`, `NotifyAddonUninstalled()` |
+| `Namorix.Server/Hubs/SignalRAddonNotifier.cs` | Implement 2 methods mới |
+| `Namorix.Server/Services/AddonService.cs` | Inject `IAddonNotifier`, `SetTaskPending` calls `NotifyPendingTaskChanged` |
+| `Namorix.Server/Services/AddonTaskExecutor.cs` | Start/Stop check DB null, Docker error → error code, UninstallAsync dùng `NotifyPendingTaskChanged` + `NotifyAddonUninstalled` |
+| `Namorix.Server/Services/AddonTaskQueue.cs` | `SetErrorStatusAsync` calls `NotifyPendingTaskChanged(null)`, logger trong catch |
+| Migrations: `AddPendingTaskPhase`, `RenameLastErrorCode` | Column add + rename |
 
-### Invariant rule
+### Frontend
 
-**Set:** `PendingTaskId` + `PendingTaskPhase` luôn set cùng nhau (trong cùng `ExecuteUpdateAsync`).
-**Clear:** Cả 2 luôn clear cùng nhau (null đồng thời). Không clear 1 trong 2.
+| File | Change |
+|------|--------|
+| `signalr/constants.ts` | Thêm `AddonPendingTaskChanged`, `AddonUninstalled` events |
+| `addon.controller.ts` | `AddonManifestDto` thêm `pendingTaskPhase`, `lastErrorCode` |
+| `externalAddonsSlice.ts` | `updateAddonStatus` set `lastErrorCode` |
+| `AddonEventWatcher.tsx` | Toast start/stop/error, handler `AddonUninstalled` → remove + toast |
+| `AddonGrid.tsx` | `AddonPendingTaskChanged` handler → pendingMap, stats rename (installed/available), error badge |
+| `addonError.ts` | `formatAddonErrorCode` function (error code → locale) |
 
----
+### SignalR Events
+
+| Event | Direction | Payload | Handler |
+|-------|-----------|---------|---------|
+| `addon:pending-task-changed` | Server → Client | `{ addonId, taskPhase }` | AddonGrid set/clear pendingMap |
+| `addon:uninstalled` | Server → Client | `{ addonId }` | AddonEventWatcher removeAddon + toast |
 
 ## Version Bumps
 
 | Package | Version | Reason |
 |---------|---------|--------|
-| Namorix.Server | 0.38.0 → 0.39.0 | New module: AddonController, DockerService, DockerMonitor, OAuth2 |
-| Namorix.Core | 0.36.4 → 0.37.0 | AddonManifest model expanded |
-| @namorix/core | 0.35.1 → 0.36.0 | New types, API routes |
-| frontend | 0.44.4 → 0.45.0 | PackageCenter UI, hooks, controller, vite-plugin-federation |
+| Namorix.Server | 0.44.0 → 0.45.0 | NotifyPendingTaskChanged/NotifAddonUninstalled, AddonErrorCodes, executor refactor |
+| Namorix.Core | 0.41.0 → 0.42.0 | LastErrorMessage → LastErrorCode rename |
+| @namorix/core | 0.40.0 → 0.41.0 | AddonPendingPhase, AddonPendingTaskPayload, lastErrorCode fields |
+| @namorix/ui | 0.25.0 → 0.26.0 | ERROR icon symbol |
+| @namorix/styles | 0.35.0 → 0.36.0 | __icon-status SCSS block, icomoon rebuild |
+| frontend | 0.51.0 → 0.52.0 | NotifyPendingTaskChanged handler, error toast, stats rename |

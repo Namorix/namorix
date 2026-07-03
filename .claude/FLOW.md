@@ -423,7 +423,9 @@ On disconnect
 | `system:config-changed` | Server → Client | `{ key: string }` | useAppearanceSync |
 | `user:settings-changed` | Server → Client | `{ userId: number }` | useAppearanceSync (re-fetch user settings) |
 | `user:theme-changed` | Server → Client | `{ themeId: string }` | (planned) |
-| `addon:status-changed` | Server → Client | `AddonStatusPayload` (`{ addonId: string, status: AddonContainerStatus }`) | PackageCenter AddonEventWatcher (global) |
+| `addon:status-changed` | Server → Client | `AddonStatusPayload` (`{ addonId: string, status: AddonContainerStatus, lastErrorCode?: string }`) | PackageCenter AddonEventWatcher (global) |
+| `addon:pending-task-changed` | Server → Client | `AddonPendingTaskPayload` (`{ addonId: string, taskPhase: AddonPendingPhase \| null }`) | PackageCenter AddonGrid (pending overlay) |
+| `addon:uninstalled` | Server → Client | `{ addonId: string }` | AddonEventWatcher (remove addon + toast) |
 
 ### Hooks
 
@@ -442,7 +444,9 @@ NmxHub (IHubContext)
   ├── ISystemNotifier → NotifyConfigChangedAsync(key)
   ├── ITrafficNotifier → NotifyFlushAsync()
   ├── ILogNotifier → NotifyNewEntriesAsync()
-  └── IAddonNotifier → NotifyAddonStatusChanged(addonId, status)
+  └── IAddonNotifier → NotifyAddonStatusChanged(addonId, status, lastErrorCode?)
+       ├── NotifyPendingTaskChanged(addonId, phase?)
+       └── NotifyAddonUninstalled(addonId)
 ```
 
 ### Key files
