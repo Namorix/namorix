@@ -60,6 +60,13 @@ Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và 
 - Backend: `RefreshToken` entity thêm `RememberMe` property. `AuthService.RefreshToken()` dùng `storedToken.RememberMe` cho TTL. `AuthController.TryRefresh()` dùng `rememberMe` từ tuple cho cookie. Migration mới `AddRememberMeToRefreshToken`.
 - Versions: core 0.41.1, frontend 0.52.1, Namorix.Core 0.42.1, Namorix.Server 0.45.1.
 
+### 2026-07-03 (4) — InstallAsync catalog rewrite, frontend catalog store, identity cleanup
+
+- Backend: `AddonTaskExecutor.InstallAsync` full rewrite — catalog lookup, null check for catalogEntry, ParseCatalogPorts, proper AddonStatus.Installed (not Running), Docker error handling. `DockerService` — ImageExistsLocallyAsync, container Name = spec.AddonId. InstallRequest simplified to just Id. Xoá `ComputeAddonId` + AddonHelper.
+- Frontend: Redux slice thêm catalog state + setCatalog reducer. `updateAddonStatus` tạo minimal entry cho addon mới với name từ catalog. AddonEventWatcher thêm catalogRef fallback + "installed" toast handler. handleInstall/InstallAddonDto simplified. ADDON_NOT_FOUND error code.
+- Core: Xoá `computeAddonId` util (không còn dùng).
+- Versions: Namorix.Core 0.42.3, Namorix.Server 0.45.3, frontend 0.52.3.
+
 ### 2026-07-03 (3) — F5 refresh race fix, ContainerId separation, toast dedup, orphan cleanup
 
 - Core: HTTP client bỏ `ApiAuthRoutes.session` khỏi interceptor exclusion list — session 401 dùng chung shared refresh promise với các request khác, triệt tiêu race condition F5. Simplify `AddonContainerStatus` type (xóa unused states).

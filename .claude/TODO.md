@@ -112,4 +112,28 @@
 
 ---
 
+## Install container — AddonTaskExecutor.InstallAsync
+
+**Context**: Install button ở PackageCenter AddonGrid không có onClick handler. Backend `InstallAsync` đang để trống. Cần implement flow install: pull image → create container → start → save DB → notify.
+
+**Approach**:
+- Frontend: thêm `image` field vào `DisplayAddon`, populate từ `cat.image`, handleInstall pattern giống handleStart/Stop
+- Backend: Implement `InstallAsync` — pull image, create container với labels/env vars, **lưu DB status = "installed" (không start)**, notify
+- Sau install, user bấm Start → dùng ContainerId từ DB để start
+- ContainerId từ Docker create response, lưu vào DB → dùng cho start/stop/uninstall sau
+
+**Issues**:
+- `ApiUrl` (NMX_API_URL env var cho container) — cần config hoặc hardcode
+- OAuth key gen (ClientId/RedirectUri) — generate tạm, OAuth đầy đủ làm sau
+- HostPort auto-allocate khi không chỉ định — Docker random port
+- Cần quyết định ApiUrl approach trước khi implement
+
+**Files**:
+- `frontend/src/addons/PackageCenter/AddonGrid.tsx` — thêm `image` vào DisplayAddon, handleInstall, gắn onClick
+- `backend/src/Namorix.Server/Services/AddonTaskExecutor.cs` — implement InstallAsync
+- `backend/src/Namorix.Server/Controllers/AddonController.cs` — thêm SetTaskPending(Installing)
+- `backend/src/Namorix.Core/Config/AppConfig.cs` — optional: thêm ApiUrl
+
+**Status**: Deferred — chờ quyết định ApiUrl + OAuth approach.
+
 	

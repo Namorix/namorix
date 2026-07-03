@@ -550,12 +550,18 @@ Window open
 External addon lifecycle:
 ```
 User installs addon
-  └── POST /api/addons/install { image, hostPort, name }
-        ├── DockerService.PullImageAsync()
-        ├── AddonService generates RSA key pair (OAuth client credentials)
-        ├── DockerService.CreateContainerAsync() with env vars + port mapping
-        ├── DockerService.StartContainerAsync()
-        └── Save to DB + return manifest
+  └── POST /api/addons/install { id }
+        ├── AddonController: SetTaskPending(id, Installing), enqueue Install task
+        └── AddonTaskQueue → AddonTaskExecutor.InstallAsync(id)
+              ├── Look up catalog entry by id (AddonCatalogEntry)
+              ├── If catalog entry not found → notify ADDON_NOT_FOUND error
+              ├── DockerService.ImageExistsLocallyAsync(image)
+              │     └── If false → DockerService.PullImageAsync(image)
+              ├── ParseCatalogPorts(catalogEntry.Ports) — JSON [{"container":5180,"protocol":"tcp"}]
+              ├── DockerService.CreateContainerAsync() with env vars + port mapping
+              │     (container created but NOT started)
+              ├── Save AddonInstallation to DB (Status = Installed)
+              └── NotifyAddonStatusChanged(addonId, Installed) via SignalR
 
 DockerMonitorWorker
   ├── [Init] SyncAllContainersAsync — full sync once on startup

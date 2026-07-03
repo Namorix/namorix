@@ -135,12 +135,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.52.2 | M4 (F5 refresh race fix — session 401 uses shared promise, toast dedup) |
+| frontend | 0.52.3 | M4 (Install flow fix — catalog store, updateAddonStatus creates entries, InstallAddonDto simplified) |
 | @namorix/core | 0.41.2 | M4 (Session removed from interceptor exclusion list, type cleanup) |
 | @namorix/styles | 0.36.1 | M4 (Status icon colors for running/stopped in package-center) |
 | @namorix/ui | 0.26.0 | M4 (ERROR icon symbol) |
-| Namorix.Core | 0.42.2 | M4 (AddonInstallation.ContainerId property) |
-| Namorix.Server | 0.45.2 | M4 (Session() no TryRefresh, ContainerId separation, DockerMonitor fixes) |
+| Namorix.Core | 0.42.3 | M4 (ADDON_NOT_FOUND error code) |
+| Namorix.Server | 0.45.3 | M4 (InstallAsync catalog lookup, port parsing, DockerService.ImageExistsLocallyAsync) |
 
 ## Version Rules
 
@@ -199,6 +199,13 @@
 - frontend 0.51.0 → 0.52.0: MODIFIED: `AddonEventWatcher.tsx` — toast on start/stop success + error via `formatAddonErrorCode`, `AddonUninstalled` handler. `AddonGrid.tsx` — `AddonPendingTaskChanged` handler for pending overlay, stats rename `total`→`installed` + `available` count, error badge on card. `addonError.ts` — `formatAddonErrorCode` function. `addon.controller.ts` — `pendingTaskPhase` + `lastErrorCode` in `AddonManifestDto`. `signalr/constants.ts` — `AddonPendingTaskChanged` + `AddonUninstalled` events. `externalAddonsSlice.ts` — `lastErrorCode` in `updateAddonStatus`. `en.json` — new error locale keys, `generic` error, stats template.
 - Namorix.Core 0.41.0 → 0.42.0: MODIFIED: `Models/AddonInstallation.cs` — `LastErrorMessage` → `LastErrorCode`.
 - Namorix.Server 0.44.0 → 0.45.0: MODIFIED: `Infrastructure/IAddonNotifier.cs` — `NotifyPendingTaskChanged` + `NotifyAddonUninstalled`. `Hubs/SignalRAddonNotifier.cs` — implementations for both. `Services/AddonTaskExecutor.cs` — `StartAsync`/`StopAsync` DB null check, Docker error → `AddonErrorCodes`, `UninstallAsync` uses `NotifyPendingTaskChanged` + `NotifyAddonUninstalled`. `Services/AddonTaskQueue.cs` — `NotifyPendingTaskChanged` in `SetErrorStatusAsync`, logger in catch. `Infrastructure/IAddonNotifier.cs`. NEW: `Constants/AddonError.cs`. MODIFIED: `Constants/Addon.cs` — `AddonTaskPending` renamed → `AddonTaskPendingStatus` + new constants (Installing, Updating, Pulling). `Constants/ServerSignalR.cs` — `AddonUninstalled` event. `Services/AddonService.cs` — inject `IAddonNotifier`, `SetTaskPending` calls `NotifyPendingTaskChanged`. NEW migration `RenameLastErrorCode`.`
+
+### 2026-07-03 (4) — InstallAsync catalog rewrite, frontend catalog store, identity cleanup
+
+- Namorix.Core 0.42.2 → 0.42.3: MODIFIED: `Constants/Error.cs` — ADDON_NOT_FOUND error code.
+- Namorix.Server 0.45.2 → 0.45.3: MODIFIED: `Services/AddonTaskExecutor.cs` — InstallAsync full rewrite: catalog lookup, null check for catalogEntry, ParseCatalogPorts, proper AddonStatus.Installed (not Running), Docker error handling. `Services/DockerService.cs` — ImageExistsLocallyAsync, container Name = spec.AddonId. `Controllers/AddonController.cs` — use request.Id instead of computed AddonId. `Services/AddonService.cs` — InstallRequest simplified to just Id. REMOVED: `Helpers/AddonHelper.cs` (ComputeAddonId unused).
+- frontend 0.52.2 → 0.52.3: MODIFIED: `store/slices/externalAddonsSlice.ts` — catalog state + setCatalog reducer, updateAddonStatus creates minimal entry for new addons with name from catalog. `store/selectors/externalAddonSelectors.ts` — selectorCatalog. `addons/PackageCenter/AddonEventWatcher.tsx` — catalogRef fallback for name, "installed" toast handler. `addons/PackageCenter/AddonGrid.tsx` — handleInstall simplified (id only), Redux catalog integration. `controllers/addon.controller.ts` — InstallAddonDto simplified (id only). `addons/PackageCenter/addonError.ts` + `constants/error.ts` — ADDON_NOT_FOUND. `i18n/locales/en.json` — installed key.
+- @namorix/core: REMOVED: `addon/utils.ts` — computeAddonId (no longer needed).
 
 ### 2026-07-03 (3) — F5 refresh race fix, ContainerId separation, toast dedup
 
