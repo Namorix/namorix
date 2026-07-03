@@ -69,14 +69,7 @@ export interface AddonEntry {
   unmount(container: HTMLElement): void
 }
 
-export type AddonContainerStatus =
-  | "installing"
-  | "installed"
-  | "starting"
-  | "running"
-  | "stopped"
-  | "error"
-  | "uninstalling"
+export type AddonContainerStatus = "installed" | "running" | "stopped" | "error"
 
 export type AddonPendingPhase =
   | "starting"

@@ -98,8 +98,7 @@ class RequestBuilder {
       if (
         result.status === HttpStatus.UNAUTHORIZED &&
         !this._retried &&
-        !this._url.includes(ApiAuthRoutes.refresh) &&
-        !this._url.includes(ApiAuthRoutes.session)
+        !this._url.includes(ApiAuthRoutes.refresh)
       ) {
         if (!refreshPromise) {
           refreshPromise = nmxHttp
