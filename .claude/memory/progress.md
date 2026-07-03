@@ -135,12 +135,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.52.0 | M4 (NotifyPendingTaskChanged handler, AddonPendingTaskPayload, stats rename, error toast) |
-| @namorix/core | 0.41.0 | M4 (AddonPendingPhase, AddonPendingTaskPayload, lastErrorCode fields) |
+| frontend | 0.52.1 | M4 (AddonGrid version display bug fix, refresh race condition) |
+| @namorix/core | 0.41.1 | M4 (HTTP client refresh race condition — shared promise dedupe) |
 | @namorix/styles | 0.36.0 | M4 (Error icon SCSS, __icon-status block, icomoon rebuild) |
 | @namorix/ui | 0.26.0 | M4 (ERROR icon symbol) |
-| Namorix.Core | 0.42.0 | M4 (LastErrorMessage → LastErrorCode rename) |
-| Namorix.Server | 0.45.0 | M4 (NotifyPendingTaskChanged/NotifAddonUninstalled, AddonErrorCodes, executor refactor) |
+| Namorix.Core | 0.42.1 | M4 (RefreshToken.RememberMe property) |
+| Namorix.Server | 0.45.1 | M4 (RememberMe preserve on refresh, AuthService ttlDays fix) |
 
 ## Version Rules
 
@@ -183,6 +183,13 @@
 - @namorix/styles 0.34.0 → 0.35.0: MODIFIED: `package-center.scss` — `__stats` block (centered summary text), `flex: 1` on rail, smaller placeholder font.
 - frontend 0.50.0 → 0.51.0: MODIFIED: `PackageCenter/AddonGrid.tsx` — stats bar (total/running/stopped), handleStart returns Promise with optimistic pending state, installed-first alphabetical sort, updated tab filters by `hasUpdate`, uninstall action rename. MODIFIED: `PackageCenter/AddonEventWatcher.tsx` — uses `AddonStatusPayload`, removed console.log, `useServerSignalREvent` uncommented (now active). REMOVED: `hooks/useAddonEvents.ts` (dead commented code). MODIFIED: `pages/Desktop.tsx` — removed `useAddonEvents` call. MODIFIED: `store/slices/externalAddonsSlice.ts` — `AddonStatusPayload` type for `updateAddonStatus`. MODIFIED: `i18n/locales/en.json` — new `stats` key, `starting`/`stopping` tab labels.
 - Namorix.Server 0.43.0 → 0.44.0: MODIFIED: `Constants/Addon.cs` — extracted `AddonTaskPending` class from `AddonStatus`. MODIFIED: `Services/AddonTaskExecutor.cs` — `StartAsync`/`StopAsync`/`UninstallAsync` full implementation with Docker calls + `SetStatusAsync` with `ExecuteUpdateAsync` (clears `PendingTaskId`). MODIFIED: `Controllers/AddonController.cs` — `SetTaskPending` calls with `AddonTaskPending.{Starting,Stopping,Uninstalling}`. `AddonStatus.Uninstalling` → `AddonTaskPending.Uninstalling`.
+
+### 2026-07-03 (2) — Refresh race condition fix, RememberMe preserve on token refresh
+
+- @namorix/core 0.41.0 → 0.41.1: MODIFIED: `http/client.ts` — shared refresh promise (`refreshPromise`) để dedupe concurrent 401 refresh calls, tránh token reuse detection trên backend.
+- frontend 0.52.0 → 0.52.1: MODIFIED: `AddonGrid.tsx` — `version: cat.version` → `version: installed?.version ?? cat.version` (hiển thị đúng version đã install thay vì lấy từ catalog).
+- Namorix.Core 0.42.0 → 0.42.1: MODIFIED: `Models/RefreshToken.cs` — added `RememberMe` property.
+- Namorix.Server 0.45.0 → 0.45.1: MODIFIED: `Services/AuthService.cs` — `RefreshToken()` dùng `storedToken.RememberMe` cho TTL tính toán, không còn hardcode 7 ngày. `Controllers/AuthController.cs` — `TryRefresh()` dùng `rememberMe` từ tuple cho `SetRefreshCookie`. NEW migration `AddRememberMeToRefreshToken`.
 
 ### 2026-07-03 — NotifyPendingTaskChanged wiring, error toast, LastErrorCode rename
 

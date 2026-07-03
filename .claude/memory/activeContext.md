@@ -53,6 +53,13 @@ Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và 
 - Styles: `package-center.scss` — `__stats` block, rail `flex: 1`.
 - Versions: core 0.40.0, styles 0.35.0, frontend 0.51.0, Namorix.Server 0.44.0.
 
+### 2026-07-03 (2) — Refresh race condition fix, RememberMe preserve on token refresh
+
+- Core: HTTP client shared refresh promise (`refreshPromise`) — dedupe concurrent 401 calls, tránh token reuse detection.
+- Frontend: AddonGrid version display bug fix — dùng `installed?.version ?? cat.version` thay vì `cat.version`.
+- Backend: `RefreshToken` entity thêm `RememberMe` property. `AuthService.RefreshToken()` dùng `storedToken.RememberMe` cho TTL. `AuthController.TryRefresh()` dùng `rememberMe` từ tuple cho cookie. Migration mới `AddRememberMeToRefreshToken`.
+- Versions: core 0.41.1, frontend 0.52.1, Namorix.Core 0.42.1, Namorix.Server 0.45.1.
+
 ### 2026-07-03 — NotifyPendingTaskChanged wiring, error toast, LastErrorCode rename
 - Core: `AddonPendingPhase` type (6 phases), `AddonPendingTaskPayload` interface, `lastErrorCode` + `pendingTaskPhase` on ExternalAddonManifest, `lastErrorCode` on AddonStatusPayload.
 - Backend: `IAddonNotifier` extended with `NotifyPendingTaskChanged` + `NotifyAddonUninstalled`. `AddonTaskExecutor` refactored — Start/Stop DB null check, Docker error → `AddonErrorCodes`, UninstallAsync uses new notifier methods. `SetTaskPending` calls `NotifyPendingTaskChanged`. `AddonErrorCodes` constants. `LastErrorMessage` → `LastErrorCode` rename + migration. SignalR events: `addon:pending-task-changed`, `addon:uninstalled`.
