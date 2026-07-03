@@ -1,7 +1,7 @@
 import {
   type AddonCatalogEntry,
   type AddonContainerStatus,
-  type AddonStatusPayload,
+  type AddonPendingPhase,
   type ExternalAddonManifest,
   nmxToast,
   semverCompare,
@@ -17,7 +17,6 @@ import {
   selectorExternalAddonsOrder,
   setAddonLoading,
   setAddons,
-  updateAddonStatus,
   useAppDispatch,
   useAppSelector,
 } from "../../store"
@@ -52,13 +51,12 @@ interface DisplayAddon {
   isInstalled: boolean
   hasUpdate: boolean
   status?: AddonContainerStatus
+  lastErrorCode?: string
 }
-
-type PendingStatus = "starting" | "stopping" | "uninstalling"
 
 interface PendingAction {
   id: string
-  status?: PendingStatus
+  taskPhase?: AddonPendingPhase
 }
 
 export const AddonGrid: React.FC = () => {
@@ -79,13 +77,17 @@ export const AddonGrid: React.FC = () => {
   const externalAddonsOrder = useAppSelector(selectorExternalAddonsOrder)
   const loading = useAppSelector(selectorExternalAddonsLoading)
 
-  const totalInstalled = externalAddonsOrder.length
+  const installedCount = externalAddonsOrder.length
   const runningCount = useMemo(
     () =>
       externalAddonsOrder.filter(
         (id) => externalAddonsMap[id]?.status === "running",
       ).length,
     [externalAddonsOrder, externalAddonsMap],
+  )
+  const catalogAvailable = useMemo(
+    () => catalog.filter((c) => !externalAddonsMap[c.id]).length,
+    [catalog, externalAddonsMap],
   )
 
   const catalogById = useMemo(
@@ -117,6 +119,7 @@ export const AddonGrid: React.FC = () => {
             author: dto.author,
             installedAt: dto.installedAt,
             pendingTaskId: dto.pendingTaskId,
+            lastErrorCode: dto.lastErrorCode,
           }) as ExternalAddonManifest,
       )
 
@@ -124,16 +127,10 @@ export const AddonGrid: React.FC = () => {
 
       const pendingRecovered: Record<string, PendingAction> = {}
       for (const a of addons) {
-        if (a.pendingTaskId) {
-          let status: PendingStatus = "stopping"
-          switch (a.status) {
-            case "uninstalling":
-              status = "uninstalling"
-          }
-
+        if (a.pendingTaskId && a.pendingTaskPhase) {
           pendingRecovered[a.id] = {
             id: a.id,
-            status,
+            taskPhase: a.pendingTaskPhase,
           }
         }
       }
@@ -148,16 +145,19 @@ export const AddonGrid: React.FC = () => {
     loadData().catch((err) => nmxToast.error(err))
   }, [loadData])
 
-  useServerSignalREvent<AddonStatusPayload>(
-    ServerSignalREvent.AddonStatusChanged,
+  useServerSignalREvent<{ addonId: string; taskPhase: string | null }>(
+    ServerSignalREvent.AddonPendingTaskChanged,
     (data) => {
-      dispatch(
-        updateAddonStatus({ addonId: data.addonId, status: data.status }),
-      )
-
       setPendingMap((prev) => {
         const n = { ...prev }
-        delete n[data.addonId]
+        if (data.taskPhase) {
+          n[data.addonId] = {
+            id: data.addonId,
+            taskPhase: data.taskPhase as AddonPendingPhase,
+          }
+        } else {
+          delete n[data.addonId]
+        }
         return n
       })
     },
@@ -279,7 +279,7 @@ export const AddonGrid: React.FC = () => {
         ...prev,
         [addon.id]: {
           id: addon.id,
-          status: "starting",
+          taskPhase: "starting",
         },
       }))
 
@@ -300,7 +300,7 @@ export const AddonGrid: React.FC = () => {
       e.preventDefault()
       setPendingMap((prev) => ({
         ...prev,
-        [addon.id]: { id: addon.id, status: "stopping" },
+        [addon.id]: { id: addon.id, taskPhase: "stopping" },
       }))
 
       addonController.stop(addon.id).catch((err) => {
@@ -332,7 +332,7 @@ export const AddonGrid: React.FC = () => {
       ...prev,
       [target.id]: {
         id: target.id,
-        status: "uninstalling",
+        taskPhase: "uninstalling",
       },
     }))
 
@@ -385,6 +385,12 @@ export const AddonGrid: React.FC = () => {
                     titleClassName="nmx-addon-package-center__card-title"
                     descriptionClassName="nmx-addon-package-center__card-description"
                   />
+                  {addon.status === "error" && (
+                    <NmxIconFont
+                      symbol={NmxIconFontSymbol.ERROR}
+                      className="nmx-addon-package-center__icon-status"
+                    />
+                  )}
                 </div>
                 <NmxCardBody className="nmx-addon-package-center__card-body">
                   {addon.description}
@@ -455,7 +461,7 @@ export const AddonGrid: React.FC = () => {
                       <span>
                         {t(
                           "addon.packageCenter.status." +
-                            (pendingMap[addon.id]?.status ?? "unknown"),
+                            (pendingMap[addon.id]?.taskPhase ?? "unknown"),
                         )}
                       </span>
                     </div>
@@ -475,12 +481,12 @@ export const AddonGrid: React.FC = () => {
         )}
       </div>
 
-      {!loading && totalInstalled > 0 && (
+      {!loading && installedCount > 0 && (
         <div className="nmx-addon-package-center__stats">
           {t("addon.packageCenter.stats", {
-            total: totalInstalled,
+            installed: installedCount,
             running: runningCount,
-            stopped: totalInstalled - runningCount,
+            available: catalogAvailable,
           })}
         </div>
       )}

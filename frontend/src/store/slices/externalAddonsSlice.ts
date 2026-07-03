@@ -33,7 +33,12 @@ export const externalAddonsSlice = createSlice({
 
     updateAddonStatus(state, action: PayloadAction<AddonStatusPayload>) {
       const addon = state.items[action.payload.addonId]
-      if (addon) addon.status = action.payload.status
+      if (addon) {
+        addon.status = action.payload.status
+        if (action.payload.lastErrorCode !== undefined) {
+          addon.lastErrorCode = action.payload.lastErrorCode
+        }
+      }
     },
 
     removeAddon(state, action: PayloadAction<string>) {

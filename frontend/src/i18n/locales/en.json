@@ -311,7 +311,7 @@
       "empty": "No applications found",
       "uninstallTitle": "Uninstall addon",
       "uninstallConfirm": "Are you sure you want to uninstall **{{name}}**?",
-      "stats": "{{total}} total · {{running}} running · {{stopped}} stopped",
+      "stats": "{{installed}} installed · {{running}} running · {{available}} available",
       "cancelAction": "Cancel",
       "tabs": {
         "all": "All",
@@ -331,8 +331,9 @@
         "uninstall": "Uninstall"
       },
       "errors": {
+        "generic": "{{name}} encountered an error",
         "notFound": "{{name}} not found",
-        "containerNotFound": "Container for {{name}} not found",
+        "containerNotFound": "Container {{name}} not found",
         "installFailed": "Failed to install {{name}}"
       },
       "success": {
