@@ -41,11 +41,11 @@ public class AddonTaskExecutor(
     private async Task StartAsync(string addonId, CancellationToken ct)
     {
         var addon = await db.AddonInstallations.FindAsync([addonId], ct);
-        if (addon is not null)
+        if (addon?.ContainerId != null)
         {
             try
             {
-                await docker.StartContainerAsync(addonId);
+                await docker.StartContainerAsync(addon.ContainerId);
                 await SetStatusAsync(addonId, AddonStatus.Running);
                 await notifier.NotifyAddonStatusChanged(addonId, AddonStatus.Running);
             }
@@ -64,11 +64,11 @@ public class AddonTaskExecutor(
     private async Task StopAsync(string addonId, CancellationToken ct)
     {
         var addon = await db.AddonInstallations.FindAsync([addonId], ct);
-        if (addon is not null)
+        if (addon?.ContainerId != null)
         {
             try
             {
-                await docker.StopContainerAsync(addonId);
+                await docker.StopContainerAsync(addon.ContainerId);
                 await SetStatusAsync(addonId, AddonStatus.Stopped);
                 await notifier.NotifyAddonStatusChanged(addonId, AddonStatus.Stopped);
             }
@@ -87,12 +87,12 @@ public class AddonTaskExecutor(
     private async Task UninstallAsync(string addonId, CancellationToken ct)
     {
         var addon = await db.AddonInstallations.FindAsync([addonId], ct);
-        if (addon is not null)
+        if (addon?.ContainerId != null)
         {
             try
             {
-                await docker.StopContainerAsync(addonId);
-                await docker.RemoveContainerAsync(addonId);
+                await docker.StopContainerAsync(addon.ContainerId);
+                await docker.RemoveContainerAsync(addon.ContainerId);
             }
             catch (DockerContainerNotFoundException)
             {
@@ -133,10 +133,5 @@ public class AddonTaskExecutor(
                     .SetProperty(a => a.PendingTaskId, (string?)null)
                     .SetProperty(a => a.PendingTaskPhase, (string?)null));
         }
-    }
-    
-    private async Task<string?> FindContainerIdAsync(string addonId)
-    {
-        return "";
     }
 }

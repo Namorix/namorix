@@ -84,6 +84,7 @@ public class DockerMonitorWorker(
                 db.AddonInstallations.Add(new AddonInstallation
                 {
                     Id = addonId,
+                    ContainerId = container.ID,
                     Name = name ?? addonId,
                     Description = description,
                     Author = author,
@@ -102,17 +103,18 @@ public class DockerMonitorWorker(
                 SyncSingleAddon(container, addonId, dbAddons);
             }
         }
+        
         // Orphaned addons → error
         var containerAddonIds = containers
             .Where(c => c.Labels.TryGetValue(AddonLabels.Id, out _))
             .Select(c => c.Labels[AddonLabels.Id])
             .ToHashSet();
         
-        foreach (var addon in dbAddons.Where(a =>
-            !containerAddonIds.Contains(a.Id) && a.Status != AddonStatus.Error))
+        foreach (var addon in dbAddons.Where(a => !containerAddonIds.Contains(a.Id)))
         {
-            addon.Status = AddonStatus.Error;
-            await notifier.NotifyAddonStatusChanged(addon.Id, AddonStatus.Error);
+            db.AddonInstallations.Remove(addon);
+            await notifier.NotifyAddonUninstalled(addon.Id);
+            logger.LogInformation("Cleaned up orphaned addon {Id} (container missing)", addon.Id);
         }
         
         await db.SaveChangesAsync(ct);
@@ -124,6 +126,8 @@ public class DockerMonitorWorker(
         List<AddonInstallation> dbAddons)
     {
         var addon = dbAddons.First(a => a.Id == addonId);
+        addon.ContainerId = container.ID;
+
         var newStatus = container.State switch
         {
             DockerState.Running => AddonStatus.Running,
@@ -208,12 +212,11 @@ public class DockerMonitorWorker(
         CancellationToken ct)
     {
         var count = await db.AddonInstallations
-            .Where(a => a.Id == addonId)
-            .ExecuteUpdateAsync(
-                setters => setters.SetProperty(a => a.Status, status),
-                ct);
+            .Where(a => a.Id == addonId && a.Status != status)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(a => a.Status, status), ct);
         if (count > 0)
             await notifier.NotifyAddonStatusChanged(addonId, status);
+        
         logger.LogInformation("Addon {Id} → {Status}", addonId, status);
     }
     

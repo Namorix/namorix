@@ -110,23 +110,19 @@ public class AuthController(AuthService authService, SettingsService settingsSer
     public async Task<IActionResult> Session()
     {
         var accessToken = GetAccessCookie();
-
         if (string.IsNullOrEmpty(accessToken))
-            return await TryRefresh();
-
+            return Unauthorized(ApiResponse.Fail(AuthErrors.Unauthorized));
+        
         var payload = authService.VerifyAccessToken(accessToken);
-
         if (!payload.HasValue)
-            return await TryRefresh();
-
+            return Unauthorized(ApiResponse.Fail(AuthErrors.Unauthorized));
+        
         var user = await authService.GetUserById(payload.Value.userId);
         if (user != null)
             return UserOk(user);
-
+        
         ClearAccessCookie();
-        ClearRefreshCookie();
         return Unauthorized(ApiResponse.Fail(AuthErrors.Unauthorized));
-
     }
     
     [TrafficPost("refresh", Label = "Auth Refresh Token")]

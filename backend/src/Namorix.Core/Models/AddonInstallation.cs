@@ -5,6 +5,7 @@ namespace Namorix.Core.Models;
 public class AddonInstallation
 {
     [MaxLength(100)] public string Id { get; init; } = string.Empty;
+    [MaxLength(100)] public string? ContainerId { get; set; }
     [MaxLength(100)] public string Name { get; set; } = string.Empty;
     [MaxLength(250)] public string? Description { get; set; }
     [MaxLength(500)] public string? Icon { get; init; }
