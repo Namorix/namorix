@@ -120,7 +120,7 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig,
     }
 
     private static RefreshToken CreateRefreshToken(User user, string jti, string refreshToken,
-        string? userAgent, string? fingerprint, string? ipAddress, int ttlDays)
+        string? userAgent, string? fingerprint, string? ipAddress, int ttlDays, bool rememberMe)
     {
         return new RefreshToken
         {
@@ -128,6 +128,7 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig,
             Jti = jti,
             TokenHash = HashToken(refreshToken),
             ExpiresAt = DateTime.UtcNow.AddDays(ttlDays),
+            RememberMe = rememberMe,
             CreatedAt = DateTime.UtcNow,
             UserAgent = userAgent,
             Fingerprint = fingerprint,
@@ -175,8 +176,8 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig,
         }
     }
 
-    public async Task<(User user, string accessToken, string refreshToken)> RefreshToken(string token,
-        string? fingerprint, string? ipAddress)
+    public async Task<(User user, string accessToken, string refreshToken, bool rememberMe)> RefreshToken(
+        string token, string? fingerprint, string? ipAddress)
     {
         string tokenHash;
 
@@ -223,9 +224,9 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig,
         dbContext.RefreshTokens.Remove(storedToken);
 
         var (newAccessToken, newRefreshToken, newJti) = GenerateTokens(user);
-        var ttlDays = GetRefreshTokenExpiration();
+        var ttlDays = GetRefreshTokenExpiration(storedToken.RememberMe);
         var newEntity = CreateRefreshToken(user, newJti, newRefreshToken,
-            storedToken.UserAgent, fingerprint, ipAddress, ttlDays);
+            storedToken.UserAgent, fingerprint, ipAddress, ttlDays, storedToken.RememberMe);
 
         dbContext.RefreshTokens.Add(newEntity);
         try
@@ -241,7 +242,7 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig,
         }
 
         logger.LogInformation("Token refreshed: userId={UserId}", user.Id);
-        return (user, newAccessToken, newRefreshToken);
+        return (user, newAccessToken, newRefreshToken, storedToken.RememberMe);
     }
 
     public async Task RevokeTokenByHash(string rawToken)
@@ -281,7 +282,7 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig,
             var ttlDays = GetRefreshTokenExpiration(rememberMe);
             var (accessToken, refreshToken, jti) = GenerateTokens(user);
             var refreshTokenEntity = CreateRefreshToken(user, jti, refreshToken,
-                userAgent, fingerprint, ipAddress, ttlDays);
+                userAgent, fingerprint, ipAddress, ttlDays, rememberMe);
             dbContext.RefreshTokens.Add(refreshTokenEntity);
             await dbContext.SaveChangesAsync();
             return (user, accessToken, refreshToken);

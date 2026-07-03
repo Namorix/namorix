@@ -167,11 +167,11 @@ public class AuthController(AuthService authService, SettingsService settingsSer
         {
             var fingerprint = GetFingerprint();
             var ipAddress = GetClientIp();
-            var (user, newAccessToken, newRefreshToken) =
+            var (user, newAccessToken, newRefreshToken, rememberMe) =
                 await authService.RefreshToken(refreshToken, fingerprint, ipAddress);
 
             SetAccessCookie(newAccessToken);
-            SetRefreshCookie(newRefreshToken, false);
+            SetRefreshCookie(newRefreshToken, rememberMe);
 
             return UserOk(user);
         }

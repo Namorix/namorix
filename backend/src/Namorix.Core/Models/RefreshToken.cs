@@ -13,6 +13,8 @@ public class RefreshToken
     [MaxLength(500)]
     public string TokenHash { get; init; } = string.Empty;
     
+    public bool RememberMe { get; init; }
+    
     public DateTime ExpiresAt { get; init; }
     public DateTime CreatedAt { get; init; }
     
