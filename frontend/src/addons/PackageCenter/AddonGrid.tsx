@@ -21,6 +21,7 @@ import {
   useAppSelector,
 } from "../../store"
 import {
+  cx,
   NmxAlertDialog,
   NmxButton,
   NmxButtonRefresh,
@@ -385,10 +386,19 @@ export const AddonGrid: React.FC = () => {
                     titleClassName="nmx-addon-package-center__card-title"
                     descriptionClassName="nmx-addon-package-center__card-description"
                   />
-                  {addon.status === "error" && (
+                  {addon.status !== "installed" && (
                     <NmxIconFont
-                      symbol={NmxIconFontSymbol.ERROR}
-                      className="nmx-addon-package-center__icon-status"
+                      symbol={
+                        addon.status === "running"
+                          ? NmxIconFontSymbol.PLAY
+                          : addon.status === "error"
+                            ? NmxIconFontSymbol.ERROR
+                            : NmxIconFontSymbol.STOP
+                      }
+                      className={cx(
+                        "nmx-addon-package-center__icon-status",
+                        addon.status,
+                      )}
                     />
                   )}
                 </div>
@@ -418,7 +428,7 @@ export const AddonGrid: React.FC = () => {
                   )}
                   {addon.isInstalled && addon.status === "running" && (
                     <NmxButton
-                      semantic="success"
+                      semantic="default"
                       uppercase
                       className="nmx-addon-package-center__btn"
                       onClick={(e) => handleStop(e, addon)}
