@@ -11,6 +11,7 @@ import { ApiAuthRoutes } from "../apiRoutes"
 
 type UnauthorizedHandler = () => void
 let onUnauthorized: UnauthorizedHandler | null = null
+let refreshPromise: Promise<ApiResponse<unknown>> | null = null
 
 class RequestBuilder {
   private _url: string
@@ -100,10 +101,17 @@ class RequestBuilder {
         !this._url.includes(ApiAuthRoutes.refresh) &&
         !this._url.includes(ApiAuthRoutes.session)
       ) {
-        const refreshResponse = await nmxHttp
-          .url(getApiBaseUrl() + ApiAuthRoutes.refresh)
-          .post()
-          .json()
+        if (!refreshPromise) {
+          refreshPromise = nmxHttp
+            .url(getApiBaseUrl() + ApiAuthRoutes.refresh)
+            .post()
+            .json()
+            .finally(() => {
+              refreshPromise = null
+            })
+        }
+
+        const refreshResponse = await refreshPromise
 
         if (!refreshResponse.success) {
           onUnauthorized?.()
