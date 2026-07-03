@@ -135,12 +135,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.52.1 | M4 (AddonGrid version display bug fix, refresh race condition) |
-| @namorix/core | 0.41.1 | M4 (HTTP client refresh race condition — shared promise dedupe) |
-| @namorix/styles | 0.36.0 | M4 (Error icon SCSS, __icon-status block, icomoon rebuild) |
+| frontend | 0.52.2 | M4 (F5 refresh race fix — session 401 uses shared promise, toast dedup) |
+| @namorix/core | 0.41.2 | M4 (Session removed from interceptor exclusion list, type cleanup) |
+| @namorix/styles | 0.36.1 | M4 (Status icon colors for running/stopped in package-center) |
 | @namorix/ui | 0.26.0 | M4 (ERROR icon symbol) |
-| Namorix.Core | 0.42.1 | M4 (RefreshToken.RememberMe property) |
-| Namorix.Server | 0.45.1 | M4 (RememberMe preserve on refresh, AuthService ttlDays fix) |
+| Namorix.Core | 0.42.2 | M4 (AddonInstallation.ContainerId property) |
+| Namorix.Server | 0.45.2 | M4 (Session() no TryRefresh, ContainerId separation, DockerMonitor fixes) |
 
 ## Version Rules
 
@@ -199,6 +199,14 @@
 - frontend 0.51.0 → 0.52.0: MODIFIED: `AddonEventWatcher.tsx` — toast on start/stop success + error via `formatAddonErrorCode`, `AddonUninstalled` handler. `AddonGrid.tsx` — `AddonPendingTaskChanged` handler for pending overlay, stats rename `total`→`installed` + `available` count, error badge on card. `addonError.ts` — `formatAddonErrorCode` function. `addon.controller.ts` — `pendingTaskPhase` + `lastErrorCode` in `AddonManifestDto`. `signalr/constants.ts` — `AddonPendingTaskChanged` + `AddonUninstalled` events. `externalAddonsSlice.ts` — `lastErrorCode` in `updateAddonStatus`. `en.json` — new error locale keys, `generic` error, stats template.
 - Namorix.Core 0.41.0 → 0.42.0: MODIFIED: `Models/AddonInstallation.cs` — `LastErrorMessage` → `LastErrorCode`.
 - Namorix.Server 0.44.0 → 0.45.0: MODIFIED: `Infrastructure/IAddonNotifier.cs` — `NotifyPendingTaskChanged` + `NotifyAddonUninstalled`. `Hubs/SignalRAddonNotifier.cs` — implementations for both. `Services/AddonTaskExecutor.cs` — `StartAsync`/`StopAsync` DB null check, Docker error → `AddonErrorCodes`, `UninstallAsync` uses `NotifyPendingTaskChanged` + `NotifyAddonUninstalled`. `Services/AddonTaskQueue.cs` — `NotifyPendingTaskChanged` in `SetErrorStatusAsync`, logger in catch. `Infrastructure/IAddonNotifier.cs`. NEW: `Constants/AddonError.cs`. MODIFIED: `Constants/Addon.cs` — `AddonTaskPending` renamed → `AddonTaskPendingStatus` + new constants (Installing, Updating, Pulling). `Constants/ServerSignalR.cs` — `AddonUninstalled` event. `Services/AddonService.cs` — inject `IAddonNotifier`, `SetTaskPending` calls `NotifyPendingTaskChanged`. NEW migration `RenameLastErrorCode`.`
+
+### 2026-07-03 (3) — F5 refresh race fix, ContainerId separation, toast dedup
+
+- @namorix/core 0.41.1 → 0.41.2: MODIFIED: `http/client.ts` — bỏ `ApiAuthRoutes.session` khỏi interceptor exclusion list, session 401 dùng shared refresh promise với các request khác. MODIFIED: `addon/types.ts` — simplify `AddonContainerStatus` union (xóa unused states).
+- @namorix/styles 0.36.0 → 0.36.1: MODIFIED: `package-center.scss` — thêm `.running` (success) và `.stopped` (warning) color cho `__icon-status` block.
+- frontend 0.52.1 → 0.52.2: MODIFIED: `AddonGrid.tsx` — version display fix (`installed?.version ?? cat.version`), status icon cải thiện (running/stop/error icons với color), stop button semantic `success`→`default`.
+- Namorix.Core 0.42.1 → 0.42.2: MODIFIED: `Models/AddonInstallation.cs` — thêm `ContainerId` property.
+- Namorix.Server 0.45.1 → 0.45.2: MODIFIED: `Controllers/AuthController.cs` — `Session()` không còn gọi `TryRefresh()` (trả về 401 luôn nếu thiếu/expired access token), không clear refresh cookie khi session fail. MODIFIED: `Services/AddonTaskExecutor.cs` — `StartAsync`/`StopAsync`/`UninstallAsync` dùng `addon.ContainerId` thay vì `addonId` cho Docker operations. Xoá `FindContainerIdAsync`. MODIFIED: `Workers/DockerMonitorWorker.cs` — `SetAddonStatusAsync` thêm guard `&& a.Status != status` tránh duplicate notification. `SyncSingleAddon` sync `ContainerId`. Orphan cleanup: xóa DB record + `NotifyAddonUninstalled` thay vì set Error status. NEW migration `AddContainerIdToAddonInstallations`.
 
 ### 2026-06-30 — displayName→name refactor, PackageCenter, Description/Author labels
 

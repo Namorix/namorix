@@ -60,6 +60,14 @@ Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và 
 - Backend: `RefreshToken` entity thêm `RememberMe` property. `AuthService.RefreshToken()` dùng `storedToken.RememberMe` cho TTL. `AuthController.TryRefresh()` dùng `rememberMe` từ tuple cho cookie. Migration mới `AddRememberMeToRefreshToken`.
 - Versions: core 0.41.1, frontend 0.52.1, Namorix.Core 0.42.1, Namorix.Server 0.45.1.
 
+### 2026-07-03 (3) — F5 refresh race fix, ContainerId separation, toast dedup, orphan cleanup
+
+- Core: HTTP client bỏ `ApiAuthRoutes.session` khỏi interceptor exclusion list — session 401 dùng chung shared refresh promise với các request khác, triệt tiêu race condition F5. Simplify `AddonContainerStatus` type (xóa unused states).
+- Styles: Package-center SCSS thêm `.running` (success) và `.stopped` (warning) color cho `__icon-status` block.
+- Frontend: AddonGrid version display fix, status icon cải thiện (running/stop/error icons với màu), stop button semantic `success`→`default`.
+- Backend: `Session()` không còn gọi `TryRefresh()` nội bộ — trả về 401 luôn nếu thiếu/expired access token, không clear refresh cookie khi session fail. `AddonTaskExecutor` dùng `addon.ContainerId` cho Docker operations thay vì addonId. Xoá `FindContainerIdAsync`. `DockerMonitorWorker` toast dedup (`SetAddonStatusAsync` guard `&& a.Status != status`), orphan cleanup (xóa DB record + `NotifyAddonUninstalled`), sync `ContainerId` trong `SyncSingleAddon`. Migration mới `AddContainerIdToAddonInstallations`.
+- Versions: core 0.41.2, styles 0.36.1, frontend 0.52.2, Namorix.Core 0.42.2, Namorix.Server 0.45.2.
+
 ### 2026-07-03 — NotifyPendingTaskChanged wiring, error toast, LastErrorCode rename
 - Core: `AddonPendingPhase` type (6 phases), `AddonPendingTaskPayload` interface, `lastErrorCode` + `pendingTaskPhase` on ExternalAddonManifest, `lastErrorCode` on AddonStatusPayload.
 - Backend: `IAddonNotifier` extended with `NotifyPendingTaskChanged` + `NotifyAddonUninstalled`. `AddonTaskExecutor` refactored — Start/Stop DB null check, Docker error → `AddonErrorCodes`, UninstallAsync uses new notifier methods. `SetTaskPending` calls `NotifyPendingTaskChanged`. `AddonErrorCodes` constants. `LastErrorMessage` → `LastErrorCode` rename + migration. SignalR events: `addon:pending-task-changed`, `addon:uninstalled`.
