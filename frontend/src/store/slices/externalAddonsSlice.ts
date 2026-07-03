@@ -1,11 +1,16 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
-import type { AddonStatusPayload, ExternalAddonManifest } from "@namorix/core"
+import type {
+  AddonCatalogEntry,
+  AddonStatusPayload,
+  ExternalAddonManifest,
+} from "@namorix/core"
 
 export interface ExternalAddonsState {
   items: Record<string, ExternalAddonManifest>
   order: string[]
   loading: boolean
   installing: boolean
+  catalog: Record<string, AddonCatalogEntry>
 }
 
 const initialState: ExternalAddonsState = {
@@ -13,6 +18,7 @@ const initialState: ExternalAddonsState = {
   order: [],
   loading: false,
   installing: false,
+  catalog: {},
 }
 
 export const externalAddonsSlice = createSlice({
@@ -32,11 +38,21 @@ export const externalAddonsSlice = createSlice({
     },
 
     updateAddonStatus(state, action: PayloadAction<AddonStatusPayload>) {
-      const addon = state.items[action.payload.addonId]
-      if (addon) {
-        addon.status = action.payload.status
+      const existing = state.items[action.payload.addonId]
+      if (existing) {
+        existing.status = action.payload.status
         if (action.payload.lastErrorCode !== undefined) {
-          addon.lastErrorCode = action.payload.lastErrorCode
+          existing.lastErrorCode = action.payload.lastErrorCode
+        }
+      } else {
+        const catalogEntry = state.catalog[action.payload.addonId]
+        state.items[action.payload.addonId] = {
+          id: action.payload.addonId,
+          name: catalogEntry?.name ?? action.payload.addonId,
+          status: action.payload.status,
+        } as ExternalAddonManifest
+        if (!state.order.includes(action.payload.addonId)) {
+          state.order.push(action.payload.addonId)
         }
       }
     },
@@ -53,6 +69,14 @@ export const externalAddonsSlice = createSlice({
     setAddonInstalling(state, action: PayloadAction<boolean>) {
       state.installing = action.payload
     },
+
+    setCatalog(state, action: PayloadAction<AddonCatalogEntry[]>) {
+      const catalog: Record<string, AddonCatalogEntry> = {}
+      for (const entry of action.payload) {
+        catalog[entry.id] = entry
+      }
+      state.catalog = catalog
+    },
   },
 })
 
@@ -62,6 +86,7 @@ export const {
   removeAddon,
   setAddonLoading,
   setAddonInstalling,
+  setCatalog,
 } = externalAddonsSlice.actions
 
 export const externalAddonsSliceReducer = externalAddonsSlice.reducer

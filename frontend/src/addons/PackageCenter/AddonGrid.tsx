@@ -1,5 +1,4 @@
 import {
-  type AddonCatalogEntry,
   type AddonContainerStatus,
   type AddonPendingPhase,
   type ExternalAddonManifest,
@@ -12,11 +11,13 @@ import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { PackageCenterTab } from "./PackageCenter"
 import {
+  selectorCatalog,
   selectorExternalAddons,
   selectorExternalAddonsLoading,
   selectorExternalAddonsOrder,
   setAddonLoading,
   setAddons,
+  setCatalog,
   useAppDispatch,
   useAppSelector,
 } from "../../store"
@@ -44,6 +45,7 @@ import { ServerSignalREvent, useServerSignalREvent } from "../../signalr"
 
 interface DisplayAddon {
   id: string
+  image?: string
   name: string
   description?: string
   icon?: string
@@ -63,7 +65,6 @@ interface PendingAction {
 export const AddonGrid: React.FC = () => {
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
-  const [catalog, setCatalog] = useState<AddonCatalogEntry[]>([])
   const [pendingMap, setPendingMap] = useState<Record<string, PendingAction>>(
     {},
   )
@@ -77,6 +78,8 @@ export const AddonGrid: React.FC = () => {
   const externalAddonsMap = useAppSelector(selectorExternalAddons)
   const externalAddonsOrder = useAppSelector(selectorExternalAddonsOrder)
   const loading = useAppSelector(selectorExternalAddonsLoading)
+  const catalogRecord = useAppSelector(selectorCatalog)
+  const catalog = useMemo(() => Object.values(catalogRecord), [catalogRecord])
 
   const installedCount = externalAddonsOrder.length
   const runningCount = useMemo(
@@ -105,7 +108,7 @@ export const AddonGrid: React.FC = () => {
         addonController.refreshCatalog(),
       ])
 
-      setCatalog(catalogList)
+      dispatch(setCatalog(catalogList))
       const addons = list.map(
         (dto) =>
           ({
@@ -182,6 +185,7 @@ export const AddonGrid: React.FC = () => {
 
         items.push({
           id: cat.id,
+          image: installed?.image ?? cat.image,
           name: installed?.name ?? cat.name,
           description: installed?.description ?? cat.description,
           icon: installed?.icon ?? cat.icon,
@@ -193,6 +197,7 @@ export const AddonGrid: React.FC = () => {
         })
       }
 
+      // TODO
       // Add installed addons not in catalog (sideloaded)
       for (const id of externalAddonsOrder) {
         if (!catalog.some((c) => c.id === id)) {
@@ -316,6 +321,30 @@ export const AddonGrid: React.FC = () => {
     [t],
   )
 
+  const handleInstall = useCallback(
+    (e: React.MouseEvent, addon: DisplayAddon) => {
+      e.preventDefault()
+      setPendingMap((prev) => ({
+        ...prev,
+        [addon.id]: { id: addon.id, taskPhase: "installing" },
+      }))
+
+      addonController
+        .install({
+          id: addon.id,
+        })
+        .catch((err) => {
+          setPendingMap((prev) => {
+            const next = { ...prev }
+            delete next[addon.id]
+            return next
+          })
+          nmxToast.error(resolveAddonError(t, err, addon.name))
+        })
+    },
+    [t],
+  )
+
   const handleUninstall = useCallback(
     (e: React.MouseEvent, addon: DisplayAddon) => {
       e.preventDefault()
@@ -386,7 +415,7 @@ export const AddonGrid: React.FC = () => {
                     titleClassName="nmx-addon-package-center__card-title"
                     descriptionClassName="nmx-addon-package-center__card-description"
                   />
-                  {addon.status !== "installed" && (
+                  {addon.isInstalled && addon.status !== "installed" && (
                     <NmxIconFont
                       symbol={
                         addon.status === "running"
@@ -407,7 +436,11 @@ export const AddonGrid: React.FC = () => {
                 </NmxCardBody>
                 <NmxCardFooter className="nmx-addon-package-center__card-footer">
                   {!addon.isInstalled && (
-                    <NmxButton fullWidth>
+                    <NmxButton
+                      fullWidth
+                      className="nmx-addon-package-center__btn"
+                      onClick={(e) => handleInstall(e, addon)}
+                    >
                       <NmxIconFont symbol={NmxIconFontSymbol.INSTALL} />
                       <span className="nmx-addon-package-center__btn-label">
                         {t("addon.packageCenter.actions.install")}

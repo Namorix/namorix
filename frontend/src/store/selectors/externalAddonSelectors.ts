@@ -11,3 +11,6 @@ export const selectorExternalAddonsLoading = (state: RootState) =>
 
 export const selectorExternalAddonsInstalling = (state: RootState) =>
   state.externalAddons.installing
+
+export const selectorCatalog = (state: RootState) =>
+  state.externalAddons.catalog

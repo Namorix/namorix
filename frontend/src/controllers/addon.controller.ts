@@ -21,14 +21,7 @@ export interface AddonManifestDto {
 }
 
 export interface InstallAddonDto {
-  image: string
-  containerPort?: number
-  hostPort: number
-  name?: string
-  description?: string
-  icon?: string
-  version?: string
-  author?: string
+  id: string
 }
 
 export const addonController = {

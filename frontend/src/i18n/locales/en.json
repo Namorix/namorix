@@ -321,6 +321,7 @@
       "status": {
         "starting": "Starting",
         "stopping": "Stopping",
+        "installing": "Installing",
         "uninstalling": "Uninstalling"
       },
       "actions": {
@@ -334,6 +335,7 @@
         "generic": "{{name}} encountered an error",
         "notFound": "{{name}} not found",
         "containerNotFound": "Container {{name}} not found",
+        "imageNotFound": "Image {{name}} not found",
         "installFailed": "Failed to install {{name}}"
       },
       "success": {

@@ -3,8 +3,9 @@ import type { TFunction } from "i18next"
 import { AddonErrorCodes } from "../../constants"
 
 const ERROR_CODE_LOCALE_MAP: Record<string, string> = {
-  [AddonErrorCodes.CONTAINER_NOT_FOUND]: "containerNotFound",
   [AddonErrorCodes.NOT_FOUND]: "notFound",
+  [AddonErrorCodes.CONTAINER_NOT_FOUND]: "containerNotFound",
+  [AddonErrorCodes.IMAGE_NOT_FOUND]: "imageNotFound",
   [AddonErrorCodes.INSTALL_FAILED]: "installFailed",
 }
 
@@ -20,6 +21,10 @@ export function formatAddonError(
       })
     case AddonErrorCodes.CONTAINER_NOT_FOUND:
       return t("addon.packageCenter.errors.containerNotFound", {
+        name: addonName ?? err.message,
+      })
+    case AddonErrorCodes.IMAGE_NOT_FOUND:
+      return t("addon.packageCenter.errors.imageNotFound", {
         name: addonName ?? err.message,
       })
     case AddonErrorCodes.INSTALL_FAILED:
