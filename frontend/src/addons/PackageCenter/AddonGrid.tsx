@@ -184,7 +184,7 @@ export const AddonGrid: React.FC = () => {
           name: installed?.name ?? cat.name,
           description: installed?.description ?? cat.description,
           icon: installed?.icon ?? cat.icon,
-          version: cat.version,
+          version: installed?.version ?? cat.version,
           author: installed?.author ?? cat.author,
           isInstalled: !!installed,
           hasUpdate,
