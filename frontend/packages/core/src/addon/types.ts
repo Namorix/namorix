@@ -69,6 +69,23 @@ export interface AddonEntry {
   unmount(container: HTMLElement): void
 }
 
+export type AddonContainerStatus =
+  | "installing"
+  | "installed"
+  | "starting"
+  | "running"
+  | "stopped"
+  | "error"
+  | "uninstalling"
+
+export type AddonPendingPhase =
+  | "starting"
+  | "stopping"
+  | "uninstalling"
+  | "installing"
+  | "updating"
+  | "pulling"
+
 export interface AddonModule {
   manifest: NmxAddonManifest
   entry: AddonEntry
@@ -83,16 +100,9 @@ export interface ExternalAddonManifest extends NmxAddonManifest {
   author?: string
   installedAt?: string
   pendingTaskId?: string
+  pendingTaskPhase?: AddonPendingPhase
+  lastErrorCode?: string
 }
-
-export type AddonContainerStatus =
-  | "installing"
-  | "installed"
-  | "starting"
-  | "running"
-  | "stopped"
-  | "error"
-  | "uninstalling"
 
 export interface InstallAddonRequest {
   image: string
@@ -130,4 +140,10 @@ export interface AddonCatalogEntry {
 export interface AddonStatusPayload {
   addonId: string
   status: AddonContainerStatus
+  lastErrorCode?: string
+}
+
+export interface AddonPendingTaskPayload {
+  addonId: string
+  taskPhase: AddonPendingPhase | null
 }
