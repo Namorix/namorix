@@ -26,6 +26,19 @@ public class DockerService
         });
     }
 
+    public async Task<bool> ImageExistsLocallyAsync(string image)
+    {
+        try
+        {
+            await Client.Images.InspectImageAsync(image);
+            return true;
+        }
+        catch (DockerImageNotFoundException)
+        {
+            return false;
+        }
+    }
+    
     public async Task<ContainerInspectResponse?> InspectContainerAsync(string id)
     {
         return await Client.Containers.InspectContainerAsync(id);
@@ -53,6 +66,7 @@ public class DockerService
         var response = await Client.Containers.CreateContainerAsync(new CreateContainerParameters
         {
             Image = spec.Image,
+            Name = spec.AddonId,
             Env = envVars,
             Labels = new Dictionary<string, string>
             {

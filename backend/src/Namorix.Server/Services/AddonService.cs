@@ -46,12 +46,5 @@ public class AddonService(AppDbContext appDbContext, IAddonNotifier notifier)
 
 public class InstallRequest
 {
-    public string Image { get; init; } = string.Empty;
-    public int ContainerPort { get; init; } = 80;
-    public int HostPort { get; init; }
-    public string? Name { get; init; }
-    public string? Description { get; init; }
-    public string? Icon { get; init; }
-    public string? Version { get; init; }
-    public string? Author { get; init; }
+    public string Id { get; init; } = string.Empty;
 }

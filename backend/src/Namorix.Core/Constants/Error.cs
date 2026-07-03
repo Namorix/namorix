@@ -49,5 +49,6 @@ public static class AddonErrors
 {
     public const string NotFound = "ADDON_NOT_FOUND";
     public const string ContainerNotFound = "CONTAINER_NOT_FOUND";
+    public const string ImageNotFound = "IMAGE_NOT_FOUND";
     public const string InstallFailed = "INSTALL_FAILED";
 }

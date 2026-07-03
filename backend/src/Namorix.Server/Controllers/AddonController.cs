@@ -1,9 +1,6 @@
-using Docker.DotNet;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Namorix.Core.Config;
-using Namorix.Core.Constants;
 using Namorix.Core.Middleware;
 using Namorix.Core.Responses;
 using Namorix.Server.Constants;
@@ -31,9 +28,11 @@ public class AddonController(AddonService addonService, AddonTaskQueue taskQueue
         var task = new AddonTask
         {
             Type = AddonTaskType.Install,
-            AddonId = request.Image.Replace("/", "-").Replace(":", "-"),
+            AddonId = request.Id,
             InstallRequest = request,
         };
+        
+        await addonService.SetTaskPending(task.AddonId, AddonTaskPendingStatus.Installing);
         await taskQueue.EnqueueAsync(task);
         return Ok(ApiResponse.Ok(new
         {
@@ -45,7 +44,12 @@ public class AddonController(AddonService addonService, AddonTaskQueue taskQueue
     [HttpPost("{id}/start")]
     public async Task<IActionResult> Start(string id)
     {
-        var task = new AddonTask { Type = AddonTaskType.Start, AddonId = id };
+        var task = new AddonTask
+        {
+            Type = AddonTaskType.Start,
+            AddonId = id
+        };
+        
         await addonService.SetTaskPending(id, AddonTaskPendingStatus.Starting);
         await taskQueue.EnqueueAsync(task);
         return Ok(ApiResponse.Ok(new
@@ -57,7 +61,12 @@ public class AddonController(AddonService addonService, AddonTaskQueue taskQueue
     [HttpPost("{id}/stop")]
     public async Task<IActionResult> Stop(string id)
     {
-        var task = new AddonTask { Type = AddonTaskType.Stop, AddonId = id };
+        var task = new AddonTask
+        {
+            Type = AddonTaskType.Stop,
+            AddonId = id
+        };
+        
         await addonService.SetTaskPending(id, AddonTaskPendingStatus.Stopping);
         await taskQueue.EnqueueAsync(task);
         return Ok(ApiResponse.Ok(new
@@ -69,7 +78,12 @@ public class AddonController(AddonService addonService, AddonTaskQueue taskQueue
     [HttpDelete("{id}")]
     public async Task<IActionResult> Uninstall(string id)
     {
-        var task = new AddonTask { Type = AddonTaskType.Uninstall, AddonId = id };
+        var task = new AddonTask
+        {
+            Type = AddonTaskType.Uninstall,
+            AddonId = id
+        };
+        
         await addonService.SetTaskPending(id, AddonTaskPendingStatus.Uninstalling);
         await taskQueue.EnqueueAsync(task);
         return Ok(ApiResponse.Ok(new

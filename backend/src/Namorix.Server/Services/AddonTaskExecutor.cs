@@ -1,6 +1,8 @@
+using System.Text.Json;
 using Docker.DotNet;
 using Microsoft.EntityFrameworkCore;
 using Namorix.Core.Constants;
+using Namorix.Core.Models;
 using Namorix.Server.Constants;
 using Namorix.Server.Infrastructure;
 using Namorix.Server.Models;
@@ -14,6 +16,11 @@ public class AddonTaskExecutor(
     IAddonNotifier notifier,
     ILogger<AddonTaskExecutor> logger)
 {
+    private static readonly JsonSerializerOptions CatalogPortsJsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
+    
     public async Task ExecuteAsync(AddonTask task, CancellationToken ct)
     {
         await Task.Delay(1000, ct);
@@ -84,6 +91,70 @@ public class AddonTaskExecutor(
         await notifier.NotifyPendingTaskChanged(addonId, null);
     }
 
+    private async Task InstallAsync(InstallRequest request, CancellationToken ct)
+    {
+        var addonId = request.Id;
+        var catalogEntry = await db.AddonCatalogEntries.FindAsync([addonId], ct);
+        if (catalogEntry == null)
+        {
+            logger.LogError("Catalog entry not found for addon {Id}", addonId);
+            await notifier.NotifyAddonStatusChanged(addonId, AddonStatus.Error, AddonErrors.NotFound);
+            await notifier.NotifyPendingTaskChanged(addonId, null);
+            return;
+        }
+        
+        try 
+        {
+            var image = catalogEntry.Image;
+            if (!await docker.ImageExistsLocallyAsync(image))
+            {
+                logger.LogInformation("Pulling image {Image}...", image);
+                await docker.PullImageAsync(image);
+            }
+            
+            var portMappings = ParseCatalogPorts(catalogEntry.Ports);
+            var containerId = await docker.CreateContainerAsync(new AddonContainerSpec
+            {
+                Image = image,
+                AddonId = addonId,
+                ApiUrl = "",
+                ClientId = Guid.NewGuid().ToString("N"),
+                RedirectUri = "_apiUrl/oauth/{addonId}/callback",
+                PortMappings = portMappings,
+            });
+            
+            db.AddonInstallations.Add(new AddonInstallation
+            {
+                Id = addonId,
+                ContainerId = containerId,
+                Name = catalogEntry.Name,
+                Description = catalogEntry.Description,
+                Icon = catalogEntry.Icon,
+                Image = image,
+                Version = catalogEntry.Version,
+                Author = catalogEntry.Author,
+                Status = AddonStatus.Installed,
+                InstalledAt = DateTime.UtcNow,
+                LastStatusChangedAt = DateTime.UtcNow,
+            });
+            
+            await db.SaveChangesAsync(ct);
+            await notifier.NotifyAddonStatusChanged(addonId, AddonStatus.Installed);
+        }
+        catch (DockerImageNotFoundException)
+        {
+            logger.LogError("Image {Image} not found locally or on registry", catalogEntry.Image);
+            await notifier.NotifyAddonStatusChanged(addonId, AddonStatus.Error, AddonErrors.ImageNotFound);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to install addon {Id}", addonId);
+            await notifier.NotifyAddonStatusChanged(addonId, AddonStatus.Error, AddonErrors.InstallFailed);
+        }
+        await notifier.NotifyPendingTaskChanged(addonId, null);
+    }
+
+    
     private async Task UninstallAsync(string addonId, CancellationToken ct)
     {
         var addon = await db.AddonInstallations.FindAsync([addonId], ct);
@@ -107,9 +178,6 @@ public class AddonTaskExecutor(
         await notifier.NotifyAddonUninstalled(addonId);
     }
     
-    
-    private async Task InstallAsync(InstallRequest request, CancellationToken ct) {  }
-
     private async Task SetStatusAsync(string addonId, string status, string? errorCode = null)
     {
         if (errorCode != null)
@@ -134,4 +202,13 @@ public class AddonTaskExecutor(
                     .SetProperty(a => a.PendingTaskPhase, (string?)null));
         }
     }
+    
+    private static List<PortMapping>? ParseCatalogPorts(string? portsJson)
+    {
+        if (string.IsNullOrEmpty(portsJson)) return null;
+        var ports = JsonSerializer.Deserialize<List<CatalogPortDef>>(portsJson, CatalogPortsJsonOptions);
+        return ports?.Select(p => new PortMapping { InternalPort = p.Container }).ToList();
+    }
+    
+    private record CatalogPortDef(int Container, string Protocol);
 }
