@@ -51,6 +51,12 @@
     gap: var(--nmx-spacing-lg);
   }
 
+  &__icon-status {
+    color: var(--nmx-color-error);
+    align-self: start;
+    margin-left: auto;
+  }
+
   &__card-icon {
     font-size: var(--nmx-font-size-5xl);
   }

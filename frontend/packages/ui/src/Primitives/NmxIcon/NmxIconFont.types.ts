@@ -42,6 +42,7 @@ export const NmxIconFontSymbol = {
   UPDATE: "ic-update",
   STOP: "ic-stop",
   INSTALL: "ic-install",
+  ERROR: "ic-error",
 } as const
 
 export type NmxIconFontSymbol =
