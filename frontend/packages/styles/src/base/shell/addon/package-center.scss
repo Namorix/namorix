@@ -55,6 +55,14 @@
     color: var(--nmx-color-error);
     align-self: start;
     margin-left: auto;
+
+    &.running {
+      color: var(--nmx-color-success);
+    }
+
+    &.stopped {
+      color: var(--nmx-color-warning);
+    }
   }
 
   &__card-icon {
