@@ -9,7 +9,7 @@ Cho phép cài đặt, quản lý, và chạy addon từ Docker containers bên 
 - **Addon contract** (`NmxAddonManifest`, `AddonEntry`, `AddonContext`, `AddonModule`) đã sẵn sàng — external addon chỉ cần implement các interface này ✅
 - **Registry** (`registerAddon`, `resolveAddon`, `listAddons`) đã support runtime registration ✅
 - **Backend `AddonManifest` model** đã expand fields (Image, HostPort, Status, Version, Author, ClientId, PublicKey, RedirectUri, Scope) + migration `AddonManifestFields` ✅
-- **OAuth2 Authorization Server** hoàn tất: models + service + controller + middleware ✅
+- **OAuth2 Authorization Server** — full implementation ✅: client_credentials + private_key_jwt, JWT RS256 verification, addon self-registration (RSA keypair gen + registration token), token caching, ExemptPaths middleware pattern, OAuth2 client SDK (`NmxOAuth2Client`, `NmxAddonConfig`, `NmxOAuth2ServiceCollectionExtensions`). Còn: authorization_code grant (authorize endpoint + consent screen) cho user-facing addon auth.
 - **Frontend core**: ApiAddonRoutes, external types, addon controller, AddonContext mở rộng ✅
 - **Module Federation** — `@module-federation/vite` (v1.15.4) installed, `externalAddonEntry.ts` dùng `@module-federation/runtime` (`registerRemotes` + `loadRemote`) ✅
 - **Redux slice** (`externalAddonsSlice`) + store registration ✅
@@ -17,7 +17,12 @@ Cho phép cài đặt, quản lý, và chạy addon từ Docker containers bên 
 - **Docker dev/prod setup** — Dockerfile.dev (node:22-alpine), Dockerfile.prod (multi-stage), docker-compose.yml (desktop-dev + desktop-prod) ✅
 - **namorix-weave** — external addon mẫu tại `~/namorix-weave/`, federation mount Hello World trên desktop đã hoạt động ✅
 - **`@namorix/core`** — thiếu 4 transitive deps trong `package.json`: `react-dom`, `react-redux`, `@reduxjs/toolkit`, `@microsoft/signalr`. Cần bổ sung. ✅
-- **Chưa có:** SSE stream, OAuth2 private_key_jwt full implementation, catalog sync worker
+- **Catalog sync** — CatalogSyncWorker, CatalogService, AddonCatalogEntry DB model, GET/POST catalog endpoints ✅
+- **Install flow** — InstallAsync uses catalog lookup (id-based), port parsing from catalog entry, DockerService.ImageExistsLocallyAsync ✅
+- **Redux catalog store** — setCatalog reducer, updateAddonStatus creates entries for new addons, selectorCatalog ✅
+- **Không còn `ComputeAddonId`** — identity dùng catalog id trực tiếp ✅
+- **Chưa có:** SSE stream, OAuth2 author endpoint (consent screen)
+- **BackendConfig + NMX_API_URL compute** — `IsRunningInContainer()` → host.docker.internal / container name, ExtraHosts + NetworkMode tuỳ runtime, `RegistrationTokenTtlMinutes` configurable ✅
 
 ---
 
@@ -52,9 +57,22 @@ Wrapper quanh Docker.DotNet client:
 - `Image` — Docker image name:tag
 - `AddonId` — registered addon ID
 - `PortMappings` — internal→host port
-- `EnvVars` — `NMX_ADDON_ID`, `NMX_API_URL`, `NMX_PRIVATE_KEY` (PEM), `NMX_CLIENT_ID`, `NMX_REDIRECT_URI`
+- `EnvVars` — `NMX_API_URL` (compute theo runtime), `NMX_REGISTRATION_TOKEN` (one-time token, addon dùng để self-register)
 - `Labels` — `namorix-addon=true`, `namorix-addon-id={id}`
 - `MemoryLimit`, `CpuLimit` — resource constraints
+- `ExtraHosts` — `host.docker.internal:host-gateway` (khi backend bare-metal)
+- `NetworkName` — user-defined bridge network (khi backend containerized, cần DNS resolution)
+- `RegistrationToken` — one-time token, addon dùng để đăng ký OAuth2 client
+
+**BackendConfig** (`Namorix.Core/Config/BackendConfig.cs`):
+- `Port` — backend HTTP port (default 3000)
+- `ContainerName` — container name cho container-to-container DNS (default `namorix-server`)
+- `NetworkName` — Docker network name cho addon container (default `namorix-net`)
+
+**Container runtime detection** (`DockerService.IsRunningInContainer()`):
+- Check `File.Exists("/.dockerenv")`
+- `true` → ApiUrl = `http://{ContainerName}:{Port}`, set `NetworkMode`, không ExtraHosts
+- `false` → ApiUrl = `http://host.docker.internal:{Port}`, set `ExtraHosts`, không NetworkMode
 
 ### 1.3 AddonService (`Services/AddonService.cs`) ✅
 
@@ -120,100 +138,109 @@ BackgroundService với cơ chế **event stream + health check poll**:
 - `Namorix.Core/Infrastructure/IAddonNotifier.cs` — interface
 - `Namorix.Server/Infrastructure/SignalRAddonNotifier.cs` — SignalR implementation
 
-### 1.7 OAuth2 Authorization Server ✅
+### 1.7 OAuth2 Authorization Server ✅ (client_credentials + private_key_jwt)
 
-Namorix Server đóng vai trò **Authorization Server (AS)** cho external addon. Addon là **OAuth2 confidential client** (có client_secret).
+Namorix Server đóng vai trò **Authorization Server (AS)** cho external addon. Addon là **OAuth2 confidential client**.
+
+**Trạng thái:** ✅ Full implementation cho client_credentials grant:
+- `VerifyClientAssertion` — JWT RS256 validation with stored RSA public key
+- Addon self-registration: install → gen registration token → Docker env → addon tự gen RSA keypair → POST /api/oauth/register
+- Token caching trong NmxOAuth2Client (cache đến expires_in - 30s)
+- ExemptPaths pattern: middleware bypass cho form-urlencoded OAuth endpoints
+- BackendConfig.RegistrationTokenTtlMinutes configurable (default 10)
+- TokenCleanupWorker mở rộng: xóa OAuthRegistrations đã used/expired
+- OAuth2 client SDK (`NmxOAuth2Client`, `NmxAddonConfig`, DI extensions) trong `Namorix.Core/OAuth/`
+
+**Còn thiếu:**
+- `authorization_code` grant — Authorize endpoint + consent screen (cho user-facing addon auth)
+- SSE stream cho widget events
 
 #### Endpoints
 
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/oauth/authorize` | Authorization endpoint — user consents |
-| POST | `/oauth/token` | Token endpoint — exchange code → access_token |
+| POST | `/oauth/register` | Token endpoint — addon tự đăng ký client credentials |
+| POST | `/oauth/token` | Token endpoint — exchange client_assertion → access_token |
 | POST | `/oauth/revoke` | Revoke access_token |
 | GET | `/oauth/.well-known/openid-configuration` | OIDC discovery (optional) |
 
-#### Flow: Authorization Code Grant
+#### Flow: Client Credentials Grant (private_key_jwt)
 
 ```
-User Browser                  External Addon              Namorix AS
-     │                              │                        │
-     │  1. User mở addon window     │                        │
-     │─────────────────────────────>│                        │
-     │                              │                        │
-     │  2. Redirect to /oauth/      │                        │
-     │     authorize?client_id=...  │                        │
-     │     &redirect_uri=...        │                        │
-     │     &response_type=code      │                        │
-     │<─────────────────────────────│                        │
-     │                              │                        │
-     │  3. User đã login?           │                        │
-     │     Nếu chưa → redirect      │                        │
-     │     login → redirect back    │                        │
-     │─────────────────────────────────────────────────────>│
-     │                              │                        │
-     │  4. Hiển thị consent screen  │                        │
-     │     (scope: read, write...)  │                        │
-     │<─────────────────────────────────────────────────────│
-     │                              │                        │
-     │  5. User approves            │                        │
-     │─────────────────────────────────────────────────────>│
-     │                              │                        │
-     │  6. Authorization code       │                        │
-     │     Redirect to addon's      │                        │
-     │     redirect_uri?code=XYZ    │                        │
-     │─────────────────────────────>│                        │
-     │                              │                        │
-     │  7. POST /oauth/token        │                        │
-     │     code=XYZ                 │                        │
-     │     + client_assertion       │                        │
-     │     (signed JWT by addon)    │                        │
-     │─────────────────────────────────────────────────────>│
-     │                              │                        │
-     │  8. Verify code +            │                        │
-     │     client_assertion         │                        │
-     │     return access_token      │                        │
-     │<─────────────────────────────────────────────────────│
-     │                              │                        │
-     │  9. Addon gọi API với        │                        │
-     │     Bearer access_token      │                        │
-     │─────────────────────────────────────────────────────>│
+Namorix Desktop Backend            External Addon
+     │                              │
+     │  1. InstallAsync             │
+     │     ├─ Gen registration      │
+     │     │   token (Guid, TTL=10m)│
+     │     ├─ Lưu OAuthRegistration │
+     │     └─ Docker create:        │
+     │        NMX_API_URL +         │
+     │        NMX_REGISTRATION_TOKEN│
+     │─────────────────────────────>│
+     │                              │
+     │  2. Addon starts             │
+     │     NmxOAuth2Client.         │
+     │     EnsureInitializedAsync() │
+     │     ├─ Gen RSA keypair       │
+     │     ├─ POST /oauth/register  │
+     │     │  { registrationToken,  │
+     │     │    publicKey }         │
+     │     ├─ Nhận clientId         │
+     │     └─ Save oauth.json       │
+     │<─────────────────────────────│
+     │                              │
+     │  3. NmxOAuth2Client.         │
+     │     GetAccessTokenAsync()    │
+     │     ├─ Tạo client_assertion  │
+     │     │   JWT (iss=clientId,  │
+     │     │   signed by private key│
+     │     ├─ POST /oauth/token     │
+     │     │  grant_type=client_    │
+     │     │  credentials +         │
+     │     │  client_assertion      │
+     │     ├─ Nhận access_token     │
+     │     └─ Cache trong memory    │
+     │<─────────────────────────────│
+     │                              │
+     │  4. Addon gọi API với        │
+     │     Bearer access_token      │
+     │─────────────────────────────>│
 ```
 
 #### Client Authentication: `client_assertion` (private_key_jwt)
 
 Thay vì client_secret truyền thống, addon dùng **private_key_jwt**:
-- Mỗi addon có cặp key RSA khi tạo container
-- `client_assertion` = JWT signed bởi addon's private key
-- Namorix verify với addon's public key (lưu trong `AddonManifests`)
+- Addon tự gen RSA keypair khi lần đầu chạy (self-registration)
+- `client_assertion` = JWT signed bởi addon's private key, TTL 2 phút
+- Namorix verify với addon's public key (lưu trong `AddonInstallations`)
 
 ```csharp
-public class AddonManifest {
-    // ... existing fields ...
-    public string? ClientId { get; set; }        // OAuth2 client_id
-    public string? PublicKey { get; set; }        // RSA public key (PEM)
-    public string? RedirectUri { get; set; }       // OAuth2 redirect_uri
-    public string? Scope { get; set; }             // Default scope
-}
+// AddonInstallation (mở rộng)
+public string? ClientId { get; set; }        // OAuth2 client_id (sau register)
+public string? PublicKey { get; set; }        // RSA public key (PEM, từ addon self-register)
+public string? RedirectUri { get; set; }       // OAuth2 redirect_uri (future)
+public string? Scope { get; set; }             // Default scope
 ```
 
 **Tại sao private_key_jwt thay vì client_secret:**
-- Không cần share secret lúc runtime
-- Key pair gen lúc install, inject public key vào DB, private key vào container env
-- Container restart không mất secret (không phải handshake lại)
+- Addon tự gen keypair — backend không bao giờ biết private key
+- Registration token chỉ dùng 1 lần (one-time), TTL ngắn (10 phút)
+- Container restart không mất secret (lưu trong volume `/data/oauth.json`)
 - Có thể rotate key mà không cần reinstall
 
 #### Token types
 
 | Token | Who uses | TTL | Usage |
 |-------|----------|-----|-------|
+| `registration_token` | Addon → Namorix | 10 phút (configurable) | One-time: đăng ký client_id + public key |
 | `authorization_code` | Browser → Addon | 1 phút | Exchange lấy access_token |
 | `access_token` | Addon → API | 1 giờ | Bearer header cho API calls |
 | `refresh_token` | Addon | 30 ngày | Obtain new access_token |
 
 #### OAuth2Middleware
 
-Thêm middleware xác thực access_token ở những endpoint addon cần gọi:
+Middleware xác thực access_token ở những endpoint addon cần gọi:
 
 ```csharp
 // /api/addons/{id}/stream — addon gửi widget events
@@ -226,11 +253,28 @@ Middleware check:
 3. Check scope
 4. Set `HttpContext.User` với addon identity
 
-#### DB Tables mới
+#### Middleware Exemption Pattern (ExemptPaths)
+
+JsonErrorMiddleware + CsrfMiddleware dùng `ExemptPaths` array để bypass OAuth endpoints:
+
+```csharp
+public static class ExemptPaths
+{
+    // Machine clients gửi form-urlencoded — skip JSON enforcement
+    public static readonly string[] NonJsonBody = ["/api/oauth/token"];
+
+    // Machine clients không có cookie session — skip CSRF check
+    public static readonly string[] NoCsrfSession = ["/api/oauth/token", "/api/oauth/register"];
+}
+```
+
+**Lý do không dùng Attribute:** Middleware chạy trước `UseRouting()`, endpoint metadata chưa available.
+
+#### DB Tables
 
 ```sql
--- OAuth clients (1-1 với addon)
-oauth_clients: client_id, client_secret_hash, redirect_uri, scope, public_key
+-- OAuth registration tokens (ngắn hạn, one-time)
+oauth_registrations: id, token, addon_installation_id, expires_at, used
 
 -- Authorization codes (ngắn hạn)
 oauth_codes: code, client_id, user_id, scope, expires_at, redirect_uri
@@ -538,7 +582,7 @@ public class AddonCatalogEntry
 
 **JSON fields** (Ports, Volumes, Arch): dùng `string?` + `System.Text.Json` serialize/deserialize trong service.
 
-### 7.3 CatalogSyncWorker
+### 7.3 CatalogSyncWorker ✅
 
 **`Namorix.Server/Workers/CatalogSyncWorker.cs`** — BackgroundService chạy định kỳ:
 
@@ -565,7 +609,7 @@ On startup + mỗi N phút (CatalogSyncInterval từ config)
 }
 ```
 
-### 7.4 Catalog API
+### 7.4 Catalog API ✅
 
 Thêm endpoint trong AddonController:
 
@@ -573,7 +617,7 @@ Thêm endpoint trong AddonController:
 |--------|------|------|-------------|
 | GET | `/api/addons/catalog` | Admin | Danh sách addon từ catalog cache |
 
-### 7.5 Frontend — PackageCenter "All" Tab
+### 7.5 Frontend — PackageCenter "All" Tab ✅
 
 Tab "All" trong PackageCenter merge 2 nguồn:
 1. **Catalog** (có sẵn để cài) — `GET /api/addons/catalog`
@@ -604,17 +648,30 @@ Card hiển thị:
 |------|-------|
 | `Namorix.Server/Services/DockerService.cs` | P1 ✅ |
 | `Namorix.Server/Services/AddonService.cs` | P1 ✅ |
+| `Namorix.Server/Services/AddonTaskQueue.cs` | P5 ✅ |
+| `Namorix.Server/Services/AddonTaskExecutor.cs` | P5 ✅ |
+| `Namorix.Server/Models/AddonTask.cs` | P5 ✅ |
 | `Namorix.Server/Services/OAuthService.cs` | P1 ✅ |
+| `Namorix.Core/OAuth/NmxOAuth2Client.cs` | P1 ✅ |
+| `Namorix.Core/OAuth/NmxAddonConfig.cs` | P1 ✅ |
+| `Namorix.Core/OAuth/NmxOAuth2ServiceCollectionExtensions.cs` | P1 ✅ |
+| `Namorix.Core/OAuth/OAuthEndpoints.cs` | P1 ✅ |
+| `Namorix.Core/OAuth/OAuthResponse.cs` | P1 ✅ |
+| `Namorix.Core/Config/BackendConfig.cs` | P1 ✅ |
+| `Namorix.Core/Constants/OAuth.cs` | P1 ✅ |
+| `Namorix.Core/Constants/ExemptPaths.cs` | P1 ✅ |
+| `Namorix.Core/Models/OAuthRegistration.cs` | P1 ✅ |
+| `Namorix.Server/Migrations/20260704041156_AddOAuthRegistration.cs` | P1 ✅ |
 | `Namorix.Server/Controllers/AddonController.cs` | P1 ✅ |
 | `Namorix.Server/Controllers/OAuthController.cs` | P1 ✅ |
 | `Namorix.Server/Workers/DockerMonitorWorker.cs` | P1 ✅ |
-| `Namorix.Server/Workers/CatalogSyncWorker.cs` | P7 ⏳ |
-| `Namorix.Server/Services/CatalogService.cs` | P7 ⏳ |
+| `Namorix.Server/Workers/CatalogSyncWorker.cs` | P7 ✅ |
+| `Namorix.Server/Services/CatalogService.cs` | P7 ✅ |
 | `Namorix.Server/Middleware/OAuth2Middleware.cs` | P1 ✅ |
 | `Namorix.Core/Models/OAuthAuthorizationCode.cs` | P1 ✅ |
 | `Namorix.Core/Models/OAuthToken.cs` | P1 ✅ |
 | `Namorix.Core/Models/OAuthConsent.cs` | P1 ✅ |
-| `Namorix.Core/Models/AddonCatalogEntry.cs` | P7 ⏳ |
+| `Namorix.Core/Models/AddonCatalogEntry.cs` | P7 ✅ |
 | `Namorix.Core/Infrastructure/IAddonNotifier.cs` | P1 ✅ |
 | `Namorix.Server/Infrastructure/SignalRAddonNotifier.cs` | P1 ✅ |
 | `Namorix.Server/Constants/Addon.cs` | P1 ✅ |
@@ -663,15 +720,15 @@ Card hiển thị:
 ## Execution Order
 
 ```
-Phase 1 (Backend Docker) ✅ (trừ SSE)
+Phase 1 (Backend Docker) ✅ (trừ SSE stream + author endpoint)
   ├── 1.1 Docker.DotNet package ✅
-  ├── 1.2 DockerService ✅
-  ├── 1.3 AddonService ✅
+  ├── 1.2 DockerService ✅ (+ IsRunningInContainer, ExtraHosts, NetworkMode, BackendConfig)
+  ├── 1.3 AddonService ✅ (InstallRequest simplified)
   ├── 1.4 AddonManifest model expand + migration ✅
-  ├── 1.5 AddonController ✅
-  ├── 1.6 DockerMonitor ✅ (event stream + health check, auto-discover, action-based)
-  ├── 1.7 OAuth2 Authorization Server ✅
-  └── 1.8 SSE Stream ← **pending**
+  ├── 1.5 AddonController ✅ (dùng id không compute)
+  ├── 1.6 DockerMonitor ✅
+  ├── 1.7 OAuth2 ✅ (client_credentials + private_key_jwt full: register, JWT RS256 verify, ExemptPaths, client SDK)
+  └── 1.8 SSE Stream + Command ← **pending**
 
 Phase 2 (Frontend Core) ✅
   ├── 2.1 ApiAddonRoutes ✅
@@ -707,17 +764,28 @@ Phase 6 (Integration)
   ├── Xác định @namorix/core thiếu 4 transitive deps ✅
   ├── PackageCenter: full UI với Rail+Grid+Card ✅
   ├── handleRemove: dispatch(removeAddon(id)) ✅
-  ├── Test OAuth2 flow
+  ├── InstallAsync catalog rewrite (id-based, port parsing, catalog lookup) ✅
+  ├── Redux catalog store + updateAddonStatus creates entries ✅
+  ├── Xoá ComputeAddonId (identity dùng catalog id) ✅
+  ├── BackendConfig model + appsettings + DI registration ✅
+  ├── NMX_API_URL compute: IsRunningInContainer() → host.docker.internal / container name ✅
+  ├── Addon self-registration: registration token → addon tự gen RSA → POST /api/oauth/register ✅
+  ├── Network attach: ExtraHosts + NetworkMode tuỳ runtime ✅
+  ├── NmxOAuth2Client + NmxAddonConfig + DI extensions trong Namorix.Core/OAuth/ ✅
+  ├── ExemptPaths pattern: middleware bypass cho OAuth form-urlencoded endpoints ✅
+  ├── JsonErrorMiddleware + CsrfMiddleware: OAuth endpoints exempt ✅
+  ├── TokenCleanupWorker: OAuthRegistration cleanup ✅
+  ├── OAuth2 client SDK — build + test với namorix-weave
   └── Documentation + version bump ✅
 
-Phase 7 (Catalog Sync)
+Phase 7 (Catalog Sync) ✅
   ├── 7.1 Catalog index JSON (catalog/addons.json) ✅
-  ├── 7.2 AddonCatalogEntry DB model
-  ├── 7.3 CatalogSyncWorker (BackgroundService)
-  ├── 7.4 CatalogService (fetch + parse + cache)
-  ├── 7.5 AppDbContext + DI wiring
-  ├── 7.6 GET /api/addons/catalog endpoint
-  └── 7.7 PackageCenter "All" tab merge catalog + installed
+  ├── 7.2 AddonCatalogEntry DB model ✅
+  ├── 7.3 CatalogSyncWorker (BackgroundService) ✅
+  ├── 7.4 CatalogService (fetch + parse + cache) ✅
+  ├── 7.5 AppDbContext + DI wiring ✅
+  ├── 7.6 GET/POST /api/addons/catalog endpoints ✅
+  └── 7.7 PackageCenter "All" tab merge catalog + installed ✅
 ```
 
 ## PendingTaskPhase + NotifyPendingTaskChanged — Completed ✅
@@ -772,3 +840,12 @@ Phase 7 (Catalog Sync)
 | @namorix/ui | 0.25.0 → 0.26.0 | ERROR icon symbol |
 | @namorix/styles | 0.35.0 → 0.36.0 | __icon-status SCSS block, icomoon rebuild |
 | frontend | 0.51.0 → 0.52.0 | NotifyPendingTaskChanged handler, error toast, stats rename |
+
+### 2026-07-04 — OAuth2 private_key_jwt full implementation
+
+| Package | Version | Reason |
+|---------|---------|--------|
+| Namorix.Core | 0.42.3 → 0.43.0 | New OAuth2 module (client SDK, constants, ExemptPaths) |
+| Namorix.Server | 0.45.3 → 0.46.0 | New OAuth endpoints (register/token), registration flow |
+| @namorix/core | 0.41.2 → 0.41.3 | // TODO comments on addon types |
+| @namorix/styles | 0.36.1 → 0.36.2 | Taskbar font-size tweak |

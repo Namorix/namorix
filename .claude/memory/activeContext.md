@@ -60,6 +60,14 @@ Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và 
 - Backend: `RefreshToken` entity thêm `RememberMe` property. `AuthService.RefreshToken()` dùng `storedToken.RememberMe` cho TTL. `AuthController.TryRefresh()` dùng `rememberMe` từ tuple cho cookie. Migration mới `AddRememberMeToRefreshToken`.
 - Versions: core 0.41.1, frontend 0.52.1, Namorix.Core 0.42.1, Namorix.Server 0.45.1.
 
+### 2026-07-04 — OAuth2 private_key_jwt full implementation, registration flow, middleware exemption
+
+- Backend (Namorix.Core): NEW OAuth2 module — `NmxOAuth2Client` (self-registration + token caching), `NmxAddonConfig` (env var config), DI extension, endpoint constants, response DTOs. NEW `Config/BackendConfig.cs` — `RegistrationTokenTtlMinutes`. NEW `Constants/OAuth.cs` — env vars, defaults, grant types. NEW `Constants/ExemptPaths.cs` — middleware bypass cho OAuth endpoints. NEW `Models/OAuthRegistration.cs`. MODIFIED: `Constants/Error.cs` — OAuth errors. `Middleware/CsrfMiddleware.cs` + `JsonErrorMiddleware.cs` — ExemptPaths pattern.
+- Backend (Namorix.Server): `OAuthController` — register/token endpoints. `OAuthService` — full JWT RS256 verification. `AddonTaskExecutor` — registration token gen. `DockerService` — passes `NMX_REGISTRATION_TOKEN` to containers. `TokenCleanupWorker` — OAuthRegistration cleanup.
+- Core: `addon/types.ts` — // TODO comments.
+- Styles: `taskbar.scss` — clock font-size 4xl → 3xl.
+- Versions: Namorix.Core 0.43.0, Namorix.Server 0.46.0, @namorix/core 0.41.3, @namorix/styles 0.36.2.
+
 ### 2026-07-03 (4) — InstallAsync catalog rewrite, frontend catalog store, identity cleanup
 
 - Backend: `AddonTaskExecutor.InstallAsync` full rewrite — catalog lookup, null check for catalogEntry, ParseCatalogPorts, proper AddonStatus.Installed (not Running), Docker error handling. `DockerService` — ImageExistsLocallyAsync, container Name = spec.AddonId. InstallRequest simplified to just Id. Xoá `ComputeAddonId` + AddonHelper.

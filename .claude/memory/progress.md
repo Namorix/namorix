@@ -119,7 +119,7 @@
 - [x] Federation config fix (@module-federation/vite, externalAddonEntry federation API)
 - [x] namorix-weave external addon test (Hello World trên desktop ✅)
 - [x] PackageCenter UI component (addon manager page — Rail+Grid+Card với All/Installed/Updated tabs)
-- [ ] OAuth2 private_key_jwt full implementation (RSA key pair gen, client_assertion verify)
+- [x] OAuth2 private_key_jwt full implementation (RSA key pair gen, client_assertion verify)
 
 ### M5 — @namorix/core npm Publishing
 **Status:** Not Started
@@ -136,11 +136,11 @@
 | Package | Version | Milestone |
 |---------|---------|-----------|
 | frontend | 0.52.3 | M4 (Install flow fix — catalog store, updateAddonStatus creates entries, InstallAddonDto simplified) |
-| @namorix/core | 0.41.2 | M4 (Session removed from interceptor exclusion list, type cleanup) |
-| @namorix/styles | 0.36.1 | M4 (Status icon colors for running/stopped in package-center) |
+| @namorix/core | 0.41.3 | M4 (// TODO comments on addon types) |
+| @namorix/styles | 0.36.2 | M4 (Taskbar font-size tweak) |
 | @namorix/ui | 0.26.0 | M4 (ERROR icon symbol) |
-| Namorix.Core | 0.42.3 | M4 (ADDON_NOT_FOUND error code) |
-| Namorix.Server | 0.45.3 | M4 (InstallAsync catalog lookup, port parsing, DockerService.ImageExistsLocallyAsync) |
+| Namorix.Core | 0.43.0 | M4 (New OAuth2 module — client SDK, constants, ExemptPaths middleware pattern) |
+| Namorix.Server | 0.46.0 | M4 (New OAuth endpoints — register/token, registration token flow, cleanup) |
 
 ## Version Rules
 
@@ -199,6 +199,13 @@
 - frontend 0.51.0 → 0.52.0: MODIFIED: `AddonEventWatcher.tsx` — toast on start/stop success + error via `formatAddonErrorCode`, `AddonUninstalled` handler. `AddonGrid.tsx` — `AddonPendingTaskChanged` handler for pending overlay, stats rename `total`→`installed` + `available` count, error badge on card. `addonError.ts` — `formatAddonErrorCode` function. `addon.controller.ts` — `pendingTaskPhase` + `lastErrorCode` in `AddonManifestDto`. `signalr/constants.ts` — `AddonPendingTaskChanged` + `AddonUninstalled` events. `externalAddonsSlice.ts` — `lastErrorCode` in `updateAddonStatus`. `en.json` — new error locale keys, `generic` error, stats template.
 - Namorix.Core 0.41.0 → 0.42.0: MODIFIED: `Models/AddonInstallation.cs` — `LastErrorMessage` → `LastErrorCode`.
 - Namorix.Server 0.44.0 → 0.45.0: MODIFIED: `Infrastructure/IAddonNotifier.cs` — `NotifyPendingTaskChanged` + `NotifyAddonUninstalled`. `Hubs/SignalRAddonNotifier.cs` — implementations for both. `Services/AddonTaskExecutor.cs` — `StartAsync`/`StopAsync` DB null check, Docker error → `AddonErrorCodes`, `UninstallAsync` uses `NotifyPendingTaskChanged` + `NotifyAddonUninstalled`. `Services/AddonTaskQueue.cs` — `NotifyPendingTaskChanged` in `SetErrorStatusAsync`, logger in catch. `Infrastructure/IAddonNotifier.cs`. NEW: `Constants/AddonError.cs`. MODIFIED: `Constants/Addon.cs` — `AddonTaskPending` renamed → `AddonTaskPendingStatus` + new constants (Installing, Updating, Pulling). `Constants/ServerSignalR.cs` — `AddonUninstalled` event. `Services/AddonService.cs` — inject `IAddonNotifier`, `SetTaskPending` calls `NotifyPendingTaskChanged`. NEW migration `RenameLastErrorCode`.`
+
+### 2026-07-04 — OAuth2 private_key_jwt full implementation, registration flow, middleware exemption pattern
+
+- Namorix.Core 0.42.3 → 0.43.0: NEW: `OAuth/NmxOAuth2Client.cs` — OAuth2 client with self-registration + token caching. `OAuth/NmxAddonConfig.cs` — addon config (reads env vars). `OAuth/NmxOAuth2ServiceCollectionExtensions.cs` — DI extension. `OAuth/OAuthEndpoints.cs` — endpoint constants. `OAuth/OAuthResponse.cs` — response DTOs. `Config/BackendConfig.cs` — RegistrationTokenTtlMinutes. `Constants/OAuth.cs` — OAuth env vars, defaults, grant types, params. `Constants/ExemptPaths.cs` — middleware bypass paths. `Models/OAuthRegistration.cs` — registration token entity. MODIFIED: `Constants/Error.cs` — OAuthErrors, OAuthRegisterErrors. `Middleware/CsrfMiddleware.cs` — ExemptPaths usage. `Middleware/JsonErrorMiddleware.cs` — ExemptPaths usage. `Namorix.Core.csproj` — new deps.
+- Namorix.Server 0.45.3 → 0.46.0: NEW: `Migrations/20260704041156_AddOAuthRegistration.cs`. MODIFIED: `Controllers/OAuthController.cs` — register/token endpoints. `Services/OAuthService.cs` — full JWT RS256 verification. `Services/AddonTaskExecutor.cs` — registration token in InstallAsync. `Services/DockerService.cs` — passes NMX_REGISTRATION_TOKEN to containers. `Workers/TokenCleanupWorker.cs` — OAuthRegistration cleanup. `Persistence/AppDbContext.cs` — OAuthRegistration DbSet. `Program.cs` — OAuthService DI. `Constants/Addon.cs` — registration constants. `appsettings.json` — OAuth config.
+- @namorix/core 0.41.2 → 0.41.3: MODIFIED: `addon/types.ts` — // TODO comments on `updating`/`pulling` status values.
+- @namorix/styles 0.36.1 → 0.36.2: MODIFIED: `taskbar.scss` — clock font-size 4xl → 3xl.
 
 ### 2026-07-03 (4) — InstallAsync catalog rewrite, frontend catalog store, identity cleanup
 

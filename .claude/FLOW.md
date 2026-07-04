@@ -575,10 +575,45 @@ DockerMonitorWorker
   │     └── If silent >5 min → full sync (reconnect safety net)
   └── IAddonNotifier.NotifyAddonStatusChanged() via SignalR
 
-External addon auth (OAuth2)
-  └── Addon calls POST /oauth/token with client_assertion (private_key_jwt)
-  └── OAuthService validates JWT against stored public key
-  └── Returns access_token (bearer) — verified by OAuth2Middleware
+External addon auth (OAuth2 client_credentials + private_key_jwt)
+
+Addon tự tạo RSA keypair, gửi public key qua registration token để đăng ký:
+
+```
+InstallAsync (AddonTaskExecutor)
+  └── Generate registration token (Guid)
+  └── Store OAuthRegistration (Token, AddonInstallationId, ExpiresAt)
+  └── Docker create: passes NMX_API_URL + NMX_REGISTRATION_TOKEN env vars
+  └── Addon container starts → NmxOAuth2Client.EnsureInitializedAsync()
+        ├── Nếu oauth.json tồn tại: load credentials từ disk
+        ├── Nếu NMX_REGISTRATION_TOKEN set: self-register
+        │     ├── Gen RSA keypair (2048)
+        │     ├── POST /api/oauth/register { registrationToken, publicKey }
+        │     └── Save ClientId + PrivateKey → oauth.json
+        └── Nếu không có cả 2: throw (misconfigured)
+
+OAuthController.Register (POST /api/oauth/register)
+  └── OAuthService.RegisterClientAsync
+        ├── Validate registration token (exists, !Used, not expired)
+        ├── Set ClientId + PublicKey on AddonInstallation
+        └── Return clientId
+
+OAuthController.Token (POST /api/oauth/token) [form-urlencoded, exempt from JSON + CSRF]
+  ├── grant_type=client_credentials
+  │     └── OAuthService.IssueClientCredentialsTokenAsync
+  │           ├── Parse client_assertion (JWT)
+  │           ├── Verify RSA signature against stored PublicKey
+  │           └── Return access_token (Bearer, 1h TTL)
+  ├── grant_type=authorization_code (future)
+  │     └── OAuthService.ExchangeCodeAsync
+  └── grant_type=invalid → unsupported_grant_type error
+
+NmxOAuth2Client.GetAccessTokenAsync (addon gọi mỗi khi cần token)
+  └── Check _cached (trả về cached nếu còn hạn - 30s buffer)
+  └── Tạo client_assertion JWT mới (iss=clientId, sub=clientId, aud=token endpoint)
+  └── POST /api/oauth/token với grant_type=client_credentials + assertion
+  └── Cache access_token, return
+```
 
 ### Addon Task Queue (Backend)
 
@@ -614,10 +649,17 @@ AddonController action
 | `frontend/src/store/slices/externalAddonsSlice.ts` | Redux state for external addons |
 | `backend/src/Namorix.Server/Services/DockerService.cs` | Docker.DotNet wrapper |
 | `backend/src/Namorix.Server/Services/AddonService.cs` | Addon CRUD business logic |
-| `backend/src/Namorix.Server/Services/OAuthService.cs` | OAuth2 authorization code + token exchange |
+| `backend/src/Namorix.Server/Services/OAuthService.cs` | OAuth2 register + client_credentials token exchange (JWT RS256) |
 | `backend/src/Namorix.Server/Controllers/AddonController.cs` | REST API endpoints |
-| `backend/src/Namorix.Server/Controllers/OAuthController.cs` | OAuth token endpoints |
+| `backend/src/Namorix.Server/Controllers/OAuthController.cs` | OAuth register + token endpoints |
 | `backend/src/Namorix.Server/Middleware/OAuth2Middleware.cs` | Bearer token verification |
+| `backend/src/Namorix.Core/OAuth/NmxOAuth2Client.cs` | OAuth2 client SDK (self-registration, token caching) |
+| `backend/src/Namorix.Core/OAuth/NmxAddonConfig.cs` | Addon env var config (ApiUrl, RegistrationToken) |
+| `backend/src/Namorix.Core/OAuth/NmxOAuth2ServiceCollectionExtensions.cs` | DI extension for addon OAuth2 client |
+| `backend/src/Namorix.Core/Constants/OAuth.cs` | OAuth env vars, grant types, parameters |
+| `backend/src/Namorix.Core/Constants/ExemptPaths.cs` | Middleware bypass paths (OAuth endpoints) |
+| `backend/src/Namorix.Core/Config/BackendConfig.cs` | Backend config (Port, RegistrationTokenTtlMinutes) |
+| `backend/src/Namorix.Core/Models/OAuthRegistration.cs` | Registration token entity |
 | `backend/src/Namorix.Server/Workers/DockerMonitorWorker.cs` | Container event stream + health check poll + auto-discover |
 | `backend/src/Namorix.Core/Constants/Docker.cs` | Docker state/event/filter constants |
 | `backend/src/Namorix.Server/Infrastructure/IAddonNotifier.cs` | Addon status notification interface |
