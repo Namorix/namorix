@@ -21,7 +21,8 @@ Cho phép cài đặt, quản lý, và chạy addon từ Docker containers bên 
 - **Install flow** — InstallAsync uses catalog lookup (id-based), port parsing from catalog entry, DockerService.ImageExistsLocallyAsync ✅
 - **Redux catalog store** — setCatalog reducer, updateAddonStatus creates entries for new addons, selectorCatalog ✅
 - **Không còn `ComputeAddonId`** — identity dùng catalog id trực tiếp ✅
-- **Chưa có:** SSE stream, OAuth2 author endpoint (consent screen)
+- **gRPC Addon Channel** — bidirectional streaming, auth interceptor, periodic re-check (5 phút), active cancellation via `AddonChannelManager`, `NotifyAddonWidgetEvent` forward SignalR ✅
+- **Chưa có:** OAuth2 author endpoint (consent screen)
 - **BackendConfig + NMX_API_URL compute** — `IsRunningInContainer()` → host.docker.internal / container name, ExtraHosts + NetworkMode tuỳ runtime, `RegistrationTokenTtlMinutes` configurable ✅
 
 ---
@@ -116,8 +117,7 @@ Cần migration mới.
 | POST | `/api/addons/{id}/start` | Admin | Start container |
 | POST | `/api/addons/{id}/stop` | Admin | Stop container |
 | DELETE | `/api/addons/{id}` | Admin | Remove container + DB record |
-| GET | `/api/addons/{id}/stream` | OAuth2 (addon) | SSE stream cho widget events |
-| POST | `/api/addons/{id}/command` | Admin | Send command to addon |
+| — | `(gRPC Connect)` | OAuth2 (addon) | gRPC bidirectional stream — addon gửi/nhận event qua stream thay vì HTTP |
 
 ### 1.6 DockerMonitor (`Workers/DockerMonitorWorker.cs`) ✅
 
@@ -153,7 +153,7 @@ Namorix Server đóng vai trò **Authorization Server (AS)** cho external addon.
 
 **Còn thiếu:**
 - `authorization_code` grant — Authorize endpoint + consent screen (cho user-facing addon auth)
-- SSE stream cho widget events
+- gRPC bidirectional stream — addon gửi/nhận event qua stream thay vì SSE + HTTP Command
 
 #### Endpoints
 
@@ -243,7 +243,7 @@ public string? Scope { get; set; }             // Default scope
 Middleware xác thực access_token ở những endpoint addon cần gọi:
 
 ```csharp
-// /api/addons/{id}/stream — addon gửi widget events
+// gRPC interceptor — addon gửi access_token trong metadata lúc mở stream
 // /api/... — các endpoint khác addon cần access
 ```
 
@@ -286,17 +286,75 @@ oauth_tokens: token_id, client_id, user_id, scope, expires_at, revoked
 oauth_consents: user_id, client_id, scope, granted_at
 ```
 
-### 1.8 SSE Stream + Command
+### 1.8 gRPC Addon Channel
 
-**SSE Stream** (`GET /api/addons/{id}/stream`):
-- Addon gửi widget events về shell (ví dụ: "new message", "status update")
-- Backend authenticate request bằng OAuth2 access_token (Bearer)
-- Forward events qua SignalR đến frontend (`addon:widget-event`)
+**gRPC bidirectional streaming** thay thế SSE Stream + HTTP Command:
+- Addon mở 1 kênh gRPC duy nhất khi start, sống suốt vòng đời container
+- Cả addon→backend và backend→addon đều qua cùng 1 stream — không cần 2 chiều riêng (SSE + Command)
 
-**Command Channel** (`POST /api/addons/{id}/command`):
-- Shell gửi command vào addon qua HTTP endpoint
-- Backend proxy request vào container's internal HTTP endpoint
-- Response trả về frontend
+**Proto service definition** (`addon_channel.proto` trong Namorix.Server):
+
+```protobuf
+service AddonChannel {
+  rpc Connect(stream AddonMessage) returns (stream ShellMessage);
+}
+
+message AddonMessage {
+  string type = 1;       // "widget-event", "log", "heartbeat"
+  string payload = 2;    // JSON payload
+}
+
+message ShellMessage {
+  string type = 1;       // "command", "config-update", "heartbeat-ack"
+  string payload = 2;    // JSON payload
+}
+```
+
+**Auth trên gRPC — 2 lớp:**
+
+1. **Initial auth (gRPC interceptor):**
+   - Addon gửi `access_token` qua gRPC metadata (giống HTTP header `Authorization: Bearer ...`) khi gọi `Connect()`
+   - Backend interceptor verify token đầy đủ (JWT signature + expiry) 1 lần lúc mở stream
+   - Reject ngay nếu invalid/expired — không cho vào stream
+
+2. **Periodic re-check (5 min timer trong server-side stream loop):**
+   ```csharp
+   public override async Task Connect(
+       IAsyncStreamReader<AddonMessage> requestStream,
+       IServerStreamWriter<ShellMessage> responseStream,
+       ServerCallContext context)
+   {
+       var addonId = ValidateInitialToken(context); // throw nếu invalid
+
+       using var cts = CancellationTokenSource.CreateLinkedTokenSource(context.CancellationToken);
+       var recheckTask = Task.Run(async () =>
+       {
+           while (!cts.Token.IsCancellationRequested)
+           {
+               await Task.Delay(TimeSpan.FromMinutes(5), cts.Token);
+               if (!await IsAddonStillAuthorizedAsync(addonId))
+               {
+                   cts.Cancel();
+                   break;
+               }
+           }
+       }, cts.Token);
+
+       // xử lý requestStream/responseStream như bình thường, dùng cts.Token
+   }
+   ```
+   `IsAddonStillAuthorizedAsync` chỉ check trạng thái nhanh: addon còn tồn tại trong DB (chưa bị gỡ) + token chưa bị revoke — **không verify lại JWT signature**.
+
+3. **Active cancellation khi revoke:**
+   - `ConcurrentDictionary<string, CancellationTokenSource>` lưu theo `addonId`
+   - Khi action `/oauth/revoke` hoặc "gỡ addon" xảy ra → gọi `cts.Cancel()` ngay
+   - Không cần chờ chu kỳ 5 phút
+
+**So với SSE + Command:**
+- ✅ Một kênh duy nhất, không cần 2 endpoint riêng
+- ✅ Backend chủ động gửi message xuống addon (qua `responseStream`) — SSE chỉ 1 chiều
+- ✅ Không cần HTTP polling hay health-check riêng
+- ✅ Auth tập trung tại interceptor, không rải rác ở controller middleware
 
 ---
 
@@ -675,6 +733,9 @@ Card hiển thị:
 | `Namorix.Core/Infrastructure/IAddonNotifier.cs` | P1 ✅ |
 | `Namorix.Server/Infrastructure/SignalRAddonNotifier.cs` | P1 ✅ |
 | `Namorix.Server/Constants/Addon.cs` | P1 ✅ |
+| `Namorix.Core/Protos/addon_channel.proto` | P1 ✅ |
+| `Namorix.Server/Services/AddonChannelManager.cs` | P1 ✅ |
+| `Namorix.Server/Services/Grpc/AddonChannelService.cs` | P1 ✅ |
 | Migration `AddonManifestFields`, `InitialCreate` (OAuth) | P1 ✅ |
 
 ### Backend (Modified) ✅
@@ -720,7 +781,7 @@ Card hiển thị:
 ## Execution Order
 
 ```
-Phase 1 (Backend Docker) ✅ (trừ SSE stream + author endpoint)
+Phase 1 (Backend Docker) ✅ (trừ author endpoint)
   ├── 1.1 Docker.DotNet package ✅
   ├── 1.2 DockerService ✅ (+ IsRunningInContainer, ExtraHosts, NetworkMode, BackendConfig)
   ├── 1.3 AddonService ✅ (InstallRequest simplified)
@@ -728,7 +789,7 @@ Phase 1 (Backend Docker) ✅ (trừ SSE stream + author endpoint)
   ├── 1.5 AddonController ✅ (dùng id không compute)
   ├── 1.6 DockerMonitor ✅
   ├── 1.7 OAuth2 ✅ (client_credentials + private_key_jwt full: register, JWT RS256 verify, ExemptPaths, client SDK)
-  └── 1.8 SSE Stream + Command ← **pending**
+  └── 1.8 gRPC Addon Channel ✅
 
 Phase 2 (Frontend Core) ✅
   ├── 2.1 ApiAddonRoutes ✅
@@ -775,6 +836,14 @@ Phase 6 (Integration)
   ├── ExemptPaths pattern: middleware bypass cho OAuth form-urlencoded endpoints ✅
   ├── JsonErrorMiddleware + CsrfMiddleware: OAuth endpoints exempt ✅
   ├── TokenCleanupWorker: OAuthRegistration cleanup ✅
+  ├── gRPC Addon Channel: proto definition (bidirectional Connect), AddonChannelManager (ConcurrentDictionary + active cancellation), AddonChannelService (interceptor auth, periodic 5-min re-check, HandleAddonMessageAsync forward widget-event/ log/ heartbeat), MapGrpcService wiring + DI ✅
+  ├── OAuthController.Revoke: form body, call RevokeTokenAsync + DisconnectAsync gRPC stream, ExemptPaths.NoCsrfSession ✅
+  ├── OAuthService: RevokeTokenAsync, IsAddonAuthorizedAsync, ValidateTokenAsync ✅
+  ├── IAddonNotifier.NotifyAddonWidgetEvent + SignalR impl + ServerSignalREvent.AddonWidgetEvent constant ✅
+  ├── OAuth2Middleware: Bearer prefix constant + token lookup fix ✅
+  ├── NmxOAuth2Client: fix File.Exists() logic (read when exists, not when missing) ✅
+  ├── AddonInstallation: consistent `init` setters for immutable fields ✅
+  ├── Grpc.AspNetCore package (Directory.Packages.props + both csproj) ✅
   ├── OAuth2 client SDK — build + test với namorix-weave
   └── Documentation + version bump ✅
 

@@ -120,6 +120,8 @@
 - [x] namorix-weave external addon test (Hello World trên desktop ✅)
 - [x] PackageCenter UI component (addon manager page — Rail+Grid+Card với All/Installed/Updated tabs)
 - [x] OAuth2 private_key_jwt full implementation (RSA key pair gen, client_assertion verify)
+- [x] gRPC Addon Channel (bidirectional stream, auth interceptor, 5-min recheck, active cancellation)
+- [x] OAuth revoke endpoint + NotifyAddonWidgetEvent (gRPC → SignalR bridge)
 
 ### M5 — @namorix/core npm Publishing
 **Status:** Not Started
@@ -139,8 +141,8 @@
 | @namorix/core | 0.41.3 | M4 (// TODO comments on addon types) |
 | @namorix/styles | 0.36.2 | M4 (Taskbar font-size tweak) |
 | @namorix/ui | 0.26.0 | M4 (ERROR icon symbol) |
-| Namorix.Core | 0.43.0 | M4 (New OAuth2 module — client SDK, constants, ExemptPaths middleware pattern) |
-| Namorix.Server | 0.46.0 | M4 (New OAuth endpoints — register/token, registration token flow, cleanup) |
+| Namorix.Core | 0.44.0 | M4 (gRPC proto definition, ExemptPaths revoke, bug fixes) |
+| Namorix.Server | 0.47.0 | M4 (gRPC Addon Channel, revoke endpoint, NotifyAddonWidgetEvent) |
 
 ## Version Rules
 
@@ -206,6 +208,11 @@
 - Namorix.Server 0.45.3 → 0.46.0: NEW: `Migrations/20260704041156_AddOAuthRegistration.cs`. MODIFIED: `Controllers/OAuthController.cs` — register/token endpoints. `Services/OAuthService.cs` — full JWT RS256 verification. `Services/AddonTaskExecutor.cs` — registration token in InstallAsync. `Services/DockerService.cs` — passes NMX_REGISTRATION_TOKEN to containers. `Workers/TokenCleanupWorker.cs` — OAuthRegistration cleanup. `Persistence/AppDbContext.cs` — OAuthRegistration DbSet. `Program.cs` — OAuthService DI. `Constants/Addon.cs` — registration constants. `appsettings.json` — OAuth config.
 - @namorix/core 0.41.2 → 0.41.3: MODIFIED: `addon/types.ts` — // TODO comments on `updating`/`pulling` status values.
 - @namorix/styles 0.36.1 → 0.36.2: MODIFIED: `taskbar.scss` — clock font-size 4xl → 3xl.
+
+### 2026-07-04 (2) — gRPC Addon Channel, revoke endpoint, NotifyAddonWidgetEvent
+
+- Namorix.Core 0.43.0 → 0.44.0: NEW: `Protos/addon_channel.proto` — bidirectional gRPC Connect rpc. MODIFIED: `Constants/ExemptPaths.cs` — thêm `/api/oauth/revoke` vào NoCsrfSession. `Models/AddonInstallation.cs` — consistent `init` setters. `OAuth/NmxOAuth2Client.cs` — fix `File.Exists()` logic. `Namorix.Core.csproj` — Grpc.AspNetCore + Protobuf.
+- Namorix.Server 0.46.0 → 0.47.0: NEW: `Services/AddonChannelManager.cs` — ConcurrentDictionary for active gRPC cancellation. `Services/Grpc/AddonChannelService.cs` — bidirectional streaming + interceptor auth + 5-min recheck. MODIFIED: `Controllers/OAuthController.cs` — revoke endpoint + ChannelManager injection. `Services/OAuthService.cs` — RevokeTokenAsync, IsAddonAuthorizedAsync, ValidateTokenAsync. `Infrastructure/IAddonNotifier.cs` + `Hubs/SignalRAddonNotifier.cs` — NotifyAddonWidgetEvent. `Constants/ServerSignalR.cs` — AddonWidgetEvent. `Middleware/OAuth2Middleware.cs` — Bearer prefix constant. `Program.cs` — AddGrpc + ChannelManager + MapGrpcService. `Namorix.Server.csproj` — Grpc.AspNetCore + Protobuf.
 
 ### 2026-07-03 (4) — InstallAsync catalog rewrite, frontend catalog store, identity cleanup
 

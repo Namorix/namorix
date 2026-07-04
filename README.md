@@ -25,12 +25,12 @@ Browser-based desktop shell, self-hosted.
 | Layer | Technology |
 |-------|------------|
 | Frontend | Vite + React |
-| Backend | ASP.NET Core 8 |
+| Backend | ASP.NET Core 10 |
 | Database | SQLite + EF Core |
 | Auth | JWT (access + refresh) with HttpOnly cookies |
 | Terminal | xterm.js |
 | Realtime | SignalR |
-| Server-to-server | gRPC (planned) |
+| Server-to-server | gRPC (bidirectional streaming) |
 | Docker | Docker.DotNet |
 
 ## Quick Start
@@ -44,9 +44,9 @@ cd namorix
 cd frontend && pnpm install
 
 # Run development (2 terminals)
-cd backend && dotnet watch run  # Backend C# (port 3000)
+cd backend && dotnet watch run  # Backend C# (port 5000)
 # or: cd backend && dotnet run
-cd frontend && pnpm dev         # Frontend (Vite port 5174)
+cd frontend && pnpm dev         # Frontend (Vite port 5173)
 ```
 
 ## Repository Structure
@@ -132,22 +132,24 @@ namorix/
 │       │   ├── slices/       # windowsSlice, launcherSlice, taskbarSlice, notificationsSlice
 │       │   └── selectors/    # Memoized createSelector
 │       └── types/            # WindowId, WindowState, windowing types
-└── backend/                   # ASP.NET Core 8 API (port 3000)
+└── backend/                   # ASP.NET Core 10 API (port 5000)
     ├── Makefile               # Build/EF commands
     ├── Namorix.sln            # Solution file
     └── src/
-        ├── Namorix.Core/      # Models, Abstractions, Config, Constants, Exceptions, Responses, Validation
+        ├── Namorix.Core/      # Models, Abstractions, Config, Constants, Exceptions, Responses, Validation,
+                    #   OAuth (client credentials, addon self-registration),
+                    #   Protos (gRPC addon channel definition)
         └── Namorix.Server/    # Persistence (AppDbContext, SQLite migrations),
                                 # Services (Auth, Permission, Settings, Theme, User, Notification,
-                                #   Docker, Addon, OAuth),
+                                #   Docker, Addon, OAuth, AddonChannelManager,
+                                #   gRPC: AddonChannelService),
                                 # Controllers (Auth, Health, Permission, Settings, Theme, User,
-                                #   Notification, Addon, OAuth),
-                                # Middleware (Auth, TrustedProxy, RequirePermission, Csrf, Exception,
-                                #   JsonError, NotFound, SecurityHeaders, TrafficMonitor, OAuth2),
-                                # Workers (TokenCleanup, LogCleanup, SystemMonitorStats,
-                                #   DockerMonitor, Traffic*),
-                                # Hubs (MainHub, NmxHub, SignalRAddonNotifier),
-                                # Infrastructure (IAddonNotifier),
+                                #   Notification, Addon, OAuth, UserPermission),
+                                # Middleware (Auth, TrustedProxy, RequirePermission, OAuth2),
+                                # Workers (TokenCleanup, NotificationCleanup, SystemMonitorStats,
+                                #   DockerMonitor, CatalogSync),
+                                # Hubs (MainHub, SignalRAddonNotifier, SignalRSystemMonitorNotifier),
+                                # Infrastructure (IAddonNotifier, ISystemMonitorNotifier),
                                 # Extensions, Program.cs
 ```
 
@@ -158,7 +160,7 @@ namorix/
 | `@namorix/core` | Types, auth guards, http client with auto-refresh + CSRF, `ApiError`, i18n (NmxI18n, ValidationRunner), SignalR hooks (useSignalR, useSignalREvent, useSignalRGroup, useSignalRStatus), store (nmxStore), theme, addon contract, fingerprint, cache (useTabCache, Show), hooks (usePageSize, useLocalStorage), toast (NmxToastBus), notification (NmxNotificationDto, SignalR events, API routes) | frontend, @namorix/ui, external addons |
 | `@namorix/styles` | SCSS tokens, reset, fonts, icomoon icons, component/layout SCSS (shared by all themes), shell-specific SCSS | frontend, @namorix/ui, external addons |
 | `@namorix/ui` | Primitives (NmxButton, NmxForm, NmxIcon, NmxInlineAlert, NmxToggle, NmxSelect, NmxSelectMultiple, NmxSlider, NmxSegmentedGroup, NmxBadge, NmxChip, NmxLoadingOverlay, NmxSpinner, NmxPagination, NmxPulseDot, NmxSearchInput, NmxStatCard, NmxTagInput) + Composite (NmxCard, NmxDataTable, NmxMetaList, NmxRail, NmxSettings, NmxToolbar, NmxAddon, NmxDialog, NmxAlertDialog, NmxToastProvider, NmxTabContext, NmxTabProvider) + NmxHostContext + Layouts (NmxHorizontalWrap, NmxGrid) | frontend |
-| `backend` | ASP.NET Core 8 API server (SignalR, flat file traffic + logs, SQLite, Log pipeline, FileLogger, ValidationFilter, SecurityHeaders, CSRF, CORS) | - |
+| `backend` | ASP.NET Core 10 API server (SignalR, flat file traffic + logs, SQLite, Log pipeline, FileLogger, ValidationFilter, CORS) | - |
 | `frontend` | Vite React shell (Redux Toolkit, SignalR client, addon system) | - |
 
 ## Auth Architecture
@@ -231,23 +233,41 @@ Addon có 3 mode tích hợp:
 
 ## Environment Variables
 
-### Backend (ASP.NET Core, `__` separator for hierarchy)
+### Backend — Server (ASP.NET Core, `__` separator for hierarchy)
 
 | Variable | Config Path | Default | Description |
 |----------|-------------|---------|-------------|
 | `JWT__Secret` | Jwt.Secret | (required) | JWT signing key |
-| `JWT__AccessTokenExpirationMinutes` | Jwt.AccessTokenExpirationMinutes | 15 | Access token TTL |
+| `JWT__AccessTokenExpirationSeconds` | Jwt.AccessTokenExpirationSeconds | 900 | Access token TTL (seconds) |
 | `JWT__RefreshTokenExpirationDays` | Jwt.RefreshTokenExpirationDays | 7 | Refresh token TTL |
 | `JWT__RefreshTokenExpirationDaysRemember` | Jwt.RefreshTokenExpirationDaysRemember | 90 | Remember-me TTL |
+| `JWT__Issuer` | Jwt.Issuer | `Namorix` | JWT issuer claim |
+| `JWT__Audience` | Jwt.Audience | `Namorix` | JWT audience claim |
 | `ConnectionStrings__DefaultConnection` | ConnectionStrings.DefaultConnection | `Data Source=namorix.db` | SQLite connection string |
-| `AppConfig__CsrfEnabled` | AppConfig.CsrfEnabled | false | Enable CSRF protection (`true` = CSRF check enabled; default false disables it) |
-| `SECURE_COOKIE` | AppConfig.SecureCookie | false | Set true for HTTPS |
-| `ALLOWED_ORIGINS` | AppConfig.AllowedOrigins | (empty) | Comma-separated CORS origins; empty = allow all (trusted proxy mode) |
+| `AppConfig__CsrfEnabled` | AppConfig.CsrfEnabled | false | Enable CSRF protection |
+| `AppConfig__SecureCookie` | AppConfig.SecureCookie | false | Set true for HTTPS |
+| `AppConfig__AllowedOrigins` | AppConfig.AllowedOrigins | (empty) | Comma-separated CORS origins; empty = allow all (trusted proxy mode) |
+| `Backend__Port` | Backend.Port | 5000 | Backend listen port |
+| `Backend__ContainerName` | Backend.ContainerName | `namorix-server` | Docker container name |
+| `Backend__NetworkName` | Backend.NetworkName | `namorix-net` | Docker network name |
+| `Backend__RegistrationTokenTtlMinutes` | Backend.RegistrationTokenTtlMinutes | 60 | Addon registration token TTL |
+| `AddonCatalog__CatalogUrl` | AddonCatalog.CatalogUrl | (see appsettings) | Addon catalog manifest URL |
+| `AddonCatalog__TtlSeconds` | AddonCatalog.TtlSeconds | 3600 | Catalog cache TTL |
+| `AddonCatalog__SyncIntervalSeconds` | AddonCatalog.SyncIntervalSeconds | 3600 | Catalog sync interval |
+| `AddonCatalog__RetryDelaySeconds` | AddonCatalog.RetryDelaySeconds | 60 | Catalog sync retry delay |
+
+### Backend — Addon Client (consumed by `@namorix/core` OAuth2 library in addon containers)
+
+| Variable | Config Path | Default | Description |
+|----------|-------------|---------|-------------|
+| `NMX_API_URL` | NmxAddonConfig.ApiUrl | (required) | Namorix backend base URL |
+| `NMX_REGISTRATION_TOKEN` | NmxAddonConfig.RegistrationToken | (optional) | One-time token for addon self-registration |
+| `NMX_DATA_DIR` | NmxAddonConfig.DataDir | `./data` | Addon data directory |
 
 ## Milestones
 
 1. **M1** — Static shell UI + mock auth page ✅
 2. **M2** — Full auth backend (login/register/logout/refresh/session, decorators, i18n, validation) ✅
 3. **M3** — System Addons (Built-in): addon contract + registry, About, Log Viewer, NetworkTraffic (SignalR + flat file storage), SystemMonitor, Settings (Appearance/System/Account), theme system (hot swap CSS, server-driven), File Manager, Terminal, Package Center
-4. **M4** — External addon system (Docker lifecycle, addon manager) 🔜
+4. **M4** — External addon system: OAuth2 client_credentials, addon self-registration, gRPC bidirectional streaming (Phase 1) 🚧
 5. **M5** — @namorix/core publish npm + addon integration guide

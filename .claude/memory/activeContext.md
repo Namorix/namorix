@@ -68,6 +68,12 @@ Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và 
 - Styles: `taskbar.scss` — clock font-size 4xl → 3xl.
 - Versions: Namorix.Core 0.43.0, Namorix.Server 0.46.0, @namorix/core 0.41.3, @namorix/styles 0.36.2.
 
+### 2026-07-04 (2) — gRPC Addon Channel, revoke endpoint, NotifyAddonWidgetEvent
+
+- Backend (Namorix.Core): NEW Protos/addon_channel.proto — bidirectional gRPC streaming. ExemptPaths thêm /api/oauth/revoke. AddonInstallation consistent init setters. NmxOAuth2Client fix File.Exists(). Package deps: Grpc.AspNetCore + Protobuf.
+- Backend (Namorix.Server): NEW gRPC channel — AddonChannelManager (ConcurrentDictionary cho active cancellation), AddonChannelService (bidirectional stream + interceptor auth + 5-min periodic re-check). NEW OAuthController.Revoke — call RevokeTokenAsync + DisconnectAsync. OAuthService — RevokeTokenAsync, IsAddonAuthorizedAsync, ValidateTokenAsync. IAddonNotifier + SignalRAddonNotifier — NotifyAddonWidgetEvent. AddonWidgetEvent SignalR constant. OAuth2Middleware — Bearer prefix constant. Program.cs — gRPC wiring. Package deps: Grpc.AspNetCore + Protobuf.
+- Versions: Namorix.Core 0.44.0, Namorix.Server 0.47.0.
+
 ### 2026-07-03 (4) — InstallAsync catalog rewrite, frontend catalog store, identity cleanup
 
 - Backend: `AddonTaskExecutor.InstallAsync` full rewrite — catalog lookup, null check for catalogEntry, ParseCatalogPorts, proper AddonStatus.Installed (not Running), Docker error handling. `DockerService` — ImageExistsLocallyAsync, container Name = spec.AddonId. InstallRequest simplified to just Id. Xoá `ComputeAddonId` + AddonHelper.

@@ -426,6 +426,7 @@ On disconnect
 | `addon:status-changed` | Server → Client | `AddonStatusPayload` (`{ addonId: string, status: AddonContainerStatus, lastErrorCode?: string }`) | PackageCenter AddonEventWatcher (global) |
 | `addon:pending-task-changed` | Server → Client | `AddonPendingTaskPayload` (`{ addonId: string, taskPhase: AddonPendingPhase \| null }`) | PackageCenter AddonGrid (pending overlay) |
 | `addon:uninstalled` | Server → Client | `{ addonId: string }` | AddonEventWatcher (remove addon + toast) |
+| `addon:widget-event` | Server → Client | `{ addonId: string, payload: string }` | (planned) Forward addon widget events via gRPC→SignalR bridge |
 
 ### Hooks
 
@@ -446,7 +447,8 @@ NmxHub (IHubContext)
   ├── ILogNotifier → NotifyNewEntriesAsync()
   └── IAddonNotifier → NotifyAddonStatusChanged(addonId, status, lastErrorCode?)
        ├── NotifyPendingTaskChanged(addonId, phase?)
-       └── NotifyAddonUninstalled(addonId)
+       ├── NotifyAddonUninstalled(addonId)
+       └── NotifyAddonWidgetEvent(addonId, payload)
 ```
 
 ### Key files
@@ -613,6 +615,40 @@ NmxOAuth2Client.GetAccessTokenAsync (addon gọi mỗi khi cần token)
   └── Tạo client_assertion JWT mới (iss=clientId, sub=clientId, aud=token endpoint)
   └── POST /api/oauth/token với grant_type=client_credentials + assertion
   └── Cache access_token, return
+
+OAuthController.Revoke (POST /api/oauth/revoke)
+  └── OAuthService.RevokeTokenAsync(tokenId)
+        ├── Lookup OAuthToken by TokenId
+        ├── Set Revoked = true
+        └── Tìm AddonInstallation bằng ClientId, trả về addonId
+  └── AddonChannelManager.DisconnectAsync(addonId) — cancel gRPC stream
+
+gRPC Addon Channel (addon ↔ backend bidirectional stream)
+
+Addon mở 1 kênh gRPC duy nhất khi start, thay thế SSE Stream + HTTP Command:
+
+```
+Addon container → Connect(metadata: Bearer <access_token>)
+  └── AddonChannelService.Connect
+        ├── gRPC interceptor: ValidateTokenAsync(token) → addonId
+        │     └── Fail → throw RpcException(Unauthenticated)
+        ├── AddonChannelManager.Register(addonId, cts)
+        ├── background recheck loop (5 phút):
+        │     └── OAuthService.IsAddonAuthorizedAsync(addonId)
+        │           ├── addon tồn tại + có ClientId → OK
+        │           └── revoked/hết hạn → throw RpcException(PermissionDenied)
+        ├── requestStream: addon → backend (AddonMessage)
+        │     ├── "widget-event" → IAddonNotifier.NotifyAddonWidgetEvent → SignalR → frontend
+        │     ├── "log" → ILogger
+        │     └── "heartbeat" → respond ShellMessage heartbeat-ack
+        ├── responseStream: backend → addon (ShellMessage)
+        │     ├── "command" → (planned) admin gửi command xuống addon
+        │     └── "config-update" → (planned) push config changes
+        └── finally: AddonChannelManager.DisconnectAsync(addonId)
+
+Active cancellation (revoke/uninstall):
+  ├── OAuthController.Revoke → ChannelManager.DisconnectAsync(addonId)
+  └── AddonTaskExecutor.UninstallAsync → ChannelManager.DisconnectAsync(addonId)
 ```
 
 ### Addon Task Queue (Backend)
@@ -667,6 +703,9 @@ AddonController action
 | `backend/src/Namorix.Server/Services/AddonTaskQueue.cs` | Channel-based async task queue |
 | `backend/src/Namorix.Server/Services/AddonTaskExecutor.cs` | Concurrent worker (max 2) for addon operations |
 | `backend/src/Namorix.Server/Models/AddonTask.cs` | Task model for queue |
+| `backend/src/Namorix.Core/Protos/addon_channel.proto` | gRPC proto — bidirectional AddonChannel service |
+| `backend/src/Namorix.Server/Services/AddonChannelManager.cs` | ConcurrentDictionary<string, ChannelContext> for active gRPC cancellation |
+| `backend/src/Namorix.Server/Services/Grpc/AddonChannelService.cs` | gRPC bidirectional streaming — auth interceptor + 5-min recheck + SignalR bridge |
 | `frontend/src/addons/PackageCenter/AddonEventWatcher.tsx` | Global SignalR handler for addon status events |
 
 ### Addon Catalog Sync (M4 — PackageCenter)
