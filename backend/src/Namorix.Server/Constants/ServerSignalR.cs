@@ -12,4 +12,5 @@ public static class ServerSignalREvent
     public const string AddonStatusChanged = $"{ServerSignalRGroups.Addon}:status-changed";
     public const string AddonPendingTaskChanged = $"{ServerSignalRGroups.Addon}:pending-task-changed";
     public const string AddonUninstalled = $"{ServerSignalRGroups.Addon}:uninstalled";
+    public const string AddonWidgetEvent = $"{ServerSignalRGroups.Addon}:widget-event";
 }

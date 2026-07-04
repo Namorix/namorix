@@ -17,11 +17,11 @@ public class AddonInstallation
     [MaxLength(50)] public string? Version { get; init; }
     [MaxLength(100)] public string? Author { get; set; }
 
-    [MaxLength(100)] public string? PendingTaskId { get; set; }
-    [MaxLength(20)] public string? PendingTaskPhase { get; set; }
-    [MaxLength(500)] public string? LastErrorCode { get; set; }
+    [MaxLength(100)] public string? PendingTaskId { get; init; }
+    [MaxLength(20)] public string? PendingTaskPhase { get; init; }
+    [MaxLength(500)] public string? LastErrorCode { get; init; }
 
-    public DateTime? LastStatusChangedAt { get; set; }
+    public DateTime? LastStatusChangedAt { get; init; }
     public DateTime InstalledAt { get; init; }
 
     [MaxLength(100)] public string? ClientId { get; set; }

@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
+using Namorix.Core.Constants;
 using Namorix.Server.Persistence;
 
 namespace Namorix.Server.Middleware;
@@ -8,10 +9,11 @@ public class OAuth2Middleware(RequestDelegate next)
 {
     public async Task InvokeAsync(HttpContext context, AppDbContext db)
     {
+        const string bearer = $"{OAuth.NmxOAuth2Defaults.Bearer} ";
         var authHeader = context.Request.Headers.Authorization.FirstOrDefault();
-        if (authHeader?.StartsWith("Bearer ") == true)
+        if (authHeader?.StartsWith(bearer) == true)
         {
-            var tokenId = authHeader["Bearer ".Length..];
+            var tokenId = authHeader[bearer.Length..];
             var token = await db.OAuthTokens
                 .FirstOrDefaultAsync(t => t.TokenId == tokenId);
 
@@ -21,7 +23,7 @@ public class OAuth2Middleware(RequestDelegate next)
                     new Claim(ClaimTypes.NameIdentifier, token.ClientId),
                     new Claim("client_id", token.ClientId),
                     new Claim("user_id", token.UserId.ToString())
-                ], "oauth2");
+                ], "oauth2"); // TODO constants
                 context.User = new ClaimsPrincipal(identity);
             }
         }

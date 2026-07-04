@@ -8,7 +8,7 @@ namespace Namorix.Server.Controllers;
 
 [ApiController]
 [Route("api/oauth")]
-public class OAuthController(OAuthService oauth) : ControllerBase
+public class OAuthController(OAuthService oauth, AddonChannelManager channelManager) : ControllerBase
 {
     [HttpGet("authorize")]
     public async Task<IActionResult> Authorize(
@@ -79,6 +79,16 @@ public class OAuthController(OAuthService oauth) : ControllerBase
         }
     }
     
+    [HttpPost("revoke")]
+    public async Task<IActionResult> Revoke([FromBody] RevokeRequest request)
+    {
+        var addonId = await oauth.RevokeTokenAsync(request.Token, request.TokenTypeHint);
+        if (addonId != null)
+            channelManager.DisconnectAsync(addonId);
+        
+        return Ok(new { }); // OAuth2 spec: always 200
+    }
+    
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterClientRequest request)
     {
@@ -90,7 +100,7 @@ public class OAuthController(OAuthService oauth) : ControllerBase
         
         return Ok(new { clientId });
     }
-
+    
 }
 
 public class TokenRequest
@@ -112,3 +122,4 @@ public class TokenRequest
 }
 
 public record RegisterClientRequest(string RegistrationToken, string PublicKey);
+public record RevokeRequest(string Token, string? TokenTypeHint);

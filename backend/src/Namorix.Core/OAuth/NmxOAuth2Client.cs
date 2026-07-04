@@ -22,7 +22,7 @@ public class NmxOAuth2Client(HttpClient http, NmxAddonConfig config, ILogger<Nmx
         if (_initialized)
             return;
         
-        if (!File.Exists(CredentialsFile))
+        if (File.Exists(CredentialsFile))
         {
             var stored = JsonSerializer.Deserialize<StoredCredentials>(
                 await File.ReadAllTextAsync(CredentialsFile, ct));

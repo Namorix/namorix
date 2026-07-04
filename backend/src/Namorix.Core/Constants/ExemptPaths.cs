@@ -10,6 +10,7 @@ public static class ExemptPaths
     // Machine clients with no cookie session — skip CSRF check.
     public static readonly string[] NoCsrfSession = [
         "/api/oauth/token",
-        "/api/oauth/register"
+        "/api/oauth/register",
+        "/api/oauth/revoke"
     ];
 }

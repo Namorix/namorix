@@ -12,6 +12,7 @@ using Namorix.Server.Hubs;
 using Namorix.Server.Infrastructure;
 using Namorix.Server.Persistence;
 using Namorix.Server.Services;
+using Namorix.Server.Services.Grpc;
 using Namorix.Server.Workers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -52,9 +53,11 @@ builder.Services.AddHostedService<CatalogSyncWorker>();
 builder.Services.AddSingleton<AddonTaskQueue>();
 builder.Services.AddHostedService<AddonTaskQueue>(sp => sp.GetRequiredService<AddonTaskQueue>());
 builder.Services.AddScoped<AddonTaskExecutor>();
+builder.Services.AddGrpc();
+builder.Services.AddSingleton<AddonChannelManager>();
+
 
 var app = builder.Build();
-
 var memoryCache = app.Services.GetRequiredService<IMemoryCache>();
 var appConfig = app.Services.GetRequiredService<IOptions<AppConfig>>().Value;
 var configOrigins = appConfig.AllowedOrigins
@@ -93,4 +96,5 @@ app.UseNamorixCore<MainHub>(core =>
     app.UseTrustedProxy();
 });
 
+app.MapGrpcService<AddonChannelService>();
 app.Run();

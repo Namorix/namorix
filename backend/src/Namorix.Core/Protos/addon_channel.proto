@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option csharp_namespace = "Namorix.Core.Protos";
+
+service AddonChannel {
+  rpc Connect(stream AddonMessage) returns (stream ShellMessage);
+}
+
+message AddonMessage {
+  string type = 1;       // "widget-event", "log", "heartbeat"
+  string payload = 2;    // JSON payload
+  int64 timestamp = 3;
+}
+
+message ShellMessage {
+  string type = 1;       // "command", "config-update", "heartbeat-ack"
+  string payload = 2;
+  string message_id = 3;
+}

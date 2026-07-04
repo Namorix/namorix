@@ -87,6 +87,22 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache)
         return clientId;
     }
     
+    public async Task<string?> RevokeTokenAsync(string tokenId, string? tokenTypeHint)
+    {
+        var token = await db.OAuthTokens.FindAsync(tokenId);
+        if (token == null)
+            return null;
+
+        token.Revoked = true;
+        await db.SaveChangesAsync();
+        
+        // Find addonId by clientId to cancel gRPC stream
+        var addon = await db.AddonInstallations
+            .FirstOrDefaultAsync(a => a.ClientId == token.ClientId);
+        
+        return addon?.Id;
+    }
+    
     public async Task<string?> IssueClientCredentialsTokenAsync(string clientAssertion)
     {
         var jwt = new JwtSecurityTokenHandler().ReadJwtToken(clientAssertion);
@@ -120,7 +136,29 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache)
         return token.TokenId;
     }
 
-
+    public async Task<bool> IsAddonAuthorizedAsync(string addonId)
+    {
+        // Chỉ check DB nhanh, không verify JWT
+        // TODO
+        var addon = await db.AddonInstallations.FindAsync(addonId);
+        return addon is
+        {
+            ClientId: not null,
+            Status: not null
+        };
+    }
+    
+    public async Task<string?> ValidateTokenAsync(string tokenId)
+    {
+        var token = await db.OAuthTokens.FindAsync(tokenId);
+        if (token == null || token.ExpiresAt < DateTime.UtcNow || token.Revoked)
+            return null;
+        
+        var addon = await db.AddonInstallations
+            .FirstOrDefaultAsync(a => a.ClientId == token.ClientId);
+        return addon?.Id;
+    }
+    
     private static bool VerifyClientAssertion(
         string assertion, string publicKeyPem, string expectedClientId)
     {

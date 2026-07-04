@@ -34,4 +34,12 @@ public class SignalRAddonNotifier(IHubContext<MainHub> hubContext)
         });
     }
 
+    public async Task NotifyAddonWidgetEvent(string addonId, string payload)
+    {
+        await hubContext.Clients.All.SendAsync(ServerSignalREvent.AddonWidgetEvent, new
+        {
+            addonId,
+            payload
+        });
+    }
 }
