@@ -1,5 +1,7 @@
 using Docker.DotNet;
 using Docker.DotNet.Models;
+using Namorix.Core.Constants;
+using Namorix.Core.OAuth;
 using Namorix.Server.Constants;
 
 namespace Namorix.Server.Services;
@@ -7,6 +9,7 @@ namespace Namorix.Server.Services;
 public class DockerService
 {
     public readonly DockerClient Client;
+    public static bool IsRunningInContainer() => File.Exists("/.dockerenv");
 
     public DockerService()
     {
@@ -55,14 +58,12 @@ public class DockerService
     {
         var envVars = new List<string>
         {
-            $"NMX_ADDON_ID={spec.AddonId}",
-            $"NMX_API_URL={spec.ApiUrl}",
-            $"NMX_CLIENT_ID={spec.ClientId}",
-            $"NMX_REDIRECT_URI={spec.RedirectUri}",
+            $"{OAuth.NmxOAuth2Env.ApiUrl}={spec.ApiUrl}"
         };
-        if (!string.IsNullOrEmpty(spec.PrivateKey))
-            envVars.Add($"NMX_PRIVATE_KEY={spec.PrivateKey}");
-
+        
+        if (spec.RegistrationToken is not null)
+            envVars.Add($"{OAuth.NmxOAuth2Env.RegistrationToken}={spec.RegistrationToken}");
+        
         var response = await Client.Containers.CreateContainerAsync(new CreateContainerParameters
         {
             Image = spec.Image,
@@ -75,6 +76,11 @@ public class DockerService
             },
             HostConfig = new HostConfig
             {
+                Binds = new List<string>
+                {
+                    $"{spec.AddonId}-data:/data"
+                },
+                NetworkMode = spec.NetworkName,
                 PortBindings = spec.PortMappings?.ToDictionary(
                     p => $"{p.InternalPort}/tcp", IList<PortBinding> (p) => new List<PortBinding>
                     {
@@ -108,6 +114,19 @@ public class DockerService
         });
     }
 
+    public async Task EnsureNetworkExistsAsync(string networkName)
+    {
+        var networks = await Client.Networks.ListNetworksAsync();
+        if (networks.Any(n => n.Name == networkName))
+            return;
+        
+        await Client.Networks.CreateNetworkAsync(new NetworksCreateParameters
+        {
+            Name = networkName,
+            Driver = "bridge",
+        });
+    }
+    
     public async Task<string> GetContainerLogsAsync(string id, bool tty = false, CancellationToken cancellationToken = default)
     {
         var parameters = new ContainerLogsParameters
@@ -139,12 +158,13 @@ public class AddonContainerSpec
     public string Image { get; init; } = string.Empty;
     public string AddonId { get; init; } = string.Empty;
     public string ApiUrl { get; init; } = string.Empty;
-    public string? ClientId { get; init; }
-    public string? RedirectUri { get; init; }
-    public string? PrivateKey { get; init; }
+    public string? RegistrationToken { get; init; }
     public List<PortMapping>? PortMappings { get; init; }
     public int? MemoryLimit { get; init; }
-    public long? CpuLimit { get; init; }  // NanoCPUs
+    public long? CpuLimit { get; init; }
+    public List<string>? ExtraHosts { get; init; }
+    public string? NetworkName { get; init; }
+
 }
 
 public class PortMapping

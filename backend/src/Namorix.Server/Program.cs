@@ -19,7 +19,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<AppConfig>(builder.Configuration);
 builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("Jwt"));
 builder.Services.Configure<AddonCatalogConfig>(builder.Configuration.GetSection("AddonCatalog"));
-
+builder.Services.Configure<BackendConfig>(builder.Configuration.GetSection("Backend"));
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -32,6 +32,7 @@ builder.Services.AddScoped<ThemeService>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddSingleton<DockerService>();
 builder.Services.AddScoped<AddonService>();
+builder.Services.AddScoped<OAuthService>();
 builder.Services.AddScoped<INotificationNotifier, SignalRNotificationNotifier<MainHub>>();
 builder.Services.AddScoped<ISystemMonitorNotifier, SignalRSystemMonitorNotifier>();
 builder.Services.AddScoped<IAddonNotifier, SignalRAddonNotifier>();

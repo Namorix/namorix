@@ -13,7 +13,9 @@ public class CsrfMiddleware(RequestDelegate requestDelegate, IOptions<AppConfig>
     
     public async Task InvokeAsync(HttpContext httpContext)
     {
-        if (!_appConfig.CsrfEnabled || httpContext.Request.Path.StartsWithSegments(SignalRPath.HubPrefix))
+        if (!_appConfig.CsrfEnabled ||
+            httpContext.Request.Path.StartsWithSegments(SignalRPath.HubPrefix) ||
+            ExemptPaths.NoCsrfSession.Any(p => httpContext.Request.Path.StartsWithSegments(p)))
         {
             await requestDelegate(httpContext);
             return;

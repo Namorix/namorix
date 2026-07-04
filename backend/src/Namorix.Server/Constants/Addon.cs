@@ -2,7 +2,6 @@ namespace Namorix.Server.Constants;
 
 public static class AddonStatus
 {
-    public const string Installing = "installing";
     public const string Installed = "installed";
     public const string Running = "running";
     public const string Stopped = "stopped";
@@ -24,6 +23,6 @@ public static class AddonTaskPendingStatus
     public const string Stopping = "stopping";
     public const string Uninstalling = "uninstalling";
     public const string Installing = "installing";
-    public const string Updating = "updating";
-    public const string Pulling = "pulling";
+    public const string Updating = "updating"; // TODO
+    public const string Pulling = "pulling"; // TODO
 }

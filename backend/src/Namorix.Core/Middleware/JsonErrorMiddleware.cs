@@ -8,6 +8,12 @@ public class JsonErrorMiddleware(RequestDelegate requestDelegate)
 {
     public async Task InvokeAsync(HttpContext httpContext)
     {
+        if (ExemptPaths.NonJsonBody.Any(p => httpContext.Request.Path.StartsWithSegments(p)))
+        {
+            await requestDelegate(httpContext);
+            return;
+        }
+        
         if (HttpMethods.IsPost(httpContext.Request.Method) ||
             HttpMethods.IsPut(httpContext.Request.Method) ||
             HttpMethods.IsPatch(httpContext.Request.Method))

@@ -24,6 +24,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IOptions<AppCo
     public DbSet<OAuthAuthorizationCode> OAuthAuthorizationCodes { get; set; }
     public DbSet<OAuthToken> OAuthTokens { get; set; }
     public DbSet<OAuthConsent> OAuthConsents { get; set; }
+    public DbSet<OAuthRegistration> OAuthRegistrations { get; set; }
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -70,5 +71,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IOptions<AppCo
         
         modelBuilder.Entity<OAuthConsent>()
             .HasKey(c => new { c.UserId, c.ClientId });
+        
+        modelBuilder.Entity<OAuthRegistration>()
+            .HasIndex(r => r.Token)
+            .IsUnique();
     }
 }

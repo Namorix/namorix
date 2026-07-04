@@ -27,7 +27,7 @@ db-reset:
 
 # Run Project
 watch:
-	dotnet watch --project $(SERVER_PROJECT)
+	dotnet watch run --project $(SERVER_PROJECT)
 
 run:
 	dotnet run --project $(SERVER_PROJECT)

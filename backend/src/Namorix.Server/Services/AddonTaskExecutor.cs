@@ -1,6 +1,9 @@
+using System.Security.Cryptography;
 using System.Text.Json;
 using Docker.DotNet;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Namorix.Core.Config;
 using Namorix.Core.Constants;
 using Namorix.Core.Models;
 using Namorix.Server.Constants;
@@ -14,6 +17,7 @@ public class AddonTaskExecutor(
     AppDbContext db,
     DockerService docker,
     IAddonNotifier notifier,
+    IOptions<BackendConfig> backendConfig,
     ILogger<AddonTaskExecutor> logger)
 {
     private static readonly JsonSerializerOptions CatalogPortsJsonOptions = new()
@@ -112,15 +116,27 @@ public class AddonTaskExecutor(
                 await docker.PullImageAsync(image);
             }
             
+            var registrationToken = Guid.NewGuid().ToString("N");
+
+            var cfg = backendConfig.Value;
+            var backendInContainer = DockerService.IsRunningInContainer();
+            var apiUrl = backendInContainer
+                ? $"http://{cfg.ContainerName}:{cfg.Port}"
+                : $"http://host.docker.internal:{cfg.Port}";
+            
+            if (backendInContainer)
+                await docker.EnsureNetworkExistsAsync(cfg.NetworkName);
+            
             var portMappings = ParseCatalogPorts(catalogEntry.Ports);
             var containerId = await docker.CreateContainerAsync(new AddonContainerSpec
             {
                 Image = image,
                 AddonId = addonId,
-                ApiUrl = "",
-                ClientId = Guid.NewGuid().ToString("N"),
-                RedirectUri = "_apiUrl/oauth/{addonId}/callback",
+                ApiUrl = apiUrl,
+                RegistrationToken = registrationToken,
                 PortMappings = portMappings,
+                ExtraHosts = backendInContainer ? null : ["host.docker.internal:host-gateway"],
+                NetworkName = backendInContainer ? cfg.NetworkName : null,
             });
             
             db.AddonInstallations.Add(new AddonInstallation
@@ -136,6 +152,14 @@ public class AddonTaskExecutor(
                 Status = AddonStatus.Installed,
                 InstalledAt = DateTime.UtcNow,
                 LastStatusChangedAt = DateTime.UtcNow,
+            });
+            
+            db.OAuthRegistrations.Add(new OAuthRegistration
+            {
+                Token = registrationToken,
+                AddonInstallationId = addonId,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(cfg.RegistrationTokenTtlMinutes),
+                Used = false,
             });
             
             await db.SaveChangesAsync(ct);
@@ -169,7 +193,18 @@ public class AddonTaskExecutor(
             {
                 logger.LogWarning("Container {Id} already gone during uninstall", addonId);
             }
-
+            
+            var regs = await db.OAuthRegistrations
+                .Where(r => r.AddonInstallationId == addonId).ToListAsync(ct);
+            db.OAuthRegistrations.RemoveRange(regs);
+            
+            if (addon.ClientId != null)
+            {
+                var tokens = await db.OAuthTokens
+                    .Where(t => t.ClientId == addon.ClientId).ToListAsync(ct);
+                db.OAuthTokens.RemoveRange(tokens);
+            }
+            
             db.AddonInstallations.Remove(addon);
             await db.SaveChangesAsync(ct);
         }

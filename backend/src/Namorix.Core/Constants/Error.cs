@@ -52,3 +52,15 @@ public static class AddonErrors
     public const string ImageNotFound = "IMAGE_NOT_FOUND";
     public const string InstallFailed = "INSTALL_FAILED";
 }
+
+public static class OAuthErrors
+{
+    public const string UnsupportedGrantType = "unsupported_grant_type";
+    public const string InvalidGrant = "invalid_grant";
+    public const string InvalidClient = "invalid_client";
+}
+
+public static class OAuthRegisterErrors
+{
+    public const string InvalidToken = "INVALID_REGISTRATION_TOKEN";
+}

@@ -13,12 +13,18 @@ public class TokenCleanupWorker(IServiceProvider serviceProvider,
             using var scope = serviceProvider.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-            var count = await db.RefreshTokens
+            var refreshCount = await db.RefreshTokens
                 .Where(rt => rt.ExpiresAt < DateTime.UtcNow)
                 .ExecuteDeleteAsync(cancellationToken);
-
-            if (count > 0)
-                logger.LogInformation("Cleaned {Count} expired refresh tokens", count);
+            var regCount = await db.OAuthRegistrations
+                .Where(r => r.Used || r.ExpiresAt < DateTime.UtcNow)
+                .ExecuteDeleteAsync(cancellationToken);
+            
+            if (refreshCount > 0 || regCount > 0)
+            {
+                logger.LogInformation("Cleaned {RefreshCount} expired refresh tokens, {RegCount} expired registrations",
+                    refreshCount, regCount);
+            }
         }
         catch (OperationCanceledException)
         {

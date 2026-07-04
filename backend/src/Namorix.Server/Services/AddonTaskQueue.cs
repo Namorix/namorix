@@ -1,5 +1,7 @@
 using System.Threading.Channels;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Namorix.Core.Config;
 using Namorix.Server.Constants;
 using Namorix.Server.Infrastructure;
 using Namorix.Server.Models;
@@ -41,7 +43,8 @@ public class AddonTaskQueue(IServiceScopeFactory scopeFactory, ILogger<AddonTask
             var docker = scope.ServiceProvider.GetRequiredService<DockerService>();
             var notifier = scope.ServiceProvider.GetRequiredService<IAddonNotifier>();
             var executorLogger = scope.ServiceProvider.GetRequiredService<ILogger<AddonTaskExecutor>>();
-            var service = new AddonTaskExecutor(db, docker, notifier, executorLogger);
+            var backendConfig = scope.ServiceProvider.GetRequiredService<IOptions<BackendConfig>>();
+            var service = new AddonTaskExecutor(db, docker, notifier, backendConfig, executorLogger);
             
             await service.ExecuteAsync(task, ct);
         }

@@ -1,17 +1,19 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.IdentityModel.Tokens;
 using Namorix.Core.Models;
 using Namorix.Server.Persistence;
 
 namespace Namorix.Server.Services;
 
-public class OAuthService(AppDbContext db)
+public class OAuthService(AppDbContext db, IMemoryCache memoryCache)
 {
     public async Task<string?> ValidateAuthorizationAsync(string clientId, string redirectUri)
     {
         var addon = await db.AddonInstallations.FirstOrDefaultAsync(a => a.ClientId == clientId);
-        if (addon?.RedirectUri != redirectUri)
-            return null;
-        return addon.Id;
+        return addon?.RedirectUri != redirectUri ? null : addon.Id;
     }
 
     public async Task<OAuthAuthorizationCode> CreateAuthorizationCodeAsync(
@@ -64,21 +66,84 @@ public class OAuthService(AppDbContext db)
 
         return token.TokenId;
     }
-
-    public async Task RevokeTokenAsync(string tokenId)
+    
+    public async Task<string?> RegisterClientAsync(string token, string publicKeyPem)
     {
-        var token = await db.OAuthTokens.FirstOrDefaultAsync(t => t.TokenId == tokenId);
-        if (token is not null)
+        var reg = await db.OAuthRegistrations
+            .FirstOrDefaultAsync(r => r.Token == token && !r.Used
+                                                       && r.ExpiresAt > DateTime.UtcNow);
+        if (reg is null)
+            return null;
+
+        var addon = await db.AddonInstallations.FindAsync([reg.AddonInstallationId]);
+        if (addon is null)
+            return null;
+
+        var clientId = Guid.NewGuid().ToString("N");
+        addon.ClientId = clientId;
+        addon.PublicKey = publicKeyPem;
+        reg.Used = true;
+        await db.SaveChangesAsync();
+        return clientId;
+    }
+    
+    public async Task<string?> IssueClientCredentialsTokenAsync(string clientAssertion)
+    {
+        var jwt = new JwtSecurityTokenHandler().ReadJwtToken(clientAssertion);
+        var clientId = jwt.Issuer;
+        var jti = jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
+        if (string.IsNullOrEmpty(jti))
+            return null;
+        
+        var addon = await db.AddonInstallations
+            .FirstOrDefaultAsync(a => a.ClientId == clientId && a.PublicKey != null);
+        if (addon?.PublicKey is null)
+            return null;
+        
+        if (!VerifyClientAssertion(clientAssertion, addon.PublicKey, clientId))
+            return null;
+        
+        var cacheKey = $"oauth:jti:{jti}";
+        if (memoryCache.Get<bool?>(cacheKey) == true)
+            return null;
+        memoryCache.Set(cacheKey, true, TimeSpan.FromMinutes(5));
+        
+        var token = new OAuthToken
         {
-            token.Revoked = true;
-            await db.SaveChangesAsync();
-        }
+            TokenId = Guid.NewGuid().ToString("N"),
+            ClientId = clientId,
+            Scope = addon.Scope ?? "default",
+            ExpiresAt = DateTime.UtcNow.AddHours(1),
+        };
+        db.OAuthTokens.Add(token);
+        await db.SaveChangesAsync();
+        return token.TokenId;
     }
 
-    private static bool VerifyClientAssertion(string assertion, string publicKeyPem, string expectedClientId)
+
+    private static bool VerifyClientAssertion(
+        string assertion, string publicKeyPem, string expectedClientId)
     {
-        // TODO: Implement JWT verification with RSA public key
-        // For now, stub implementation
-        return true;
+        try
+        {
+            using var rsa = RSA.Create();
+            rsa.ImportFromPem(publicKeyPem);
+            new JwtSecurityTokenHandler().ValidateToken(assertion,
+                new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = expectedClientId,
+                    ValidateAudience = false,  // TODO: validate khi có request context
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new RsaSecurityKey(rsa),
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.FromMinutes(1),
+                }, out _);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
