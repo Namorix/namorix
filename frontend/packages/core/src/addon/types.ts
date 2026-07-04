@@ -76,8 +76,8 @@ export type AddonPendingPhase =
   | "stopping"
   | "uninstalling"
   | "installing"
-  | "updating"
-  | "pulling"
+  | "updating" // TODO
+  | "pulling" // TODO
 
 export interface AddonModule {
   manifest: NmxAddonManifest
