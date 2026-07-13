@@ -107,18 +107,19 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache)
     {
         var jwt = new JwtSecurityTokenHandler().ReadJwtToken(clientAssertion);
         var clientId = jwt.Issuer;
+        
         var jti = jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
         if (string.IsNullOrEmpty(jti))
             return null;
-        
+    
         var addon = await db.AddonInstallations
             .FirstOrDefaultAsync(a => a.ClientId == clientId && a.PublicKey != null);
         if (addon?.PublicKey is null)
             return null;
-        
+    
         if (!VerifyClientAssertion(clientAssertion, addon.PublicKey, clientId))
             return null;
-        
+    
         var cacheKey = $"oauth:jti:{jti}";
         if (memoryCache.Get<bool?>(cacheKey) == true)
             return null;
@@ -166,14 +167,24 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache)
         {
             using var rsa = RSA.Create();
             rsa.ImportFromPem(publicKeyPem);
+
+            var securityKey = new RsaSecurityKey(rsa)
+            {
+                CryptoProviderFactory = new CryptoProviderFactory
+                {
+                    CacheSignatureProviders = false
+                }
+            };
+            
+
             new JwtSecurityTokenHandler().ValidateToken(assertion,
                 new TokenValidationParameters
                 {
                     ValidateIssuer = true,
                     ValidIssuer = expectedClientId,
-                    ValidateAudience = false,  // TODO: validate khi có request context
+                    ValidateAudience = false,
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new RsaSecurityKey(rsa),
+                    IssuerSigningKey = securityKey,
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.FromMinutes(1),
                 }, out _);

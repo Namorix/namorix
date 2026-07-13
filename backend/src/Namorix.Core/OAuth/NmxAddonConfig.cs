@@ -2,8 +2,9 @@ namespace Namorix.Core.OAuth;
 
 public record NmxAddonConfig(string ApiUrl, string? RegistrationToken)
 {
-    public string DataDir { get; private init; } = "./data";
+    public string DataDir { get; private init; } = Constants.OAuth.NmxOAuth2Defaults.DataDir;
     public int ClientAssertionTtlMinutes { get; private init; } = 2;
+    public string GrpcUrl { get; private init; } = Constants.OAuth.NmxOAuth2Defaults.GrpcUrl;
     
     public static NmxAddonConfig FromEnvironment()
     {
@@ -13,7 +14,10 @@ public record NmxAddonConfig(string ApiUrl, string? RegistrationToken)
 
         return new NmxAddonConfig(apiUrl, registrationToken)
         {
-            DataDir = Environment.GetEnvironmentVariable(Constants.OAuth.NmxOAuth2Env.DataDir) ?? "./data"
+            DataDir = Environment.GetEnvironmentVariable(Constants.OAuth.NmxOAuth2Env.DataDir) ??
+                      Constants.OAuth.NmxOAuth2Defaults.DataDir,
+            GrpcUrl = Environment.GetEnvironmentVariable(Constants.OAuth.NmxOAuth2Env.GrpcUrl) ??
+                      Constants.OAuth.NmxOAuth2Defaults.GrpcUrl,
         };
     }
 

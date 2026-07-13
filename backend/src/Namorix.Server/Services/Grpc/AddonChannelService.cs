@@ -15,34 +15,59 @@ public class AddonChannelService(AddonChannelManager manager, OAuthService oauth
         var authHeader = context.RequestHeaders.Get("authorization")?.Value;
         if (authHeader == null || !authHeader.StartsWith("Bearer "))
             throw new RpcException(new Status(StatusCode.Unauthenticated, "Missing token"));
-        
+
         var token = authHeader["Bearer ".Length..];
         var addonId = await oauth.ValidateTokenAsync(token);
         if (addonId == null)
             throw new RpcException(new Status(StatusCode.Unauthenticated, "Invalid token"));
-        
+
+        logger.LogInformation("Addon {AddonId} connected via gRPC", addonId);
         using var cts = new CancellationTokenSource();
         var ctx = manager.Register(addonId, cts);
         ctx.ResponseStream = responseStream;
-        
+
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
+            context.CancellationToken, cts.Token);
+
+        var recheckTask = RecheckLoopAsync(addonId, linkedCts.Token);
+
         try
         {
-            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
-                context.CancellationToken, cts.Token);
+            try
+            {
+                await foreach (var message in requestStream.ReadAllAsync(linkedCts.Token))
+                    await HandleAddonMessageAsync(addonId, message);
 
-            var recheckTask = RecheckLoopAsync(addonId, linkedCts.Token);
+                logger.LogInformation("Addon {AddonId} closed the stream", addonId);
+            }
+            catch (IOException)
+            {
+                logger.LogInformation("Addon {AddonId} disconnected (connection reset)", addonId);
+            }
+            catch (OperationCanceledException)
+            {
+                logger.LogInformation("Addon {AddonId} connection cancelled", addonId);
+            }
+            finally
+            {
+                await linkedCts.CancelAsync();
+            }
 
-            await foreach (var message in requestStream.ReadAllAsync(linkedCts.Token))
-                await HandleAddonMessageAsync(addonId, message);
-            
-            await recheckTask; // đợi recheck kết thúc
+            try
+            {
+                await recheckTask;
+            }
+            catch (OperationCanceledException)
+            {
+
+            }
         }
         finally
         {
             manager.DisconnectAsync(addonId);
         }
     }
-    
+
     private async Task RecheckLoopAsync(string addonId, CancellationToken ct)
     {
         while (!ct.IsCancellationRequested)
@@ -50,25 +75,26 @@ public class AddonChannelService(AddonChannelManager manager, OAuthService oauth
             await Task.Delay(TimeSpan.FromMinutes(5), ct);
             if (await oauth.IsAddonAuthorizedAsync(addonId))
                 continue;
-            
+
             logger.LogWarning("Addon {AddonId} bị revoke, đóng stream", addonId);
             throw new RpcException(new Status(StatusCode.PermissionDenied, "Addon revoked"));
         }
     }
-    
+
     private async Task HandleAddonMessageAsync(string addonId, AddonMessage message)
     {
         switch (message.Type)
         {
             case "widget-event":
-                // Forward qua SignalR cho frontend
+                logger.LogInformation("[Addon {AddonId}] Widget event: {Payload}",
+                    addonId, message.Payload);
                 await notifier.NotifyAddonWidgetEvent(addonId, message.Payload);
                 break;
-            
+
             case "log":
                 logger.LogInformation("[Addon {AddonId}] {Log}", addonId, message.Payload);
                 break;
-            
+
             case "heartbeat":
                 // Gửi heartbeat-ack lại
                 // Dùng ctx.ResponseStream từ ChannelManager

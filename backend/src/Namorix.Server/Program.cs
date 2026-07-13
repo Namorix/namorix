@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Namorix.Core.Config;
 using Namorix.Core.Constants;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +17,12 @@ using Namorix.Server.Services.Grpc;
 using Namorix.Server.Workers;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(5000, o => o.Protocols = HttpProtocols.Http1);
+    options.ListenAnyIP(5002, o => o.Protocols = HttpProtocols.Http2);
+});
 
 builder.Services.Configure<AppConfig>(builder.Configuration);
 builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("Jwt"));
@@ -56,6 +63,8 @@ builder.Services.AddScoped<AddonTaskExecutor>();
 builder.Services.AddGrpc();
 builder.Services.AddSingleton<AddonChannelManager>();
 
+if (builder.Environment.IsDevelopment())
+    builder.Services.AddGrpcReflection();
 
 var app = builder.Build();
 var memoryCache = app.Services.GetRequiredService<IMemoryCache>();
@@ -97,4 +106,8 @@ app.UseNamorixCore<MainHub>(core =>
 });
 
 app.MapGrpcService<AddonChannelService>();
+
+if (app.Environment.IsDevelopment())
+    app.MapGrpcReflectionService();
+
 app.Run();
