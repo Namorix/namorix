@@ -58,8 +58,10 @@ public class AddonTaskExecutor(
             try
             {
                 await docker.StartContainerAsync(addon.ContainerId);
-                await SetStatusAsync(addonId, AddonStatus.Running);
-                await notifier.NotifyAddonStatusChanged(addonId, AddonStatus.Running);
+                
+                var changed = await SetStatusAsync(addonId, AddonStatus.Running);
+                if (changed > 0)
+                    await notifier.NotifyAddonStatusChanged(addonId, AddonStatus.Running);
             }
             catch (DockerContainerNotFoundException)
             {
@@ -83,8 +85,10 @@ public class AddonTaskExecutor(
             try
             {
                 await docker.StopContainerAsync(addon.ContainerId);
-                await SetStatusAsync(addonId, AddonStatus.Stopped);
-                await notifier.NotifyAddonStatusChanged(addonId, AddonStatus.Stopped);
+
+                var changed = await SetStatusAsync(addonId, AddonStatus.Stopped);
+                if (changed > 0)
+                    await notifier.NotifyAddonStatusChanged(addonId, AddonStatus.Stopped);
             }
             catch (DockerContainerNotFoundException)
             {
@@ -219,12 +223,12 @@ public class AddonTaskExecutor(
         await notifier.NotifyAddonUninstalled(addonId);
     }
     
-    private async Task SetStatusAsync(string addonId, string status, string? errorCode = null)
+    private async Task<int> SetStatusAsync(string addonId, string status, string? errorCode = null)
     {
         if (errorCode != null)
         {
-            await db.AddonInstallations
-                .Where(a => a.Id == addonId)
+            return await db.AddonInstallations
+                .Where(a => a.Id == addonId && a.Status != status)
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(a => a.Status, status)
                     .SetProperty(a => a.LastStatusChangedAt, DateTime.UtcNow)
@@ -234,8 +238,8 @@ public class AddonTaskExecutor(
         }
         else
         {
-            await db.AddonInstallations
-                .Where(a => a.Id == addonId)
+            return await db.AddonInstallations
+                .Where(a => a.Id == addonId && a.Status != status)
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(a => a.Status, status)
                     .SetProperty(a => a.LastStatusChangedAt, DateTime.UtcNow)

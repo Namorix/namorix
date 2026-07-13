@@ -229,6 +229,7 @@ public class DockerMonitorWorker(
         if (!attributes.TryGetValue(AddonLabels.Id, out var addonId))
             return;
         
+        Console.WriteLine($"HandleEventAsync {containerId}, {action}");
         try
         {
             using var scope = serviceProvider.CreateScope();
@@ -253,8 +254,14 @@ public class DockerMonitorWorker(
                     break;
                 
                 case DockerEvent.Destroy:
-                    await SetAddonStatusAsync(db, notifier, addonId, AddonStatus.Error, ct);
+                {
+                    var addon = await db.AddonInstallations.FindAsync([addonId], ct);
+                    if (addon != null && addon.PendingTaskPhase != AddonTaskPendingStatus.Uninstalling)
+                    {
+                        await SetAddonStatusAsync(db, notifier, addonId, AddonStatus.Error, ct);
+                    }
                     break;
+                }
             }
         }
         catch (Exception ex)
