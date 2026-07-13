@@ -698,7 +698,7 @@ AddonController action
 | `backend/src/Namorix.Core/Models/OAuthRegistration.cs` | Registration token entity |
 | `backend/src/Namorix.Core/Grpc/AddonChannelClient.cs` | gRPC client for addons (OAuth2 token + duplex stream management) |
 | `backend/src/Namorix.Core/Grpc/AddonChannelClientExtensions.cs` | DI extension for AddonChannelClient |
-| `backend/src/Namorix.Core/Grpc/RetryConnectHostedService.cs` | Base class for addon IHostedService (auto-reconnect) |
+| `backend/src/Namorix.Core/Grpc/AddonHostedServiceBase.cs` | Base class for addon IHostedService (auto-reconnect) |
 | `backend/src/Namorix.Server/Workers/DockerMonitorWorker.cs` | Container event stream + health check poll + auto-discover |
 | `backend/src/Namorix.Core/Constants/Docker.cs` | Docker state/event/filter constants |
 | `backend/src/Namorix.Server/Infrastructure/IAddonNotifier.cs` | Addon status notification interface |

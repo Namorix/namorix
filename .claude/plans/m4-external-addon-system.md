@@ -22,6 +22,7 @@ Cho phép cài đặt, quản lý, và chạy addon từ Docker containers bên 
 - **Redux catalog store** — setCatalog reducer, updateAddonStatus creates entries for new addons, selectorCatalog ✅
 - **Không còn `ComputeAddonId`** — identity dùng catalog id trực tiếp ✅
 - **gRPC Addon Channel** — bidirectional streaming, auth interceptor, periodic re-check (5 phút), active cancellation via `AddonChannelManager`, `NotifyAddonWidgetEvent` forward SignalR ✅
+- **gRPC client module** — `AddonChannelClient` (OAuth2 token + duplex stream + proactive refresh), `AddonChannelClientExtensions` (DI), `RetryConnectHostedService` (auto-reconnect), Kestrel 2-port (5000 HTTP/1.1 + 5002 HTTP/2 h2c) ✅
 - **Chưa có:** OAuth2 author endpoint (consent screen)
 - **BackendConfig + NMX_API_URL compute** — `IsRunningInContainer()` → host.docker.internal / container name, ExtraHosts + NetworkMode tuỳ runtime, `RegistrationTokenTtlMinutes` configurable ✅
 
@@ -144,6 +145,7 @@ Namorix Server đóng vai trò **Authorization Server (AS)** cho external addon.
 
 **Trạng thái:** ✅ Full implementation cho client_credentials grant:
 - `VerifyClientAssertion` — JWT RS256 validation with stored RSA public key
+- `CacheSignatureProviders = false` — fix `CryptoProviderFactory.Default` static cache returning stale `SignatureProvider` backed by disposed `RSA` instance, gây `invalid_client` khi addon restart
 - Addon self-registration: install → gen registration token → Docker env → addon tự gen RSA keypair → POST /api/oauth/register
 - Token caching trong NmxOAuth2Client (cache đến expires_in - 30s)
 - ExemptPaths pattern: middleware bypass cho form-urlencoded OAuth endpoints
@@ -355,6 +357,35 @@ message ShellMessage {
 - ✅ Backend chủ động gửi message xuống addon (qua `responseStream`) — SSE chỉ 1 chiều
 - ✅ Không cần HTTP polling hay health-check riêng
 - ✅ Auth tập trung tại interceptor, không rải rác ở controller middleware
+
+**Client-side implementation (`Namorix.Core/Grpc/`):**
+
+1. **`AddonChannelClient`** — wraps `GrpcChannel` + OAuth2 token acquisition + duplex stream management:
+   - `StartAsync(CancellationToken)` — mở kênh gRPC với Bearer token từ `NmxOAuth2Client.GetAccessTokenAsync()`
+   - `SendAsync(AddonMessage)` — gửi message lên server
+   - `SendHeartbeatAsync()` — heartbeat periodic
+   - `StopAsync()` — complete request stream, cancel `_cts`, shutdown channel
+   - `ReceiveLoopAsync()` — `ReadAllAsync` loop, invoke `OnMessage` event, auto-reconnect qua `ReconnectAsync` nếu crash
+   - `ScheduleTokenRefreshAsync()` — chủ động reconnect trước khi token hết hạn (dùng `CurrentTokenExpiresAt` - 5 phút buffer), stop → start với token mới
+   - `_lifetimeCt` vs `_cts` separation — `StopAsync` chỉ cancel `_cts`, không ảnh hưởng `_lifetimeCt`, nên `ReconnectAsync` và `ScheduleTokenRefreshAsync` vẫn dùng được `_lifetimeCt` sau khi stop
+
+2. **`AddonChannelClientExtensions`** — `AddAddonChannelClient()` DI extension, register `AddonChannelClient` as singleton
+
+3. **`RetryConnectHostedService`** — abstract `IHostedService` base class:
+   - StartAsync gọi `ConfigureHandlers()` rồi `ConnectWithRetryAsync()` (fire-and-forget)
+   - Retry loop với 5s delay, log stack trace ở lần fail đầu, one-liner cho các lần sau
+   - `OnConnectedAsync()` hook sau khi connect thành công
+
+**Key design decisions:**
+- Token refresh dùng **stop-start** (không make-before-break) vì message hiện tại low criticality (heartbeat, widget-event, log). Gap ~5s mỗi giờ chấp nhận được.
+- `ReconnectAsync` có 5s delay trước khi retry — tránh reconnect storm khi server đang restart
+- `ReceiveLoopAsync` catch `RpcException` với `StatusCode.Cancelled` — phân biệt cancel (chủ động) với crash thật
+
+**Kestrel 2-port config (`Program.cs`):**
+- Port 5000: HTTP/1.1 (API + SignalR + OAuth)
+- Port 5002: HTTP/2 cleartext (h2c) — gRPC channel
+- `ListenAnyIP(IPAddress.Loopback, 5002, opts => opts.Protocols = HttpProtocols.Http2)`
+- gRPC reflection enabled trong development mode
 
 ---
 
@@ -737,15 +768,21 @@ Card hiển thị:
 | `Namorix.Server/Services/AddonChannelManager.cs` | P1 ✅ |
 | `Namorix.Server/Services/Grpc/AddonChannelService.cs` | P1 ✅ |
 | Migration `AddonManifestFields`, `InitialCreate` (OAuth) | P1 ✅ |
+| `Namorix.Core/Grpc/AddonChannelClient.cs` | P1 ✅ — gRPC client with OAuth2 token + duplex stream + proactive token refresh |
+| `Namorix.Core/Grpc/AddonChannelClientExtensions.cs` | P1 ✅ — DI extension `AddAddonChannelClient()` |
+| `Namorix.Core/Grpc/RetryConnectHostedService.cs` | P1 ✅ — abstract IHostedService base class (fire-and-forget connect + retry loop) |
 
 ### Backend (Modified) ✅
 | File | Change |
 |------|--------|
 | `Namorix.Server/Persistence/AppDbContext.cs` | Add OAuth DbSets + OAuthConsent composite key, AddonCatalogEntry |
-| `Namorix.Server/Program.cs` | DI: DockerService, AddonService, IAddonNotifier, DockerMonitorWorker, CatalogSyncWorker, CatalogService; pipeline: UseOAuth2 |
+| `Namorix.Server/Program.cs` | DI: DockerService, AddonService, IAddonNotifier, DockerMonitorWorker, CatalogSyncWorker, CatalogService; pipeline: UseOAuth2; Kestrel 2-port (5000 HTTP/1.1, 5002 HTTP/2 h2c), gRPC reflection, MapGrpcService |
 | `Namorix.Server/Extensions/ApplicationBuilderExtensions.cs` | Add UseOAuth2() |
 | `Namorix.Server/Namorix.Server.csproj` | Add Docker.DotNet package |
 | `Namorix.Core/Models/AddonManifest.cs` | Expand fields (Docker + OAuth2) |
+| `Namorix.Core/OAuth/NmxAddonConfig.cs` | Added GrpcUrl property, NMX_GRPC_URL env reading |
+| `Namorix.Core/OAuth/NmxOAuth2Client.cs` | Added CurrentTokenExpiresAt property for proactive token refresh |
+| `Namorix.Server/Services/OAuthService.cs` | CacheSignatureProviders = false fix for RsaSecurityKey stale cache bug |
 
 ### Frontend Core (Modified) ✅
 | File | Change |
@@ -844,7 +881,14 @@ Phase 6 (Integration)
   ├── NmxOAuth2Client: fix File.Exists() logic (read when exists, not when missing) ✅
   ├── AddonInstallation: consistent `init` setters for immutable fields ✅
   ├── Grpc.AspNetCore package (Directory.Packages.props + both csproj) ✅
-  ├── OAuth2 client SDK — build + test với namorix-weave
+  ├── OAuth2 client SDK — build + test với namorix-weave ✅
+  ├── AddonChannelClient: gRPC duplex client + OAuth token refresh + reconnect ✅
+  ├── AddonChannelClientExtensions + RetryConnectHostedService: DI + auto-reconnect base class ✅
+  ├── NmxAddonConfig: GrpcUrl property, NMX_GRPC_URL env var ✅
+  ├── NmxOAuth2Client: CurrentTokenExpiresAt for proactive token refresh ✅
+  ├── Program.cs: Kestrel 2-port (5000/5002), gRPC reflection ✅
+  ├── OAuthService: CacheSignatureProviders = false (RsaSecurityKey stale cache fix) ✅
+  ├── AddonChannelService: recheck loop, widget-event logging, heartbeat handling ✅
   └── Documentation + version bump ✅
 
 Phase 7 (Catalog Sync) ✅
@@ -918,3 +962,10 @@ Phase 7 (Catalog Sync) ✅
 | Namorix.Server | 0.45.3 → 0.46.0 | New OAuth endpoints (register/token), registration flow |
 | @namorix/core | 0.41.2 → 0.41.3 | // TODO comments on addon types |
 | @namorix/styles | 0.36.1 → 0.36.2 | Taskbar font-size tweak |
+
+### 2026-07-13 — gRPC client module, Kestrel 2-port, CacheSignatureProviders fix
+
+| Package | Version | Reason |
+|---------|---------|--------|
+| Namorix.Core | 0.44.0 → 0.45.0 | New Grpc/ module (AddonChannelClient, AddonChannelClientExtensions, RetryConnectHostedService), GrpcUrl on NmxAddonConfig, CurrentTokenExpiresAt on NmxOAuth2Client |
+| Namorix.Server | 0.47.0 → 0.48.0 | Kestrel 2-port (5000 HTTP/1.1 + 5002 HTTP/2 h2c), gRPC reflection, CacheSignatureProviders=false fix, recheck loop/heartbeat handling in AddonChannelService |

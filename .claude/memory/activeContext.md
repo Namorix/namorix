@@ -74,6 +74,12 @@ Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và 
 - Backend (Namorix.Server): Kestrel 2-port config (5000 HTTP/1.1, 5002 HTTP/2), gRPC reflection dev-only. AddonChannelService — recheck loop, widget-event logging, heartbeat handling. OAuthService — CacheSignatureProviders = false fix (RsaSecurityKey stale cache bug).
 - Versions: Namorix.Core 0.45.0, Namorix.Server 0.48.0.
 
+### 2026-07-13 (2) — Bug fixes: recheck loop, container conflict, EF cache
+
+- Backend (Namorix.Core): AddonChannelClient _lifetimeCt fix. AddonHostedServiceBase rename.
+- Backend (Namorix.Server): DockerService.RemoveContainerIfExistsAsync + GetContainerLogsAsync. AddonTaskExecutor gọi RemoveContainerIfExistsAsync trước create (tránh Docker Conflict). AddonChannelService recheck loop cancel linkedCts + log English. OAuthService.IsAddonAuthorizedAsync dùng AnyAsync + AsNoTracking (tránh EF cache).
+- Versions: Namorix.Core 0.45.1, Namorix.Server 0.48.1.
+
 ### 2026-07-04 (2) — gRPC Addon Channel, revoke endpoint, NotifyAddonWidgetEvent
 
 - Backend (Namorix.Core): NEW Protos/addon_channel.proto — bidirectional gRPC streaming. ExemptPaths thêm /api/oauth/revoke. AddonInstallation consistent init setters. NmxOAuth2Client fix File.Exists(). Package deps: Grpc.AspNetCore + Protobuf.

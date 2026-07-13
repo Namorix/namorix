@@ -141,8 +141,8 @@
 | @namorix/core | 0.41.3 | M4 (// TODO comments on addon types) |
 | @namorix/styles | 0.36.2 | M4 (Taskbar font-size tweak) |
 | @namorix/ui | 0.26.0 | M4 (ERROR icon symbol) |
-| Namorix.Core | 0.45.0 | M4 (gRPC client module: AddonChannelClient, RetryConnectHostedService, GrpcUrl) |
-| Namorix.Server | 0.48.0 | M4 (Kestrel 2-port, gRPC reflection, AddonChannelService recheck loop, CacheSignatureProviders fix) |
+| Namorix.Core | 0.45.1 | M4 (AddonChannelClient _lifetimeCt fix, AddonHostedServiceBase rename) |
+| Namorix.Server | 0.48.1 | M4 (DockerService new methods, recheck loop fix, AsNoTracking fix) |
 
 ## Version Rules
 
@@ -218,6 +218,11 @@
 
 - Namorix.Core 0.44.0 → 0.45.0: NEW: `Grpc/AddonChannelClient.cs` — gRPC client with OAuth2 token + duplex stream. `Grpc/AddonChannelClientExtensions.cs` — DI extension. `Grpc/RetryConnectHostedService.cs` — auto-reconnect base class for addons. MODIFIED: `Constants/OAuth.cs` — GrpcUrl, DataDir constants. `OAuth/NmxAddonConfig.cs` — GrpcUrl property. `Namorix.Core.csproj` — protobuf with GrpcServices=Both.
 - Namorix.Server 0.47.0 → 0.48.0: MODIFIED: `Program.cs` — Kestrel 2-port (5000 HTTP/1.1, 5002 HTTP/2), gRPC reflection. `Services/Grpc/AddonChannelService.cs` — recheck loop, widget-event logging, heartbeat handling. `Services/OAuthService.cs` — fix `CacheSignatureProviders = false` (RsaSecurityKey stale cache bug). `appsettings.Development.json` — gRPC logging level.
+
+### 2026-07-13 (2) — Bug fixes: recheck loop, container conflict, EF cache
+
+- Namorix.Core 0.45.0 → 0.45.1: MODIFIED: `Grpc/AddonChannelClient.cs` — `_lifetimeCt` fix (dùng `_lifetimeCt` thay `_cts.Token` trong `ScheduleTokenRefreshAsync`). MODIFIED: `Grpc/AddonHostedServiceBase.cs` — rename from `RetryConnectHostedService`. MODIFIED: `OAuth/NmxOAuth2Client.cs` — CurrentTokenExpiresAt accessor.
+- Namorix.Server 0.48.0 → 0.48.1: MODIFIED: `Services/DockerService.cs` — new `RemoveContainerIfExistsAsync`, `GetContainerLogsAsync`. MODIFIED: `Services/AddonTaskExecutor.cs` — gọi `RemoveContainerIfExistsAsync` trước `CreateContainerAsync` (tránh Docker Conflict khi addon đã có container). MODIFIED: `Services/Grpc/AddonChannelService.cs` — `RecheckLoopAsync` cancel linkedCts trước throw, log English. MODIFIED: `Services/OAuthService.cs` — `IsAddonAuthorizedAsync` dùng `AnyAsync` + `AsNoTracking` (tránh EF identity map cache trả true sau khi DB record đã xoá).
 
 ### 2026-07-03 (4) — InstallAsync catalog rewrite, frontend catalog store, identity cleanup
 
