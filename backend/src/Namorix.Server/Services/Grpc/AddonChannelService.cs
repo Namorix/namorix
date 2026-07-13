@@ -29,7 +29,7 @@ public class AddonChannelService(AddonChannelManager manager, OAuthService oauth
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
             context.CancellationToken, cts.Token);
 
-        var recheckTask = RecheckLoopAsync(addonId, linkedCts.Token);
+        var recheckTask = RecheckLoopAsync(addonId, linkedCts, linkedCts.Token);
 
         try
         {
@@ -68,7 +68,7 @@ public class AddonChannelService(AddonChannelManager manager, OAuthService oauth
         }
     }
 
-    private async Task RecheckLoopAsync(string addonId, CancellationToken ct)
+    private async Task RecheckLoopAsync(string addonId, CancellationTokenSource linkedCts, CancellationToken ct)
     {
         while (!ct.IsCancellationRequested)
         {
@@ -76,7 +76,8 @@ public class AddonChannelService(AddonChannelManager manager, OAuthService oauth
             if (await oauth.IsAddonAuthorizedAsync(addonId))
                 continue;
 
-            logger.LogWarning("Addon {AddonId} bị revoke, đóng stream", addonId);
+            logger.LogWarning("Addon {AddonId} revoked, closing stream", addonId);
+            await linkedCts.CancelAsync();
             throw new RpcException(new Status(StatusCode.PermissionDenied, "Addon revoked"));
         }
     }

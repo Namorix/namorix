@@ -46,8 +46,8 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
         };
 
         _call = stub.Connect(headers, cancellationToken: _cts.Token);
-
         _receiveTask = ReceiveLoopAsync(_cts.Token);
+        _ = ScheduleTokenRefreshAsync(_cts.Token);
     }
 
     private async Task ReceiveLoopAsync(CancellationToken ct)
@@ -56,7 +56,10 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
         {
             await foreach (var msg in _call!.ResponseStream.ReadAllAsync(ct))
             {
-                try { OnMessage?.Invoke(msg); }
+                try
+                {
+                    OnMessage?.Invoke(msg);
+                }
                 catch (Exception ex)
                 {
                     logger.LogWarning(ex,
@@ -68,7 +71,7 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
         catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled) { }
         catch (Exception ex)
         {
-            logger.LogError(ex, "gRPC receive loop crashed");
+            logger.LogWarning(ex, "gRPC receive loop lost connection, attempting reconnect...");
 
             // Only reconnect if the service hasn't been asked to shut down.
             // Use _lifetimeCt (not ct/_cts.Token) because StopAsync() inside
@@ -78,38 +81,13 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
                 await ReconnectAsync(_lifetimeCt);
         }
     }
-
-    private async Task ReconnectAsync(CancellationToken ct)
-    {
-        try
-        {
-            await StopAsync();
-            await Task.Delay(TimeSpan.FromSeconds(5), ct);
-            await StartAsync(ct);
-        }
-        catch (OperationCanceledException)
-        {
-            // Expected during shutdown; don't log as an error.
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "gRPC reconnect failed");
-        }
-    }
-
+    
     public async Task SendAsync(AddonMessage message, CancellationToken ct = default)
     {
         if (_call == null)
             throw new InvalidOperationException("Channel not started. Call StartAsync first.");
         await _call.RequestStream.WriteAsync(message, ct);
     }
-
-    public Task SendHeartbeatAsync(CancellationToken ct = default) =>
-        SendAsync(new AddonMessage
-        {
-            Type = "heartbeat",
-            Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-        }, ct);
 
     public async Task StopAsync()
     {
@@ -144,4 +122,52 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
     }
 
     public async ValueTask DisposeAsync() => await StopAsync();
+    
+    private async Task ReconnectAsync(CancellationToken ct)
+    {
+        while (!ct.IsCancellationRequested)
+        {
+            try
+            {
+                await StopAsync();
+                await Task.Delay(TimeSpan.FromSeconds(5), ct);
+                await StartAsync(ct);
+                logger.LogInformation("gRPC reconnected successfully");
+                return;
+
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "gRPC reconnect attempt failed, retrying in 5s...");
+            }
+        }
+    }
+    
+    private async Task ScheduleTokenRefreshAsync(CancellationToken ct)
+    {
+        if (oauth.CurrentTokenExpiresAt is not { } expiresAt)
+            return;
+        
+        var delay = (expiresAt - TimeSpan.FromMinutes(5)) - DateTime.UtcNow;
+        if (delay <= TimeSpan.Zero)
+            return;
+        
+        try
+        {
+            await Task.Delay(delay, ct);
+            logger.LogInformation("Access token expiring soon, proactively reconnecting");
+            await StopAsync();
+            await StartAsync(_lifetimeCt);
+            
+            _ = ScheduleTokenRefreshAsync(_cts!.Token);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+    
 }

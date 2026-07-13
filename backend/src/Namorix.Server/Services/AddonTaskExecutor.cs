@@ -128,6 +128,7 @@ public class AddonTaskExecutor(
                 await docker.EnsureNetworkExistsAsync(cfg.NetworkName);
             
             var portMappings = ParseCatalogPorts(catalogEntry.Ports);
+            await docker.RemoveContainerIfExistsAsync(addonId);
             var containerId = await docker.CreateContainerAsync(new AddonContainerSpec
             {
                 Image = image,

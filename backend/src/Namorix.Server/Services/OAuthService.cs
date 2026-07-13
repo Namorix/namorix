@@ -139,14 +139,10 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache)
 
     public async Task<bool> IsAddonAuthorizedAsync(string addonId)
     {
-        // Chỉ check DB nhanh, không verify JWT
-        // TODO
-        var addon = await db.AddonInstallations.FindAsync(addonId);
-        return addon is
-        {
-            ClientId: not null,
-            Status: not null
-        };
+        return await db.AddonInstallations
+            .AsNoTracking()
+            .AnyAsync(a => a.Id == addonId 
+                           && a.ClientId != null && a.Status != null);
     }
     
     public async Task<string?> ValidateTokenAsync(string tokenId)

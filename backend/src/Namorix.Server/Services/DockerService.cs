@@ -24,7 +24,7 @@ public class DockerService
             All = true,
             Filters = new Dictionary<string, IDictionary<string, bool>>
             {
-                ["label"] = new Dictionary<string, bool> { [AddonLabels.Addon] = true }
+                ["label"] = new Dictionary<string, bool> {[AddonLabels.Addon] = true }
             }
         });
     }
@@ -125,6 +125,26 @@ public class DockerService
             Name = networkName,
             Driver = "bridge",
         });
+    }
+
+    public async Task<bool> RemoveContainerIfExistsAsync(string addonId)
+    {
+        var containers = await Client.Containers.ListContainersAsync(new ContainersListParameters
+        {
+            All = true,
+            Filters = new Dictionary<string, IDictionary<string, bool>>
+            {
+                ["name"] = new Dictionary<string, bool> { [$"^/{addonId}$"] = true }
+            }
+        });
+
+        var existing = containers.FirstOrDefault();
+        if (existing is null)
+            return false;
+
+        await Client.Containers.RemoveContainerAsync(existing.ID,
+            new ContainerRemoveParameters { Force = true });
+        return true;
     }
     
     public async Task<string> GetContainerLogsAsync(string id, bool tty = false, CancellationToken cancellationToken = default)

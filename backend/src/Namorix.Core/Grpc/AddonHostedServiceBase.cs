@@ -3,8 +3,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Namorix.Core.Grpc;
 
-public abstract class RetryConnectHostedService(AddonChannelClient channel,
-    ILogger<RetryConnectHostedService> logger, TimeSpan? retryDelay = null) : IHostedService
+public abstract class AddonHostedServiceBase(AddonChannelClient channel,
+    ILogger<AddonHostedServiceBase> logger, TimeSpan? retryDelay = null) : IHostedService
 {
     private readonly TimeSpan _retryDelay = retryDelay ?? TimeSpan.FromSeconds(5);
     private CancellationTokenSource? _cts;

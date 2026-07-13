@@ -14,6 +14,7 @@ public class NmxOAuth2Client(HttpClient http, NmxAddonConfig config, ILogger<Nmx
     
     private readonly RSA _key = RSA.Create();
     private (string Token, DateTime ExpiresAt)? _cached;
+    public DateTime? CurrentTokenExpiresAt => _cached?.ExpiresAt;
     private string? _clientId;
     private bool _initialized;
     
@@ -44,7 +45,6 @@ public class NmxOAuth2Client(HttpClient http, NmxAddonConfig config, ILogger<Nmx
     
     private async Task RegisterAsync(CancellationToken ct)
     {
-        Console.WriteLine("RegisterAsync 1");
         using var rsa = RSA.Create(2048);
         var publicKeyPem = rsa.ExportSubjectPublicKeyInfoPem();
         var privateKeyPem = rsa.ExportPkcs8PrivateKeyPem();
