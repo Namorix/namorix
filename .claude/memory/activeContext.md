@@ -68,6 +68,12 @@ Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và 
 - Styles: `taskbar.scss` — clock font-size 4xl → 3xl.
 - Versions: Namorix.Core 0.43.0, Namorix.Server 0.46.0, @namorix/core 0.41.3, @namorix/styles 0.36.2.
 
+### 2026-07-13 — gRPC client module, Kestrel 2-port, CacheSignatureProviders fix
+
+- Backend (Namorix.Core): NEW Grpc/ module — AddonChannelClient (gRPC client with OAuth2 token + duplex stream), AddonChannelClientExtensions (DI), RetryConnectHostedService (auto-reconnect base class). MODIFIED: OAuth.cs — GrpcUrl, DataDir constants. NmxAddonConfig — GrpcUrl property. Core.csproj — protobuf GrpcServices=Both.
+- Backend (Namorix.Server): Kestrel 2-port config (5000 HTTP/1.1, 5002 HTTP/2), gRPC reflection dev-only. AddonChannelService — recheck loop, widget-event logging, heartbeat handling. OAuthService — CacheSignatureProviders = false fix (RsaSecurityKey stale cache bug).
+- Versions: Namorix.Core 0.45.0, Namorix.Server 0.48.0.
+
 ### 2026-07-04 (2) — gRPC Addon Channel, revoke endpoint, NotifyAddonWidgetEvent
 
 - Backend (Namorix.Core): NEW Protos/addon_channel.proto — bidirectional gRPC streaming. ExemptPaths thêm /api/oauth/revoke. AddonInstallation consistent init setters. NmxOAuth2Client fix File.Exists(). Package deps: Grpc.AspNetCore + Protobuf.

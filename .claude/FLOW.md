@@ -690,12 +690,15 @@ AddonController action
 | `backend/src/Namorix.Server/Controllers/OAuthController.cs` | OAuth register + token endpoints |
 | `backend/src/Namorix.Server/Middleware/OAuth2Middleware.cs` | Bearer token verification |
 | `backend/src/Namorix.Core/OAuth/NmxOAuth2Client.cs` | OAuth2 client SDK (self-registration, token caching) |
-| `backend/src/Namorix.Core/OAuth/NmxAddonConfig.cs` | Addon env var config (ApiUrl, RegistrationToken) |
+| `backend/src/Namorix.Core/OAuth/NmxAddonConfig.cs` | Addon env var config (ApiUrl, RegistrationToken, GrpcUrl) |
 | `backend/src/Namorix.Core/OAuth/NmxOAuth2ServiceCollectionExtensions.cs` | DI extension for addon OAuth2 client |
 | `backend/src/Namorix.Core/Constants/OAuth.cs` | OAuth env vars, grant types, parameters |
 | `backend/src/Namorix.Core/Constants/ExemptPaths.cs` | Middleware bypass paths (OAuth endpoints) |
 | `backend/src/Namorix.Core/Config/BackendConfig.cs` | Backend config (Port, RegistrationTokenTtlMinutes) |
 | `backend/src/Namorix.Core/Models/OAuthRegistration.cs` | Registration token entity |
+| `backend/src/Namorix.Core/Grpc/AddonChannelClient.cs` | gRPC client for addons (OAuth2 token + duplex stream management) |
+| `backend/src/Namorix.Core/Grpc/AddonChannelClientExtensions.cs` | DI extension for AddonChannelClient |
+| `backend/src/Namorix.Core/Grpc/RetryConnectHostedService.cs` | Base class for addon IHostedService (auto-reconnect) |
 | `backend/src/Namorix.Server/Workers/DockerMonitorWorker.cs` | Container event stream + health check poll + auto-discover |
 | `backend/src/Namorix.Core/Constants/Docker.cs` | Docker state/event/filter constants |
 | `backend/src/Namorix.Server/Infrastructure/IAddonNotifier.cs` | Addon status notification interface |

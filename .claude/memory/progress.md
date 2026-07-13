@@ -141,8 +141,8 @@
 | @namorix/core | 0.41.3 | M4 (// TODO comments on addon types) |
 | @namorix/styles | 0.36.2 | M4 (Taskbar font-size tweak) |
 | @namorix/ui | 0.26.0 | M4 (ERROR icon symbol) |
-| Namorix.Core | 0.44.0 | M4 (gRPC proto definition, ExemptPaths revoke, bug fixes) |
-| Namorix.Server | 0.47.0 | M4 (gRPC Addon Channel, revoke endpoint, NotifyAddonWidgetEvent) |
+| Namorix.Core | 0.45.0 | M4 (gRPC client module: AddonChannelClient, RetryConnectHostedService, GrpcUrl) |
+| Namorix.Server | 0.48.0 | M4 (Kestrel 2-port, gRPC reflection, AddonChannelService recheck loop, CacheSignatureProviders fix) |
 
 ## Version Rules
 
@@ -213,6 +213,11 @@
 
 - Namorix.Core 0.43.0 → 0.44.0: NEW: `Protos/addon_channel.proto` — bidirectional gRPC Connect rpc. MODIFIED: `Constants/ExemptPaths.cs` — thêm `/api/oauth/revoke` vào NoCsrfSession. `Models/AddonInstallation.cs` — consistent `init` setters. `OAuth/NmxOAuth2Client.cs` — fix `File.Exists()` logic. `Namorix.Core.csproj` — Grpc.AspNetCore + Protobuf.
 - Namorix.Server 0.46.0 → 0.47.0: NEW: `Services/AddonChannelManager.cs` — ConcurrentDictionary for active gRPC cancellation. `Services/Grpc/AddonChannelService.cs` — bidirectional streaming + interceptor auth + 5-min recheck. MODIFIED: `Controllers/OAuthController.cs` — revoke endpoint + ChannelManager injection. `Services/OAuthService.cs` — RevokeTokenAsync, IsAddonAuthorizedAsync, ValidateTokenAsync. `Infrastructure/IAddonNotifier.cs` + `Hubs/SignalRAddonNotifier.cs` — NotifyAddonWidgetEvent. `Constants/ServerSignalR.cs` — AddonWidgetEvent. `Middleware/OAuth2Middleware.cs` — Bearer prefix constant. `Program.cs` — AddGrpc + ChannelManager + MapGrpcService. `Namorix.Server.csproj` — Grpc.AspNetCore + Protobuf.
+
+### 2026-07-13 — gRPC client module, Kestrel 2-port, CacheSignatureProviders fix
+
+- Namorix.Core 0.44.0 → 0.45.0: NEW: `Grpc/AddonChannelClient.cs` — gRPC client with OAuth2 token + duplex stream. `Grpc/AddonChannelClientExtensions.cs` — DI extension. `Grpc/RetryConnectHostedService.cs` — auto-reconnect base class for addons. MODIFIED: `Constants/OAuth.cs` — GrpcUrl, DataDir constants. `OAuth/NmxAddonConfig.cs` — GrpcUrl property. `Namorix.Core.csproj` — protobuf with GrpcServices=Both.
+- Namorix.Server 0.47.0 → 0.48.0: MODIFIED: `Program.cs` — Kestrel 2-port (5000 HTTP/1.1, 5002 HTTP/2), gRPC reflection. `Services/Grpc/AddonChannelService.cs` — recheck loop, widget-event logging, heartbeat handling. `Services/OAuthService.cs` — fix `CacheSignatureProviders = false` (RsaSecurityKey stale cache bug). `appsettings.Development.json` — gRPC logging level.
 
 ### 2026-07-03 (4) — InstallAsync catalog rewrite, frontend catalog store, identity cleanup
 
