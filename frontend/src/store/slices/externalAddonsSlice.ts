@@ -44,6 +44,16 @@ export const externalAddonsSlice = createSlice({
         if (action.payload.lastErrorCode !== undefined) {
           existing.lastErrorCode = action.payload.lastErrorCode
         }
+
+        if (
+          action.payload.status === "running" ||
+          action.payload.status === "stopped" ||
+          action.payload.status === "installed" ||
+          action.payload.status === "error"
+        ) {
+          existing.pendingTaskId = undefined
+          existing.pendingTaskPhase = undefined
+        }
       } else {
         const catalogEntry = state.catalog[action.payload.addonId]
         state.items[action.payload.addonId] = {

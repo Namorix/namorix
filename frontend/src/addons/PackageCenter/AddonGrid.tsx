@@ -7,7 +7,7 @@ import {
   toHtml,
 } from "@namorix/core"
 import { addonController } from "../../controllers"
-import React, { useCallback, useEffect, useMemo, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { PackageCenterTab } from "./PackageCenter"
 import {
@@ -71,6 +71,9 @@ export const AddonGrid: React.FC = () => {
   const [uninstallTarget, setUninstallTarget] = useState<DisplayAddon | null>(
     null,
   )
+  const pendingTimeoutsRef = useRef<
+    Record<string, ReturnType<typeof setTimeout>>
+  >({})
 
   const activeTab = useActiveTab<PackageCenterTab>()
   const dispatch = useAppDispatch()
@@ -123,6 +126,7 @@ export const AddonGrid: React.FC = () => {
             author: dto.author,
             installedAt: dto.installedAt,
             pendingTaskId: dto.pendingTaskId,
+            pendingTaskPhase: dto.pendingTaskPhase as AddonPendingPhase,
             lastErrorCode: dto.lastErrorCode,
           }) as ExternalAddonManifest,
       )
@@ -145,6 +149,38 @@ export const AddonGrid: React.FC = () => {
     }
   }, [dispatch])
 
+  const clearPending = useCallback((id: string) => {
+    if (pendingTimeoutsRef.current[id]) {
+      clearTimeout(pendingTimeoutsRef.current[id])
+      delete pendingTimeoutsRef.current[id]
+    }
+
+    setPendingMap((prev) => {
+      if (!prev[id]) return prev
+      const next = { ...prev }
+      delete next[id]
+      return next
+    })
+  }, [])
+
+  const setPending = useCallback(
+    (id: string, taskPhase: AddonPendingPhase) => {
+      if (pendingTimeoutsRef.current[id]) {
+        clearTimeout(pendingTimeoutsRef.current[id])
+      }
+      setPendingMap((prev) => ({
+        ...prev,
+        [id]: { id, taskPhase },
+      }))
+
+      pendingTimeoutsRef.current[id] = setTimeout(() => {
+        clearPending(id)
+        loadData().catch(() => {})
+      }, 30_000)
+    },
+    [clearPending, loadData],
+  )
+
   useEffect(() => {
     loadData().catch((err) => nmxToast.error(err))
   }, [loadData])
@@ -152,18 +188,11 @@ export const AddonGrid: React.FC = () => {
   useServerSignalREvent<{ addonId: string; taskPhase: string | null }>(
     ServerSignalREvent.AddonPendingTaskChanged,
     (data) => {
-      setPendingMap((prev) => {
-        const n = { ...prev }
-        if (data.taskPhase) {
-          n[data.addonId] = {
-            id: data.addonId,
-            taskPhase: data.taskPhase as AddonPendingPhase,
-          }
-        } else {
-          delete n[data.addonId]
-        }
-        return n
-      })
+      if (data.taskPhase) {
+        setPending(data.addonId, data.taskPhase as AddonPendingPhase)
+      } else {
+        clearPending(data.addonId)
+      }
     },
   )
 
@@ -281,68 +310,44 @@ export const AddonGrid: React.FC = () => {
   const handleStart = useCallback(
     (e: React.MouseEvent, addon: DisplayAddon) => {
       e.preventDefault()
-      setPendingMap((prev) => ({
-        ...prev,
-        [addon.id]: {
-          id: addon.id,
-          taskPhase: "starting",
-        },
-      }))
+      setPending(addon.id, "starting")
 
       addonController.start(addon.id).catch((err) => {
-        setPendingMap((prev) => {
-          const n = { ...prev }
-          delete n[addon.id]
-          return n
-        })
+        clearPending(addon.id)
         nmxToast.error(resolveAddonError(t, err, addon.name))
       })
     },
-    [t],
+    [clearPending, setPending, t],
   )
 
   const handleStop = useCallback(
     (e: React.MouseEvent, addon: DisplayAddon) => {
       e.preventDefault()
-      setPendingMap((prev) => ({
-        ...prev,
-        [addon.id]: { id: addon.id, taskPhase: "stopping" },
-      }))
+      setPending(addon.id, "stopping")
 
       addonController.stop(addon.id).catch((err) => {
-        setPendingMap((prev) => {
-          const n = { ...prev }
-          delete n[addon.id]
-          return n
-        })
+        clearPending(addon.id)
         nmxToast.error(resolveAddonError(t, err, addon.name))
       })
     },
-    [t],
+    [clearPending, setPending, t],
   )
 
   const handleInstall = useCallback(
     (e: React.MouseEvent, addon: DisplayAddon) => {
       e.preventDefault()
-      setPendingMap((prev) => ({
-        ...prev,
-        [addon.id]: { id: addon.id, taskPhase: "installing" },
-      }))
+      setPending(addon.id, "installing")
 
       addonController
         .install({
           id: addon.id,
         })
         .catch((err) => {
-          setPendingMap((prev) => {
-            const next = { ...prev }
-            delete next[addon.id]
-            return next
-          })
+          clearPending(addon.id)
           nmxToast.error(resolveAddonError(t, err, addon.name))
         })
     },
-    [t],
+    [clearPending, setPending, t],
   )
 
   const handleUninstall = useCallback(
@@ -355,26 +360,41 @@ export const AddonGrid: React.FC = () => {
 
   const handleUninstallConfirm = useCallback(() => {
     if (!uninstallTarget) return
-    const target = uninstallTarget
+    const addon = uninstallTarget
     setUninstallTarget(null)
 
-    setPendingMap((prev) => ({
-      ...prev,
-      [target.id]: {
-        id: target.id,
-        taskPhase: "uninstalling",
-      },
-    }))
+    setPending(addon.id, "uninstalling")
 
-    addonController.remove(target.id).catch((err) => {
-      setPendingMap((prev) => {
-        const n = { ...prev }
-        delete n[target.id]
-        return n
-      })
-      nmxToast.error(resolveAddonError(t, err, target.name))
+    addonController.remove(addon.id).catch((err) => {
+      clearPending(addon.id)
+      nmxToast.error(resolveAddonError(t, err, addon.name))
     })
-  }, [uninstallTarget, t])
+  }, [uninstallTarget, setPending, clearPending, t])
+
+  const resolvedPendingMap = useMemo(() => {
+    const result: Record<string, PendingAction> = {}
+    for (const id of Object.keys(pendingMap)) {
+      const addon = externalAddonsMap[id]
+      const phase = pendingMap[id]?.taskPhase
+
+      if (!addon) {
+        if (phase !== "uninstalling") result[id] = pendingMap[id]!
+        continue
+      }
+
+      const isTerminal =
+        (phase === "starting" && addon.status === "running") ||
+        (phase === "stopping" && addon.status === "stopped") ||
+        (phase === "installing" &&
+          (addon.status === "installed" || addon.status === "running")) ||
+        addon.status === "error"
+
+      if (!isTerminal) {
+        result[id] = pendingMap[id]!
+      }
+    }
+    return result
+  }, [pendingMap, externalAddonsMap])
 
   return (
     <div className="nmx-addon-package-center__main">
@@ -497,7 +517,7 @@ export const AddonGrid: React.FC = () => {
                     </NmxButton>
                   )}
                 </NmxCardFooter>
-                {pendingMap[addon.id] && (
+                {resolvedPendingMap[addon.id] && (
                   <div className="nmx-addon-package-center__card-overlay">
                     <div className="nmx-addon-package-center__card-overlay__content">
                       <NmxSpinner size="md" />

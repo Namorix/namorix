@@ -17,6 +17,7 @@ export interface AddonManifestDto {
   author?: string
   installedAt: string
   pendingTaskId?: string
+  pendingTaskPhase?: string
   lastErrorCode?: string
 }
 
