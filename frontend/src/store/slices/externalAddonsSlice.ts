@@ -59,6 +59,7 @@ export const externalAddonsSlice = createSlice({
         state.items[action.payload.addonId] = {
           id: action.payload.addonId,
           name: catalogEntry?.name ?? action.payload.addonId,
+          icon: catalogEntry?.icon,
           status: action.payload.status,
         } as ExternalAddonManifest
         if (!state.order.includes(action.payload.addonId)) {

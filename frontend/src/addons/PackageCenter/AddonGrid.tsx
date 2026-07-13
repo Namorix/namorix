@@ -6,7 +6,7 @@ import {
   semverCompare,
   toHtml,
 } from "@namorix/core"
-import { addonController } from "../../controllers"
+import { addonController, mapDtoToManifest } from "../../controllers"
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { PackageCenterTab } from "./PackageCenter"
@@ -112,25 +112,8 @@ export const AddonGrid: React.FC = () => {
       ])
 
       dispatch(setCatalog(catalogList))
-      const addons = list.map(
-        (dto) =>
-          ({
-            id: dto.id,
-            name: dto.name,
-            description: dto.description,
-            icon: dto.icon,
-            image: dto.image,
-            hostPort: dto.hostPort,
-            status: dto.status as AddonContainerStatus,
-            version: dto.version,
-            author: dto.author,
-            installedAt: dto.installedAt,
-            pendingTaskId: dto.pendingTaskId,
-            pendingTaskPhase: dto.pendingTaskPhase as AddonPendingPhase,
-            lastErrorCode: dto.lastErrorCode,
-          }) as ExternalAddonManifest,
-      )
 
+      const addons = list.map(mapDtoToManifest)
       dispatch(setAddons(addons))
 
       const pendingRecovered: Record<string, PendingAction> = {}

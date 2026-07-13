@@ -1,7 +1,10 @@
 import {
   type AddonCatalogEntry,
+  type AddonContainerStatus,
+  type AddonPendingPhase,
   ApiAddonRoutes,
   ApiError,
+  type ExternalAddonManifest,
   nmxHttp,
 } from "@namorix/core"
 
@@ -59,15 +62,6 @@ export const addonController = {
     if (!res.success) throw ApiError.fromResponse(res)
   },
 
-  async getCatalog(): Promise<AddonCatalogEntry[]> {
-    const res = await nmxHttp
-      .url(ApiAddonRoutes.listCatalog)
-      .get()
-      .json<AddonCatalogEntry[]>()
-    if (!res.success) throw ApiError.fromResponse(res)
-    return res.data
-  },
-
   async refreshCatalog(): Promise<AddonCatalogEntry[]> {
     const res = await nmxHttp
       .url(ApiAddonRoutes.syncCatalog)
@@ -77,3 +71,22 @@ export const addonController = {
     return res.data
   },
 }
+
+export const mapDtoToManifest = (
+  dto: AddonManifestDto,
+): ExternalAddonManifest =>
+  ({
+    id: dto.id,
+    name: dto.name,
+    description: dto.description,
+    icon: dto.icon,
+    image: dto.image,
+    hostPort: dto.hostPort,
+    status: dto.status as AddonContainerStatus,
+    version: dto.version,
+    author: dto.author,
+    installedAt: dto.installedAt,
+    pendingTaskId: dto.pendingTaskId,
+    pendingTaskPhase: dto.pendingTaskPhase as AddonPendingPhase,
+    lastErrorCode: dto.lastErrorCode,
+  }) as ExternalAddonManifest
