@@ -74,6 +74,12 @@ Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và 
 - Backend (Namorix.Server): Kestrel 2-port config (5000 HTTP/1.1, 5002 HTTP/2), gRPC reflection dev-only. AddonChannelService — recheck loop, widget-event logging, heartbeat handling. OAuthService — CacheSignatureProviders = false fix (RsaSecurityKey stale cache bug).
 - Versions: Namorix.Core 0.45.0, Namorix.Server 0.48.0.
 
+### 2026-07-13 (5) — External addons on desktop with disabled state
+
+- Frontend: DesktopArea fetches external addons on mount via `addonController.list()` + dispatches to Redux. Desktop icons now merge builtin + external addons with `disabled` flag when `status !== "running"`. Disabled icons rendered with `filter: brightness(0.35)` and no hover background. Double-click disabled icon calls `addonController.start()`. New `mapDtoToManifest` shared helper (dedup with AddonGrid). `AddonItem` extended with `disabled?: boolean`. `externalAddonsSlice.updateAddonStatus` now includes `icon` from catalog for new entries.
+- Styles: New `&--disabled` modifier in `desktop.scss` with brightness filter.
+- Versions: frontend 0.53.0, @namorix/styles 0.37.0.
+
 ### 2026-07-13 (4) — Package Center pending overlay recovery, double toast dedup
 
 - Backend (Namorix.Server): AddonTaskExecutor `SetStatusAsync` returns int with `WHERE Status !=` dedup guard. Start/Stop only notify if status actually changed (prevents double toast from DockerMonitorWorker race). DockerMonitorWorker `HandleEventAsync` checks `PendingTaskPhase != Uninstalling` before setting Error on Destroy (prevents error+success double toast during uninstall).
