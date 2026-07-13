@@ -58,4 +58,13 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
+  &__item--disabled {
+    filter: brightness(0.55);
+    cursor: default;
+
+    &:hover {
+      background: transparent;
+    }
+  }
 }
