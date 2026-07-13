@@ -20,8 +20,12 @@ public class AddonChannelManager
     
     public void DisconnectAsync(string addonId)
     {
+        Console.WriteLine("DisconnectAsync");
         if (_channels.TryRemove(addonId, out var ctx))
+        {
+            Console.WriteLine("DisconnectAsync: Cancel");
             ctx.Cancel();
+        }
     }
     
     public bool IsConnected(string addonId) =>

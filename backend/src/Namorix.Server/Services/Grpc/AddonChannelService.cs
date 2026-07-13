@@ -44,6 +44,11 @@ public class AddonChannelService(AddonChannelManager manager, OAuthService oauth
             {
                 logger.LogInformation("Addon {AddonId} disconnected (connection reset)", addonId);
             }
+            catch (OperationCanceledException) when (cts.IsCancellationRequested)
+            {
+                logger.LogWarning("Addon {AddonId} disconnected by ChannelManager", addonId);
+                throw new RpcException(new Status(StatusCode.Cancelled, "Addon disconnected"));
+            }
             catch (OperationCanceledException)
             {
                 logger.LogInformation("Addon {AddonId} connection cancelled", addonId);

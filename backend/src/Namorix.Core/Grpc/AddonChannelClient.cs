@@ -67,8 +67,15 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
                 }
             }
         }
-        catch (OperationCanceledException) { }
-        catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled) { }
+        catch (OperationCanceledException)
+        {
+            logger.LogDebug("Receive loop cancelled (shutdown)");
+        }
+        catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled)
+        {
+            logger.LogWarning("Server disconnected the channel");
+            _call = null;
+        }
         catch (Exception ex)
         {
             logger.LogWarning(ex, "gRPC receive loop lost connection, attempting reconnect...");

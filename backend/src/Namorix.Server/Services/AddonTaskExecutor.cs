@@ -17,6 +17,7 @@ public class AddonTaskExecutor(
     AppDbContext db,
     DockerService docker,
     IAddonNotifier notifier,
+    AddonChannelManager channelManager,
     IOptions<BackendConfig> backendConfig,
     ILogger<AddonTaskExecutor> logger)
 {
@@ -74,6 +75,8 @@ public class AddonTaskExecutor(
     
     private async Task StopAsync(string addonId, CancellationToken ct)
     {
+        channelManager.DisconnectAsync(addonId);
+
         var addon = await db.AddonInstallations.FindAsync([addonId], ct);
         if (addon?.ContainerId != null)
         {
@@ -182,6 +185,8 @@ public class AddonTaskExecutor(
     
     private async Task UninstallAsync(string addonId, CancellationToken ct)
     {
+        channelManager.DisconnectAsync(addonId);
+        
         var addon = await db.AddonInstallations.FindAsync([addonId], ct);
         if (addon?.ContainerId != null)
         {

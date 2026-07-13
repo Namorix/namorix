@@ -42,9 +42,10 @@ public class AddonTaskQueue(IServiceScopeFactory scopeFactory, ILogger<AddonTask
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var docker = scope.ServiceProvider.GetRequiredService<DockerService>();
             var notifier = scope.ServiceProvider.GetRequiredService<IAddonNotifier>();
+            var channelManager = scope.ServiceProvider.GetRequiredService<AddonChannelManager>();
             var executorLogger = scope.ServiceProvider.GetRequiredService<ILogger<AddonTaskExecutor>>();
             var backendConfig = scope.ServiceProvider.GetRequiredService<IOptions<BackendConfig>>();
-            var service = new AddonTaskExecutor(db, docker, notifier, backendConfig, executorLogger);
+            var service = new AddonTaskExecutor(db, docker, notifier, channelManager, backendConfig, executorLogger);
             
             await service.ExecuteAsync(task, ct);
         }
