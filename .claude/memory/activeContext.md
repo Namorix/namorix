@@ -74,6 +74,12 @@ Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và 
 - Backend (Namorix.Server): Kestrel 2-port config (5000 HTTP/1.1, 5002 HTTP/2), gRPC reflection dev-only. AddonChannelService — recheck loop, widget-event logging, heartbeat handling. OAuthService — CacheSignatureProviders = false fix (RsaSecurityKey stale cache bug).
 - Versions: Namorix.Core 0.45.0, Namorix.Server 0.48.0.
 
+### 2026-07-13 (3) — Disconnect cleanup: RpcException propagation + client cleanup
+
+- Backend (Namorix.Core): AddonChannelClient ReceiveLoopAsync — log + _call = null on RpcException(Cancelled), log on OperationCanceledException. IsConnected trả về false khi server disconnect.
+- Backend (Namorix.Server): AddonChannelService throw RpcException(Cancelled) khi ChannelManager disconnect. AddonChannelManager debug Console.WriteLine. AddonTaskExecutor inject AddonChannelManager + DisconnectAsync trong Uninstall/Stop. AddonTaskQueue pass channelManager tới executor.
+- Versions: Namorix.Core 0.45.2, Namorix.Server 0.48.2.
+
 ### 2026-07-13 (2) — Bug fixes: recheck loop, container conflict, EF cache
 
 - Backend (Namorix.Core): AddonChannelClient _lifetimeCt fix. AddonHostedServiceBase rename.

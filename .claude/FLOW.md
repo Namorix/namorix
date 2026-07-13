@@ -648,7 +648,13 @@ Addon container → Connect(metadata: Bearer <access_token>)
 
 Active cancellation (revoke/uninstall):
   ├── OAuthController.Revoke → ChannelManager.DisconnectAsync(addonId)
-  └── AddonTaskExecutor.UninstallAsync → ChannelManager.DisconnectAsync(addonId)
+  │     └── ChannelManager cancels ChannelContext.CTS → linkedCts cancelled
+  │           └── server ReadAllAsync throws OCE → caught by when(cts.IsCancellationRequested)
+  │                 └── throw RpcException(Cancelled) → gRPC framework → client
+  │                       └── client ReceiveLoopAsync catches RpcException(Cancelled)
+  │                             ├── logger.Warning("Server disconnected the channel")
+  │                             └── _call = null → IsConnected = false
+  └── AddonTaskExecutor.UninstallAsync/StopAsync → ChannelManager.DisconnectAsync(addonId)
 ```
 
 ### Addon Task Queue (Backend)

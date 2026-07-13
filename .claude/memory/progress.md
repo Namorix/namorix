@@ -141,8 +141,8 @@
 | @namorix/core | 0.41.3 | M4 (// TODO comments on addon types) |
 | @namorix/styles | 0.36.2 | M4 (Taskbar font-size tweak) |
 | @namorix/ui | 0.26.0 | M4 (ERROR icon symbol) |
-| Namorix.Core | 0.45.1 | M4 (AddonChannelClient _lifetimeCt fix, AddonHostedServiceBase rename) |
-| Namorix.Server | 0.48.1 | M4 (DockerService new methods, recheck loop fix, AsNoTracking fix) |
+| Namorix.Core | 0.45.2 | M4 (Client-side disconnect cleanup on RpcException Cancelled) |
+| Namorix.Server | 0.48.2 | M4 (Server disconnect RpcException, channelManager injection, debug logs) |
 
 ## Version Rules
 
@@ -220,6 +220,16 @@
 - Namorix.Server 0.47.0 → 0.48.0: MODIFIED: `Program.cs` — Kestrel 2-port (5000 HTTP/1.1, 5002 HTTP/2), gRPC reflection. `Services/Grpc/AddonChannelService.cs` — recheck loop, widget-event logging, heartbeat handling. `Services/OAuthService.cs` — fix `CacheSignatureProviders = false` (RsaSecurityKey stale cache bug). `appsettings.Development.json` — gRPC logging level.
 
 ### 2026-07-13 (2) — Bug fixes: recheck loop, container conflict, EF cache
+
+- Backend (Namorix.Core): AddonChannelClient _lifetimeCt fix. AddonHostedServiceBase rename.
+- Backend (Namorix.Server): DockerService.RemoveContainerIfExistsAsync + GetContainerLogsAsync. AddonTaskExecutor gọi RemoveContainerIfExistsAsync trước create (tránh Docker Conflict). AddonChannelService recheck loop cancel linkedCts + log English. OAuthService.IsAddonAuthorizedAsync dùng AnyAsync + AsNoTracking (tránh EF cache).
+- Versions: Namorix.Core 0.45.1, Namorix.Server 0.48.1.
+
+### 2026-07-13 (3) — Client disconnect cleanup, server RpcException propagation, channelManager injection
+
+- Backend (Namorix.Core): AddonChannelClient ReceiveLoopAsync — log + cleanup on RpcException(Cancelled), _call = null để IsConnected trả về false. AddonHostedServiceBase debug log.
+- Backend (Namorix.Server): AddonChannelService throw RpcException(Cancelled) khi bị ChannelManager disconnect. AddonChannelManager debug Console.WriteLine. AddonTaskExecutor inject AddonChannelManager + gọi DisconnectAsync trong Uninstall/Stop. AddonTaskQueue pass channelManager tới executor.
+- Versions: Namorix.Core 0.45.2, Namorix.Server 0.48.2.
 
 - Namorix.Core 0.45.0 → 0.45.1: MODIFIED: `Grpc/AddonChannelClient.cs` — `_lifetimeCt` fix (dùng `_lifetimeCt` thay `_cts.Token` trong `ScheduleTokenRefreshAsync`). MODIFIED: `Grpc/AddonHostedServiceBase.cs` — rename from `RetryConnectHostedService`. MODIFIED: `OAuth/NmxOAuth2Client.cs` — CurrentTokenExpiresAt accessor.
 - Namorix.Server 0.48.0 → 0.48.1: MODIFIED: `Services/DockerService.cs` — new `RemoveContainerIfExistsAsync`, `GetContainerLogsAsync`. MODIFIED: `Services/AddonTaskExecutor.cs` — gọi `RemoveContainerIfExistsAsync` trước `CreateContainerAsync` (tránh Docker Conflict khi addon đã có container). MODIFIED: `Services/Grpc/AddonChannelService.cs` — `RecheckLoopAsync` cancel linkedCts trước throw, log English. MODIFIED: `Services/OAuthService.cs` — `IsAddonAuthorizedAsync` dùng `AnyAsync` + `AsNoTracking` (tránh EF identity map cache trả true sau khi DB record đã xoá).
