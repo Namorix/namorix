@@ -137,12 +137,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.53.0 | M4 (External addons on desktop with disabled state, mapDtoToManifest helper, missing icon fix) |
-| @namorix/core | 0.41.3 | M4 (// TODO comments on addon types) |
+| frontend | 0.54.0 | M4 (External addon desktop with catalog port, MF entry registration, error state shown) |
+| @namorix/core | 0.42.0 | M4 (Remove containerUrl, tsup build setup) |
 | @namorix/styles | 0.37.0 | M4 (Desktop icon --disabled modifier with brightness filter) |
 | @namorix/ui | 0.26.0 | M4 (ERROR icon symbol) |
-| Namorix.Core | 0.45.2 | M4 (Client-side disconnect cleanup on RpcException Cancelled) |
-| Namorix.Server | 0.48.3 | M4 (Dedup guards in AddonTaskExecutor + DockerMonitor Destroy event check for uninstall) |
+| Namorix.Core | 0.46.0 | M4 (AddonInstallation.Ports property, PortDto.Entry support) |
+| Namorix.Server | 0.49.0 | M4 (Entry port detection, catalog port mapping, Ports migration) |
 
 ## Version Rules
 
@@ -240,6 +240,13 @@
 
 - @namorix/styles 0.36.2 → 0.37.0: MODIFIED: `desktop.scss` — new `&__item--disabled` modifier with `filter: brightness(0.35)`, no hover background.
 - frontend 0.52.4 → 0.53.0: MODIFIED: `DesktopArea.tsx` — merge external addons from Redux with builtin, fetch on mount via `addonController.list()`. `DesktopIcon.tsx` — new `disabled` prop + `onDisabledClick` (calls start API). `DesktopAreaView.tsx` — pass through props. `AddonGrid.tsx` — use shared `mapDtoToManifest`. `addon.controller.ts` — new `mapDtoToManifest` helper. `externalAddonsSlice.ts` — `updateAddonStatus` includes `icon` from catalog. `addon-item.ts` — `disabled?: boolean` on AddonItem.
+
+### 2026-07-23 — External addon entry port, catalog schema update, MF desktop integration
+
+- Namorix.Core 0.45.2 → 0.46.0: MODIFIED: `Models/AddonInstallation.cs` — new `Ports` property (JSON string) for full port list.
+- Namorix.Server 0.48.3 → 0.49.0: NEW: `Migrations/20260723094003_AddPortsToAddonInstallations.cs` — migration adding Ports column. MODIFIED: `Models/Catalog/PortDto.cs` — new `Entry` boolean field. MODIFIED: `Services/AddonTaskExecutor.cs` — new `GetEntryPort()` prioritizes port with `"entry": true`, falls back to first port. `ParseCatalogPorts` now sets `HostPort = container` for direct port bind. `InstallAsync` saves `HostPort` and `Ports` on creation. MODIFIED: `catalog/schema/addon-v1.json` — ports items gain optional `entry` boolean.
+- @namorix/core 0.41.3 → 0.42.0: MODIFIED: `addon/types.ts` — `AddonContext.containerUrl` removed (dead code). `package.json` — tsup build setup for external addon consumption.
+- frontend 0.53.0 → 0.54.0: MODIFIED: `DesktopArea.tsx` — catalog port used as baseUrl when addon not running, `hostPort` when running. Error addons no longer filtered (shown disabled). MF entry registered via `createExternalAddonEntry` with `baseUrl`. `externalAddonEntry.ts` — accepts optional `baseUrl` param, removed `containerUrl`. `addon.controller.ts` — `AddonManifestDto` added `ports` field.
 
 - Namorix.Core 0.45.0 → 0.45.1: MODIFIED: `Grpc/AddonChannelClient.cs` — `_lifetimeCt` fix (dùng `_lifetimeCt` thay `_cts.Token` trong `ScheduleTokenRefreshAsync`). MODIFIED: `Grpc/AddonHostedServiceBase.cs` — rename from `RetryConnectHostedService`. MODIFIED: `OAuth/NmxOAuth2Client.cs` — CurrentTokenExpiresAt accessor.
 - Namorix.Server 0.48.0 → 0.48.1: MODIFIED: `Services/DockerService.cs` — new `RemoveContainerIfExistsAsync`, `GetContainerLogsAsync`. MODIFIED: `Services/AddonTaskExecutor.cs` — gọi `RemoveContainerIfExistsAsync` trước `CreateContainerAsync` (tránh Docker Conflict khi addon đã có container). MODIFIED: `Services/Grpc/AddonChannelService.cs` — `RecheckLoopAsync` cancel linkedCts trước throw, log English. MODIFIED: `Services/OAuthService.cs` — `IsAddonAuthorizedAsync` dùng `AnyAsync` + `AsNoTracking` (tránh EF identity map cache trả true sau khi DB record đã xoá).

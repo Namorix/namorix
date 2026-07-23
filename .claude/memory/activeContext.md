@@ -74,6 +74,15 @@ Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và 
 - Backend (Namorix.Server): Kestrel 2-port config (5000 HTTP/1.1, 5002 HTTP/2), gRPC reflection dev-only. AddonChannelService — recheck loop, widget-event logging, heartbeat handling. OAuthService — CacheSignatureProviders = false fix (RsaSecurityKey stale cache bug).
 - Versions: Namorix.Core 0.45.0, Namorix.Server 0.48.0.
 
+### 2026-07-23 — External addon entry port, schema update, MF desktop integration
+
+- Backend (Namorix.Core): `AddonInstallation` model added `Ports` (JSON string) property for full port list. NEW migration `AddPortsToAddonInstallations`.
+- Backend (Namorix.Server): `PortDto` added `Entry` boolean field. `AddonTaskExecutor` added `GetEntryPort()` — prioritizes port with `"entry": true`, falls back to first port. `InstallAsync` now sets `HostPort` from catalog port on creation. `ParseCatalogPorts` sets `HostPort = container` for direct bind.
+- Catalog: `addon-v1.json` schema updated — ports items gain optional `entry` boolean.
+- Core: `AddonContext.containerUrl` removed (dead code). tsup build setup added to package.json.
+- Frontend: `DesktopArea` now uses catalog port as baseUrl when addon not running (Docker), fallback to `hostPort` when running. External addon error state no longer filtered out (shows disabled). MF entry registered via `createExternalAddonEntry` with `baseUrl` param. `externalAddonEntry.ts` accepts optional `baseUrl`, removed `containerUrl` usage.
+- Versions: Namorix.Core 0.46.0, Namorix.Server 0.49.0, @namorix/core 0.42.0, frontend 0.54.0.
+
 ### 2026-07-13 (5) — External addons on desktop with disabled state
 
 - Frontend: DesktopArea fetches external addons on mount via `addonController.list()` + dispatches to Redux. Desktop icons now merge builtin + external addons with `disabled` flag when `status !== "running"`. Disabled icons rendered with `filter: brightness(0.35)` and no hover background. Double-click disabled icon calls `addonController.start()`. New `mapDtoToManifest` shared helper (dedup with AddonGrid). `AddonItem` extended with `disabled?: boolean`. `externalAddonsSlice.updateAddonStatus` now includes `icon` from catalog for new entries.
