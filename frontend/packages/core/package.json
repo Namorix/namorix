@@ -1,9 +1,15 @@
 {
   "name": "@namorix/core",
-  "version": "0.41.3",
+  "version": "0.42.0",
   "license": "AGPL-3.0-only",
   "author": "IzeroCs",
-  "keywords": ["namorix", "desktop", "shell", "types", "auth"],
+  "keywords": [
+    "namorix",
+    "desktop",
+    "shell",
+    "types",
+    "auth"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Namorix/namorix.git"
@@ -54,10 +60,10 @@
     }
   },
   "dependencies": {
+    "i18next": "26.2.0",
     "react": "19.2.6",
-    "react-router-dom": "7.15.1",
     "react-i18next": "17.0.8",
-    "i18next": "26.2.0"
+    "react-router-dom": "7.15.1"
   },
   "devDependencies": {
     "@types/react": "19.2.14"

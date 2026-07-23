@@ -60,7 +60,6 @@ export interface AddonContext {
   store?: Store
 
   isExternal?: boolean
-  containerUrl?: string
   sendCommand?: (command: string, payload?: unknown) => Promise<unknown>
 }
 
@@ -122,6 +121,7 @@ export interface AddonCatalogEntry {
     container: number
     protocol?: string
     description?: string
+    entry?: boolean
   }[]
   boot?: string
   minCoreVersion?: string
