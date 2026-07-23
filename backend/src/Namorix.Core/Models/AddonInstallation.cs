@@ -12,6 +12,7 @@ public class AddonInstallation
     [MaxLength(200)] public string Image { get; init; } = string.Empty;
 
     public int HostPort { get; set; }
+    public string? Ports { get; set; }
 
     [MaxLength(20)] public string? Status { get; set; }   // installed|running|stopped|error
     [MaxLength(50)] public string? Version { get; init; }

@@ -92,6 +92,11 @@
           },
           "description": {
             "type": "string"
+          },
+          "entry": {
+            "type": "boolean",
+            "default": false,
+            "description": "Mark as the entry point for frontend/client connections. Only one port should have this set."
           }
         }
       }

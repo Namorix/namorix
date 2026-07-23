@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 using Docker.DotNet;
+using Docker.DotNet.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Namorix.Core.Config;
@@ -146,6 +147,8 @@ public class AddonTaskExecutor(
                 ExtraHosts = backendInContainer ? null : ["host.docker.internal:host-gateway"],
                 NetworkName = backendInContainer ? cfg.NetworkName : null,
             });
+
+            var entryPort = GetEntryPort(catalogEntry.Ports) ?? 0;
             
             db.AddonInstallations.Add(new AddonInstallation
             {
@@ -157,6 +160,8 @@ public class AddonTaskExecutor(
                 Image = image,
                 Version = catalogEntry.Version,
                 Author = catalogEntry.Author,
+                HostPort = entryPort,
+                Ports = catalogEntry.Ports,
                 Status = AddonStatus.Installed,
                 InstalledAt = DateTime.UtcNow,
                 LastStatusChangedAt = DateTime.UtcNow,
@@ -247,13 +252,29 @@ public class AddonTaskExecutor(
                     .SetProperty(a => a.PendingTaskPhase, (string?)null));
         }
     }
+
+    private static List<CatalogPortDef>? PortDeserializeJson(string? portsJson)
+    {
+        return string.IsNullOrEmpty(portsJson)
+            ? null
+            : JsonSerializer.Deserialize<List<CatalogPortDef>>(portsJson, CatalogPortsJsonOptions);
+    }
     
     private static List<PortMapping>? ParseCatalogPorts(string? portsJson)
     {
-        if (string.IsNullOrEmpty(portsJson)) return null;
-        var ports = JsonSerializer.Deserialize<List<CatalogPortDef>>(portsJson, CatalogPortsJsonOptions);
-        return ports?.Select(p => new PortMapping { InternalPort = p.Container }).ToList();
+        var ports = PortDeserializeJson(portsJson);
+        return ports?.Select(p => new PortMapping {
+            InternalPort = p.Container,
+            HostPort = p.Container,
+        }).ToList();
+    }
+
+    private static int? GetEntryPort(string? portsJson)
+    {
+        var ports = PortDeserializeJson(portsJson);
+        return ports?.FirstOrDefault(p => p.Entry)?.Container
+               ?? ports?.FirstOrDefault()?.Container;
     }
     
-    private record CatalogPortDef(int Container, string Protocol);
+    private record CatalogPortDef(int Container, string Protocol, string? Description, bool Entry = false);
 }
