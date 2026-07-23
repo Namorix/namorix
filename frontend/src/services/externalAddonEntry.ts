@@ -16,11 +16,10 @@ export function createExternalAddonEntry(
 
   return {
     async mount(container: HTMLElement, context: AddonContext) {
-      const baseUrl =
-        context.containerUrl ?? `http://localhost:${manifest.hostPort}`
-
+      const baseUrl = `http://localhost:${manifest.hostPort}`
       const remoteName = `addon_${manifest.id}`
 
+      console.log(baseUrl)
       registerRemotes([
         {
           name: remoteName,

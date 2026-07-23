@@ -15,6 +15,7 @@ export interface AddonManifestDto {
   icon?: string
   image: string
   hostPort: number
+  port?: string
   status: string
   version?: string
   author?: string
