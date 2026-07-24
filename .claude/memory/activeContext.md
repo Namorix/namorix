@@ -74,6 +74,15 @@ Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và 
 - Backend (Namorix.Server): Kestrel 2-port config (5000 HTTP/1.1, 5002 HTTP/2), gRPC reflection dev-only. AddonChannelService — recheck loop, widget-event logging, heartbeat handling. OAuthService — CacheSignatureProviders = false fix (RsaSecurityKey stale cache bug).
 - Versions: Namorix.Core 0.45.0, Namorix.Server 0.48.0.
 
+### 2026-07-24 — Addon refactor to frontend, core modules, port restructure, external addon DX
+
+- Core (0.43.0): NEW `createMount` — wraps component with AddonModeProvider, addon dev chỉ cần 1 dòng. NEW `host.ts` — AddonModeProvider, useAddonMode, useIsWidget, useIsStandalone. NEW `i18n/ensure.ts` — ensureI18n utility for external addons. NEW `NmxI18n.loadAll` method. tsup build setup complete. `addon/` module moved to frontend (package boundary fix). `containerUrl` removed.
+- Frontend (0.55.0): Addon types/factory/context moved from core to `frontend/src/addons/`. NEW `closeWindowsByAddonId` in windowsSlice. `externalAddonEntry` simplified — passes `mode: widget` via context. `createMount` + `AddonModeProvider` handle mode detection. `DesktopArea` updated for new flow. Built-in addons import from local path instead of core.
+- Styles (0.38.0): Icon font bundle restructured — fonts moved into package, relative path via Vite resolve.
+- Backend (Namorix.Core 0.46.1, Namorix.Server 0.49.1): Port defaults updated to new scheme (Frontend 5000, Backend REST 5001, gRPC 5002, Weave 5100). Docker compose + .env + launchSettings synced.
+- README: New Ports section with full addon port table. Quick start port references updated.
+- Versions: @namorix/core 0.43.0, @namorix/styles 0.38.0, frontend 0.55.0, Namorix.Core 0.46.1, Namorix.Server 0.49.1.
+
 ### 2026-07-23 — External addon entry port, schema update, MF desktop integration
 
 - Backend (Namorix.Core): `AddonInstallation` model added `Ports` (JSON string) property for full port list. NEW migration `AddPortsToAddonInstallations`.

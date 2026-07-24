@@ -136,4 +136,21 @@
 
 **Status**: Deferred — chờ quyết định ApiUrl + OAuth approach.
 
+---
+
+## External Addon — Loading overlay when mounting
+
+**Context**: Khi mở external addon, window hiển thị ngay nhưng nội dung cần thời gian load (fetch MF manifest, load remote entry). Hiện tại mount area trống cho đến khi load xong.
+
+**Approach**: Trong `createExternalAddonEntry.mount()`, hiển thị spinner loader (`nmx-spinner` CSS) trong container trước khi `loadRemote`, xóa khi mount hoàn tất.
+
+**Files**:
+- `frontend/src/services/externalAddonEntry.tsx` — thêm loader DOM element
+
+## Upcoming Addons
+
+- Beam (media)
+- Scout (Camera)
+- Vault (Drive)
+
 	

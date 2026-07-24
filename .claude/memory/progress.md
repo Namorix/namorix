@@ -137,12 +137,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.54.0 | M4 (External addon desktop with catalog port, MF entry registration, error state shown) |
-| @namorix/core | 0.42.0 | M4 (Remove containerUrl, tsup build setup) |
-| @namorix/styles | 0.37.0 | M4 (Desktop icon --disabled modifier with brightness filter) |
+| frontend | 0.55.0 | M4 (Addon moved from core, closeWindowsByAddonId, external entry loading, port restructure) |
+| @namorix/core | 0.43.0 | M4 (createMount with AddonModeProvider, host hooks, ensureI18n, loadAll, tsup build) |
+| @namorix/styles | 0.38.0 | M4 (Icon font bundle restructure, relative font path) |
 | @namorix/ui | 0.26.0 | M4 (ERROR icon symbol) |
-| Namorix.Core | 0.46.0 | M4 (AddonInstallation.Ports property, PortDto.Entry support) |
-| Namorix.Server | 0.49.0 | M4 (Entry port detection, catalog port mapping, Ports migration) |
+| Namorix.Core | 0.46.1 | M4 (Backend port default 5000→5001) |
+| Namorix.Server | 0.49.1 | M4 (Port defaults updated to new scheme) |
 
 ## Version Rules
 
@@ -247,6 +247,14 @@
 - Namorix.Server 0.48.3 → 0.49.0: NEW: `Migrations/20260723094003_AddPortsToAddonInstallations.cs` — migration adding Ports column. MODIFIED: `Models/Catalog/PortDto.cs` — new `Entry` boolean field. MODIFIED: `Services/AddonTaskExecutor.cs` — new `GetEntryPort()` prioritizes port with `"entry": true`, falls back to first port. `ParseCatalogPorts` now sets `HostPort = container` for direct port bind. `InstallAsync` saves `HostPort` and `Ports` on creation. MODIFIED: `catalog/schema/addon-v1.json` — ports items gain optional `entry` boolean.
 - @namorix/core 0.41.3 → 0.42.0: MODIFIED: `addon/types.ts` — `AddonContext.containerUrl` removed (dead code). `package.json` — tsup build setup for external addon consumption.
 - frontend 0.53.0 → 0.54.0: MODIFIED: `DesktopArea.tsx` — catalog port used as baseUrl when addon not running, `hostPort` when running. Error addons no longer filtered (shown disabled). MF entry registered via `createExternalAddonEntry` with `baseUrl`. `externalAddonEntry.ts` — accepts optional `baseUrl` param, removed `containerUrl`. `addon.controller.ts` — `AddonManifestDto` added `ports` field.
+
+### 2026-07-24 — Addon refactor, core modules, port restructure, external addon DX
+
+- @namorix/core 0.42.0 → 0.43.0: NEW: `createMount.tsx` — wraps component with AddonModeProvider, 1-line mount for addons. NEW: `host.ts` — AddonModeProvider, useAddonMode, useIsWidget, useIsStandalone. NEW: `i18n/ensure.ts` — ensureI18n for external addons. MODIFIED: `i18n/index.ts` — new loadAll method. MODIFIED: `index.ts` — removed addon barrel, added createMount + host exports. REMOVED: `addon/` folder (moved to frontend).
+- @namorix/styles 0.37.0 → 0.38.0: MODIFIED: Icon font restructured — fonts moved into package `base/icomoon/fonts/`, relative path for Vite resolution. `index.scss` updated.
+- frontend 0.54.0 → 0.55.0: MODIFIED: `addons/` — types, factory, context moved from core. `windowsSlice.ts` — NEW closeWindowsByAddonId reducer. `externalAddonEntry` — passes `mode: widget` via context, removed root/render logic. `DesktopArea` — updated for moved imports. `vite.config`, `docker-compose`, `.env` — port 5174→5000, proxy 5000→5001. 8 builtin addon imports updated. `useAddonMount`, `useOpenWindow` paths updated. `Register.tsx` import fix.
+- Namorix.Core 0.45.2 → 0.46.1: MODIFIED: `BackendConfig.cs` — port default 5000→5001.
+- Namorix.Server 0.48.2 → 0.49.1: MODIFIED: `Program.cs`, `appsettings.json`, `launchSettings.json` — port defaults updated to new scheme.
 
 - Namorix.Core 0.45.0 → 0.45.1: MODIFIED: `Grpc/AddonChannelClient.cs` — `_lifetimeCt` fix (dùng `_lifetimeCt` thay `_cts.Token` trong `ScheduleTokenRefreshAsync`). MODIFIED: `Grpc/AddonHostedServiceBase.cs` — rename from `RetryConnectHostedService`. MODIFIED: `OAuth/NmxOAuth2Client.cs` — CurrentTokenExpiresAt accessor.
 - Namorix.Server 0.48.0 → 0.48.1: MODIFIED: `Services/DockerService.cs` — new `RemoveContainerIfExistsAsync`, `GetContainerLogsAsync`. MODIFIED: `Services/AddonTaskExecutor.cs` — gọi `RemoveContainerIfExistsAsync` trước `CreateContainerAsync` (tránh Docker Conflict khi addon đã có container). MODIFIED: `Services/Grpc/AddonChannelService.cs` — `RecheckLoopAsync` cancel linkedCts trước throw, log English. MODIFIED: `Services/OAuthService.cs` — `IsAddonAuthorizedAsync` dùng `AnyAsync` + `AsNoTracking` (tránh EF identity map cache trả true sau khi DB record đã xoá).
