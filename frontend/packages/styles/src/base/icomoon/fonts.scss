@@ -1,0 +1,194 @@
+@use "variables" as *;
+
+
+[class^="ic-"], [class*=" ic-"] {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: '#{$icomoon-font-family}' !important;
+  speak: never;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.ic-home {
+  &:before {
+    content: $ic-home; 
+  }
+}
+.ic-device {
+  &:before {
+    content: $ic-device; 
+  }
+}
+.ic-setting {
+  &:before {
+    content: $ic-setting; 
+  }
+}
+.ic-network {
+  &:before {
+    content: $ic-network; 
+  }
+}
+.ic-error {
+  &:before {
+    content: $ic-error; 
+  }
+}
+.ic-delete {
+  &:before {
+    content: $ic-delete; 
+  }
+}
+.ic-install {
+  &:before {
+    content: $ic-install; 
+  }
+}
+.ic-stop {
+  &:before {
+    content: $ic-stop; 
+  }
+}
+.ic-update {
+  &:before {
+    content: $ic-update; 
+  }
+}
+.ic-apps {
+  &:before {
+    content: $ic-apps; 
+  }
+}
+.ic-link {
+  &:before {
+    content: $ic-link; 
+  }
+}
+.ic-notification {
+  &:before {
+    content: $ic-notification; 
+  }
+}
+.ic-play {
+  &:before {
+    content: $ic-play; 
+  }
+}
+.ic-pause {
+  &:before {
+    content: $ic-pause; 
+  }
+}
+.ic-check {
+  &:before {
+    content: $ic-check; 
+  }
+}
+.ic-refresh {
+  &:before {
+    content: $ic-refresh; 
+  }
+}
+.ic-enter {
+  &:before {
+    content: $ic-enter; 
+  }
+}
+.ic-arrow-up {
+  &:before {
+    content: $ic-arrow-up; 
+  }
+}
+.ic-arrow-down {
+  &:before {
+    content: $ic-arrow-down; 
+  }
+}
+.ic-exit {
+  &:before {
+    content: $ic-exit; 
+  }
+}
+.ic-appearance {
+  &:before {
+    content: $ic-appearance; 
+  }
+}
+.ic-user {
+  &:before {
+    content: $ic-user; 
+  }
+}
+.ic-logs {
+  &:before {
+    content: $ic-logs; 
+  }
+}
+.ic-nodes {
+  &:before {
+    content: $ic-nodes; 
+  }
+}
+.ic-stats {
+  &:before {
+    content: $ic-stats; 
+  }
+}
+.ic-menu {
+  &:before {
+    content: $ic-menu; 
+  }
+}
+.ic-menu-fold {
+  &:before {
+    content: $ic-menu-fold; 
+  }
+}
+.ic-arrow-next {
+  &:before {
+    content: $ic-arrow-next; 
+  }
+}
+.ic-arrow-prev {
+  &:before {
+    content: $ic-arrow-prev; 
+  }
+}
+.ic-minimize {
+  &:before {
+    content: $ic-minimize; 
+  }
+}
+.ic-maximize {
+  &:before {
+    content: $ic-maximize; 
+  }
+}
+.ic-restore {
+  &:before {
+    content: $ic-restore; 
+  }
+}
+.ic-close {
+  &:before {
+    content: $ic-close; 
+  }
+}
+.ic-search {
+  &:before {
+    content: $ic-search; 
+  }
+}
+.ic-security {
+  &:before {
+    content: $ic-security; 
+  }
+}
+

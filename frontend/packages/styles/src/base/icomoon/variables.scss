@@ -1,6 +1,9 @@
 $icomoon-font-family: "icomoon" !default;
-$icomoon-font-path: "/public/fonts/icomoon/fonts" !default;
 
+$ic-home: "\e920";
+$ic-device: "\e921";
+$ic-setting: "\e922";
+$ic-network: "\e923";
 $ic-error: "\e91f";
 $ic-delete: "\e91e";
 $ic-install: "\e91d";
@@ -19,7 +22,6 @@ $ic-arrow-down: "\e913";
 $ic-exit: "\e911";
 $ic-appearance: "\e90e";
 $ic-user: "\e90d";
-$ic-setting: "\e90f";
 $ic-logs: "\e90a";
 $ic-nodes: "\e90b";
 $ic-stats: "\e90c";
