@@ -28,6 +28,7 @@ public static class OAuth
     {
         public const string GrantType = "grant_type";
         public const string Code = "code";
+        public const string CodeVerifier = "code_verifier";
         public const string ClientId = "client_id";
         public const string ClientAssertionType = "client_assertion_type";
         public const string ClientAssertion = "client_assertion";

@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
@@ -17,7 +18,8 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache)
     }
 
     public async Task<OAuthAuthorizationCode> CreateAuthorizationCodeAsync(
-        string clientId, int userId, string? scope, string redirectUri)
+        string clientId, int userId, string? scope, string redirectUri,
+        string? codeChallenge = null, string? codeChallengeMethod = null)
     {
         var code = new OAuthAuthorizationCode
         {
@@ -27,13 +29,17 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache)
             Scope = scope,
             ExpiresAt = DateTime.UtcNow.AddMinutes(1),
             RedirectUri = redirectUri,
+            CodeChallenge = codeChallenge,
+            CodeChallengeMethod = codeChallengeMethod,
         };
+        
         db.OAuthAuthorizationCodes.Add(code);
         await db.SaveChangesAsync();
         return code;
     }
-
-    public async Task<string?> ExchangeCodeAsync(string code, string clientId, string clientAssertion)
+    
+    public async Task<string?> ExchangeCodeAsync(
+        string code, string clientId, string? clientAssertion, string? codeVerifier)
     {
         var authCode = await db.OAuthAuthorizationCodes
             .FirstOrDefaultAsync(c => c.Code == code && c.ClientId == clientId);
@@ -41,18 +47,34 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache)
         if (authCode is null || authCode.ExpiresAt < DateTime.UtcNow)
             return null;
 
-        // Verify client_assertion (JWT signed by addon's private key)
-        var addon = await db.AddonInstallations.FirstOrDefaultAsync(a => a.ClientId == clientId);
-        if (addon?.PublicKey is null)
-            return null;
+        if (!string.IsNullOrEmpty(codeVerifier))
+        {
+            if (string.IsNullOrEmpty(authCode.CodeChallenge))
+                return null;
 
-        if (!VerifyClientAssertion(clientAssertion, addon.PublicKey, clientId))
-            return null;
+            if (authCode.CodeChallengeMethod != "S256")
+                return null;
 
-        // Delete used code
+            var challenge = Base64UrlEncode(SHA256.HashData(
+                Encoding.UTF8.GetBytes(codeVerifier)));
+            
+            if (!string.Equals(challenge, authCode.CodeChallenge, StringComparison.Ordinal))
+                return null;
+        }
+        else
+        {
+            if (string.IsNullOrEmpty(clientAssertion))
+                return null;
+            var addon = await db.AddonInstallations
+                .FirstOrDefaultAsync(a => a.ClientId == clientId);
+            if (addon?.PublicKey is null)
+                return null;
+            if (!VerifyClientAssertion(clientAssertion, addon.PublicKey, clientId))
+                return null;
+        }
+
         db.OAuthAuthorizationCodes.Remove(authCode);
 
-        // Create access token
         var token = new OAuthToken
         {
             TokenId = Guid.NewGuid().ToString("N"),
@@ -63,9 +85,9 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache)
         };
         db.OAuthTokens.Add(token);
         await db.SaveChangesAsync();
-
         return token.TokenId;
     }
+
     
     public async Task<string?> RegisterClientAsync(string token, string publicKeyPem)
     {
@@ -190,5 +212,13 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache)
         {
             return false;
         }
+    }
+    
+    private static string Base64UrlEncode(byte[] data)
+    {
+        return Convert.ToBase64String(data)
+            .TrimEnd('=')
+            .Replace('+', '-')
+            .Replace('/', '_');
     }
 }

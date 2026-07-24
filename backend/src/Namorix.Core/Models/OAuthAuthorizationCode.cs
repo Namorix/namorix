@@ -8,6 +8,9 @@ public class OAuthAuthorizationCode
     [MaxLength(200)]
     public string Code { get; init; } = string.Empty;
     
+    [MaxLength(500)] public string? CodeChallenge { get; init; }
+    [MaxLength(10)]  public string? CodeChallengeMethod { get; init; }
+    
     [MaxLength(100)] public string ClientId { get; init; } = string.Empty;
 
     public int UserId { get; init; }
