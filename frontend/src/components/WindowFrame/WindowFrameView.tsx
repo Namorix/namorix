@@ -1,6 +1,6 @@
 import React from "react"
 import type { WindowFrameViewProps } from "./WindowFrame.types"
-import { cx } from "@namorix/ui"
+import { cx, NmxSpinner } from "@namorix/ui"
 import { WindowResizeHandles } from "./WindowResizeHandles"
 import { WindowTitleBar } from "./WindowTitleBar"
 import { isMobile } from "@namorix/core"
@@ -12,8 +12,9 @@ export const WindowFrameView: React.FC<WindowFrameViewProps> = ({
   minimizeOrigin,
   maximizeVars,
   unmaximizeVars,
-  mountRef,
   frameRef,
+  mountRef,
+  isLoading,
   onFocus,
   onClose,
   onMinimize,
@@ -77,6 +78,11 @@ export const WindowFrameView: React.FC<WindowFrameViewProps> = ({
 
       <div className="nmx-window-frame__body">
         <div ref={mountRef} className="nmx-window-frame__mount"></div>
+        {isLoading && (
+          <div className="nmx-window-frame__loading">
+            <NmxSpinner size="lg" />
+          </div>
+        )}
         <WindowResizeHandles onResizeStart={onResizeStart} />
       </div>
     </div>

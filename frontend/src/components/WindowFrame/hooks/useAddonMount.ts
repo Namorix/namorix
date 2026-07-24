@@ -1,10 +1,11 @@
-import { useLayoutEffect, useRef } from "react"
+import { useLayoutEffect, useRef, useState } from "react"
 import { type AddonContext, resolveAddon } from "../../../addons"
 import { nmxStore } from "@namorix/core"
 import { store, type WindowId } from "../../../store"
 
 export const useAddonMount = (appId: WindowId) => {
   const mountRef = useRef<HTMLDivElement>(null)
+  const [isLoading, setIsLoading] = useState(false)
 
   useLayoutEffect(() => {
     const container = mountRef.current
@@ -17,7 +18,15 @@ export const useAddonMount = (appId: WindowId) => {
       store,
     }
 
-    addon.entry.mount(container, context)
+    const result = addon.entry.mount(container, context)
+    let aborted = false
+
+    if (result instanceof Promise) {
+      setIsLoading(true)
+      result.finally(() => {
+        if (!aborted) setIsLoading(false)
+      })
+    }
 
     if (import.meta.env.DEV) {
       setTimeout(() => {
@@ -37,6 +46,7 @@ export const useAddonMount = (appId: WindowId) => {
     }
 
     return () => {
+      aborted = true
       const entryToUnmount = addon.entry
       queueMicrotask(() => {
         entryToUnmount.unmount(container)
@@ -44,5 +54,5 @@ export const useAddonMount = (appId: WindowId) => {
     }
   }, [appId])
 
-  return { mountRef }
+  return { mountRef, isLoading }
 }

@@ -14,6 +14,7 @@ export interface WindowFrameViewProps {
   unmaximizeVars?: React.CSSProperties
   frameRef: React.RefObject<HTMLDivElement | null>
   mountRef: React.RefObject<HTMLDivElement | null>
+  isLoading?: boolean
   onFocus: () => void
   onClose: () => void
   onMinimize: () => void

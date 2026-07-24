@@ -26,7 +26,7 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ winId }) => {
   const frameRef = useRef<HTMLDivElement>(null)
   const { onTitleBarMouseDown } = useWindowDrag(winId, frameRef)
   const { onResizeStart } = useWindowResize(winId, frameRef)
-  const { mountRef } = useAddonMount(win?.item.id ?? winId)
+  const { mountRef, isLoading } = useAddonMount(win?.item.id ?? winId)
   const handlers = useWindowHandlers(winId, win, frameRef)
 
   if (!win) {
@@ -41,8 +41,9 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ winId }) => {
       minimizeOrigin={minimizeOrigin}
       maximizeVars={maximizeVars}
       unmaximizeVars={unmaximizeVars}
-      mountRef={mountRef}
       frameRef={frameRef}
+      mountRef={mountRef}
+      isLoading={isLoading}
       onFocus={handlers.onFocus}
       onClose={handlers.onClose}
       onMinimize={handlers.onMinimize}
