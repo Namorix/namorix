@@ -43,3 +43,19 @@ export function defineAddon(
     globalComponent,
   }
 }
+
+export function createMount(
+  Component: React.ComponentType<object>,
+): (container: HTMLElement) => () => void {
+  const rootMap = new WeakMap<HTMLElement, Root>()
+
+  return (container: HTMLElement) => {
+    const root = createRoot(container)
+    rootMap.set(container, root)
+    root.render(<Component />)
+    return () => {
+      root.unmount()
+      rootMap.delete(container)
+    }
+  }
+}

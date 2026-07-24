@@ -54,9 +54,19 @@ export class NmxI18n {
 
     return i18n
   }
+
+  loadAll(locales: Record<string, Record<string, unknown>>): this {
+    for (const [lang, data] of Object.entries(locales)) {
+      if (Object.values(NmxI18nLang).includes(lang as NmxI18nLang)) {
+        this.load(lang as NmxI18nLang, "translation", data)
+      }
+    }
+    return this
+  }
 }
 
 export * from "./types"
 export * from "./validation-messages"
 export * from "./validation-runner"
+export * from "./ensure"
 export { useTranslation } from "react-i18next"

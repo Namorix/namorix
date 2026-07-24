@@ -3,7 +3,7 @@ import type {
   AddonCatalogEntry,
   AddonStatusPayload,
   ExternalAddonManifest,
-} from "@namorix/core"
+} from "../../addons"
 
 export interface ExternalAddonsState {
   items: Record<string, ExternalAddonManifest>

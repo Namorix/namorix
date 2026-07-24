@@ -1,35 +1,22 @@
-import type {
-  AddonEntry,
-  AddonContext,
-  ExternalAddonManifest,
-} from "@namorix/core"
 import { loadRemote, registerRemotes } from "@module-federation/runtime"
-
-interface AddonModule {
-  mount(container: HTMLElement, context: AddonContext): () => void
-}
+import type { AddonEntry, ExternalAddonManifest } from "../addons"
 
 export function createExternalAddonEntry(
   manifest: ExternalAddonManifest,
 ): AddonEntry {
   let unmount: (() => void) | null = null
-
   return {
-    async mount(container: HTMLElement, context: AddonContext) {
+    async mount(container: HTMLElement, context) {
       const baseUrl = `http://localhost:${manifest.hostPort}`
       const remoteName = `addon_${manifest.id}`
-
-      console.log(baseUrl)
       registerRemotes([
         {
           name: remoteName,
           entry: `${baseUrl}/mf-manifest.json`,
         },
       ])
-
-      const Addon = (await loadRemote(`${remoteName}/Addon`)) as AddonModule
-
-      unmount = Addon.mount(container, context)
+      const Addon = await loadRemote(`${remoteName}/Addon`)
+      unmount = Addon.mount(container, { ...context, mode: "widget" })
     },
     unmount() {
       unmount?.()

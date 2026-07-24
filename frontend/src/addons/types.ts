@@ -96,14 +96,6 @@ export interface ExternalAddonManifest extends NmxAddonManifest {
   lastErrorCode?: string
 }
 
-export interface InstallAddonRequest {
-  image: string
-  port?: number
-  name?: string
-  description?: string
-  icon?: string
-}
-
 export interface AddonCatalogEntry {
   id: string
   name: string
@@ -134,9 +126,4 @@ export interface AddonStatusPayload {
   addonId: string
   status: AddonContainerStatus
   lastErrorCode?: string
-}
-
-export interface AddonPendingTaskPayload {
-  addonId: string
-  taskPhase: AddonPendingPhase | null
 }

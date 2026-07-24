@@ -11,12 +11,12 @@ export * from "./fingerprint"
 export * from "./types"
 export * from "./apiRoutes"
 export * from "./constants"
-export * from "./addon"
 export * from "./theme"
 export * from "./signalr"
 export * from "./store"
 export * from "./hooks"
 export * from "./toast"
 export * from "./notification"
+export * from "./createMount"
 
 initStores()
