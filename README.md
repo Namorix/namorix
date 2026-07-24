@@ -12,8 +12,8 @@ Browser-based desktop shell, self-hosted.
 
 - **Desktop Shell** — Window manager, taskbar, launcher, desktop icon shortcuts
 - **System Addons** — Built-in addons (About, NetworkTraffic, Log Viewer, Settings, SystemMonitor, File Manager, Terminal, Package Center) via addon contract
-- **External Addons** — Docker-based addons with 3 modes: widget DOM slot, full app via window.open, direct URL
-- **Centralized Auth** — Single auth server for shell and addons
+- **External Addons** — Docker-based addons with widget (Module Federation mount) and standalone (OAuth PKCE, own server) modes
+- **Centralized Auth** — Single auth server for shell and addons, OAuth2 authorization server (authorization_code + PKCE, client_credentials + private_key_jwt)
 
 ## Screenshots
 
@@ -27,11 +27,13 @@ Browser-based desktop shell, self-hosted.
 | Frontend | Vite + React |
 | Backend | ASP.NET Core 10 |
 | Database | SQLite + EF Core |
+| OAuth | authorization_code + PKCE (browser), client_credentials + private_key_jwt (server) |
+| Addon protocol | Module Federation (widget), OAuth2 standalone (full app) |
+| Server-to-server | gRPC (bidirectional streaming) |
+| Docker | Docker.DotNet |
 | Auth | JWT (access + refresh) with HttpOnly cookies |
 | Terminal | xterm.js |
 | Realtime | SignalR |
-| Server-to-server | gRPC (bidirectional streaming) |
-| Docker | Docker.DotNet |
 
 ## Quick Start
 
@@ -81,7 +83,6 @@ namorix/
 │   ├── packages/
 │   │   ├── core/             # @namorix/core — browser-only types, utils (publishable)
 │   │   │   └── src/
-│   │   │       ├── addon/    # AddonEntry, NmxAddonManifest, AddonContext, defineAddon()
 │   │   │       ├── auth/     # auth.service.ts (AuthChecker), store auto-populate
 │   │   │       ├── cache/    # useTabCache, Show component
 │   │   │       ├── env/      # Dev/prod config via package.json exports
@@ -89,6 +90,8 @@ namorix/
 │   │   │       ├── hooks/    # usePageSize, useLocalStorage
 │   │   │       ├── http/     # ApiError, http client with auto-refresh + CSRF, error types
 │   │   │       ├── i18n/     # NmxI18n, ValidationRunner, validation-messages
+│   │   │       ├── mount/    # createMount, AddonModeProvider, useIsStandalone, useIsWidget
+│   │   │       ├── oauth/    # PKCE browser client (authorizeRedirect, handleRedirectCallback)
 │   │   │       ├── router/   # GuardedRoute, createAuthGuard/LoginGuard/RegisterGuard
 │   │   │       ├── signalr/  # SignalR service, hooks (useSignalR, useSignalREvent, useSignalRGroup, useSignalRStatus), constants
 │   │   │       ├── store/    # nmxStore observable singleton, accessors (user, theme, registerEnabled, needsRegister)
@@ -141,15 +144,16 @@ namorix/
 │       │   ├── WindowFrame/  # Draggable, resizable window chrome (6 hooks)
 │       │   └── WindowManager.tsx  # Render all open windows by zOrder
 │       ├── config/windowDefaults.ts # CSS token cache (read from --nmx-*)
-│       ├── controllers/      # auth.controller, notification.controller, settings.controller, log.controller
+│       ├── controllers/      # auth.controller, addon.controller, notification.controller, health.controller
 │       ├── hooks/            # useTaskbarClock, useAppearanceSync, useNotificationEvents
 │       ├── i18n/locales/     # en.json, vi.json, notification/en.json, notification/vi.json
 │       ├── pages/            # Login, Register, Desktop, Blocked
+│       ├── services/         # externalAddonEntry (Module Federation loader)
 │       ├── store/            # Redux Toolkit
 │       │   ├── index.ts      # configureStore
 │       │   ├── hooks.ts      # useAppDispatch, useAppSelector (shallowEqual)
 │       │   ├── types.ts
-│       │   ├── slices/       # windowsSlice, launcherSlice, taskbarSlice, notificationsSlice
+│       │   ├── slices/       # windowsSlice, launcherSlice, taskbarSlice, notificationsSlice, externalAddonsSlice
 │       │   └── selectors/    # Memoized createSelector
 │       └── types/            # WindowId, WindowState, windowing types
 └── backend/                   # ASP.NET Core 10 API (port 5001)
@@ -177,10 +181,10 @@ namorix/
 
 | Package | Purpose | Importable By |
 |---------|---------|---------------|
-| `@namorix/core` | Types, auth guards, http client with auto-refresh + CSRF, `ApiError`, i18n (NmxI18n, ValidationRunner), SignalR hooks (useSignalR, useSignalREvent, useSignalRGroup, useSignalRStatus), store (nmxStore), theme, addon contract, fingerprint, cache (useTabCache, Show), hooks (usePageSize, useLocalStorage), toast (NmxToastBus), notification (NmxNotificationDto, SignalR events, API routes) | frontend, @namorix/ui, external addons |
+| `@namorix/core` | Types, auth guards, http client with auto-refresh + CSRF, `ApiError`, i18n (NmxI18n, ValidationRunner), SignalR hooks (useSignalR, useSignalREvent, useSignalRGroup, useSignalRStatus), store (nmxStore), theme, fingerprint, cache (useTabCache, Show), hooks (usePageSize, useLocalStorage), toast (NmxToastBus), notification (NmxNotificationDto, SignalR events, API routes), oauth (PKCE browser client — authorizeRedirect, handleRedirectCallback, getAccessToken), mount (createMount, AddonModeProvider, useIsStandalone, useIsWidget) | frontend, @namorix/ui, external addons |
 | `@namorix/styles` | SCSS tokens, reset, fonts, icomoon icons, component/layout SCSS (shared by all themes), shell-specific SCSS | frontend, @namorix/ui, external addons |
 | `@namorix/ui` | Primitives (NmxButton, NmxForm, NmxIcon, NmxInlineAlert, NmxToggle, NmxSelect, NmxSelectMultiple, NmxSlider, NmxSegmentedGroup, NmxBadge, NmxChip, NmxLoadingOverlay, NmxSpinner, NmxPagination, NmxPulseDot, NmxSearchInput, NmxStatCard, NmxTagInput) + Composite (NmxCard, NmxDataTable, NmxMetaList, NmxRail, NmxSettings, NmxToolbar, NmxAddon, NmxDialog, NmxAlertDialog, NmxToastProvider, NmxTabContext, NmxTabProvider) + NmxHostContext + Layouts (NmxHorizontalWrap, NmxGrid) | frontend |
-| `backend` | ASP.NET Core 10 API server (SignalR, flat file traffic + logs, SQLite, Log pipeline, FileLogger, ValidationFilter, CORS) | - |
+| `backend` | ASP.NET Core 10 API server: OAuth2 authorization server (authorization_code + PKCE, client_credentials + private_key_jwt), Docker addon lifecycle, gRPC bidirectional streaming, SignalR realtime, SQLite + EF Core, flat file traffic + logs, validation filter, CORS | - |
 | `frontend` | Vite React shell (Redux Toolkit, SignalR client, addon system) | - |
 
 ## Auth Architecture
@@ -230,26 +234,26 @@ public class AuthController(AuthService authService) : ControllerBase
 
 System addons (NetworkTraffic, Log Viewer, Settings, SystemMonitor) sử dụng chung addon contract với external addons:
 - **AddonEntry**: `mount(container, context)` / `unmount()` lifecycle
-- **NmxAddonManifest**: id, displayName, description?, icon?
-- **AddonContext**: addonId, locale, theme
+- **NmxAddonManifest**: id, name, description?, icon?, defaultWidth?, defaultHeight?, instanceMode?
+- **AddonContext**: addonId, nmxStore?, store?, isExternal?, sendCommand?
 
 Internal addons import tĩnh, bundle sẵn trong shell, full permission.
 
 ### External Addons (M4 — Docker)
 
-Addon có 3 mode tích hợp:
+Addon có 2 mode tích hợp:
 
 | Mode | Cách hoạt động | Auth |
 |------|----------------|------|
-| **Widget** | Addon frontend render trong DOM slot trên Dashboard, mount/unmount qua `addonEntry.js` contract (`mount(container, context)` / `unmount()`) | HttpOnly cookie (same-origin) |
-| **Full App** | Mở tab mới qua `window.open` từ Dashboard, addon dùng `nmx_handshake_token` để exchange lấy session | One-time token exchange |
-| **Direct URL** | User nhập URL addon → addon redirect về shell xin `nmx_handshake_token` → shell redirect lại addon kèm token → addon exchange lấy session | One-time token exchange (cùng flow mode 2) |
+| **Widget** | Addon frontend render trong desktop window qua Module Federation (`@module-federation/runtime`), share React + Redux store + theme cascade | HttpOnly cookie (same-origin, cùng DOM với desktop) |
+| **Standalone** | Addon chạy Docker container riêng, serve `index.html` riêng, user navigate trực tiếp tới `http://localhost:{port}` | OAuth2 authorization_code + PKCE — tự động redirect authorize, exchange token, lưu in-memory |
 
 ### Communication
 
-- **Server-to-server**: gRPC bidirectional streaming (Namorix Backend ↔ Addon Backend)
-- **Frontend realtime**: SignalR (Dashboard ↔ Namorix Backend, Addon Frontend ↔ Addon Backend)
-- **Shell ↔ Addon**: Event Bus (`@namorix/core`) — `shell:*` events và `addon:*` events (cùng JS context cho widget mode, postMessage cho full app mode)
+- **Server-to-server**: gRPC bidirectional streaming (Namorix Backend ↔ Addon Backend) cho widget event forward + heartbeat
+- **Frontend realtime**: SignalR (Desktop ↔ Namorix Backend)
+- **Shell ↔ Addon (Widget)**: Event Bus (`@namorix/core`) — `shell:*` events và `addon:*` events (cùng JS context)
+- **Standalone addon**: Chạy hoàn toàn độc lập, gọi REST API với access_token từ OAuth flow
 
 ## Environment Variables
 
@@ -289,5 +293,5 @@ Addon có 3 mode tích hợp:
 1. **M1** — Static shell UI + mock auth page ✅
 2. **M2** — Full auth backend (login/register/logout/refresh/session, decorators, i18n, validation) ✅
 3. **M3** — System Addons (Built-in): addon contract + registry, About, Log Viewer, NetworkTraffic (SignalR + flat file storage), SystemMonitor, Settings (Appearance/System/Account), theme system (hot swap CSS, server-driven), File Manager, Terminal, Package Center
-4. **M4** — External addon system: OAuth2 client_credentials, addon self-registration, gRPC bidirectional streaming (Phase 1) 🚧
+4. **M4** — External addon system: Docker lifecycle, OAuth2 (client_credentials + private_key_jwt + authorization_code + PKCE), gRPC bidirectional streaming, addon catalog sync, standalone mode, web UI ✅
 5. **M5** — @namorix/core publish npm + addon integration guide

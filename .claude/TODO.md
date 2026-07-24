@@ -1,5 +1,24 @@
 # TODO
 
+## NmxOAuth2Client — Block infinite retry on invalid_client
+
+**Context**: Khi DB backend bị reset (migration, xoá bảng), `AddonInstallations` mất record OAuth → `IssueClientCredentialsTokenAsync` trả về `400 invalid_client`. Addon retry vô hạn mỗi 5 giây vì `_cached` không bao giờ được set → spam DB query + log.
+
+**Approach**: 
+- `NmxOAuth2Client.GetAccessTokenAsync()` hoặc `EnsureSuccessAsync()` — detect `invalid_client` error, re-throw dạng permanent (không retry được) thay vì transient
+- `AddonHostedServiceBase.ConnectWithRetryAsync()` — phân biệt `NmxOAuthException` permanent vs transient:
+  - Permanent (invalid_client, không tìm thấy addon trong DB): dừng retry, set `_initialized = false`, log fatal, không retry nữa
+  - Transient (timeout, network error): retry như hiện tại
+- Optional: tự động re-register nếu phát hiện `invalid_client` → xoá `oauth.json` + gọi lại registration nếu có `NMX_REGISTRATION_TOKEN`
+
+**Files**:
+- `backend/src/Namorix.Core/OAuth/NmxOAuth2Client.cs` — thêm error classification
+- `backend/src/Namorix.Core/Grpc/AddonHostedServiceBase.cs` — phân biệt permanent/transient error
+
+**Note**: Cả `Namorix.Core` (OAuth client SDK) và `AddonHostedServiceBase` đều là shared code cho addon, không phải backend.
+
+---
+
 ## SignalR — Token refresh before reconnect
 
 **Context**: `signalr.service.ts` có `scheduleReconnect()` với exponential backoff nhưng chưa refresh access token trước khi reconnect. Khi cookie access token hết hạn, reconnect thất bại.
@@ -135,18 +154,6 @@
 - `backend/src/Namorix.Core/Config/AppConfig.cs` — optional: thêm ApiUrl
 
 **Status**: Deferred — chờ quyết định ApiUrl + OAuth approach.
-
----
-
-## External Addon — Loading overlay when mounting
-
-**Context**: Khi mở external addon, window hiển thị ngay nhưng nội dung cần thời gian load (fetch MF manifest, load remote entry). Hiện tại mount area trống cho đến khi load xong.
-
-**Approach**: Trong `createExternalAddonEntry.mount()`, hiển thị spinner loader (`nmx-spinner` CSS) trong container trước khi `loadRemote`, xóa khi mount hoàn tất.
-
-**Files**:
-- `frontend/src/services/externalAddonEntry.tsx` — thêm loader DOM element
-
 ## Upcoming Addons
 
 - Beam (media)

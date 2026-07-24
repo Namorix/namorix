@@ -103,7 +103,6 @@
 - [x] **NetworkTraffic backend Phase 1** — models, middleware, service, controller, workers, DI
 - [ ] Internal addon: File Manager (scaffold)
 - [ ] Internal addon: Terminal (scaffold)
-- [ ] Internal addon: Package Center (scaffold)
 - [x] Internal addon: Settings (includes theme picker UI)
 
 ### M4 — External Addon System (Docker)
@@ -137,12 +136,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.55.0 | M4 (Addon moved from core, closeWindowsByAddonId, external entry loading, port restructure) |
-| @namorix/core | 0.43.0 | M4 (createMount with AddonModeProvider, host hooks, ensureI18n, loadAll, tsup build) |
-| @namorix/styles | 0.38.0 | M4 (Icon font bundle restructure, relative font path) |
+| frontend | 0.55.1 | M4 (WindowFrame/useAddonMount OAuth context fixes) |
+| @namorix/core | 0.44.0 | M4 (OAuth browser client + createMount auto OAuth flow) |
+| @namorix/styles | 0.38.1 | M4 (rail/window SCSS fixes) |
 | @namorix/ui | 0.26.0 | M4 (ERROR icon symbol) |
-| Namorix.Core | 0.46.1 | M4 (Backend port default 5000→5001) |
-| Namorix.Server | 0.49.1 | M4 (Port defaults updated to new scheme) |
+| Namorix.Core | 0.47.0 | M4 (OAuth PKCE: CodeChallenge/CodeVerifier, OAuth constants) |
+| Namorix.Server | 0.50.0 | M4 (OAuth PKCE: authorize + token rewrite, session check) |
 
 ## Version Rules
 
@@ -248,7 +247,15 @@
 - @namorix/core 0.41.3 → 0.42.0: MODIFIED: `addon/types.ts` — `AddonContext.containerUrl` removed (dead code). `package.json` — tsup build setup for external addon consumption.
 - frontend 0.53.0 → 0.54.0: MODIFIED: `DesktopArea.tsx` — catalog port used as baseUrl when addon not running, `hostPort` when running. Error addons no longer filtered (shown disabled). MF entry registered via `createExternalAddonEntry` with `baseUrl`. `externalAddonEntry.ts` — accepts optional `baseUrl` param, removed `containerUrl`. `addon.controller.ts` — `AddonManifestDto` added `ports` field.
 
-### 2026-07-24 — Addon refactor, core modules, port restructure, external addon DX
+### 2026-07-24 (2) — OAuth PKCE standalone mode, createMount auto OAuth, M4 completion
+
+- @namorix/core 0.43.0 → 0.44.0: NEW: `oauth/` module — PKCE browser client (authorizeRedirect, handleRedirectCallback, getAccessToken, sha256 fallback, constants). MODIFIED: `mount/createMount.tsx` — auto OAuth flow on standalone mode (check URL callback → exchange token / redirect authorize). `mount/` folder with barrel export. `apiRoutes.ts` — ApiOAuthRoutes.
+- @namorix/styles 0.38.0 → 0.38.1: MODIFIED: `rail.scss` — layout fixes. `window.scss` — shell component tweaks. Theme CSS rebuilt.
+- frontend 0.55.0 → 0.55.1: MODIFIED: `useAddonMount.ts`, `WindowFrame.tsx`, `WindowFrameView.tsx`, `WindowFrame.types.ts` — OAuth context in AddonContext.
+- Namorix.Core 0.46.1 → 0.47.0: MODIFIED: `Models/OAuthAuthorizationCode.cs` — added CodeChallenge + CodeChallengeMethod fields. `Constants/OAuth.cs` — added CodeVerifier constant.
+- Namorix.Server 0.49.1 → 0.50.0: MODIFIED: `Controllers/OAuthController.cs` — authorize endpoint rewritten (session check, PKCE params, login redirect). Token endpoint supports code_verifier. `Services/OAuthService.cs` — CreateAuthorizationCodeAsync accepts codeChallenge params, ExchangeCodeAsync supports PKCE verification + client_assertion fallback.
+- REMOVED: `.claude/plans/m4-external-addon-system.md` — M4 complete.
+- README: Updated for M4 completion (features, external addons widget/standalone, milestones).
 
 - @namorix/core 0.42.0 → 0.43.0: NEW: `createMount.tsx` — wraps component with AddonModeProvider, 1-line mount for addons. NEW: `host.ts` — AddonModeProvider, useAddonMode, useIsWidget, useIsStandalone. NEW: `i18n/ensure.ts` — ensureI18n for external addons. MODIFIED: `i18n/index.ts` — new loadAll method. MODIFIED: `index.ts` — removed addon barrel, added createMount + host exports. REMOVED: `addon/` folder (moved to frontend).
 - @namorix/styles 0.37.0 → 0.38.0: MODIFIED: Icon font restructured — fonts moved into package `base/icomoon/fonts/`, relative path for Vite resolution. `index.scss` updated.

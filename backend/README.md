@@ -1,20 +1,21 @@
 # Namorix Backend
 
-ASP.NET Core 8 API server for the Namorix desktop shell. Handles authentication, addon backend communication, flat file storage for traffic/logs, SignalR realtime events, and security middleware.
+ASP.NET Core 10 API server for the Namorix desktop shell. Handles authentication, OAuth2 authorization server, addon Docker lifecycle, gRPC bidirectional streaming, SignalR realtime events, flat file storage for traffic/logs, and security middleware.
 
 ## Tech Stack
 
 | Component | Technology |
 |-----------|------------|
-| Runtime | .NET 8 |
-| Framework | ASP.NET Core 8 |
+| Runtime | .NET 10 |
+| Framework | ASP.NET Core 10 |
 | ORM | Entity Framework Core |
 | Database | SQLite |
 | JWT | System.IdentityModel.Tokens.Jwt |
 | Password | BCrypt.Net-Next |
 | Realtime | SignalR |
-| Server-to-server | gRPC (planned) |
-| Docker | Docker.DotNet.Enhanced (planned) |
+| Server-to-server | gRPC (bidirectional streaming) |
+| Docker | Docker.DotNet |
+| Addon protocol | Module Federation (widget), OAuth2 standalone (full app) |
 
 ## Quick Start
 
@@ -32,40 +33,56 @@ dotnet watch run
 make watch
 ```
 
-Server runs at `http://localhost:3000` (default).
+Server runs at `http://localhost:5001` (REST API + SignalR) and `http://localhost:5002` (gRPC).
 
 ## Project Structure
 
 ```
 backend/
 ├── Makefile                          # Build/EF shortcuts
-├── Namorix.sln                       # Solution file (4 projects)
+├── Namorix.sln                       # Solution file
+├── Directory.Build.props             # Shared build properties
+├── Directory.Packages.props          # Centralized package management
 └── src/
-    ├── Namorix.Core/                 # Shared infrastructure
+    ├── Namorix.Core/                 # Shared infrastructure (class library)
     │   ├── Attributes/
-    │   │   └── TrafficMonitorAttribute.cs  # Action filter for traffic monitoring
+    │   │   └── TrafficMonitorAttribute.cs
     │   ├── Config/
     │   │   ├── AppConfig.cs          # Root config (CsrfEnabled, SecureCookie, AllowedOrigins)
-    │   │   └── JwtConfig.cs          # JWT settings (Secret, Issuer, Audience, expiration)
+    │   │   ├── BackendConfig.cs      # Backend port, container/network name, registration token TTL
+    │   │   ├── JwtConfig.cs          # JWT settings (Secret, Issuer, Audience, expiration)
+    │   │   └── AddonCatalogConfig.cs # Catalog URL, TTL, sync interval
     │   ├── Constants/
-    │   │   ├── Auth.cs               # AuthConstraints (username/password/email/name min/max length, patterns)
-    │   │   ├── Cookie.cs             # Cookie names (nmx_access_token, nmx_refresh_token, nmx_csrf_token)
-    │   │   ├── Error.cs              # Error codes (HttpErrorCodes, AuthErrorCodes, MiddlewareErrorCodes, ValidationErrorCodes)
+    │   │   ├── Auth.cs               # AuthConstraints (username/password/email/name rules)
+    │   │   ├── Cookie.cs             # Cookie names
+    │   │   ├── Docker.cs             # Docker event/state/filter constants + labels
+    │   │   ├── Error.cs              # Error codes (Http, Auth, Middleware, Validation, Addon, OAuth)
+    │   │   ├── ExemptPaths.cs        # Middleware bypass paths for OAuth
     │   │   ├── Http.cs               # HttpContextKeys
-    │   │   ├── Jwt.cs                # JwtClaims (UserId, Username, Role, Jti, Iat)
-    │   │   ├── Routes.cs             # API route constants
+    │   │   ├── HttpHeaders.cs        # Header names
+    │   │   ├── Jwt.cs                # JWT claims
+    │   │   ├── Log.cs                # Log level constants
+    │   │   ├── Notification.cs       # Notification type keys
+    │   │   ├── OAuth.cs              # OAuth grant types, env vars, defaults
     │   │   ├── Settings.cs           # SettingKeys, AppearanceSettingKeys, AppearanceDefaults
+    │   │   ├── SignalR.cs            # SignalR hub routes, event names
+    │   │   ├── Time.cs               # Time constants
+    │   │   ├── User.cs               # Role constants
     │   │   └── Validation.cs         # ValidationMeta
     │   ├── Controllers/
-    │   │   └── LogController.cs      # Log query with level/source filters, pagination
+    │   │   ├── LogController.cs      # Log query with level/source filters, pagination
+    │   │   └── TrafficMonitorController.cs  # Traffic stats query
+    │   ├── Data/
+    │   │   └── AppearanceOptionsData.cs  # Static valid appearance options
     │   ├── Exceptions/
     │   │   └── AuthException.cs      # Custom exception with error code
     │   ├── Extensions/
-    │   │   ├── ApplicationBuilderExtensions.cs  # Core middleware pipeline
+    │   │   ├── ApplicationBuilderExtensions.cs  # Core middleware pipeline wrapper
     │   │   └── ServiceCollectionExtensions.cs   # DI registration + DbContext + SignalR + CSRF + ValidationFilter
     │   ├── Filters/
     │   │   ├── TrafficLogFilter.cs
     │   │   ├── TrafficLogFilterParser.cs
+    │   │   ├── TrafficMonitorFilter.cs
     │   │   └── ValidationFilter.cs   # Global action filter replacing auto-400 model binding
     │   ├── FlatFile/
     │   │   ├── FlatFileOptions.cs
@@ -74,24 +91,28 @@ backend/
     │   │   ├── IFlatFileStore.cs
     │   │   ├── LogEntrySerializer.cs
     │   │   └── TrafficLogSerializer.cs
+    │   ├── Grpc/
+    │   │   ├── AddonChannelClient.cs             # gRPC client with OAuth2 token + duplex stream
+    │   │   ├── AddonChannelClientExtensions.cs   # DI registration for gRPC client
+    │   │   └── RetryConnectHostedService.cs      # Auto-reconnect base class
     │   ├── Helpers/
     │   │   └── NetworkHelper.cs
     │   ├── Hubs/
     │   │   ├── HubContextExtensions.cs
-    │   │   ├── NmxHub.cs             # SignalR hub for log/traffic/status events
+    │   │   ├── NmxHub.cs             # Base SignalR hub
     │   │   ├── NmxHubFilter.cs       # Hub connection filter (auth + error handling)
     │   │   ├── SignalRLogNotifier.cs
-│   │   ├── SignalRNotificationNotifier.cs
+    │   │   ├── SignalRNotificationNotifier.cs
     │   │   ├── SignalRSystemNotifier.cs
     │   │   ├── SignalRTrafficNotifier.cs
-    │   │   └── SignalRUserSettingsNotifier.cs  # Sends user:settings-changed
+    │   │   └── SignalRUserSettingsNotifier.cs
     │   ├── Infrastructure/
     │   │   ├── CountingStream.cs
     │   │   ├── ILogNotifier.cs
-│   │   ├── INotificationNotifier.cs
+    │   │   ├── INotificationNotifier.cs
     │   │   ├── ISystemNotifier.cs
     │   │   ├── ITrafficNotifier.cs
-    │   │   ├── IUserSettingsNotifier.cs  # User settings change notification
+    │   │   ├── IUserSettingsNotifier.cs
     │   │   ├── LogBuffer.cs
     │   │   ├── SignalREvents.cs
     │   │   └── TrafficBuffer.cs
@@ -99,91 +120,122 @@ backend/
     │   │   └── DataDirectory.cs
     │   ├── Logger/
     │   │   ├── FileLogger.cs
-    │   │   └── FileLoggerProvider.cs  # Custom ILoggerProvider for file output
+    │   │   └── FileLoggerProvider.cs
     │   ├── Middleware/
-    │   │   ├── CsrfMiddleware.cs     # Double-submit CSRF protection
-    │   │   ├── ExceptionMiddleware.cs# Global exception handler
-    │   │   ├── JsonErrorMiddleware.cs# Consistent JSON error responses
-    │   │   ├── NotFoundMiddleware.cs # Catch-all 404 handler
+    │   │   ├── CsrfMiddleware.cs           # Double-submit CSRF protection
+    │   │   ├── ExceptionMiddleware.cs      # Global exception handler
+    │   │   ├── JsonErrorMiddleware.cs      # Consistent JSON error responses
+    │   │   ├── NotFoundMiddleware.cs       # Catch-all 404 handler
     │   │   ├── RequireAdminAttribute.cs
     │   │   ├── RequireAuthAttribute.cs
-    │   │   ├── SecurityHeadersMiddleware.cs
-    │   │   └── TrafficMonitorMiddleware.cs
+    │   │   └── SecurityHeadersMiddleware.cs
     │   ├── Models/
-    │   │   ├── AddonManifest.cs      # Addon metadata (for M4)
-│   │   ├── Notification.cs       # Notification entity (i18n key+params)
+    │   │   ├── AddonInstallation.cs    # Installed addon (Docker container reference)
+    │   │   ├── Notification.cs         # Notification entity (i18n key + params)
+    │   │   ├── OAuthAuthorizationCode.cs  # PKCE authorization code
+    │   │   ├── OAuthConsent.cs         # User consent record
+    │   │   ├── OAuthRegistration.cs    # Addon self-registration token
+    │   │   ├── OAuthToken.cs           # Issued OAuth token
     │   │   ├── Permission.cs
-    │   │   ├── RefreshToken.cs       # Refresh token entity
-    │   │   ├── Setting.cs            # Key-value settings entity
-    │   │   ├── ThemeManifest.cs      # Theme metadata (id, name, css, tags, IsBuiltIn)
-    │   │   ├── User.cs               # User entity (includes ThemeId)
-    │   │   └── UserPermission.cs
+    │   │   ├── RefreshToken.cs         # Refresh token entity
+    │   │   ├── Setting.cs              # Key-value settings entity
+    │   │   ├── ThemeManifest.cs        # Theme metadata (name, css, tags, isBuiltIn)
+    │   │   ├── User.cs                 # User entity (includes ThemeId)
+    │   │   ├── UserPermission.cs
+    │   │   └── UserSetting.cs          # Per-user appearance settings
+    │   ├── OAuth/
+    │   │   ├── NmxAddonConfig.cs            # Addon-side env var config
+    │   │   ├── NmxOAuth2Client.cs           # Addon self-registration + token caching
+    │   │   ├── NmxOAuth2ServiceCollectionExtensions.cs  # DI extension
+    │   │   ├── OAuthResponse.cs             # Token/error response DTOs
+    │   │   ├── OAuthEndpoints.cs            # Endpoint URL constants
+    │   │   └── NmxOAuthException.cs
+    │   ├── Protos/
+    │   │   └── addon_channel.proto          # gRPC bidirectional streaming definition
     │   ├── Responses/
-    │   │   └── ApiResponse.cs        # Typed ApiResponse<T>
+    │   │   └── ApiResponse.cs               # Typed ApiResponse<T>
     │   ├── Services/
-    │   │   ├── LogService.cs         # Flat file log query service
-    │   │   └── TrafficMonitorService.cs  # Traffic data collection + aggregation
+    │   │   ├── LogService.cs                # Flat file log query service
+    │   │   └── TrafficMonitorService.cs     # Traffic data collection + aggregation
     │   ├── Validation/
     │   │   ├── IValidationSchema.cs
     │   │   ├── ValidateAttribute.cs
     │   │   ├── ValidationRule.cs
     │   │   └── Schemas/
     │   │       ├── LoginSchema.cs
-    │   │       └── RegisterSchema.cs
-    │   └── Workers/                  # Background services (registered via AddNamorixCore)
+    │   │       ├── RegisterSchema.cs
+    │   │       ├── ChangePasswordSchema.cs
+    │   │       ├── SetSettingsSchema.cs     # Appearance settings DTO + validation
+    │   │       └── UpdateProfileSchema.cs
+    │   └── Workers/
+    │       ├── LogCleanupWorker.cs
     │       ├── LogFlushWorker.cs
     │       ├── TrafficCleanupWorker.cs
     │       ├── TrafficFlushWorker.cs
     │       └── TrafficStatsWorker.cs
-    ├── Namorix.Core/
-    │   ├── Infrastructure/
-    │   │   ├── IUserSettingsNotifier.cs  # User settings change notification
-    │   │   └── SignalRUserSettingsNotifier.cs  # Sends `user:settings-changed` via SignalR
-    │   ├── Validation/
-    │   │   └── Schemas/
-    │   │       ├── SetSettingsSchema.cs  # Appearance settings DTO + validation rules
-    │   │       ├── UpdateProfileSchema.cs  # Profile update validation
-    │   │       ├── ChangePasswordSchema.cs  # Password change validation
-    │   │       ├── LoginSchema.cs
-    │   │       └── RegisterSchema.cs
-    │   └── Data/
-    │       └── AppearanceOptionsData.cs  # Static valid appearance options
-    └── Namorix.Server/               # Persistence + Services + API + Workers
-        ├── Migrations/               # EF Core migrations
+    └── Namorix.Server/               # Web app — Persistence + Services + API + Workers
+        ├── Program.cs                # App startup, Kestrel config (2 ports), DI, middleware
         ├── Persistence/
         │   └── AppDbContext.cs       # EF Core DbContext
-        ├── Services/
-        │   ├── AuthService.cs        # Login, Register, RefreshToken, RevokeToken, VerifyAccessToken
-        │   ├── PermissionService.cs  # User permission management
-        │   ├── SettingsService.cs    # IsRegisterEnabled, GetTrustedProxies, AllowedOrigins, GetAppearanceDefaults
-        │   ├── UserSettingsService.cs  # User appearance settings (IMemoryCache)
-        │   ├── ThemeService.cs       # Built-in theme list (light + dark)
-        │   ├── NotificationService.cs  # Notification CRUD, pagination, SignalR push
-        │   └── UserService.cs        # User CRUD (including email, name)
-        ├── Controllers/
-        │   ├── AuthController.cs     # 7 auth endpoints (login, register, logout, session, refresh, status)
-        │   ├── HealthController.cs   # Health check endpoint
-        │   ├── SettingsController.cs # System settings + appearance defaults + options
-        │   ├── ThemeController.cs    # Theme list query
-        │   ├── UserController.cs     # Profile, password, settings (all validated)
-        │   ├── NotificationController.cs  # Notification list, unread, mark read, delete
-        │   └── ...
-        ├── Workers/
-        │   ├── TokenCleanupWorker.cs     # Cleans expired tokens every 24h
-        │   ├── LogCleanupWorker.cs       # Cleans old log files
-        │   └── SystemMonitorStatsWorker.cs  # System metrics collection
-        ├── Hubs/
-        │   ├── NmxHub.cs             # Base SignalR hub
-        │   └── MainHub.cs            # Real-time events (system stats, notifications)
+        ├── Migrations/               # EF Core migrations
+        ├── Constants/
+        │   ├── Addon.cs              # Addon task phase constants, error codes
+        │   └── ServerSignalR.cs      # Server-specific SignalR event names
         ├── Extensions/
         │   └── ApplicationBuilderExtensions.cs  # Server middleware pipeline wrapper
         ├── Middleware/
-        │   ├── AuthMiddleware.cs     # Session validation
+        │   ├── AuthMiddleware.cs         # Session validation
+        │   ├── OAuth2Middleware.cs       # OAuth bearer token validation (private_key_jwt)
         │   ├── RequirePermissionAttribute.cs
         │   └── TrustedProxyMiddleware.cs
-        ├── Program.cs
-        ├── appsettings.json
-        └── appsettings.Development.json
+        ├── Hubs/
+        │   ├── MainHub.cs               # Real-time events (system stats, addon, notifications)
+        │   ├── SignalRAddonNotifier.cs
+        │   └── SignalRSystemMonitorNotifier.cs
+        ├── Infrastructure/
+        │   ├── IAddonNotifier.cs
+        │   └── ISystemMonitorNotifier.cs
+        ├── Models/
+        │   ├── AddonCatalogEntry.cs  # Cached catalog entry
+        │   ├── AddonTask.cs          # Background task state for addon operations
+        │   └── Catalog/              # Catalog DTOs
+        │       ├── AddonManifestDto.cs
+        │       ├── CatalogIndex.cs
+        │       └── PortDto.cs
+        ├── Services/
+        │   ├── AuthService.cs           # Login, Register, RefreshToken, RevokeToken, VerifyAccessToken
+        │   ├── PermissionService.cs     # User permission management
+        │   ├── SettingsService.cs       # System settings, appearance defaults, trusted proxies
+        │   ├── UserSettingsService.cs   # User appearance settings (IMemoryCache)
+        │   ├── ThemeService.cs          # Built-in theme list
+        │   ├── NotificationService.cs   # Notification CRUD, pagination, SignalR push
+        │   ├── UserService.cs           # User CRUD (email, name, password)
+        │   ├── DockerService.cs         # Docker containers, images, networks via Unix socket
+        │   ├── AddonService.cs          # Addon installation CRUD
+        │   ├── AddonTaskQueue.cs        # Channel-based task queue for addon operations
+        │   ├── AddonTaskExecutor.cs     # Start/Stop/Uninstall with Docker calls + status updates
+        │   ├── CatalogService.cs        # Catalog index fetch + manifest sync + TTL caching
+        │   ├── OAuthService.cs          # OAuth2 authorization server (authorization_code + PKCE, client_credentials + private_key_jwt)
+        │   ├── AddonChannelManager.cs   # gRPC channel connection tracking (ConcurrentDictionary)
+        │   └── Grpc/
+        │       └── AddonChannelService.cs  # gRPC bidirectional stream handler + interceptor auth
+        ├── Controllers/
+        │   ├── AuthController.cs        # 7 auth endpoints (login, register, logout, session, refresh, status, logout-all)
+        │   ├── HealthController.cs      # Health check endpoint
+        │   ├── SettingsController.cs    # System settings + appearance defaults + options
+        │   ├── ThemeController.cs       # Theme list
+        │   ├── UserController.cs        # Profile, password, settings (all validated)
+        │   ├── PermissionController.cs  # User permission management
+        │   ├── UserPermissionController.cs
+        │   ├── NotificationController.cs  # Notification list, unread, mark read, delete
+        │   ├── OAuthController.cs       # OAuth2 endpoints (authorize, token, revoke)
+        │   └── AddonController.cs       # Addon install/start/stop/uninstall/list/catalog
+        └── Workers/
+            ├── TokenCleanupWorker.cs            # Cleans expired tokens every 24h
+            ├── LogCleanupWorker.cs               # Cleans old log files
+            ├── SystemMonitorStatsWorker.cs       # System metrics collection (CPU, memory, disk, IO, network)
+            ├── DockerMonitorWorker.cs             # Docker event stream + container health checks + orphan cleanup
+            └── CatalogSyncWorker.cs               # Background catalog sync with retry
 ```
 
 ## API Endpoints
@@ -196,7 +248,7 @@ backend/
 | POST | `/api/auth/register` | Register new user. Body: `{ username, password, email, name }` |
 | POST | `/api/auth/logout` | Clear cookies, revoke refresh token |
 | POST | `/api/auth/logout-all` | Revoke all refresh tokens for current user |
-| GET | `/api/auth/session` | Validate access token, return user info (auto-refresh if expired) |
+| GET | `/api/auth/session` | Validate access token, return user info |
 | POST | `/api/auth/refresh` | Rotate tokens (fingerprint + IP check) |
 | GET | `/api/auth/status` | Return `{ needsRegister, registerEnabled }` |
 
@@ -215,7 +267,7 @@ backend/
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | GET | `/api/user/settings` | RequireAuth | Get user's appearance settings |
-| PUT | `/api/user/settings` | RequireAuth | Save user appearance settings (validated via SetSettingsSchema) |
+| PUT | `/api/user/settings` | RequireAuth | Save user appearance settings (validated) |
 | PUT | `/api/user/profile` | RequireAuth | Update email + name (validated) |
 | PUT | `/api/user/password` | RequireAuth | Change password |
 
@@ -226,15 +278,35 @@ backend/
 | GET | `/api/notifications` | RequireAuth | List notifications (paginated: `page`, `pageSize`) |
 | GET | `/api/notifications/unread-count` | RequireAuth | Get unread notification count |
 | POST | `/api/notifications/{id}/read` | RequireAuth | Mark notification as read |
-| POST | `/api/notifications/read-all` | RequireAuth | Mark all notifications as read |
+| POST | `/api/notifications/read-all` | RequireAuth | Mark all as read |
 | DELETE | `/api/notifications/{id}` | RequireAuth | Delete a notification |
 
 ### Permission (`/api/permission`)
 
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/permission/user/{userId}` | RequireAuth | Get permissions for a user |
+| PUT | `/api/permission/user/{userId}` | RequireAuth | Set user permissions |
+
+### OAuth (`/api/oauth`) — Authorization Server
+
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/api/permission/user/{userId}` | Get permissions for a user |
-| PUT | `/api/permission/user/{userId}` | Set user permissions |
+| GET | `/api/oauth/authorize` | Authorize endpoint (PKCE + session check) |
+| POST | `/api/oauth/token` | Token endpoint (authorization_code + client_credentials) |
+| POST | `/api/oauth/revoke` | Revoke OAuth token + disconnect gRPC channel |
+
+### Addon (`/api/addon`)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/addon` | RequireAuth | List installed addons |
+| POST | `/api/addon/install` | RequireAuth | Install addon from Docker image |
+| POST | `/api/addon/{id}/start` | RequireAuth | Start addon container |
+| POST | `/api/addon/{id}/stop` | RequireAuth | Stop addon container |
+| POST | `/api/addon/{id}/remove` | RequireAuth | Uninstall addon |
+| GET | `/api/addon/catalog` | RequireAuth | Get cached addon catalog |
+| POST | `/api/addon/catalog/sync` | RequireAuth | Refresh catalog from remote |
 
 ### Health (`/api/health`)
 
@@ -242,37 +314,47 @@ backend/
 |--------|------|-------------|
 | GET | `/api/health` | Health check |
 
-> All endpoints except health, login, register, and status require authentication.
-
-### Addon (Planned — M4)
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/addon` | List installed addons |
-| POST | `/api/addon/install` | Install new addon from Docker image |
-| POST | `/api/addon/{id}/start` | Start addon container |
-| POST | `/api/addon/{id}/stop` | Stop addon container |
-| POST | `/api/addon/{id}/remove` | Remove addon container |
-| POST | `/api/addon/handshake` | Exchange addon secret for AddonToken |
-| POST | `/api/addon/session-exchange` | Exchange one-time nmx_handshake_token for session |
-| GET | `/api/addon/{id}/stream` | SSE stream for widget events |
-| POST | `/api/addon/{id}/command` | Send command to addon |
+> All endpoints except health, login, register, status, and some OAuth paths require authentication.
 
 ## Middleware Pipeline
 
-Thứ tự middleware trong `Program.cs`:
+Thứ tự middleware trong `Program.cs` (Kestrel 2-port: REST API + SignalR on 5001, gRPC on 5002):
 
+### REST Pipeline (port 5001)
 ```
-CORS → SecurityHeaders → TrustedProxy → Routing → CSRF → ExceptionMiddleware → Controllers
+CORS → SecurityHeaders → TrustedProxy → Routing → CSRF → JsonError → Exception → Controllers
 ```
 
-- **CORS**: Allow any origin + credentials (cho dev). AllowedOrigins from config + DB for production.
+- **CORS**: Allow any origin + credentials (dev). `AllowedOrigins` from config + DB for production.
 - **SecurityHeaders**: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection: 1; mode=block`, `Referrer-Policy: strict-origin-when-cross-origin`.
-- **TrustedProxy**: Chỉ trust `X-Forwarded-For` từ IP trong trusted list (Settings DB). Block request từ untrusted proxy với 400.
-- **CSRF**: Double-submit pattern — so sánh `nmx_csrf_token` cookie với `X-CSRF-Token` header trên mutating methods (disabled by default).
-- **JsonErrorMiddleware + ExceptionMiddleware**: Chuyển lỗi thành JSON format đồng nhất.
-- **ValidationFilter**: Global action filter — validates request body via schema attributes, returns structured error JSON.
-- **TrafficMonitorMiddleware**: Ghi lại traffic stats (request count, bytes) vào flat file.
+- **TrustedProxy**: Chỉ trust `X-Forwarded-For` từ IP trong trusted list (Settings DB). Block untrusted proxy với 400.
+- **CSRF**: Double-submit pattern — `nmx_csrf_token` cookie vs `X-CSRF-Token` header (disabled by default).
+- **JsonErrorMiddleware + ExceptionMiddleware**: Convert errors to uniform JSON format.
+- **ValidationFilter**: Global action filter — validates request body via schema attributes.
+- **AuthMiddleware**: Session validation from HttpOnly cookies.
+- **OAuth2Middleware**: Bearer token validation (private_key_jwt) for addon-to-server requests.
+
+### gRPC Pipeline (port 5002)
+```
+gRPC → AddonChannelService → AddonChannelManager
+```
+
+## OAuth2 Authorization Server
+
+Namorix backend acts as a full OAuth2 authorization server supporting:
+
+| Grant Type | Usage | Details |
+|-----------|-------|---------|
+| `authorization_code` + PKCE | Browser (standalone addon) | `S256` code challenge, session-based authorize, code exchange with `code_verifier` |
+| `client_credentials` + `private_key_jwt` | Server-to-server (addon backend) | RS256 signed JWT client assertion, token caching |
+
+Flow:
+```
+1. Browser → GET /api/oauth/authorize?client_id=&redirect_uri=&response_type=code&code_challenge=S256
+2. Server validates session, creates authorization code → redirect to addon with ?code=
+3. Addon → POST /api/oauth/token with code + code_verifier → receives access_token
+4. Addon uses Bearer token for API requests (validated by OAuth2Middleware)
+```
 
 ## Configuration
 
@@ -285,26 +367,34 @@ CORS → SecurityHeaders → TrustedProxy → Routing → CSRF → ExceptionMidd
   },
   "Jwt": {
     "Secret": "<your-secret>",
-    "AccessTokenExpirationMinutes": 5,
+    "AccessTokenExpirationSeconds": 900,
     "RefreshTokenExpirationDays": 7
   }
 }
 ```
 
-### Environment Variables (override appsettings)
+### Environment Variables (override appsettings — `__` separator for hierarchy)
 
 | Variable | Config Path | Default | Description |
 |----------|-------------|---------|-------------|
 | `JWT__Secret` | Jwt.Secret | (required) | JWT signing key |
-| `JWT__AccessTokenExpirationMinutes` | Jwt.AccessTokenExpirationMinutes | 15 | Access token TTL |
+| `JWT__AccessTokenExpirationSeconds` | Jwt.AccessTokenExpirationSeconds | 900 | Access token TTL |
 | `JWT__RefreshTokenExpirationDays` | Jwt.RefreshTokenExpirationDays | 7 | Refresh token TTL |
 | `JWT__RefreshTokenExpirationDaysRemember` | Jwt.RefreshTokenExpirationDaysRemember | 90 | Remember-me TTL |
+| `JWT__Issuer` | Jwt.Issuer | `Namorix` | JWT issuer claim |
+| `JWT__Audience` | Jwt.Audience | `Namorix` | JWT audience claim |
 | `ConnectionStrings__DefaultConnection` | ConnectionStrings.DefaultConnection | `Data Source=namorix.db` | SQLite connection string |
-| `AppConfig__CsrfEnabled` | AppConfig.CsrfEnabled | false | Enable CSRF protection (`true` = CSRF check enabled) |
+| `AppConfig__CsrfEnabled` | AppConfig.CsrfEnabled | false | Enable CSRF protection |
 | `AppConfig__SecureCookie` | AppConfig.SecureCookie | false | Set true for HTTPS |
-| `AppConfig__AllowedOrigins` | AppConfig.AllowedOrigins | (empty) | Comma-separated CORS origins; empty = allow all (trusted proxy mode) |
-
-> .NET uses `__` (double underscore) as separator for hierarchy in env vars.
+| `AppConfig__AllowedOrigins` | AppConfig.AllowedOrigins | (empty) | Comma-separated CORS origins; empty = allow all |
+| `Backend__Port` | Backend.Port | 5001 | Backend listen port |
+| `Backend__ContainerName` | Backend.ContainerName | `namorix-server` | Docker container name |
+| `Backend__NetworkName` | Backend.NetworkName | `namorix-net` | Docker network name |
+| `Backend__RegistrationTokenTtlMinutes` | Backend.RegistrationTokenTtlMinutes | 60 | Addon registration token TTL |
+| `AddonCatalog__CatalogUrl` | AddonCatalog.CatalogUrl | (see appsettings) | Catalog manifest URL |
+| `AddonCatalog__TtlSeconds` | AddonCatalog.TtlSeconds | 3600 | Catalog cache TTL |
+| `AddonCatalog__SyncIntervalSeconds` | AddonCatalog.SyncIntervalSeconds | 3600 | Catalog sync interval |
+| `AddonCatalog__RetryDelaySeconds` | AddonCatalog.RetryDelaySeconds | 60 | Catalog sync retry delay |
 
 ## Database
 
@@ -313,14 +403,20 @@ SQLite database file (`namorix.db`), tạo tự động khi chạy migrations.
 ### Models
 
 - **User** — `id`, `username`, `password`, `role`, `email`, `name`, `createdAt`
-- **RefreshToken** — `jti`, `userId`, `tokenHash`, `userAgent`, `fingerprint`, `ipAddress`, `lastUsedAt`, `expiresAt`
-- **Setting** — `id`, `key` (PK), `value`
+- **RefreshToken** — `jti`, `userId`, `tokenHash`, `userAgent`, `fingerprint`, `ipAddress`, `lastUsedAt`, `expiresAt`, `rememberMe`
+- **Setting** — `id`, `key` (PK), `value` (JSON)
 - **UserSetting** — `id`, `userId`, `key`, `value` (appearance settings per user)
 - **Permission** — `id`, `name`, `description`
 - **UserPermission** — `userId`, `permissionId`
 - **ThemeManifest** — `id`, `name`, `version`, `author`, `description`, `preview`, `cssPath`, `tags`, `isBuiltIn`
-- **AddonManifest** — `id`, `name`, `description`, `icon` (for M4)
-- **Notification** — `id`, `userId`, `type`, `titleKey`, `descriptionKey?`, `params?`, `source?`, `isRead`, `createdAt`
+- **Notification** — `id`, `userId`, `type`, `key`, `params?`, `source?`, `icon?`, `occurrences`, `lastOccurredAt`, `isRead`, `createdAt`
+- **AddonInstallation** — `id`, `addonId`, `name`, `description`, `icon`, `image`, `hostPort`, `containerId`, `status`, `version`, `author`, `ports`, `installedAt`
+- **AddonCatalogEntry** — `id`, `addonId`, `name`, `description`, `version`, `author`, `image`, `ports`, `boot`, `minCoreVersion`, `manifestUrl`, `cachedAt`
+- **AddonTask** — `id`, `addonId`, `taskType`, `status`, `createdAt`, `completedAt`
+- **OAuthAuthorizationCode** — `id`, `code`, `clientId`, `userId`, `scope`, `redirectUri`, `codeChallenge`, `codeChallengeMethod`, `expiresAt`
+- **OAuthToken** — `id`, `tokenId`, `clientId`, `userId`, `type`, `expiresAt`
+- **OAuthConsent** — `id`, `clientId`, `userId`, `scope`
+- **OAuthRegistration** — `id`, `clientId`, `token`, `expiresAt`
 
 ### Migrations
 
@@ -340,43 +436,55 @@ make db_reset
 
 ```
 1. Login → POST /api/auth/login → Set HttpOnly cookies (access + refresh, SameSite=Lax)
-2. Session check → GET /api/auth/session → validate access token via cookie (auto-refresh if expired)
-3. Token refresh → POST /api/auth/refresh → rotate tokens (fingerprint + IP verification)
+2. Session check → GET /api/auth/session → validate access token (NOT auto-refresh — trả về 401 nếu expired)
+3. Token refresh → POST /api/auth/refresh → rotate tokens (fingerprint verification)
 4. Logout → POST /api/auth/logout → clear cookies, revoke token jti
 5. Logout-all → POST /api/auth/logout-all → revoke all user tokens
 ```
 
 - Register: supports email + name fields (validated), unique constraints
 - First user = admin (auto-register if no users exist, bypasses register_enabled lock)
-- Access token: JWT, 5 phút (có thể cấu hình)
+- Access token: JWT, 15 phút (có thể cấu hình)
 - Refresh token: random 64-byte, 7 ngày (mặc định) / 90 ngày (remember-me)
 - Refresh rotation: old token bị revoke ngay khi refresh
-- Fingerprint verification: nếu cả fingerprint + IP đều thay đổi → revoke tất cả tokens (anti-theft)
+- Fingerprint verification: nếu fingerprint thay đổi → revoke tất cả tokens (anti-theft)
 - Token reuse detection: unknown jti → revoke tất cả user tokens
 
 ## Realtime Events (SignalR)
 
-SignalR is implemented and active via `/hubs/main`:
+SignalR hub tại `/hubs/main`:
 
-- **Log events**: Real-time log entry streaming to Log Viewer addon
-- **Traffic events**: Network traffic data push to Network Traffic addon
-- **System events**: Config changes (`system:config-changed`) for appearance defaults sync
-- **User events**: User settings changes (`user:settings-changed`) for multi-tab sync
-- **Notification events**: Notification push (`notification:received`) for real-time badge update
+| Event | Direction | Description |
+|-------|-----------|-------------|
+| `log:*` | Server → Client | Real-time log entry streaming |
+| `traffic:*` | Server → Client | Network traffic data |
+| `system:config-changed` | Server → Client | Config changes (appearance defaults sync) |
+| `user:settings-changed` | Server → Client | User settings changes (multi-tab sync) |
+| `notification:received` | Server → Client | New notification push |
+| `addon:status` | Server → Client | Addon container status changes |
+| `addon:pending-task-changed` | Server → Client | Addon task progress |
+| `addon:uninstalled` | Server → Client | Addon removed |
+| `system-monitor:stats` | Server → Client | CPU, memory, disk, IO, network metrics |
 
-SignalR client (frontend) auto-reconnects with exponential backoff (5s → 30s cap, infinite retry).
+SignalR client auto-reconnects with exponential backoff (5s → 30s cap, infinite retry).
 
-## Docker Management (Planned — M4)
+## gRPC Bidirectional Streaming
 
-Namorix sẽ quản lý addon containers qua Docker Unix socket, sử dụng thư viện **Docker.DotNet.Enhanced**.
+Addon backend ↔ Namorix backend communication qua port 5002 (HTTP/2):
 
-```
-DockerMonitor (BackgroundService)
-  ↓ phát hiện container mới/dừng
-AddonService
-  ↓ CRUD qua Docker API
-REST endpoints (AddonController)
-```
+- **AddonChannelService** — gRPC bidirectional stream for widget event forwarding + heartbeat
+- **AddonChannelManager** — Tracks active gRPC connections per addon
+- **Auth**: OAuth2 Bearer token (private_key_jwt) in gRPC metadata
+- **Reconnect**: RetryConnectHostedService with configurable backoff
+
+## Docker Integration
+
+Namorix manages addon containers via Docker Unix socket (`Docker.DotNet`):
+
+- **DockerService** — Container/image/network CRUD, health checks
+- **DockerMonitorWorker** — Event stream monitoring + container state sync + orphan cleanup
+- **AddonTaskExecutor** — Queued addon operations (start/stop/uninstall) with status notifications
+- **Label convention**: `namorix-addon-id`, `namorix-version`, `namorix-description`, `namorix-author`
 
 ## Development
 

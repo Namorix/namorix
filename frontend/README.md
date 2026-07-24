@@ -39,29 +39,29 @@ frontend/
 │   ├── addons/                      # Built-in system addons (M3)
 │   │   ├── registry.ts              # registerAddon, resolveAddon, listAddons
 │   │   ├── index.ts                 # Bootstrap — imports all *.addon.ts + addonToItems helper
+│   │   ├── types.ts                 # NmxAddonManifest, AddonContext, AddonEntry, ExternalAddonManifest, etc.
+│   │   ├── About/                   # Version info, meta-list, GitHub links
+│   │   ├── FileManager/             # File browser scaffold
 │   │   ├── LogViewer/               # Log entry viewer with level chips, source search, pagination, detail dialog
 │   │   ├── NetworkTraffic/          # Network traffic overview, logs (SignalR + flat file), detail dialog
-│   │   ├── About/                   # Version info, meta-list, GitHub links
-│   │   ├── Settings/                # Appearance (theme, accent, density, font, language, date/time format), System, Account tabs
-│   │   ├── SystemMonitor/           # Full addon with CPU, memory, uptime, disk, IO real-time (SignalR)
-│   │   ├── FileManager/             # File browser scaffold
-│   │   ├── Terminal/                # Terminal emulator scaffold
-│   │   └── PackageCenter/           # External addon management scaffold
+│   │   ├── PackageCenter/           # External addon management (catalog browse, install, start/stop, grid view)
+│   │   ├── Settings/                # Appearance (theme, accent, density, font, language, date/time), System, Account
+│   │   ├── SystemMonitor/           # CPU, memory, uptime, disk, IO real-time (SignalR)
+│   │   └── Terminal/                # Terminal emulator scaffold
 │   │
 │   ├── components/
 │   │   ├── AuthView.tsx             # Two-column layout (hero + form panel)
 │   │   ├── WindowManager.tsx        # Renders all open windows by zOrder
-│   │   ├── Taskbar/                 # Clock, start button, window buttons, SignalR status
-│   │   ├── DesktopArea/             # Desktop icon shortcuts, grid layout
+│   │   ├── DesktopArea/             # Desktop icon shortcuts (builtin + external addons)
 │   │   ├── Launcher/                # Start menu with search + system app list
-│   │   ├── WindowFrame/             # Draggable, resizable window chrome
-│   │   └── Auth/                    # (empty — reserved)
+│   │   ├── Taskbar/                 # Clock, start button, window buttons, SignalR status, notification badge
+│   │   └── WindowFrame/             # Draggable, resizable window chrome (6 hooks)
 │   │
 │   ├── store/                       # Redux Toolkit
-│   │   ├── index.ts                 # configureStore (windowsState, launcher, taskbar, notifications slices)
+│   │   ├── index.ts                 # configureStore (windows, launcher, taskbar, notifications, externalAddons)
 │   │   ├── hooks.ts                 # useAppDispatch, useAppSelector (shallowEqual default)
 │   │   ├── types.ts                 # RootState, AppDispatch, WindowRect
-│   │   ├── slices/                  # windowsSlice, launcherSlice, taskbarSlice, notificationsSlice
+│   │   ├── slices/                  # windowsSlice, launcherSlice, taskbarSlice, notificationsSlice, externalAddonsSlice
 │   │   └── selectors/               # windowSelectors, launcherSelectors, taskbarSelectors, notificationSelectors
 │   │
 │   ├── types/
@@ -76,19 +76,20 @@ frontend/
 │   │   ├── notification.controller.ts  # fetchNotifications, fetchUnreadCount, markAsRead, markAllAsRead, delete
 │   │   ├── settings.controller.ts   # getUserSettings, getAppearanceOptions, getThemes, updateProfile, changePassword
 │   │   ├── log.controller.ts        # listLogs with level/source filters
-│   │   └── health.controller.ts     # Health check, untrusted proxy detection
+│   │   ├── health.controller.ts     # Health check, untrusted proxy detection
+│   │   └── addon.controller.ts      # Addon install/start/stop/uninstall/list/catalog
 │   │
 │   ├── hooks/
 │   │   ├── useTaskbarClock.ts       # Live clock for taskbar (uses appearance date/time format)
 │   │   ├── useAppearanceSync.ts     # Theme loading + content language + SignalR listener
 │   │   ├── useDateTimeFormat.ts     # Reactive hook for useAppearanceStore time/date format
-│   │   └── useNotificationEvents.ts # SignalR listener for notification:received + notification:read-status
+│   │   └── useNotificationEvents.ts # SignalR listener for notification:* events
 │   │
 │   ├── i18n/
 │   │   ├── index.ts                 # NmxI18n instance with core + translation namespaces
 │   │   └── locales/
 │   │       ├── en.json              # English translations
-│   │       ├── vi.json              # Vietnamese translations (TODO)
+│   │       ├── vi.json              # Vietnamese translations
 │   │       └── notification/        # Notification content keys (en.json, vi.json)
 │   │
 │   ├── pages/
@@ -97,16 +98,18 @@ frontend/
 │   │   ├── Desktop.tsx              # Full shell layout: taskbar, desktop, windows, launcher
 │   │   └── Blocked.tsx              # Untrusted proxy / blocked access screen
 │   │
-│   └── constants/                   # (empty — reserved)
+│   └── services/
+│       └── externalAddonEntry.ts    # Module Federation loader for widget addons
 │
 ├── packages/
-│   ├── core/                        # @namorix/core — types, auth, http, i18n, SignalR hooks, store
+│   ├── core/                        # @namorix/core — types, auth, http, i18n, SignalR, store, theme,
+│   │                                 # fingerprint, cache, toast, oauth, mount (createMount, AddonModeProvider)
 │   ├── styles/                      # @namorix/styles — SCSS tokens, reset, themes, icomoon icons
-│   └── ui/                          # @namorix/ui — React primitives + composite components
+│   └── ui/                          # @namorix/ui — React primitives + composite components + layouts
 │
 ├── public/themes/                   # Compiled theme CSS (default, dark)
 ├── vite.config.ts                   # Vite config with /api and /hubs proxy
-└── .env.example                     # VITE_API_URL=http://localhost:3000
+└── .env.example                     # VITE_API_URL=http://localhost:5001
 ```
 
 ## Key Patterns
@@ -128,7 +131,7 @@ const windows = useAppSelector((s) => s.windowsState)
 dispatch(closeWindow(windowId))
 ```
 
-Slices: `windowsSlice` (open/close/focus/minimize/maximize/move/resize/cascade), `launcherSlice` (toggle), `taskbarSlice` (window buttons), `notificationsSlice` (unread count, pagination, mark read). Selectors use `createSelector` for memoization. `useAppSelector` defaults to `shallowEqual`.
+Slices: `windowsSlice` (open/close/focus/minimize/maximize/move/resize/cascade/closeWindowsByAddonId), `launcherSlice` (toggle), `taskbarSlice` (window buttons), `notificationsSlice` (unread count, pagination, mark read), `externalAddonsSlice` (external addon list + status + catalog). Selectors use `createSelector` for memoization. `useAppSelector` defaults to `shallowEqual`.
 
 ### Client-side Validation
 ```typescript
@@ -143,28 +146,41 @@ const error = validate(t)
 ### i18n Layering
 ```
 @namorix/core (namespace "core")  →  common.validation.*, common.fields.*
-frontend (namespace "translation") →  auth.login.*, auth.register.*
+frontend (namespace "translation") →  auth.login.*, auth.register.*, addon.*
 frontend (namespace "notification") →  notification.* (content keys for notification center)
 ```
 
 ### SignalR Realtime
 ```typescript
-import { useSignalR, useSignalREvent, useSignalRStatus } from "@namorix/core"
+import { useSignalR, useSignalREvent, useSignalRStatus, useSignalRGroup } from "@namorix/core"
 
 const connection = useSignalR()           // Get connection instance
 const status = useSignalRStatus()         // "connected" | "disconnected" | "reconnecting"
-useSignalREvent("LogEntry", handler)      // Subscribe to event
+useSignalREvent(eventName, handler)       // Subscribe to event (deferred registration support)
 ```
 
 Auto-reconnects with exponential backoff (5s → 30s cap, infinite retry).
+
+### Controller Pattern
+```typescript
+import { nmxHttp, getApiBaseUrl } from "@namorix/core"
+
+export const addonController = {
+  list: async () => {
+    const data = await nmxHttp.url(getApiBaseUrl() + "/api/addon").get().json()
+    if (!data.success) throw ApiError.fromResponse(data)
+    return data.data
+  },
+}
+```
 
 ## Dependencies
 
 | Package | Purpose |
 |---------|---------|
-| `@namorix/core` | Types, auth service, http client, i18n, SignalR hooks, store, guards |
-| `@namorix/styles` | SCSS design tokens, reset, variables, theme files |
-| `@namorix/ui` | Primitives (NmxButton, NmxForm, NmxInlineAlert, NmxToggle, NmxChip, NmxIcon) |
+| `@namorix/core` | Types, auth service, http client, i18n, SignalR hooks, store, guards, theme, toast, oauth (PKCE), mount (createMount, AddonModeProvider) |
+| `@namorix/styles` | SCSS design tokens, reset, variables, theme files, icomoon icons |
+| `@namorix/ui` | Primitives (NmxButton, NmxForm, NmxInlineAlert, NmxToggle, NmxChip, NmxIcon, NmxBadge, NmxSpinner, NmxSelect, NmxSlider, NmxSearchInput, etc.) + Composite (NmxCard, NmxDataTable, NmxDialog, NmxMetaList, NmxRail, NmxSettings, NmxToolbar, NmxAddon, NmxToastProvider, NmxTabContext, etc.) + Layouts (NmxHorizontalWrap, NmxGrid) |
 | `react-router-dom` | Client-side routing with GuardedRoute pattern |
 | `react-i18next` / `i18next` | i18n with layered namespaces |
 | `@reduxjs/toolkit` / `react-redux` | State management |
@@ -174,22 +190,35 @@ Auto-reconnects with exponential backoff (5s → 30s cap, infinite retry).
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `VITE_API_URL` | `http://localhost:3000` | Backend API URL |
+| `VITE_API_URL` | `http://localhost:5001` | Backend API URL |
 
 ## Addon Architecture
 
 Built-in addons use the same contract as external addons (M4):
 
 - **AddonEntry**: `mount(container, context)` / `unmount()` lifecycle
-- **NmxAddonManifest**: id, name, description?, icon?
-- **AddonContext**: addonId, locale, theme
+- **NmxAddonManifest**: id, name, description?, localeKey?, icon?, defaultWidth?, defaultHeight?, preferFullSize?, role?, instanceMode?
+- **AddonContext**: addonId, nmxStore?, store?, isExternal?, sendCommand?
 
-Four system addons are implemented: LogViewer, NetworkTraffic (SignalR + flat file), Settings, SystemMonitor.
+Eight built-in addons: About, LogViewer, NetworkTraffic, SystemMonitor, Settings, FileManager (scaffold), Terminal (scaffold), PackageCenter.
+
+### External Addons (Docker-based)
+
+External addons integrate via two modes:
+
+| Mode | Mechanism | Auth |
+|------|-----------|------|
+| **Widget** | Module Federation mount in desktop window, shares React + Redux | HttpOnly cookie (same-origin) |
+| **Standalone** | Runs on own port, own `index.html`, user navigates directly | OAuth2 authorization_code + PKCE (auto-handled by `createMount`) |
+
+- **Server-to-server**: gRPC bidirectional streaming for widget event forwarding + heartbeat
+- **Shell ↔ Addon (Widget)**: Event bus via `@namorix/core` (`shell:*` and `addon:*` events)
+- **PackageCenter**: UI for catalog browsing, install/start/stop/uninstall with live status via SignalR
 
 ## Milestones
 
 - **M1** — Static shell UI + mock auth ✅
 - **M2** — Full auth backend ✅
-- **M3** — System Addons (Built-in): addon contract + registry, LogViewer, NetworkTraffic, SystemMonitor, Settings, theme system, SignalR realtime ✅
-- **M4** — External addon system (Docker lifecycle, addon manager)
+- **M3** — System Addons (Built-in): addon contract + registry, 8 built-in addons, theme system, SignalR realtime ✅
+- **M4** — External addon system: Docker lifecycle, OAuth2 (PKCE + client_credentials), gRPC, addon catalog, standalone mode ✅
 - **M5** — `@namorix/core` publish npm + addon integration guide

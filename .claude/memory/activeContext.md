@@ -2,7 +2,7 @@
 
 ## Current Work Focus
 
-M4 — External Addon System (Phase 1-4 ✅, Phase 5 🔜)
+M4 — External Addon System ✅ Complete
 
 - Desktop shell: Taskbar, DesktopArea, WindowManager, Launcher ✅
 - DesktopArea + Taskbar refactored into modular sub-components (DesktopIcon, DesktopAreaView, TaskbarAppButton, TaskbarView) ✅
@@ -82,6 +82,14 @@ Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và 
 - Backend (Namorix.Core 0.46.1, Namorix.Server 0.49.1): Port defaults updated to new scheme (Frontend 5000, Backend REST 5001, gRPC 5002, Weave 5100). Docker compose + .env + launchSettings synced.
 - README: New Ports section with full addon port table. Quick start port references updated.
 - Versions: @namorix/core 0.43.0, @namorix/styles 0.38.0, frontend 0.55.0, Namorix.Core 0.46.1, Namorix.Server 0.49.1.
+
+### 2026-07-24 (2) — OAuth PKCE standalone mode, M4 completion
+
+- Core (0.44.0): NEW `oauth/` module — PKCE browser client (authorizeRedirect, handleRedirectCallback, sha256 fallback, constants). MODIFIED `createMount` — auto OAuth flow on standalone mode (check URL callback → exchange token / redirect authorize). NEW `mount/`, `oauth/` barrel exports.
+- Backend: OAuthAuthorizationCode PKCE fields (CodeChallenge, CodeChallengeMethod). Authorize endpoint rewritten with session check + PKCE params. Token endpoint supports code_verifier. ExchangeCodeAsync PKCE verification + client_assertion fallback.
+- README: M4 milestone ✅. External addons section updated (widget/standalone modes, OAuth).
+- Plan file `.claude/plans/m4-external-addon-system.md` deleted.
+- Versions: @namorix/core 0.44.0, @namorix/styles 0.38.1, frontend 0.55.1, Namorix.Core 0.47.0, Namorix.Server 0.50.0.
 
 ### 2026-07-23 — External addon entry port, schema update, MF desktop integration
 
@@ -326,6 +334,6 @@ Cả 3 attribute filter (`RequireAuthAttribute`, `RequireAdminAttribute`, `Requi
 
 ## Next Steps
 
-1. M4 — OAuth2 private_key_jwt full implementation (RSA key pair gen, client_assertion verify)
-2. M3 — Internal addon: File Manager
-3. M3 — Internal addon: Terminal
+1. **M5** — @namorix/core publish npm + addon integration guide
+2. M3 — Internal addon: File Manager (scaffold)
+3. M3 — Internal addon: Terminal (scaffold)
