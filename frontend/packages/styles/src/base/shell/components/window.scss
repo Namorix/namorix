@@ -118,6 +118,15 @@
     position: relative;
   }
 
+  &__loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in oklab, var(--nmx-color-surface) 60%, transparent);
+  }
+
   &__resize-handle {
     position: absolute;
     pointer-events: auto;

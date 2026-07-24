@@ -314,9 +314,6 @@ textarea,
   width: 100%;
   transition: background-color 0.15s;
 }
-.nmx-rail-item__toggle {
-  padding-bottom: var(--nmx-spacing-md);
-}
 .nmx-rail-item__toggle .nmx-rail-item__label {
   color: var(--nmx-color-on-surface);
   font-size: var(--nmx-font-size-md);
@@ -336,11 +333,11 @@ textarea,
   margin: 0;
   cursor: pointer;
 }
-.nmx-rail-item:hover:not(.nmx-rail-item--active) {
+.nmx-rail-item:hover:not(.nmx-rail-item--active):not(.nmx-rail-item__toggle) {
   background: var(--nmx-color-surface-high);
 }
-.nmx-rail-item:hover:not(.nmx-rail-item--active) .nmx-rail-item__label,
-.nmx-rail-item:hover:not(.nmx-rail-item--active) .nmx-rail-item__btn {
+.nmx-rail-item:hover:not(.nmx-rail-item--active):not(.nmx-rail-item__toggle) .nmx-rail-item__label,
+.nmx-rail-item:hover:not(.nmx-rail-item--active):not(.nmx-rail-item__toggle) .nmx-rail-item__btn {
   color: var(--nmx-color-on-surface);
 }
 .nmx-rail-item--active {
@@ -382,7 +379,7 @@ textarea,
   border-radius: var(--nmx-radius-md);
 }
 .nmx-rail-item__toggle .nmx-rail-item__btn:hover {
-  background: color-mix(in oklab, var(--nmx-color-primary) 85%, var(--nmx-color-mix-darken));
+  background: var(--nmx-color-surface-high);
 }
 @container contents (max-width: 640px) {
   .nmx-rail-list {
