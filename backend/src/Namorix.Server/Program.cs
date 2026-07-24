@@ -20,7 +20,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.WebHost.ConfigureKestrel(options =>
 {
-    options.ListenAnyIP(5000, o => o.Protocols = HttpProtocols.Http1);
+    options.ListenAnyIP(5001, o => o.Protocols = HttpProtocols.Http1);
     options.ListenAnyIP(5002, o => o.Protocols = HttpProtocols.Http2);
 });
 

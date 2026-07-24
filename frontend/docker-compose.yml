@@ -6,7 +6,7 @@ services:
     image: namorix/desktop:dev
     container_name: namorix-desktop
     ports:
-      - "5174:5174"
+      - "5000:5000"
     volumes:
       - ./src:/app/src
       - ./public:/app/public
@@ -22,6 +22,6 @@ services:
     image: namorix/desktop:prod
     container_name: namorix-desktop-prod
     ports:
-      - "4173:5174"
+      - "4173:5000"
     environment:
       - NODE_ENV=production

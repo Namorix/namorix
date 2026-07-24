@@ -2,12 +2,12 @@
 .env
 
 public/themes
-public/fonts/icomoon/demo-files
-public/fonts/icomoon/demo.html
-public/fonts/icomoon/Read Me.txt
-public/fonts/icomoon/style.css
-public/fonts/icomoon/style.scss
-public/fonts/icomoon/variables.scss
+packages/styles/src/base/icomoon/fonts/demo-files
+packages/styles/src/base/icomoon/fonts/demo.html
+packages/styles/src/base/icomoon/fonts/Read Me.txt
+packages/styles/src/base/icomoon/fonts/style.css
+packages/styles/src/base/icomoon/fonts/style.scss
+packages/styles/src/base/icomoon/fonts/variables.scss
 
 # Logs
 logs

@@ -21,7 +21,7 @@ Vite + React desktop shell — window manager, taskbar, launcher, and built-in s
 
 ```bash
 pnpm install
-pnpm dev          # Vite dev server (port 5174)
+pnpm dev          # Vite dev server (port 5000)
 pnpm build        # TypeScript check + production build
 pnpm preview      # Preview production build
 ```

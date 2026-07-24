@@ -39,15 +39,15 @@ export default defineConfig({
   cacheDir: ".vite",
   server: {
     host: "0.0.0.0",
-    port: 5174,
+    port: 5000,
     hmr: {
       host: "192.168.31.150",
-      port: 5174,
+      port: 5000,
     },
     allowedHosts: true,
     proxy: {
       "/api": {
-        target: "http://192.168.31.150:5000",
+        target: "http://192.168.31.150:5001",
         changeOrigin: true,
         configure: (proxy) => {
           proxy.on("proxyReq", (proxyReq, req) => {
@@ -63,7 +63,7 @@ export default defineConfig({
         },
       },
       "/hubs": {
-        target: "http://192.168.31.150:5000",
+        target: "http://192.168.31.150:5001",
         changeOrigin: true,
         ws: true,
       },

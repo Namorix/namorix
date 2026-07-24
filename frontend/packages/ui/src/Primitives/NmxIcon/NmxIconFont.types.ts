@@ -43,6 +43,9 @@ export const NmxIconFontSymbol = {
   STOP: "ic-stop",
   INSTALL: "ic-install",
   ERROR: "ic-error",
+  HOME: "ic-home",
+  DEVICE: "ic-device",
+  NETWORK: "ic-network",
 } as const
 
 export type NmxIconFontSymbol =

@@ -18,7 +18,7 @@ public class AddonCatalogEntry
     [MaxLength(50)] public string? ImageTag { get; set; }
     [MaxLength(500)] public string? Arch { get; set; }           // JSON array — ["amd64", "arm64"]
     // TODO: It is worth noting that storing a JSON array doesn't seem quite right.
-    [MaxLength(500)] public string? Ports { get; set; }           // JSON array — [{"container":5180,"protocol":"tcp"}]
+    [MaxLength(500)] public string? Ports { get; set; }           // JSON array — [{"container":5100,"protocol":"tcp"}]
 
     [MaxLength(20)] public string? Boot { get; set; }          // "manual" | "auto"
     [MaxLength(20)] public string? MinCoreVersion { get; set; }

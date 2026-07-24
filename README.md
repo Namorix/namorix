@@ -44,17 +44,37 @@ cd namorix
 cd frontend && pnpm install
 
 # Run development (2 terminals)
-cd backend && dotnet watch run  # Backend C# (port 5000)
+cd backend && dotnet watch run  # Backend C# (port 5001)
 # or: cd backend && dotnet run
-cd frontend && pnpm dev         # Frontend (Vite port 5173)
+cd frontend && pnpm dev         # Frontend (Vite port 5000)
 ```
+
+## Ports
+
+| Port | Service | Protocol | Purpose |
+|------|---------|----------|---------|
+| 5000 | Namorix Frontend (Vite) | HTTP | Main desktop shell dev server |
+| 5001 | Namorix Backend | HTTP/1.1 | REST API + SignalR realtime |
+| 5002 | Namorix Backend (gRPC) | HTTP/2 | gRPC bidirectional streaming for addon channels |
+| 5100 | namorix-weave (Vite) | HTTP | Weave addon frontend |
+| 5101 | namorix-weave (backend) | — | Reserved — addon backend |
+| 5102 | namorix-weave (gRPC) | — | Reserved — addon gRPC |
+| 5200 | namorix-beam (Vite) | HTTP | Beam addon frontend |
+| 5201 | namorix-beam (backend) | — | Reserved — addon backend |
+| 5202 | namorix-beam (gRPC) | — | Reserved — addon gRPC |
+| 5300 | namorix-scout (Vite) | HTTP | Scout addon frontend |
+| 5301 | namorix-scout (backend) | — | Reserved — addon backend |
+| 5302 | namorix-scout (gRPC) | — | Reserved — addon gRPC |
+| 5400 | namorix-vault (Vite) | HTTP | Vault addon frontend |
+| 5401 | namorix-vault (backend) | — | Reserved — addon backend |
+| 5402 | namorix-vault (gRPC) | — | Reserved — addon gRPC |
 
 ## Repository Structure
 
 ```
 namorix/
 ├── frontend/
-│   ├── package.json          # pnpm workspace root (port 5174)
+│   ├── package.json          # pnpm workspace root (port 5000)
 │   ├── pnpm-workspace.yaml   # workspace config
 │   ├── tsconfig.base.json    # shared TypeScript config
 │   ├── public/themes/        # Compiled theme CSS (default, dark)
@@ -132,7 +152,7 @@ namorix/
 │       │   ├── slices/       # windowsSlice, launcherSlice, taskbarSlice, notificationsSlice
 │       │   └── selectors/    # Memoized createSelector
 │       └── types/            # WindowId, WindowState, windowing types
-└── backend/                   # ASP.NET Core 10 API (port 5000)
+└── backend/                   # ASP.NET Core 10 API (port 5001)
     ├── Makefile               # Build/EF commands
     ├── Namorix.sln            # Solution file
     └── src/
@@ -247,7 +267,7 @@ Addon có 3 mode tích hợp:
 | `AppConfig__CsrfEnabled` | AppConfig.CsrfEnabled | false | Enable CSRF protection |
 | `AppConfig__SecureCookie` | AppConfig.SecureCookie | false | Set true for HTTPS |
 | `AppConfig__AllowedOrigins` | AppConfig.AllowedOrigins | (empty) | Comma-separated CORS origins; empty = allow all (trusted proxy mode) |
-| `Backend__Port` | Backend.Port | 5000 | Backend listen port |
+| `Backend__Port` | Backend.Port | 5001 | Backend listen port |
 | `Backend__ContainerName` | Backend.ContainerName | `namorix-server` | Docker container name |
 | `Backend__NetworkName` | Backend.NetworkName | `namorix-net` | Docker network name |
 | `Backend__RegistrationTokenTtlMinutes` | Backend.RegistrationTokenTtlMinutes | 60 | Addon registration token TTL |
