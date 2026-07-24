@@ -7,6 +7,7 @@ export const API_TRAFFIC_BASE = API_BASE + "/traffic"
 export const API_SETTINGS_BASE = API_BASE + "/settings"
 export const API_NOTIFICATION_BASE = API_BASE + "/notifications"
 export const API_ADDON_BASE = API_BASE + "/addons"
+export const API_OAUTH_BASE = API_BASE + "/oauth"
 
 export const ApiAuthRoutes = {
   status: API_AUTH_BASE + "/status",
@@ -68,4 +69,11 @@ export const ApiAddonRoutes = {
   remove: (id: string) => `${API_ADDON_BASE}/${id}`,
   listCatalog: `${API_ADDON_BASE}/catalog`,
   syncCatalog: `${API_ADDON_BASE}/catalog/sync`,
+} as const
+
+export const ApiOAuthRoutes = {
+  authorize: API_OAUTH_BASE + "/authorize",
+  token: API_OAUTH_BASE + "/token", // TODO: can xem xet
+  revoke: API_OAUTH_BASE + "/revoke", // TODO: can xem xet
+  register: API_OAUTH_BASE + "/register", // TODO: can xem xet
 } as const
