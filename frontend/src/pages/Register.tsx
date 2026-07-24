@@ -39,7 +39,7 @@ export const Register: React.FC = () => {
 
   useEffect(() => {
     nmxToast.warning(t("auth.register.initialRegistration"))
-  }, [])
+  }, [t])
 
   const handleSubmit = async (e: NmxFormSubmitEvent) => {
     e.preventDefault()

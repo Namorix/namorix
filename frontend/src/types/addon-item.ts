@@ -1,5 +1,5 @@
-import type { NmxAddonManifest } from "@namorix/core"
 import type { WindowId } from "../store"
+import type { NmxAddonManifest } from "../addons"
 
 export interface AddonItem extends NmxAddonManifest {
   id: WindowId

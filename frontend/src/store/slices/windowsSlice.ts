@@ -196,6 +196,22 @@ export const windowsSlice = createSlice({
       state.order = []
       state.zOrder = []
     },
+
+    closeWindowsByAddonId(state, action: PayloadAction<string>) {
+      const addonId = action.payload
+      const idsToClose = state.order.filter(
+        (wid) => state.byId[wid]?.item.id === addonId,
+      )
+      for (const id of idsToClose) {
+        delete state.byId[id]
+        state.order = state.order.filter((wid) => wid !== id)
+        state.zOrder = state.zOrder.filter((wid) => wid !== id)
+      }
+
+      if (state.activeId && idsToClose.includes(state.activeId)) {
+        state.activeId = state.order.at(-1) ?? null
+      }
+    },
   },
 })
 
@@ -214,6 +230,7 @@ export const {
   clearPreMaximize,
   setOriginRect,
   closeAllWindows,
+  closeWindowsByAddonId,
 } = windowsSlice.actions
 
 export const windowsReducer = windowsSlice.reducer

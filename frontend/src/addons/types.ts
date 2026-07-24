@@ -1,7 +1,7 @@
 import type { Store } from "@reduxjs/toolkit"
 import { NmxIconSvgSymbol } from "@namorix/ui"
-import { nmxStore } from "../store"
-import type { UserRole } from "../types"
+import { nmxStore } from "@namorix/core/store"
+import type { UserRole } from "@namorix/core/types"
 import React from "react"
 
 export type NmxAddonIconType = NmxIconSvgSymbol

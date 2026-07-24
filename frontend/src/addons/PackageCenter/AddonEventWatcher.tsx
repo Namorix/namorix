@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import {
+  closeWindowsByAddonId,
   removeAddon,
   selectorCatalog,
   selectorExternalAddons,
@@ -8,9 +9,10 @@ import {
   useAppDispatch,
   useAppSelector,
 } from "../../store"
-import { type AddonStatusPayload, nmxToast } from "@namorix/core"
+import { nmxToast } from "@namorix/core"
 import { ServerSignalREvent, useServerSignalREvent } from "../../signalr"
 import { formatAddonErrorCode } from "./addonError"
+import type { AddonStatusPayload } from "../types"
 
 export const AddonEventWatcher: React.FC = () => {
   const { t } = useTranslation()
@@ -64,6 +66,8 @@ export const AddonEventWatcher: React.FC = () => {
           addonMapRef.current[data.addonId]?.name ??
           catalogRef.current[data.addonId]?.name ??
           data.addonId
+
+        dispatch(closeWindowsByAddonId(data.addonId))
         dispatch(removeAddon(data.addonId))
         nmxToast.success(t("addon.packageCenter.success.uninstalled", { name }))
       },

@@ -64,7 +64,11 @@ export const TaskbarAppButton = memo<TaskbarAppButtonProps>(
         type="button"
         onMouseDown={() => onAppClick(data.id)}
       >
-        {data.icon ? <NmxIconSvg symbol={data.icon} /> : data.title}
+        {data.icon ? (
+          <NmxIconSvg src={data.icon} symbol={data.icon} />
+        ) : (
+          data.title
+        )}
       </button>
     )
   },

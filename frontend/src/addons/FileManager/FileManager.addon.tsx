@@ -1,5 +1,4 @@
-import { defineAddon, NmxAddonId, NmxAddonLocaleKeys } from "@namorix/core"
-import { registerAddon } from "../"
+import { defineAddon, NmxAddonId, NmxAddonLocaleKeys, registerAddon } from "../"
 import { NmxIconSvgSymbol } from "@namorix/ui"
 import { FileManager } from "./FileManager"
 

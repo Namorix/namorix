@@ -10,8 +10,9 @@ import {
   type WindowRect,
 } from "../../../store"
 import { getWindowDefaults } from "../../../config"
-import { isMobile, NmxAddonInstanceMode } from "@namorix/core"
+import { isMobile } from "@namorix/core"
 import type { AddonItem } from "../../../types"
+import { NmxAddonInstanceMode } from "../../../addons"
 
 const clamp = (min: number, val: number, max: number) =>
   Math.max(min, Math.min(val, max))

@@ -1,10 +1,5 @@
-import {
-  defineAddon,
-  NmxAddonId,
-  NmxAddonLocaleKeys,
-  UserRole,
-} from "@namorix/core"
-import { registerAddon } from "../"
+import { UserRole } from "@namorix/core"
+import { defineAddon, NmxAddonId, NmxAddonLocaleKeys, registerAddon } from "../"
 import { NmxIconSvgSymbol } from "@namorix/ui"
 import { NetworkTraffic } from "./NetworkTraffic"
 

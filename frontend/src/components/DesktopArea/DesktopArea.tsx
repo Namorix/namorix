@@ -1,13 +1,14 @@
 import React, { useEffect, useMemo } from "react"
-import { addonToItems, listAddons, registerAddon } from "../../addons"
+import {
+  addonToItems,
+  type ExternalAddonManifest,
+  listAddons,
+  registerAddon,
+} from "../../addons"
 import { DesktopAreaView } from "./DesktopAreaView"
 import { useOpenWindow } from "../WindowFrame"
 import { type AddonItem, type OnOpenApp, rectToOrigin } from "../../types"
-import {
-  type ExternalAddonManifest,
-  nmxToast,
-  useUserStore,
-} from "@namorix/core"
+import { nmxToast, useUserStore } from "@namorix/core"
 import {
   selectorCatalog,
   selectorExternalAddons,
@@ -19,7 +20,7 @@ import {
 } from "../../store"
 import { NmxIconSvgSymbol } from "@namorix/ui"
 import { addonController, mapDtoToManifest } from "../../controllers"
-import { createExternalAddonEntry } from "../../services/externalAddonEntry"
+import { createExternalAddonEntry } from "../../services"
 
 export interface DesktopAddonItem extends AddonItem {
   disabled?: boolean

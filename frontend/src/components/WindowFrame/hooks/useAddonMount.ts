@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from "react"
-import { resolveAddon } from "../../../addons"
-import { type AddonContext, nmxStore } from "@namorix/core"
+import { type AddonContext, resolveAddon } from "../../../addons"
+import { nmxStore } from "@namorix/core"
 import { store, type WindowId } from "../../../store"
 
 export const useAddonMount = (appId: WindowId) => {
@@ -14,7 +14,7 @@ export const useAddonMount = (appId: WindowId) => {
     const context: AddonContext = {
       addonId: appId,
       nmxStore,
-      store
+      store,
     }
 
     addon.entry.mount(container, context)

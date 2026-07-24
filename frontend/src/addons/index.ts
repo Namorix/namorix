@@ -1,7 +1,10 @@
 export * from "./registry"
+export * from "./context"
+export * from "./factory"
+export * from "./types"
 
-import type { AddonModule } from "@namorix/core"
 import type { AddonItem } from "../types"
+import type { AddonModule } from "./types"
 
 import "./About/About.addon"
 import "./LogViewer/LogViewer.addon"

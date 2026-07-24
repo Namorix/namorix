@@ -1,5 +1,6 @@
-import { type AddonModule, UserRole } from "@namorix/core"
+import { UserRole } from "@namorix/core"
 import React from "react"
+import type { AddonModule } from "./types"
 
 const registries = new Map<string, AddonModule>()
 

@@ -54,7 +54,11 @@ export const WindowTitleBar = memo(
         onClick={handleDoubleClick}
       >
         {icon && (
-          <NmxIconSvg symbol={icon} className="nmx-window-frame__app-icon" />
+          <NmxIconSvg
+            src={icon}
+            symbol={icon}
+            className="nmx-window-frame__app-icon"
+          />
         )}
         <span className="nmx-window-frame__title">
           {resolveAddonLocaleTitleByKey(t, localeKey) ?? title}
