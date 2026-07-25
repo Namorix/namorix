@@ -15,6 +15,7 @@ export const NmxAddonId = {
   fileManager: "file-manager",
   terminal: "terminal",
   packageCenter: "package-center",
+  frontgate: "frontgate",
 } as const
 
 export type NmxAddonId = (typeof NmxAddonId)[keyof typeof NmxAddonId]
@@ -28,6 +29,7 @@ export const NmxAddonLocaleKeys = {
   fileManager: "fileManager",
   terminal: "terminal",
   packageCenter: "packageCenter",
+  frontgate: "frontgate",
 } as const
 
 export type NmxAddonLocaleKeys =

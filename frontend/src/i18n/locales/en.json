@@ -354,6 +354,10 @@
         "started": "{{name}} started",
         "stopped": "{{name}} stopped"
       }
+    },
+    "frontgate": {
+      "title": "Frontgate",
+      "description": "Routes traffic to your addons through custom domains and subdomains — no more remembering ports"
     }
   }
 }

@@ -14,6 +14,7 @@ import "./SystemMonitor/SystemMonitor.addon"
 import "./FileManager/FileManager.addon"
 import "./Terminal/Terminal.addon"
 import "./PackageCenter/PackageCenter.addon"
+import "./Frontgate/Frontgate.addon"
 
 export const addonToItems = (addon: AddonModule): AddonItem => ({
   ...addon.manifest,
