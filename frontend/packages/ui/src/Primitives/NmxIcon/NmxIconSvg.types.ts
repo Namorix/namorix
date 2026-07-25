@@ -11,6 +11,7 @@ export const NmxIconSvgSymbol = {
   APP_TERMINAL: "app-terminal",
   APP_NOTIFICATION_CENTER: "app-notification-center",
   APP_PACKAGE_CENTER: "app-package-center",
+  APP_FRONTGATE: "app-frontgate",
 } as const
 
 export type NmxIconSvgSymbol =
