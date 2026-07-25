@@ -1,4 +1,9 @@
-import { nmxToast, semverCompare, toHtml } from "@namorix/core"
+import {
+  formatRelativeTime,
+  nmxToast,
+  semverCompare,
+  toHtml,
+} from "@namorix/core"
 import { addonController, mapDtoToManifest } from "../../controllers"
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -29,6 +34,8 @@ import {
   NmxIconFontSymbol,
   NmxIconSvg,
   NmxIconSvgSymbol,
+  NmxMetaItem,
+  NmxMetaList,
   NmxSearchInput,
   NmxSpinner,
   useActiveTab,
@@ -53,6 +60,7 @@ interface DisplayAddon {
   hasUpdate: boolean
   status?: AddonContainerStatus
   lastErrorCode?: string
+  installedAt?: string
 }
 
 interface PendingAction {
@@ -63,6 +71,7 @@ interface PendingAction {
 export const AddonGrid: React.FC = () => {
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
+  const [infoTarget, setInfoTarget] = useState<DisplayAddon | null>(null)
   const [pendingMap, setPendingMap] = useState<Record<string, PendingAction>>(
     {},
   )
@@ -204,10 +213,10 @@ export const AddonGrid: React.FC = () => {
           isInstalled: !!installed,
           hasUpdate,
           status: installed?.status,
+          installedAt: installed?.installedAt,
         })
       }
 
-      // TODO
       // Add installed addons not in catalog (sideloaded)
       for (const id of externalAddonsOrder) {
         if (!catalog.some((c) => c.id === id)) {
@@ -291,6 +300,7 @@ export const AddonGrid: React.FC = () => {
   const handleStart = useCallback(
     (e: React.MouseEvent, addon: DisplayAddon) => {
       e.preventDefault()
+      e.stopPropagation()
       setPending(addon.id, "starting")
 
       addonController.start(addon.id).catch((err) => {
@@ -304,6 +314,7 @@ export const AddonGrid: React.FC = () => {
   const handleStop = useCallback(
     (e: React.MouseEvent, addon: DisplayAddon) => {
       e.preventDefault()
+      e.stopPropagation()
       setPending(addon.id, "stopping")
 
       addonController.stop(addon.id).catch((err) => {
@@ -317,6 +328,7 @@ export const AddonGrid: React.FC = () => {
   const handleInstall = useCallback(
     (e: React.MouseEvent, addon: DisplayAddon) => {
       e.preventDefault()
+      e.stopPropagation()
       setPending(addon.id, "installing")
 
       addonController
@@ -334,6 +346,7 @@ export const AddonGrid: React.FC = () => {
   const handleUninstall = useCallback(
     (e: React.MouseEvent, addon: DisplayAddon) => {
       e.preventDefault()
+      e.stopPropagation()
       setUninstallTarget(addon)
     },
     [],
@@ -402,6 +415,7 @@ export const AddonGrid: React.FC = () => {
               <NmxCard
                 key={addon.id}
                 className="nmx-addon-package-center__card"
+                onClick={() => setInfoTarget(addon)}
               >
                 <div className="nmx-addon-package-center__card-icon-title">
                   <NmxIconSvg
@@ -552,6 +566,63 @@ export const AddonGrid: React.FC = () => {
             ),
           }}
         />
+      </NmxAlertDialog>
+
+      <NmxAlertDialog
+        open={!!infoTarget}
+        title={infoTarget?.name ?? ""}
+        icon={
+          <NmxIconSvg
+            src={infoTarget?.icon}
+            symbol={NmxIconSvgSymbol.APP_UNKNOWN}
+            className="nmx-addon-package-center__info-dialog-icon"
+          />
+        }
+        size="lg"
+        onClose={() => setInfoTarget(null)}
+      >
+        {infoTarget && (
+          <div className="nmx-addon-package-center__info-dialog">
+            <NmxMetaList>
+              <NmxMetaItem
+                label={t("addon.packageCenter.infoLabels.id")}
+                value={infoTarget.id}
+              />
+              <NmxMetaItem
+                label={t("addon.packageCenter.infoLabels.version")}
+                value={infoTarget.version}
+              />
+              <NmxMetaItem
+                label={t("addon.packageCenter.infoLabels.author")}
+                value={infoTarget.author ?? "—"}
+              />
+              {infoTarget.isInstalled && (
+                <NmxMetaItem
+                  label={t("addon.packageCenter.infoLabels.status")}
+                  value={infoTarget.status ?? "—"}
+                />
+              )}
+              <NmxMetaItem
+                label={t("addon.packageCenter.infoLabels.image")}
+                value={infoTarget.image ?? "—"}
+              />
+              {infoTarget.isInstalled && (
+                <NmxMetaItem
+                  label={t("addon.packageCenter.infoLabels.installedAt")}
+                  value={
+                    infoTarget.installedAt
+                      ? formatRelativeTime(infoTarget.installedAt, t)
+                      : "—"
+                  }
+                />
+              )}
+              <NmxMetaItem
+                label={t("addon.packageCenter.infoLabels.description")}
+                value={infoTarget.description ?? "—"}
+              />
+            </NmxMetaList>
+          </div>
+        )}
       </NmxAlertDialog>
     </div>
   )

@@ -338,6 +338,15 @@
         "imageNotFound": "Image {{name}} not found",
         "installFailed": "Failed to install {{name}}"
       },
+      "infoLabels": {
+        "id": "ID",
+        "version": "Version",
+        "author": "Author",
+        "status": "Status",
+        "image": "Image",
+        "installedAt": "Installed at",
+        "description": "Description"
+      },
       "success": {
         "installed": "{{name}} installed",
         "uninstalled": "{{name}} uninstalled",

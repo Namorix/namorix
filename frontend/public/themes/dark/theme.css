@@ -2191,6 +2191,9 @@ textarea,
   font-weight: var(--nmx-font-weight-bold);
   color: var(--nmx-color-on-surface);
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--nmx-spacing-md);
 }
 .nmx-dialog__close {
   background: none;

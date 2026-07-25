@@ -5,6 +5,8 @@ import {
   removeAddon,
   selectorCatalog,
   selectorExternalAddons,
+  setAddons,
+  setCatalog,
   updateAddonStatus,
   useAppDispatch,
   useAppSelector,
@@ -13,6 +15,7 @@ import { nmxToast } from "@namorix/core"
 import { ServerSignalREvent, useServerSignalREvent } from "../../signalr"
 import { formatAddonErrorCode } from "./addonError"
 import type { AddonStatusPayload } from "../types"
+import { addonController, mapDtoToManifest } from "../../controllers"
 
 export const AddonEventWatcher: React.FC = () => {
   const { t } = useTranslation()
@@ -34,11 +37,19 @@ export const AddonEventWatcher: React.FC = () => {
   useServerSignalREvent<AddonStatusPayload>(
     ServerSignalREvent.AddonStatusChanged,
     useCallback(
-      (data: AddonStatusPayload) => {
+      async (data: AddonStatusPayload) => {
         const addon = addonMapRef.current[data.addonId]
         const name =
           addon?.name ?? catalogRef.current[data.addonId]?.name ?? data.addonId
         dispatch(updateAddonStatus(data))
+
+        const [list, catalogList] = await Promise.all([
+          addonController.list(),
+          addonController.refreshCatalog(),
+        ])
+
+        dispatch(setCatalog(catalogList))
+        dispatch(setAddons(list.map(mapDtoToManifest)))
 
         if (data.status === "installed") {
           nmxToast.success(t("addon.packageCenter.success.installed", { name }))
