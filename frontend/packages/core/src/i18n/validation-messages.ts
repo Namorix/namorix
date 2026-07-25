@@ -1,6 +1,7 @@
 import { ApiError } from "../http"
 import {
   AuthErrorCodes,
+  HttpErrorCodes,
   MiddlewareErrorCodes,
   ValidationErrorCodes,
 } from "../types"
@@ -192,7 +193,8 @@ export function formatApiError(t: TFunction, err: ApiError): string | null {
   return (
     formatValidationError(t, err) ??
     formatAuthError(t, err) ??
-    formatMiddlewareError(t, err)
+    formatMiddlewareError(t, err) ??
+    formatHttpError(t, err)
   )
 }
 
@@ -200,9 +202,29 @@ export function formatMiddlewareError(
   t: TFunction,
   err: ApiError,
 ): string | null {
-  if (err.code === MiddlewareErrorCodes.UNTRUSTED_PROXY) {
-    return t("common.errors.untrustedProxy")
+  switch (err.code) {
+    case MiddlewareErrorCodes.UNTRUSTED_PROXY:
+      return t("common.errors.untrustedProxy")
   }
+
+  return null
+}
+
+export function formatHttpError(t: TFunction, err: ApiError): string | null {
+  switch (err.code) {
+    case HttpErrorCodes.NOT_FOUND:
+      return t("common.errors.notFound")
+
+    case HttpErrorCodes.FORBIDDEN:
+      return t("common.errors.forbidden")
+
+    case HttpErrorCodes.INTERNAL_ERROR:
+      return t("common.errors.internalError")
+
+    case HttpErrorCodes.CONNECTION_LOST:
+      return t("common.errors.connectionLost")
+  }
+
   return null
 }
 

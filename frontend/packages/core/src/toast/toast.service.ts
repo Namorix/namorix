@@ -4,7 +4,7 @@ import type {
   NmxToastType,
 } from "./toast.types"
 import { ApiError } from "../http"
-import { resolveAuthError } from "../i18n"
+import { formatApiError } from "../i18n"
 import i18n from "i18next"
 
 type ToastListener = (event: NmxToastEvent) => void
@@ -22,6 +22,10 @@ class NmxToastBus {
     type: NmxToastType,
     duration: NmxToastDuration,
   ) {
+    if (!message || (typeof message === "string" && message.length <= 0)) {
+      console.warn("[nmxToast] empty message:", { type, duration })
+    }
+
     const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
     const event: NmxToastEvent = {
       id,
@@ -46,12 +50,13 @@ class NmxToastBus {
 
   error(message: string | unknown) {
     if (message instanceof Error) {
-      const resolved = resolveAuthError(message as ApiError)
-      if (resolved) {
-        this.emit(i18n.t(resolved.key), "error", "long")
+      const err = message as ApiError
+      const formatted = formatApiError(i18n.t, err)
+      if (formatted) {
+        this.emit(formatted, "error", "long")
         return
       }
-      this.emit(message.message, "error", "long")
+      this.emit(err.message || err.code || "Unknown error", "error", "long")
       return
     }
     this.emit(String(message), "error", "long")

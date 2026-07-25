@@ -13,6 +13,7 @@ export const HttpErrorCodes = {
   NOT_FOUND: "NOT_FOUND",
   INTERNAL_ERROR: "INTERNAL_ERROR",
   CONNECTION_LOST: "CONNECTION_LOST",
+  FORBIDDEN: "FORBIDDEN",
 } as const
 
 export const MiddlewareErrorCodes = {

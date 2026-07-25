@@ -37,7 +37,11 @@
       }
     },
     "errors": {
-      "untrustedProxy": "Proxy is not trusted. This proxy must be added to the trusted proxies list in Settings"
+      "untrustedProxy": "Proxy is not trusted. This proxy must be added to the trusted proxies list in Settings",
+      "notFound": "Resource not found",
+      "forbidden": "You do not have permission to perform this action",
+      "internalError": "Internal server error",
+      "connectionLost": "Connection lost"
     }
   },
   "ui": {
