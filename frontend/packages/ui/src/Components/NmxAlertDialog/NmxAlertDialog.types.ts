@@ -5,6 +5,7 @@ import type { NmxDialogSize } from "../NmxDialog"
 export interface NmxAlertDialogProps extends WithBaseProps {
   open: boolean
   title?: string
+  icon?: ReactNode
   description?: string | ReactNode
   size?: NmxDialogSize
   confirmLabel?: string

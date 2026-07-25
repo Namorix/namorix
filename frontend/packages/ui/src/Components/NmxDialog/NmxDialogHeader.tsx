@@ -4,12 +4,18 @@ import { cx } from "../../utils"
 
 export const NmxDialogHeader = ({
   title,
+  icon,
   showCloseButton = true,
   onClose,
   className,
 }: NmxDialogHeaderProps) => (
   <div className={cx("nmx-dialog__header", className)}>
-    {title && <h2 className="nmx-dialog__title">{title}</h2>}
+    {title && (
+      <h2 className="nmx-dialog__title">
+        {icon}
+        {title}
+      </h2>
+    )}
     {showCloseButton && (
       <button
         type="button"

@@ -13,6 +13,7 @@ export interface NmxDialogProps extends WithBaseProps {
 
 export interface NmxDialogHeaderProps extends WithBaseProps {
   title?: ReactNode
+  icon?: ReactNode
   showCloseButton?: boolean
   onClose?: () => void
 }

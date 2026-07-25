@@ -1,10 +1,11 @@
 import React from "react"
-import type { WithBaseProps } from "../../types"
+import type { WithBaseProps, WithOnClick } from "../../types"
 import { cx } from "../../utils"
 
-type NmxCardProps = WithBaseProps
+type NmxCardProps = WithBaseProps & WithOnClick
 
 export const NmxCard: React.FC<NmxCardProps> = ({
+  onClick,
   shouldRender = true,
   children,
   className,
@@ -15,7 +16,7 @@ export const NmxCard: React.FC<NmxCardProps> = ({
   }
 
   return (
-    <div {...rest} className={cx("nmx-card", className)}>
+    <div {...rest} className={cx("nmx-card", className)} onClick={onClick}>
       {children}
     </div>
   )

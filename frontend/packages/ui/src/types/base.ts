@@ -25,3 +25,7 @@ export interface WithVariant<T extends string = NmxButtonVariant> {
 export interface WithUppercase {
   uppercase?: boolean
 }
+
+export interface WithOnClick {
+  onClick?: React.MouseEventHandler<HTMLDivElement>
+}

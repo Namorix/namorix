@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next"
 export const NmxAlertDialog = ({
   open,
   title,
+  icon,
   description,
   size = "md",
   confirmLabel,
@@ -41,6 +42,7 @@ export const NmxAlertDialog = ({
     >
       <NmxDialogHeader
         title={title}
+        icon={icon}
         onClose={loading ? undefined : (onClose ?? onCancel)}
       />
       <NmxDialogBody>{children ?? description}</NmxDialogBody>
