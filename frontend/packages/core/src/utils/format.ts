@@ -61,7 +61,7 @@ export function formatRelativeTime(
   input: Date | string,
   t: (key: string, opts?: Record<string, unknown>) => string,
 ): string {
-  const dateTime = typeof input === "string" ? new Date(input) : input
+  const dateTime = parseUTCDate(input)
   const diffMs = Date.now() - dateTime.getTime()
   const diffMin = Math.floor(diffMs / 60000)
   const diffHour = Math.floor(diffMin / 60)
@@ -112,4 +112,10 @@ export function formatUptime(seconds: number | undefined): string | null {
   if (h > 0)
     return `${h.toString().padStart(2, "0")}h ${m.toString().padStart(2, "0")}m`
   return `${m}m`
+}
+
+export function parseUTCDate(input: string | Date): Date {
+  return typeof input === "string"
+    ? new Date(input.endsWith("Z") || input.includes("+") ? input : input + "Z")
+    : input
 }
