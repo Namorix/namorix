@@ -543,9 +543,82 @@ Window open
 
 | Mode | Auth | DOM slot | Token needed | Status |
 |------|------|----------|-------------|--------|
-| Widget (iframe) | HttpOnly cookie | ✅ (DOM slot) | ❌ | M4 backend + frontend core done |
+| Widget (iframe) | HttpOnly cookie | ✅ (DOM slot) | ❌ | M4 completed |
+| Standalone (own server) | OAuth2 authorization_code + PKCE | ❌ | ✅ (cookie-based refresh) | M4 completed |
 | Full app (window.open) | Handshake token | ❌ | ✅ | Planned |
-| Direct URL | Redirect → handshake | ❌ | ✅ | Planned |
+
+### External Addon Standalone Auth (OAuth2 authorization_code + PKCE)
+
+Addon standalone mode (own server, separate origin) uses OAuth2 authorization code flow with PKCE:
+
+```
+createMount (addon entry)
+  ├── isStandalone && !context.oauthConfig
+  │     └── fetch /.well-known/nmx-oauth-config (discovery)
+  │           └── Returns { authorizeUrl, tokenUrl, clientId, redirectUri }
+  │
+  ├── URL có code + state? (OAuth callback)
+  │     └── handleRedirectCallback(tokenUrl, clientId, redirectUri)
+  │           ├── POST /api/oauth/token (form-urlencoded)
+  │           │     grant_type=authorization_code
+  │           │     code=xxx&code_verifier=yyy&client_id=zzz
+  │           ├── Server: PKCE verification, create OAuthToken + OAuthRefreshToken
+  │           ├── Set-Cookie: nmx_addon_refresh_token (HttpOnly, SameSite=Lax, Path=/api)
+  │           └── Returns { accessToken, expiresIn }
+  │     ├── store token in-memory (_token)
+  │     └── window.history.replaceState (clean URL)
+  │
+  ├── Có access token? (getAccessToken)
+  │     └── Return cached token if not expired
+  │
+  ├── Không có access token?
+  │     └── trySilentRefresh(desktopUrl)
+  │           ├── POST /api/oauth/token/refresh (with cookie)
+  │           ├── Server: hash raw token → lookup OAuthRefreshToken
+  │           │     ├── Not found/used/expired → 401
+  │           │     └── Valid → mark old Used, create new OAuthToken + OAuthRefreshToken
+  │           │           ├── Set-Cookie: new nmx_addon_refresh_token
+  │           │           └── Returns { accessToken }
+  │           └── Success → render()
+  │
+  │     └── Silent refresh failed?
+  │           └── authorizeRedirect(authorizeUrl, clientId, redirectUri)
+  │                 ├── Generate PKCE code_verifier (43-128 chars) + code_challenge (S256)
+  │                 ├── Generate state (anti-CSRF)
+  │                 ├── Store in sessionStorage (code_verifier, state)
+  │                 └── Redirect to authorize endpoint:
+  │                       GET /api/oauth/authorize?
+  │                         client_id=xxx&redirect_uri=yyy&response_type=code
+  │                         &code_challenge=S256hash&code_challenge_method=S256&state=zzz
+  │
+  └── OAuth authorize:
+        └── Server checks user session (cookie)
+              ├── No session → redirect {frontendUrl}/login?returnUrl={authorizeUrl with params}
+              └── Has session → create authorization code
+                    ├── Store code + PKCE challenge in OAuthAuthorizationCode
+                    └── Redirect to redirect_uri?code=xxx&state=yyy
+```
+
+Token refresh rotation:
+```
+OAuthService.RefreshAddonTokenAsync(rawToken)
+  ├── Hash = SHA256(Base64Decode(rawToken)) → hex string
+  ├── Find OAuthRefreshToken by hash (not used, not expired)
+  │     ├── Not found → return null (401)
+  │     └── Found → mark as Used
+  ├── Create new OAuthToken + new OAuthRefreshToken (rotation)
+  └── Return (newTokenId, newRefreshToken)
+```
+
+Cookie management:
+```
+SetAddonRefreshTokenCookie(token):
+  ├── HttpOnly = true (not readable by JS)
+  ├── SameSite = Lax (CSRF protection)
+  ├── Path = /api (available to all /api/* endpoints)
+  ├── Expires = UtcNow + OAuthRefreshTokenTtlDays (configurable, default 30)
+  └── Secure = _appConfig.SecureCookie
+```
 
 ### External Addons (M4 — Docker)
 
@@ -585,7 +658,7 @@ Addon tự tạo RSA keypair, gửi public key qua registration token để đă
 InstallAsync (AddonTaskExecutor)
   └── Generate registration token (Guid)
   └── Store OAuthRegistration (Token, AddonInstallationId, ExpiresAt)
-  └── Docker create: passes NMX_API_URL + NMX_REGISTRATION_TOKEN env vars
+  └── Docker create: passes NMX_DESKTOP_API_URL + NMX_REGISTRATION_TOKEN env vars
   └── Addon container starts → NmxOAuth2Client.EnsureInitializedAsync()
         ├── Nếu oauth.json tồn tại: load credentials từ disk
         ├── Nếu NMX_REGISTRATION_TOKEN set: self-register
@@ -696,7 +769,7 @@ AddonController action
 | `backend/src/Namorix.Server/Controllers/OAuthController.cs` | OAuth register + token endpoints |
 | `backend/src/Namorix.Server/Middleware/OAuth2Middleware.cs` | Bearer token verification |
 | `backend/src/Namorix.Core/OAuth/NmxOAuth2Client.cs` | OAuth2 client SDK (self-registration, token caching) |
-| `backend/src/Namorix.Core/OAuth/NmxAddonConfig.cs` | Addon env var config (ApiUrl, RegistrationToken, GrpcUrl) |
+| `backend/src/Namorix.Core/OAuth/NmxAddonConfig.cs` | Addon env var config (DesktopApiUrl, RegistrationToken, GrpcUrl) |
 | `backend/src/Namorix.Core/OAuth/NmxOAuth2ServiceCollectionExtensions.cs` | DI extension for addon OAuth2 client |
 | `backend/src/Namorix.Core/Constants/OAuth.cs` | OAuth env vars, grant types, parameters |
 | `backend/src/Namorix.Core/Constants/ExemptPaths.cs` | Middleware bypass paths (OAuth endpoints) |

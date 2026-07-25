@@ -27,6 +27,15 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-07-25 — OAuth PKCE cookie refresh, Base64 fix, createMount OAuth flow
+
+- Backend (Namorix.Core): NEW `HttpResponseExtensions.SetCookie` — reusable cookie setter (HttpOnly, SameSite=Lax, Path=/api). NEW `OAuthRefreshToken` entity for token rotation. NEW `TokenHash` utility (SHA256). AppConfig thêm `OAuthRefreshTokenTtlDays`. Cookie constant `AddonRefreshToken`.
+- Backend (Namorix.Server): NEW `FrontendConfig` — frontend URL config. BackendConfig moved từ Core → Server. OAuth PKCE full flow — authorize redirect via login page with returnUrl, token exchange with PKCE verification, refresh token rotation via `nmx_addon_refresh_token` cookie. AuthController dùng SetCookie extension. TokenCleanupWorker mở rộng cleanup OAuthRefreshTokens. New migration `AddOAuthRefreshToken`. Base64UrlEncode → Convert.ToBase64String fix cho TokenHash compatibility.
+- Core (@namorix/core): OAuth code in `createMount.tsx` uncommented — handleRedirectCallback, trySilentRefresh, authorizeRedirect now execute. `browser.ts` silent refresh dùng desktopUrl trích từ oauthConfig.tokenUrl.
+- Frontend: Login page handles returnUrl from OAuth authorize redirect. i18n updates.
+- Fixes: Cookie path `/api/oauth/token/refresh` → `/api` (browser discards Set-Cookie when resp path ≠ cookie path). RefreshToken endpoint dùng `CookieName.AddonRefreshToken`.
+- Versions: @namorix/core 0.45.0, frontend 0.57.0, Namorix.Core 0.49.0, Namorix.Server 0.51.0.
+
 ### 2026-07-25 (2) — parseUTCDate timezone fix, addon info dialog, OAuth config endpoint, silent refresh
 
 - Core: `parseUTCDate()` helper added to `utils/format.ts` — fixes `installedAt` showing wrong relative time due to missing timezone info. `formatRelativeTime` now uses it for all date parsing.

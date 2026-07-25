@@ -228,7 +228,7 @@ backend/
         │   ├── PermissionController.cs  # User permission management
         │   ├── UserPermissionController.cs
         │   ├── NotificationController.cs  # Notification list, unread, mark read, delete
-        │   ├── OAuthController.cs       # OAuth2 endpoints (authorize, token, revoke)
+        │   ├── OAuthController.cs       # OAuth2 endpoints (authorize, token, refresh, revoke)
         │   └── AddonController.cs       # Addon install/start/stop/uninstall/list/catalog
         └── Workers/
             ├── TokenCleanupWorker.cs            # Cleans expired tokens every 24h
@@ -292,8 +292,9 @@ backend/
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/api/oauth/authorize` | Authorize endpoint (PKCE + session check) |
-| POST | `/api/oauth/token` | Token endpoint (authorization_code + client_credentials) |
+| GET | `/api/oauth/authorize` | Authorize endpoint (PKCE + session check + login redirect) |
+| POST | `/api/oauth/token` | Token endpoint (authorization_code + PKCE + client_credentials) |
+| POST | `/api/oauth/token/refresh` | Refresh addon token via cookie rotation |
 | POST | `/api/oauth/revoke` | Revoke OAuth token + disconnect gRPC channel |
 
 ### Addon (`/api/addon`)
@@ -417,6 +418,7 @@ SQLite database file (`namorix.db`), tạo tự động khi chạy migrations.
 - **OAuthToken** — `id`, `tokenId`, `clientId`, `userId`, `type`, `expiresAt`
 - **OAuthConsent** — `id`, `clientId`, `userId`, `scope`
 - **OAuthRegistration** — `id`, `clientId`, `token`, `expiresAt`
+- **OAuthRefreshToken** — `id`, `clientId`, `tokenHash`, `expiresAt`, `createdAt`, `used`
 
 ### Migrations
 

@@ -158,45 +158,18 @@
 - ContainerId từ Docker create response, lưu vào DB → dùng cho start/stop/uninstall sau
 
 **Issues**:
-- `ApiUrl` (NMX_API_URL env var cho container) — cần config hoặc hardcode
+- `DesktopApiUrl` (NMX_DESKTOP_API_URL env var cho container) — cần config hoặc hardcode
 - OAuth key gen (ClientId/RedirectUri) — generate tạm, OAuth đầy đủ làm sau
 - HostPort auto-allocate khi không chỉ định — Docker random port
-- Cần quyết định ApiUrl approach trước khi implement
+- Cần quyết định DesktopApiUrl approach trước khi implement
 
 **Files**:
 - `frontend/src/addons/PackageCenter/AddonGrid.tsx` — thêm `image` vào DisplayAddon, handleInstall, gắn onClick
 - `backend/src/Namorix.Server/Services/AddonTaskExecutor.cs` — implement InstallAsync
 - `backend/src/Namorix.Server/Controllers/AddonController.cs` — thêm SetTaskPending(Installing)
-- `backend/src/Namorix.Core/Config/AppConfig.cs` — optional: thêm ApiUrl
+- `backend/src/Namorix.Core/Config/AppConfig.cs` — optional: thêm DesktopApiUrl
 
-**Status**: Deferred — chờ quyết định ApiUrl + OAuth approach.
-
----
-
-## External Addon — OAuth redirect in standalone mode
-
-**Context**: Khi external addon (namorix-weave) chạy standalone (mở ở port riêng, VD http://localhost:5100), `createMount()` cần OAuth params (`oauthClientId`, `oauthAuthorizeUrl`, `oauthTokenUrl`) để redirect user đến desktop authorize endpoint. Hiện tại không có cơ chế nào cung cấp các params này cho frontend addon → `canOAuth = false` → component render luôn mà không redirect.
-
-**Approach**: Addon backend serve `.well-known` endpoint, frontend fetch fallback khi standalone:
-- Backend: expose `NmxOAuth2Client.ClientId` (public property), thêm extension method `MapNmxOAuthConfig()` cho `WebApplication`
-- Endpoint: `GET /.well-known/nmx-oauth-config` (RFC 8615)
-- Frontend: `createMount.tsx` — nếu `isStandalone && !canOAuth` → fetch endpoint → retry OAuth
-
-**Design decisions**:
-1. **Endpoint**: `/.well-known/nmx-oauth-config` — tránh đụng route, theo OIDC convention
-2. **Reverse proxy**: Cần `UseForwardedHeaders()` để đọc `X-Forwarded-Proto`/`X-Forwarded-Host`, nếu không redirectUri sai sau ingress
-3. **Shared layer**: Extension method `MapNmxOAuthConfig()` trong `Namorix.Core` — addon chỉ cần gọi 1 dòng, không copy-paste
-4. **Frontend error handling**: fetch kèm try/catch → fallback render UI báo lỗi nếu addon cũ chưa có endpoint
-5. **PKCE cho public client**: Thêm PKCE cho authorization code flow từ browser (public client không giữ được secret)
-6. **Cache config**: `createMount` cache kết quả fetch để tránh gọi lại nhiều lần trong session
-
-**Files**:
-- `backend/src/Namorix.Core/OAuth/NmxOAuth2Client.cs` — expose `ClientId` property
-- `backend/src/Namorix.Core/OAuth/NmxOAuthConfigEndpoint.cs` — extension method mới
-- `frontend/packages/core/src/mount/createMount.tsx` — fetch fallback + cache
-- namorix-weave — `Program.cs` thêm `app.MapNmxOAuthConfig()`
-
-**Status**: Pending implementation. Gắn với M4 external addon flow.
+**Status**: Deferred — chờ quyết định DesktopApiUrl + OAuth approach.
 
 ## Upcoming Addons
 

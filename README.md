@@ -284,7 +284,7 @@ Addon có 2 mode tích hợp:
 
 | Variable | Config Path | Default | Description |
 |----------|-------------|---------|-------------|
-| `NMX_API_URL` | NmxAddonConfig.ApiUrl | (required) | Namorix backend base URL |
+| `NMX_DESKTOP_API_URL` | NmxAddonConfig.DesktopApiUrl | (required) | Namorix backend base URL |
 | `NMX_REGISTRATION_TOKEN` | NmxAddonConfig.RegistrationToken | (optional) | One-time token for addon self-registration |
 | `NMX_DATA_DIR` | NmxAddonConfig.DataDir | `./data` | Addon data directory |
 

@@ -136,12 +136,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.56.0 | M4 (addon info dialog, silent refresh after terminal status) |
-| @namorix/core | 0.44.1 | M4 (parseUTCDate helper for timezone-safe date formatting) |
+| frontend | 0.57.0 | M4 (Login returnUrl, OAuth PKCE cookie refresh) |
+| @namorix/core | 0.45.0 | M4 (OAuth PKCE silent refresh, createMount flow uncommented) |
 | @namorix/styles | 0.38.2 | M4 (card-clickable SCSS block, dialog tweaks) |
 | @namorix/ui | 0.27.0 | M4 (NmxCard onClick prop, NmxAlertDialog/NmxDialog extensions) |
-| Namorix.Core | 0.48.0 | M4 (OAuth config well-known endpoint extension, ClientId public, OAuthEndpoints.Authorize) |
-| Namorix.Server | 0.50.1 | M4 (AddonInstallation moved to Server, refactored AddonService with join DTO) |
+| Namorix.Core | 0.49.0 | M4 (OAuthRefreshToken, TokenHash, HttpResponseExtensions, cookie helpers) |
+| Namorix.Server | 0.51.0 | M4 (OAuth PKCE full flow, refresh cookie, BackendConfig move, FrontendConfig) |
 
 ## Version Rules
 
@@ -168,6 +168,15 @@
 - Không bao giờ bump cả Core + Server cùng lúc nếu chỉ 1 trong 2 thay đổi
 
 ## Version History
+
+### 2026-07-25 — OAuth PKCE cookie refresh, Base64 fix, createMount OAuth flow, BackendConfig move
+
+- @namorix/core 0.44.1 → 0.45.0: MODIFIED: `oauth/browser.ts` — silent refresh uses desktopUrl from config. `mount/createMount.tsx` — uncommented OAuth flow (handleRedirectCallback, trySilentRefresh, authorizeRedirect now active). `oauth/constants.ts` — new constants. `apiRoutes.ts` — OAuth route updates.
+- frontend 0.56.0 → 0.57.0: MODIFIED: `pages/Login.tsx` — returnUrl support for OAuth authorize redirect. `i18n/locales/en.json` — i18n updates. `vite.config.ts` — config changes.
+- Namorix.Core 0.48.0 → 0.49.0: NEW: `Extensions/HttpResponseExtensions.cs` — SetCookie extension method (HttpOnly, SameSite=Lax, Path=/api). `Models/OAuthRefreshToken.cs` — refresh token entity. `Utils/TokenHash.cs` — SHA256 hash utility. MODIFIED: `Config/AppConfig.cs` — OAuthRefreshTokenTtlDays. `Constants/Cookie.cs` — AddonRefreshToken name. `Constants/OAuth.cs` — expanded constants.
+- Namorix.Server 0.50.1 → 0.51.0: NEW: `Config/FrontendConfig.cs` — frontend URL config for login redirect. MOVED: `Config/BackendConfig.cs` — từ Namorix.Core sang. MODIFIED: `Controllers/OAuthController.cs` — refresh endpoint with cookie read, SetAddonRefreshTokenCookie. `Controllers/AuthController.cs` — dùng SetCookie extension. `Services/OAuthService.cs` — PKCE verification, refresh token rotation (OAuthRefreshToken), standard base64 fix. `Persistence/AppDbContext.cs` — OAuthRefreshTokens DbSet. `Workers/TokenCleanupWorker.cs` — OAuthRefreshToken cleanup. NEW migration `AddOAuthRefreshToken`.
+- @namorix/styles — không thay đổi.
+- @namorix/ui — không thay đổi.
 
 ### 2026-07-25 — parseUTCDate timezone fix, addon info dialog, OAuth config endpoint, silent refresh
 
