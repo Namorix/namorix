@@ -171,6 +171,25 @@
 
 **Status**: Deferred — chờ quyết định DesktopApiUrl + OAuth approach.
 
+## OAuthConsents — Planned
+
+**Context**: `OAuthConsents` table đã được tạo trong DB schema nhưng chưa được sử dụng. Dùng để lưu consent grant của user cho mỗi OAuth client — cho phép user revoke consent cho addon cụ thể, và hỏi consent lần đầu khi addon request authorization.
+
+**Approach**:
+- Backend: OAuthService kiểm tra OAuthConsents trước khi tạo authorization code (nếu `prompt=consent` hoặc chưa có consent)
+- Backend: API endpoint `GET /api/oauth/consents` + `DELETE /api/oauth/consents/{clientId}` cho user quản lý
+- Frontend: OAuth consent dialog khi addon request lần đầu
+- Frontend: Settings tab quản lý consented addons
+
+**Files**:
+- `backend/src/Namorix.Server/Services/OAuthService.cs` — thêm consent check
+- `backend/src/Namorix.Server/Controllers/OAuthController.cs` — thêm consent endpoints
+- `frontend/src/pages/Settings/` — thêm OAuth consents tab
+
+**Status**: Planned — chờ khi có external addon request flow cần consent.
+
+---
+
 ## Upcoming Addons
 
 - Beam (media)

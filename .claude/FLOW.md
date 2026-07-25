@@ -603,11 +603,26 @@ Token refresh rotation:
 ```
 OAuthService.RefreshAddonTokenAsync(rawToken)
   ├── Hash = SHA256(Base64Decode(rawToken)) → hex string
-  ├── Find OAuthRefreshToken by hash (not used, not expired)
-  │     ├── Not found → return null (401)
-  │     └── Found → mark as Used
+  ├── Find OAuthRefreshToken by hash (not expired)
+  │     ├── Not found → return (Expired, 401)
+  │     ├── Found + Used == true → REUSE DETECTED
+  │     │     ├── Revoke ALL OAuthTokens for this ClientId
+  │     │     ├── Mark ALL OAuthRefreshTokens for this ClientId as Used
+  │     │     ├── Log warning "Token reuse detected"
+  │     │     └── Return (Reused, 401 + TOKEN_REUSED error code)
+  │     └── Found + Used == false → mark as Used
   ├── Create new OAuthToken + new OAuthRefreshToken (rotation)
-  └── Return (newTokenId, newRefreshToken)
+  └── Return (Ok, newTokenId, newRefreshToken)
+```
+
+OAuth token cleanup (TokenCleanupWorker, every 24h):
+```
+CleanupExpiredTokens
+  ├── DELETE RefreshTokens WHERE ExpiresAt < UtcNow
+  ├── DELETE OAuthRegistrations WHERE Used OR ExpiresAt < UtcNow
+  ├── DELETE OAuthRefreshTokens WHERE Used OR ExpiresAt < UtcNow
+  ├── DELETE OAuthAuthorizationCodes WHERE ExpiresAt < UtcNow
+  └── DELETE OAuthTokens WHERE ExpiresAt < UtcNow
 ```
 
 Cookie management:

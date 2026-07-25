@@ -136,12 +136,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.58.0 | M4 (Frontgate addon scaffold) |
-| @namorix/core | 0.45.0 | M4 (OAuth PKCE silent refresh, createMount flow uncommented) |
-| @namorix/styles | 0.39.0 | M4 (Frontgate icon token) |
-| @namorix/ui | 0.28.0 | M4 (APP_FRONTGATE icon symbol) |
-| Namorix.Core | 0.49.0 | M4 (OAuthRefreshToken, TokenHash, HttpResponseExtensions, cookie helpers) |
-| Namorix.Server | 0.51.0 | M4 (OAuth PKCE full flow, refresh cookie, BackendConfig move, FrontendConfig) |
+| frontend | 0.59.0 | M4 (Frontgate pages, DesktopArea role guard, minimize fix) |
+| @namorix/core | 0.46.0 | M4 (useUserRoleAdmin hook, formatHttpError, FORBIDDEN code, HTTP error i18n) |
+| @namorix/styles | 0.39.1 | M4 (SCSS tweaks, icomoon rebuild) |
+| @namorix/ui | 0.28.1 | M4 (icon type updates) |
+| Namorix.Core | 0.50.0 | M4 (OAuthRefreshErrors constants, DeleteCookie extension) |
+| Namorix.Server | 0.52.0 | M4 (OAuth reuse detection + revoke chain, token cleanup, OAuthConsent removed) |
 
 ## Version Rules
 
@@ -174,6 +174,15 @@
 - @namorix/styles 0.38.2 → 0.39.0: MODIFIED: `base/tokens/icons.scss` — added `--nmx-icon-app-frontgate` CSS variable for new Frontgate icon.
 - @namorix/ui 0.27.0 → 0.28.0: MODIFIED: `Primitives/NmxIcon/NmxIconSvg.types.ts` — added `APP_FRONTGATE: "app-frontgate"` symbol.
 - frontend 0.57.0 → 0.58.0: NEW: `addons/Frontgate/Frontgate.addon.tsx` — addon manifest registered. NEW: `addons/Frontgate/Frontgate.tsx` — empty component scaffold. MODIFIED: `addons/index.ts` — added Frontgate import. `addons/types.ts` — added `frontgate` to NmxAddonId and NmxAddonLocaleKeys. `i18n/locales/en.json` — frontgate i18n keys. Themes CSS rebuilt.
+
+### 2026-07-25 — OAuth reuse detection, formatHttpError, Frontgate pages, token cleanup
+
+- @namorix/core 0.45.0 → 0.46.0: NEW: `hooks/useUserRoleAdmin.ts` — role check hook. `i18n/validation-messages.ts` — `formatHttpError` function (handles NOT_FOUND, INTERNAL_ERROR, CONNECTION_LOST, FORBIDDEN). MODIFIED: `types/error.ts` — added `FORBIDDEN` to HttpErrorCodes. `i18n/locales/en.json` — added `notFound`, `internalError`, `connectionLost`, `forbidden` keys. `toast/toast.service.ts` — uses `formatApiError` instead of just `resolveAuthError`.
+- @namorix/styles 0.39.0 → 0.39.1: MODIFIED: SCSS component tweaks (button, search-input, segmented-group, select, toolbar, desktop). Icomoon icons rebuilt (fonts, variables, selection).
+- @namorix/ui 0.28.0 → 0.28.1: MODIFIED: `Primitives/NmxIcon/NmxIconFont.types.ts` — icon type symbol updates.
+- frontend 0.58.0 → 0.59.0: NEW: `addons/Frontgate/Frontgate.tsx` — NmxToolbar layout with ReverseProxy/Certificate/ErrorPages tabs. NEW: `addons/Frontgate/FrontgateReverseProxy.tsx`, `FrontgateCertificate.tsx`, `FrontgateErrorPages.tsx` — tab component scaffolds. MODIFIED: `addons/Frontgate/Frontgate.addon.tsx` — updated. `components/DesktopArea/DesktopArea.tsx` — role guard for admin API calls. `store/slices/windowsSlice.ts` — minimize/restore bug fix. `i18n/locales/en.json` — Frontgate tab keys.
+- Namorix.Core 0.49.0 → 0.50.0: NEW: `Constants/Error.cs` — `OAuthRefreshErrors` with `TokenReused`. MODIFIED: `Extensions/HttpResponseExtensions.cs` — refactored to C# extension class, added `DeleteCookie` extension method.
+- Namorix.Server 0.51.0 → 0.52.0: NEW: `Services/OAuthService.cs` — `OAuthRefreshStatus` enum, reuse detection in `RefreshAddonTokenAsync` (revokes entire token chain on reuse). MODIFIED: `Controllers/OAuthController.cs` — handles `Reused` status (clears cookie, returns 401 with `TOKEN_REUSED`). `Workers/TokenCleanupWorker.cs` — added cleanup for `OAuthAuthorizationCodes` and `OAuthTokens`. `Persistence/AppDbContext.cs` — removed OAuthConsent DbSet. REMOVED: `Models/OAuthConsent.cs`. NEW migration `RemoveOAuthConsent`.
 
 ### 2026-07-25 — OAuth PKCE cookie refresh, Base64 fix, createMount OAuth flow, BackendConfig move
 

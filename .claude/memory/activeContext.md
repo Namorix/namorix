@@ -27,6 +27,15 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-07-25 — OAuth reuse detection, formatHttpError, Frontgate pages, token cleanup
+
+- @namorix/core 0.45.0 → 0.46.0: NEW `useUserRoleAdmin` hook, `formatHttpError` function with FORBIDDEN/HTTP error codes. Toast error resolution now covers all error categories.
+- Frontend 0.58.0 → 0.59.0: Frontgate TSX with NmxToolbar (Reverse Proxy, Certificate, Error Pages tabs) + 3 scaffold components. DesktopArea role guard for admin API calls. Window minimize/restore bug fix.
+- Namorix.Core 0.49.0 → 0.50.0: NEW `OAuthRefreshErrors` constants. `DeleteCookie` extension method added.
+- Namorix.Server 0.51.0 → 0.52.0: OAuth refresh token reuse detection — token reused → revoke entire chain + return `TOKEN_REUSED`. TokenCleanupWorker mở rộng cleanup `OAuthAuthorizationCodes` + `OAuthTokens`. OAuthConsent model + table removed.
+- @namorix/styles 0.39.0 → 0.39.1: SCSS tweaks, icomoon rebuild.
+- @namorix/ui 0.28.0 → 0.28.1: Icon type updates.
+
 ### 2026-07-25 — Frontgate addon scaffold
 
 - New internal addon "Frontgate" — reverse proxy management UI for routing traffic to addons via custom domains/subdomains.
