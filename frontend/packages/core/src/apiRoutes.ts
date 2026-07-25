@@ -72,8 +72,5 @@ export const ApiAddonRoutes = {
 } as const
 
 export const ApiOAuthRoutes = {
-  authorize: API_OAUTH_BASE + "/authorize",
-  token: API_OAUTH_BASE + "/token", // TODO: can xem xet
-  revoke: API_OAUTH_BASE + "/revoke", // TODO: can xem xet
-  register: API_OAUTH_BASE + "/register", // TODO: can xem xet
+  refresh: API_OAUTH_BASE + "/token/refresh",
 } as const

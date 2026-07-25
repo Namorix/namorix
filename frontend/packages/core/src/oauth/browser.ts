@@ -1,5 +1,7 @@
 import { base64UrlEncode, sha256 } from "./utils"
 import { OAUTH_PARAMS, OAUTH_VALUES, STORAGE_KEYS } from "./constants"
+import { getApiBaseUrl } from "../config"
+import { ApiOAuthRoutes } from "../apiRoutes"
 
 interface OAuthToken {
   accessToken: string
@@ -88,6 +90,7 @@ export async function handleRedirectCallback(
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
     },
+    credentials: "include",
     body,
   })
 
@@ -112,4 +115,27 @@ export function getAccessToken(): string | null {
 
 export function clearTokens(): void {
   _token = null
+}
+
+export async function trySilentRefresh(
+  desktopUrl?: string,
+): Promise<OAuthToken | null> {
+  try {
+    const baseUrl = desktopUrl ?? getApiBaseUrl()
+    const res = await fetch(baseUrl + ApiOAuthRoutes.refresh, {
+      method: "POST",
+      credentials: "include",
+    })
+
+    if (!res.ok) return null
+    const json = await res.json()
+
+    _token = {
+      accessToken: json.tokenId,
+      expiresAt: Date.now() + 3600 * 1000,
+    }
+    return _token
+  } catch {
+    return null
+  }
 }

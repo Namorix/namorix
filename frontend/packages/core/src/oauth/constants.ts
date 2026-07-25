@@ -1,3 +1,5 @@
+export const OAUTH_WELL_KNOWN_PATH = "/.well-known/nmx-oauth-config"
+
 export const STORAGE_KEYS = {
   codeVerifier: "oauth:code_verifier",
   state: "oauth:state",
