@@ -16,10 +16,11 @@ import {
 } from "@namorix/ui"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import {
   AuthConstraints,
   DefaultPaths,
+  getApiBaseUrl,
   nmxToast,
   resolveError,
   useRegisterEnabledStore,
@@ -34,6 +35,7 @@ export const Login: React.FC = () => {
   const [password, setPassword] = useState("12345678")
   const [rememberMe, setRememberMe] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [searchParams] = useSearchParams()
   const registerEnabled = useRegisterEnabledStore()
   const navigate = useNavigate()
 
@@ -67,9 +69,18 @@ export const Login: React.FC = () => {
     setBusy(true)
 
     try {
+      const returnUrl = searchParams.get("returnUrl")
       await authController.login(username, password, rememberMe)
-      nmxToast.success(t("auth.login.success"))
-      navigate(DefaultPaths.HOME)
+
+      if (returnUrl) {
+        nmxToast.success(t("auth.login.successRedirect"))
+        setTimeout(() => {
+          window.location.href = getApiBaseUrl() + returnUrl
+        }, 1000)
+      } else {
+        nmxToast.success(t("auth.login.success"))
+        navigate(DefaultPaths.HOME)
+      }
     } catch (err: unknown) {
       nmxToast.error(resolveError(t, err, "auth.login.errors.generic"))
     }

@@ -48,7 +48,8 @@
       "errors": {
         "generic": "An error occurred during login. Please try again"
       },
-      "success": "Login successful. Redirecting to dashboard..."
+      "success": "Login successful. Redirecting to dashboard...",
+      "successRedirect": "Login successful. Redirecting you back..."
     },
     "register": {
       "heroTitle": "Create\nAccount",
