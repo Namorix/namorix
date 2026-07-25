@@ -67,4 +67,12 @@
       background: transparent;
     }
   }
+
+  &:has(&__item--disabled) &__item--role-admin {
+    cursor: pointer;
+
+    &:hover {
+      filter: brightness(0.65);
+    }
+  }
 }

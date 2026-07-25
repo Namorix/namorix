@@ -16,6 +16,96 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.ic-lock {
+  &:before {
+    content: $ic-lock; 
+  }
+}
+.ic-reverse-proxy {
+  &:before {
+    content: $ic-reverse-proxy; 
+  }
+}
+.ic-security {
+  &:before {
+    content: $ic-security; 
+  }
+}
+.ic-stats {
+  &:before {
+    content: $ic-stats; 
+  }
+}
+.ic-logs {
+  &:before {
+    content: $ic-logs; 
+  }
+}
+.ic-error-page {
+  &:before {
+    content: $ic-error-page; 
+  }
+}
+.ic-ram {
+  &:before {
+    content: $ic-ram; 
+  }
+}
+.ic-mark-all {
+  &:before {
+    content: $ic-mark-all; 
+  }
+}
+.ic-filter {
+  &:before {
+    content: $ic-filter; 
+  }
+}
+.ic-cpu {
+  &:before {
+    content: $ic-cpu; 
+  }
+}
+.ic-time {
+  &:before {
+    content: $ic-time; 
+  }
+}
+.ic-density-default {
+  &:before {
+    content: $ic-density-default; 
+  }
+}
+.ic-density-compact {
+  &:before {
+    content: $ic-density-compact; 
+  }
+}
+.ic-density-spacious {
+  &:before {
+    content: $ic-density-spacious; 
+  }
+}
+.ic-warning {
+  &:before {
+    content: $ic-warning; 
+  }
+}
+.ic-info {
+  &:before {
+    content: $ic-info; 
+  }
+}
+.ic-arrow-bar-down {
+  &:before {
+    content: $ic-arrow-bar-down; 
+  }
+}
+.ic-arrow-bar-up {
+  &:before {
+    content: $ic-arrow-bar-up; 
+  }
+}
 .ic-home {
   &:before {
     content: $ic-home; 
@@ -126,19 +216,9 @@
     content: $ic-user; 
   }
 }
-.ic-logs {
-  &:before {
-    content: $ic-logs; 
-  }
-}
 .ic-nodes {
   &:before {
     content: $ic-nodes; 
-  }
-}
-.ic-stats {
-  &:before {
-    content: $ic-stats; 
   }
 }
 .ic-menu {
@@ -184,11 +264,6 @@
 .ic-search {
   &:before {
     content: $ic-search; 
-  }
-}
-.ic-security {
-  &:before {
-    content: $ic-security; 
   }
 }
 

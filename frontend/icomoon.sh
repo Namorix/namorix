@@ -65,5 +65,14 @@ cat > "$ICOMOON_DEST/$FONT_FACE_DEST" <<EOF
 EOF
 echo "Generated $FONT_FACE_DEST (font nhúng base64, $(( ${#WOFF_BASE64} / 1024 )) KB)"
 
+# 4. Copy selection.json — giữ lại để sau này import ngược vào IcoMoon app khi cần thêm/sửa icon
+SELECTION_FILE="$TMP_DIR/selection.json"
+if [ -f "$SELECTION_FILE" ]; then
+    cp "$SELECTION_FILE" "$ICOMOON_DEST/selection.json"
+    echo "Copied selection.json → $ICOMOON_DEST/selection.json"
+else
+    echo "Warning: selection.json not found in zip, skipped"
+fi
+
 rm "$ZIP_FILE"
 echo "Done!"

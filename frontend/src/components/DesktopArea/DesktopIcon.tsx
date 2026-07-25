@@ -4,6 +4,7 @@ import type { AddonItem, OnOpenApp } from "../../types"
 import { useTranslation } from "react-i18next"
 import { resolveAddonLocaleTitle } from "../../utils"
 import { useDoubleTap } from "@namorix/core/hooks/useDoubleTap"
+import { useUserRoleAdmin } from "@namorix/core"
 
 interface DesktopIconProps {
   addon: AddonItem
@@ -20,6 +21,7 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
 }) => {
   const { t } = useTranslation()
   const btnRef = useRef<HTMLButtonElement>(null)
+  const isUserRoleAdmin = useUserRoleAdmin()
 
   const handleClick = useDoubleTap(() => {
     if (disabled) {
@@ -35,6 +37,7 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
       ref={btnRef}
       className={cx("nmx-desktop-area__item", {
         "nmx-desktop-area__item--disabled": disabled,
+        "nmx-desktop-area__item--role-admin": isUserRoleAdmin,
       })}
       type="button"
       onClick={handleClick}

@@ -78,8 +78,11 @@ export const windowsSlice = createSlice({
       delete state.byId[id]
       state.order = state.order.filter((wid) => wid !== id)
       state.zOrder = state.zOrder.filter((wid) => wid !== id)
+
       if (state.activeId === id) {
-        state.activeId = state.order.at(-1) ?? null
+        state.activeId =
+          state.order.filter((wid) => !state.byId[wid]?.minimized).at(-1) ??
+          null
       }
     },
 
@@ -87,7 +90,7 @@ export const windowsSlice = createSlice({
       const id = action.payload
       const win = state.byId[id]
 
-      if (!win || state.activeId === id) {
+      if (!win || (state.activeId === id && !win.minimized)) {
         return
       }
 

@@ -21,6 +21,7 @@ import {
 import { NmxIconSvgSymbol } from "@namorix/ui"
 import { addonController, mapDtoToManifest } from "../../controllers"
 import { createExternalAddonEntry } from "../../services"
+import { useUserRoleAdmin } from "@namorix/core"
 
 export interface DesktopAddonItem extends AddonItem {
   disabled?: boolean
@@ -33,6 +34,7 @@ export const DesktopArea: React.FC = () => {
   const dispatch = useAppDispatch()
   const externalAddonsMap = useAppSelector(selectorExternalAddons)
   const externalAddonsOrder = useAppSelector(selectorExternalAddonsOrder)
+  const isUserRoleAdmin = useUserRoleAdmin()
 
   const addons = useMemo((): DesktopAddonItem[] => {
     const builtin = listAddons(user?.role).map(addonToItems)
@@ -76,26 +78,27 @@ export const DesktopArea: React.FC = () => {
   }
 
   const handleDisabledClick = (addon: AddonItem) => {
-    addonController.start(addon.id).catch((err) => nmxToast.error(err))
+    if (isUserRoleAdmin) {
+      addonController.start(addon.id).catch((err) => nmxToast.error(err))
+    }
   }
 
   useEffect(() => {
-    addonController
-      .list()
-      .then((list) => {
-        dispatch(setAddons(list.map(mapDtoToManifest)))
-      })
-      .catch((err) => nmxToast.error(err))
-  }, [dispatch])
+    if (!isUserRoleAdmin) {
+      addonController
+        .list()
+        .then((list) => dispatch(setAddons(list.map(mapDtoToManifest))))
+        .catch((err) => nmxToast.error(err))
+      return
+    }
 
-  useEffect(() => {
-    addonController
-      .refreshCatalog()
-      .then((data) => {
-        dispatch(setCatalog(data))
+    Promise.all([addonController.list(), addonController.refreshCatalog()])
+      .then(([list, catalog]) => {
+        dispatch(setAddons(list.map(mapDtoToManifest)))
+        dispatch(setCatalog(catalog))
       })
       .catch((err) => nmxToast.error(err))
-  }, [dispatch])
+  }, [dispatch, isUserRoleAdmin])
 
   return (
     <DesktopAreaView

@@ -35,7 +35,7 @@
   cursor: pointer;
   display: flex;
   align-items: center;
-  padding: var(--nmx-spacing-md) var(--nmx-spacing-lg);
+  padding: var(--nmx-spacing-sm) var(--nmx-spacing-lg);
   border-radius: var(--nmx-radius-md);
   font-size: var(--nmx-font-size-sm);
   font-weight: var(--nmx-font-weight-medium);
@@ -48,6 +48,7 @@
 
   &__icon {
     margin-right: var(--nmx-spacing-xs);
+    font-size: var(--nmx-font-size-lg);
   }
 
   &:hover {

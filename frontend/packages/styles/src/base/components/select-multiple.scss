@@ -8,10 +8,10 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--nmx-spacing-md) var(--nmx-spacing-lg);
+    padding: var(--nmx-spacing-sm) var(--nmx-spacing-lg);
+    border: 1px solid var(--nmx-color-surface-lowest);
     background: var(--nmx-color-surface-lowest);
     color: var(--nmx-color-on-surface-variant);
-    border: none;
     border-radius: var(--nmx-radius-md);
     font-size: var(--nmx-font-size-sm);
     line-height: var(--nmx-line-height-normal);
@@ -22,6 +22,7 @@
     &--open {
       color: var(--nmx-color-on-surface);
       background: var(--nmx-color-surface-mid);
+      border: 1px solid var(--nmx-color-surface-mid);
     }
   }
 

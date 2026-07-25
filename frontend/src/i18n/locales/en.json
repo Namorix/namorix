@@ -357,7 +357,12 @@
     },
     "frontgate": {
       "title": "Frontgate",
-      "description": "Routes traffic to your addons through custom domains and subdomains — no more remembering ports"
+      "description": "Routes traffic to your addons through custom domains and subdomains — no more remembering ports",
+      "tabs": {
+        "reverseProxy": "Reverse Proxy",
+        "certificate": "Certificate",
+        "errorPages": "Error Pages"
+      }
     }
   }
 }

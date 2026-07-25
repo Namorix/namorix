@@ -12,18 +12,20 @@ export const DesktopAreaView: React.FC<DesktopAreaViewProps> = ({
   addons,
   onIconOpen,
   onDisabledIconClick,
-}) => (
-  <div className="nmx-desktop-area">
-    <div className="nmx-desktop-area__grid">
-      {addons.map((addon) => (
-        <DesktopIcon
-          key={addon.id}
-          addon={addon}
-          onOpen={onIconOpen}
-          disabled={addon.disabled}
-          onDisabledClick={onDisabledIconClick}
-        />
-      ))}
+}) => {
+  return (
+    <div className="nmx-desktop-area">
+      <div className="nmx-desktop-area__grid">
+        {addons.map((addon) => (
+          <DesktopIcon
+            key={addon.id}
+            addon={addon}
+            onOpen={onIconOpen}
+            disabled={addon.disabled}
+            onDisabledClick={onDisabledIconClick}
+          />
+        ))}
+      </div>
     </div>
-  </div>
-)
+  )
+}
