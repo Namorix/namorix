@@ -1,12 +1,10 @@
-import {
-  type AddonCatalogEntry,
-  type AddonContainerStatus,
-  type AddonPendingPhase,
-  ApiAddonRoutes,
-  ApiError,
-  type ExternalAddonManifest,
-  nmxHttp,
-} from "@namorix/core"
+import { ApiAddonRoutes, ApiError, nmxHttp } from "@namorix/core"
+import type {
+  AddonCatalogEntry,
+  AddonContainerStatus,
+  AddonPendingPhase,
+  ExternalAddonManifest,
+} from "../addons"
 
 export interface AddonManifestDto {
   id: string

@@ -56,6 +56,13 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     setOnUnauthorized(async () => {
+      if (
+        window.location.pathname === DefaultPaths.LOGIN ||
+        window.location.pathname === DefaultPaths.REGISTER
+      ) {
+        return
+      }
+
       dispatch(closeAllWindows())
       setHasBeenConnected(false)
       await stopConnection()

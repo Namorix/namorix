@@ -1,11 +1,4 @@
-import {
-  type AddonContainerStatus,
-  type AddonPendingPhase,
-  type ExternalAddonManifest,
-  nmxToast,
-  semverCompare,
-  toHtml,
-} from "@namorix/core"
+import { nmxToast, semverCompare, toHtml } from "@namorix/core"
 import { addonController, mapDtoToManifest } from "../../controllers"
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -42,6 +35,11 @@ import {
 } from "@namorix/ui"
 import { resolveAddonError } from "./addonError"
 import { ServerSignalREvent, useServerSignalREvent } from "../../signalr"
+import type {
+  AddonContainerStatus,
+  AddonPendingPhase,
+  ExternalAddonManifest,
+} from "../types"
 
 interface DisplayAddon {
   id: string
