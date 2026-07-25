@@ -45,14 +45,16 @@ namespace Namorix.Server.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    Description = table.Column<string>(type: "TEXT", maxLength: 250, nullable: true),
-                    Icon = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
-                    Image = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
+                    ContainerId = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
                     HostPort = table.Column<int>(type: "INTEGER", nullable: false),
-                    Status = table.Column<string>(type: "TEXT", maxLength: 20, nullable: true),
+                    Ports = table.Column<string>(type: "TEXT", nullable: true),
+                    Image = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
                     Version = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
-                    Author = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    Status = table.Column<string>(type: "TEXT", maxLength: 20, nullable: true),
+                    PendingTaskId = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    PendingTaskPhase = table.Column<string>(type: "TEXT", maxLength: 20, nullable: true),
+                    LastErrorCode = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    LastStatusChangedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
                     InstalledAt = table.Column<DateTime>(type: "TEXT", nullable: false),
                     ClientId = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
                     PublicKey = table.Column<string>(type: "TEXT", nullable: true),
@@ -90,6 +92,8 @@ namespace Namorix.Server.Migrations
                 columns: table => new
                 {
                     Code = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
+                    CodeChallenge = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    CodeChallengeMethod = table.Column<string>(type: "TEXT", maxLength: 10, nullable: true),
                     ClientId = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     UserId = table.Column<int>(type: "INTEGER", nullable: false),
                     Scope = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
@@ -113,6 +117,22 @@ namespace Namorix.Server.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_OAuthConsents", x => new { x.UserId, x.ClientId });
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OAuthRegistrations",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Token = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
+                    AddonInstallationId = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    ExpiresAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    Used = table.Column<bool>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OAuthRegistrations", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -207,6 +227,7 @@ namespace Namorix.Server.Migrations
                     UserId = table.Column<int>(type: "INTEGER", nullable: false),
                     Jti = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     TokenHash = table.Column<string>(type: "TEXT", maxLength: 500, nullable: false),
+                    RememberMe = table.Column<bool>(type: "INTEGER", nullable: false),
                     ExpiresAt = table.Column<DateTime>(type: "TEXT", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
                     UserAgent = table.Column<string>(type: "TEXT", maxLength: 1000, nullable: true),
@@ -296,6 +317,12 @@ namespace Namorix.Server.Migrations
                 columns: new[] { "UserId", "IsRead" });
 
             migrationBuilder.CreateIndex(
+                name: "IX_OAuthRegistrations_Token",
+                table: "OAuthRegistrations",
+                column: "Token",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Permissions_Name_Value",
                 table: "Permissions",
                 columns: new[] { "Name", "Value" },
@@ -358,6 +385,9 @@ namespace Namorix.Server.Migrations
 
             migrationBuilder.DropTable(
                 name: "OAuthConsents");
+
+            migrationBuilder.DropTable(
+                name: "OAuthRegistrations");
 
             migrationBuilder.DropTable(
                 name: "OAuthTokens");

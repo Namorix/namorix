@@ -154,12 +154,8 @@ public class AddonTaskExecutor(
             {
                 Id = addonId,
                 ContainerId = containerId,
-                Name = catalogEntry.Name,
-                Description = catalogEntry.Description,
-                Icon = catalogEntry.Icon,
                 Image = image,
                 Version = catalogEntry.Version,
-                Author = catalogEntry.Author,
                 HostPort = entryPort,
                 Ports = catalogEntry.Ports,
                 Status = AddonStatus.Installed,

@@ -4,6 +4,7 @@ using Namorix.Core.Constants;
 using Namorix.Core.Models;
 using Namorix.Server.Constants;
 using Namorix.Server.Infrastructure;
+using Namorix.Server.Models;
 using Namorix.Server.Persistence;
 using Namorix.Server.Services;
 
@@ -72,22 +73,16 @@ public class DockerMonitorWorker(
         {
             if (!container.Labels.TryGetValue(AddonLabels.Id, out var addonId))
                 continue;
+            
             if (!dbAddonIds.Contains(addonId))
             {
                 // Auto-discover
-                container.Labels.TryGetValue(AddonLabels.Name, out var name);
-                container.Labels.TryGetValue(AddonLabels.Description, out var description);
-                container.Labels.TryGetValue(AddonLabels.Author, out var author);
-                
                 var hostPort = container.Ports?.FirstOrDefault()?.PublicPort ?? 0;
                 
                 db.AddonInstallations.Add(new AddonInstallation
                 {
                     Id = addonId,
                     ContainerId = container.ID,
-                    Name = name ?? addonId,
-                    Description = description,
-                    Author = author,
                     Image = container.Image ?? addonId,
                     HostPort = hostPort,
                     Status = container.State == DockerState.Running
@@ -133,14 +128,6 @@ public class DockerMonitorWorker(
             DockerState.Running => AddonStatus.Running,
             _ => AddonStatus.Stopped,
         };
-
-        if (container.Labels.TryGetValue(AddonLabels.Name, out var name))
-            addon.Name = name;
-
-        if (container.Labels.TryGetValue(AddonLabels.Description, out var desc))
-            addon.Description = desc;
-        if (container.Labels.TryGetValue(AddonLabels.Author, out var author))
-            addon.Author = author;
         
         if (container.Ports?.FirstOrDefault()?.PublicPort is { } port and > 0)
             addon.HostPort = port;
