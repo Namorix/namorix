@@ -64,3 +64,8 @@ public static class OAuthRegisterErrors
 {
     public const string InvalidToken = "INVALID_REGISTRATION_TOKEN";
 }
+
+public static class OAuthRefreshErrors
+{
+    public const string TokenReused = "TOKEN_REUSED";
+}

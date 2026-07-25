@@ -10,7 +10,9 @@ using Namorix.Server.Persistence;
 
 namespace Namorix.Server.Services;
 
-public class OAuthService(AppDbContext db, IMemoryCache memoryCache)
+public enum OAuthRefreshStatus { Ok, Expired, Reused }
+
+public class OAuthService(AppDbContext db, IMemoryCache memoryCache, ILogger<OAuthService> logger)
 {
     public async Task<string?> ValidateAuthorizationAsync(string clientId, string redirectUri)
     {
@@ -94,14 +96,31 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache)
         return (tokenId, refreshToken);
     }
 
-    public async Task<(string TokenId, string RefreshToken)?> RefreshAddonTokenAsync(string refreshToken)
+    public async Task<(string? TokenId, string? RefreshToken, OAuthRefreshStatus Status)?>
+        RefreshAddonTokenAsync(string refreshToken)
     {
         var hash = TokenHash.HashToken(refreshToken);
         var stored = await db.OAuthRefreshTokens
-            .FirstOrDefaultAsync(r => r.TokenHash == hash && !r.Used && r.ExpiresAt > DateTime.UtcNow);
-        if (stored is null)
-            return null;
+            .FirstOrDefaultAsync(r => r.TokenHash == hash && r.ExpiresAt > DateTime.UtcNow);
 
+        if (stored is null)
+            return (null, null, OAuthRefreshStatus.Expired);
+        
+        if (stored.Used)
+        {
+            logger.LogWarning("Token reuse detected for client {ClientId}. Revoking entire chain.", stored.ClientId);
+
+            await db.OAuthTokens
+                .Where(t => t.ClientId == stored.ClientId && !t.Revoked)
+                .ExecuteUpdateAsync(t => t.SetProperty(p => p.Revoked, true));
+            
+            await db.OAuthRefreshTokens
+                .Where(r => r.ClientId == stored.ClientId && !r.Used)
+                .ExecuteUpdateAsync(r => r.SetProperty(p => p.Used, true));
+            
+            return (null, null, OAuthRefreshStatus.Reused);
+        }
+        
         stored.Used = true;
         var newTokenId = Guid.NewGuid().ToString("N");
 
@@ -123,7 +142,7 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache)
         });
 
         await db.SaveChangesAsync();
-        return (newTokenId, newRefreshToken);
+        return (newTokenId, newRefreshToken, OAuthRefreshStatus.Ok);
     }
     
     public async Task<string?> RegisterClientAsync(string token, string publicKeyPem)

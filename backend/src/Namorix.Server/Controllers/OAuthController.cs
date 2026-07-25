@@ -107,10 +107,17 @@ public class OAuthController(OAuthService oauth, AddonChannelManager channelMana
         if (result is null)
             return Unauthorized();
         
-        var (tokenId, newRefreshToken) = result.Value;
-        SetAddonRefreshTokenCookie(newRefreshToken);
+        if (result.Value.Status == OAuthRefreshStatus.Reused)
+        {
+            Response.DeleteCookie(CookieName.AddonRefreshToken);
+            return Unauthorized(ApiResponse.Fail(OAuthRefreshErrors.TokenReused,
+                "Refresh token was reused. Possible theft detected. Re-registration required."));
+        }
         
-        return Ok(new OAuthTokenResponse(tokenId, 3600, OAuth.NmxOAuth2Defaults.Bearer));
+        var (tokenId, newRefreshToken, _) = result.Value;
+        SetAddonRefreshTokenCookie(newRefreshToken!);
+        
+        return Ok(new OAuthTokenResponse(tokenId!, 3600, OAuth.NmxOAuth2Defaults.Bearer));
     }
     
     [HttpPost("revoke")]

@@ -25,10 +25,24 @@ public class TokenCleanupWorker(IServiceProvider serviceProvider,
                 .Where(r => r.Used || r.ExpiresAt < DateTime.UtcNow)
                 .ExecuteDeleteAsync(cancellationToken);
             
-            if (refreshCount > 0 || regCount > 0 || oauthRefreshCount > 0)
+            var oauthAuthorizationCodeCount = await db.OAuthAuthorizationCodes
+                .Where(c => c.ExpiresAt < DateTime.UtcNow)
+                .ExecuteDeleteAsync(cancellationToken);
+            
+            var oauthTokenCount = await db.OAuthTokens
+                .Where(t => t.ExpiresAt < DateTime.UtcNow)
+                .ExecuteDeleteAsync(cancellationToken);
+            
+            if (refreshCount > 0 ||
+                regCount > 0 ||
+                oauthRefreshCount > 0 ||
+                oauthAuthorizationCodeCount > 0 ||
+                oauthTokenCount > 0)
             {
-                logger.LogInformation("Cleaned {RefreshCount} expired refresh tokens, {RegCount} expired registrations",
-                    refreshCount, regCount);
+                logger.LogInformation(
+                    "Cleaned {RefreshCount} expired refresh, {RegCount} registrations, " +
+                    "{OAuthRefreshCount} oauth refresh, {AuthCodeCount} auth codes, {TokenCount} tokens",
+                    refreshCount, regCount, oauthRefreshCount, oauthAuthorizationCodeCount, oauthTokenCount);
             }
         }
         catch (OperationCanceledException)

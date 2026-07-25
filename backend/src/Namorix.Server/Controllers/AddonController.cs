@@ -10,7 +10,7 @@ using Namorix.Server.Services;
 namespace Namorix.Server.Controllers;
 
 [ApiController]
-[RequireAdmin]
+[RequireAuth]
 [Route("api/addons")]
 public class AddonController(AddonService addonService, AddonTaskQueue taskQueue,
     CatalogService catalogService, IOptions<AddonCatalogConfig> catalogConfig) : ControllerBase
@@ -23,6 +23,7 @@ public class AddonController(AddonService addonService, AddonTaskQueue taskQueue
     }
 
     [HttpPost("install")]
+    [RequireAdmin]
     public async Task<IActionResult> Install([FromBody] InstallRequest request)
     {
         var task = new AddonTask
@@ -42,6 +43,7 @@ public class AddonController(AddonService addonService, AddonTaskQueue taskQueue
     }
 
     [HttpPost("{id}/start")]
+    [RequireAdmin]
     public async Task<IActionResult> Start(string id)
     {
         var task = new AddonTask
@@ -59,6 +61,7 @@ public class AddonController(AddonService addonService, AddonTaskQueue taskQueue
     }
 
     [HttpPost("{id}/stop")]
+    [RequireAdmin]
     public async Task<IActionResult> Stop(string id)
     {
         var task = new AddonTask
@@ -76,6 +79,7 @@ public class AddonController(AddonService addonService, AddonTaskQueue taskQueue
     }
 
     [HttpDelete("{id}")]
+    [RequireAdmin]
     public async Task<IActionResult> Uninstall(string id)
     {
         var task = new AddonTask
@@ -100,6 +104,7 @@ public class AddonController(AddonService addonService, AddonTaskQueue taskQueue
     }
     
     [HttpPost("catalog/sync")]
+    [RequireAdmin]
     public async Task<IActionResult> SyncCatalog()
     {
         var entries = await addonService.RefreshCatalogAsync(

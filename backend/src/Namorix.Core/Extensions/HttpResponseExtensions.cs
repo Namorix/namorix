@@ -4,15 +4,23 @@ namespace Namorix.Core.Extensions;
 
 public static class HttpResponseExtensions
 {
-    public static void SetCookie(this HttpResponse response, string name, string token, DateTime expires, bool secure = false)
+    extension(HttpResponse response)
     {
-        response.Cookies.Append(name, token, new CookieOptions
+        public void SetCookie(string name, string token, DateTime expires, bool secure = false)
         {
-            HttpOnly = true,
-            SameSite = SameSiteMode.Lax,
-            Secure = secure,
-            Path = "/",
-            Expires = expires,
-        });
+            response.Cookies.Append(name, token, new CookieOptions
+            {
+                HttpOnly = true,
+                SameSite = SameSiteMode.Lax,
+                Secure = secure,
+                Path = "/",
+                Expires = expires,
+            });
+        }
+
+        public void DeleteCookie(string name)
+        {
+            response.Cookies.Delete(name);
+        }
     }
 }
