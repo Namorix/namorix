@@ -130,6 +130,7 @@ namorix/
 │       │   ├── registry.ts   # registerAddon, resolveAddon, listAddons
 │       │   ├── About/           # About Namorix (version, meta, GitHub links)
 │       │   ├── FileManager/     # File browser scaffold
+│       │   ├── Frontgate/       # Reverse proxy routing management scaffold
 │       │   ├── LogViewer/       # Level filter chips + multi-select, paginated table
 │       │   ├── NetworkTraffic/  # Overview/Logs with SignalR + flat file backend
 │       │   ├── PackageCenter/   # External addon management scaffold

@@ -136,10 +136,10 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.57.0 | M4 (Login returnUrl, OAuth PKCE cookie refresh) |
+| frontend | 0.58.0 | M4 (Frontgate addon scaffold) |
 | @namorix/core | 0.45.0 | M4 (OAuth PKCE silent refresh, createMount flow uncommented) |
-| @namorix/styles | 0.38.2 | M4 (card-clickable SCSS block, dialog tweaks) |
-| @namorix/ui | 0.27.0 | M4 (NmxCard onClick prop, NmxAlertDialog/NmxDialog extensions) |
+| @namorix/styles | 0.39.0 | M4 (Frontgate icon token) |
+| @namorix/ui | 0.28.0 | M4 (APP_FRONTGATE icon symbol) |
 | Namorix.Core | 0.49.0 | M4 (OAuthRefreshToken, TokenHash, HttpResponseExtensions, cookie helpers) |
 | Namorix.Server | 0.51.0 | M4 (OAuth PKCE full flow, refresh cookie, BackendConfig move, FrontendConfig) |
 
@@ -168,6 +168,12 @@
 - Không bao giờ bump cả Core + Server cùng lúc nếu chỉ 1 trong 2 thay đổi
 
 ## Version History
+
+### 2026-07-25 — Frontgate addon scaffold, APP_FRONTGATE icon symbol
+
+- @namorix/styles 0.38.2 → 0.39.0: MODIFIED: `base/tokens/icons.scss` — added `--nmx-icon-app-frontgate` CSS variable for new Frontgate icon.
+- @namorix/ui 0.27.0 → 0.28.0: MODIFIED: `Primitives/NmxIcon/NmxIconSvg.types.ts` — added `APP_FRONTGATE: "app-frontgate"` symbol.
+- frontend 0.57.0 → 0.58.0: NEW: `addons/Frontgate/Frontgate.addon.tsx` — addon manifest registered. NEW: `addons/Frontgate/Frontgate.tsx` — empty component scaffold. MODIFIED: `addons/index.ts` — added Frontgate import. `addons/types.ts` — added `frontgate` to NmxAddonId and NmxAddonLocaleKeys. `i18n/locales/en.json` — frontgate i18n keys. Themes CSS rebuilt.
 
 ### 2026-07-25 — OAuth PKCE cookie refresh, Base64 fix, createMount OAuth flow, BackendConfig move
 

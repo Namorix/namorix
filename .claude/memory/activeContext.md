@@ -27,6 +27,13 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-07-25 — Frontgate addon scaffold
+
+- New internal addon "Frontgate" — reverse proxy management UI for routing traffic to addons via custom domains/subdomains.
+- @namorix/styles: added `--nmx-icon-app-frontgate` icon token (0.38.2 → 0.39.0).
+- @namorix/ui: added `APP_FRONTGATE` icon symbol (0.27.0 → 0.28.0).
+- Frontend: Frontgate addon folder with manifest + empty component, registered in addons/index.ts, types updated, i18n keys added (0.57.0 → 0.58.0).
+
 ### 2026-07-25 — OAuth PKCE cookie refresh, Base64 fix, createMount OAuth flow
 
 - Backend (Namorix.Core): NEW `HttpResponseExtensions.SetCookie` — reusable cookie setter (HttpOnly, SameSite=Lax, Path=/api). NEW `OAuthRefreshToken` entity for token rotation. NEW `TokenHash` utility (SHA256). AppConfig thêm `OAuthRefreshTokenTtlDays`. Cookie constant `AddonRefreshToken`.
