@@ -136,12 +136,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.55.1 | M4 (WindowFrame/useAddonMount OAuth context fixes) |
+| frontend | 0.55.2 | M4 (unauthorized handler guard, loadAppearance refactor, updateAddonStatus catalog enrichment) |
 | @namorix/core | 0.44.0 | M4 (OAuth browser client + createMount auto OAuth flow) |
 | @namorix/styles | 0.38.1 | M4 (rail/window SCSS fixes) |
 | @namorix/ui | 0.26.0 | M4 (ERROR icon symbol) |
 | Namorix.Core | 0.47.0 | M4 (OAuth PKCE: CodeChallenge/CodeVerifier, OAuth constants) |
-| Namorix.Server | 0.50.0 | M4 (OAuth PKCE: authorize + token rewrite, session check) |
+| Namorix.Server | 0.50.1 | M4 (AddonInstallation moved to Server, refactored AddonService with join DTO) |
 
 ## Version Rules
 
@@ -169,7 +169,10 @@
 
 ## Version History
 
-### 2026-07-02 — Backend task queue, SignalR event fix, global addon events, AddonGrid refactor, NmxSpinner
+### 2026-07-25 — AddonService DTO join, DockerMonitorWorker cleanup, auth guard, loadAppearance fix, AddonInstallation move
+
+- frontend 0.55.1 → 0.55.2: MODIFIED: `App.tsx` — unauthorized handler guard (skip redirect on `/login`/`/register`). `controllers/auth.controller.ts` — `loadAppearance()` bỏ try/catch (json() không throw), user settings call không gây navigation loop. `controllers/addon.controller.ts` — import path fix (AddonContainerStatus/AddonPendingPhase/ExternalAddonManifest từ local `../addons` thay `@namorix/core`). `store/slices/externalAddonsSlice.ts` — `updateAddonStatus` điền thêm `description`/`author`/`image` từ catalog entry. `addons/PackageCenter/AddonGrid.tsx` — SignalR handler gọi `loadData()` khi task hoàn thành.
+- Namorix.Server 0.50.0 → 0.50.1: MODIFIED: `Services/AddonService.cs` — `GetInstalledAddonsAsync` dùng LEFT JOIN với `AddonCatalogEntries`, `AddonInstallationDto` lấy Name/Description/Icon/Author từ catalog thay vì installation record. MODIFIED: `Services/AddonTaskExecutor.cs` — bỏ copy Name/Description/Icon/Author từ catalog vào installation. MODIFIED: `Workers/DockerMonitorWorker.cs` — bỏ đọc Name/Description/Author từ container labels. REMOVED: `Namorix.Core/Models/AddonInstallation.cs` (moved to `Namorix.Server/Models/AddonInstallation.cs`).
 
 - @namorix/core 0.38.0 → 0.39.0: NEW: `http/error.ts`, `utils/markup.ts`, `utils/semver.ts`. MODIFIED: `addon/types.ts` — `AddonModule.globalComponent` field. `addon/factory.tsx` — `defineAddon` extended with `globalComponent` param. MODIFIED: `http/apiError.ts` — `fromResponse` fallback (`data.error ?? data.code`). `http/client.ts` — unauthorized flow với `apiAuthError` return. `signalr/signalr.service.ts` — `intentionalStop` flag, `hasBeenConnected` reset trong `stopConnection()`. `signalr/useSignalREvent.ts` — useRef cho handler, deps `[eventName]` only. `toast/` — error handling improvements. `types/error.ts` — new auth error types.
 - @namorix/styles 0.33.1 → 0.34.0: NEW: `base/components/spinner.scss`. MODIFIED: `base/components/index.scss` — spinner + loading-overlay. `base/components/loading.scss` → `loading-overlay.scss`. Icomoon rebuild (fonts.scss, variables.scss) — new icon symbols. `base/shell/addon/package-center.scss` — AddonGrid layout refactor. Theme CSS rebuilt.

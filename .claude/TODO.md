@@ -113,6 +113,22 @@
 
 ---
 
+## Change Password — Revoke existing tokens
+
+**Context**: Khi user đổi mật khẩu, các refresh token + access token cũ vẫn còn hiệu lực đến khi hết hạn. Nếu tài khoản bị compromise, attacker đổi password nhưng session cũ vẫn sống (hoặc ngược lại: user đổi password để kick attacker nhưng token cũ vẫn dùng được).
+
+**Approach**:
+- `AuthService.ChangePasswordAsync()` — sau khi cập nhật password hash, gọi `RevokeAllUserTokens(userId)` để revoke toàn bộ refresh tokens
+- Frontend sau khi đổi password thành công → redirect về login (hoặc forced logout) vì access token hiện tại cũng mất hiệu lực (refresh token bị revoke → access token không refresh được)
+- Cân nhắc: access token còn hạn dùng luôn hay không? Option A: hard (revoke cả refresh token, access token sống đến hết hạn). Option B: soft (revoke cả refresh, nhưng giữ session hiện tại sống và cấp refresh token mới cho session hiện tại).
+
+**Files**:
+- `backend/src/Namorix.Server/Services/AuthService.cs` — thêm `RevokeAllUserTokens()` trong `ChangePasswordAsync()`
+- `backend/src/Namorix.Server/Controllers/UserController.cs` — sau khi change password success, clear cookies + trả về yêu cầu re-login
+- `frontend/src/pages/Settings/AccountTab.tsx` — handle change password success → redirect `/login`
+
+---
+
 ## Notification Panel + Launcher — Freeze panel size khi filter
 
 **Context**: Khi toggle filter unread/all, số lượng items thay đổi → panel co giãn, UI không mượt. Hiện tại dùng `freezePanelSize` set inline `style.height/width` trước khi filter, `unfreezePanelSize` remove sau. Cách này chưa tối ưu.

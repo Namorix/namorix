@@ -27,7 +27,11 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
-### 2026-06-30 — displayName→name refactor, PackageCenter, Description/Author labels
+### 2026-07-25 — AddonService DTO join, DockerMonitorWorker cleanup, auth guard, loadAppearance fix
+
+- Backend: AddonInstallation model moved from Namorix.Core → Namorix.Server. AddonService `GetInstalledAddonsAsync` LEFT JOIN với AddonCatalogEntries, DTO lấy Name/Description/Icon/Author từ catalog. AddonTaskExecutor bỏ copy cosmetic fields. DockerMonitorWorker bỏ đọc labels (Name/Description/Author). Migration files consolidated.
+- Frontend: `App.tsx` unauthorized handler guard — skip redirect nếu đang ở `/login`/`/register` (tránh navigation loop khi 401 từ `loadAppearance()`). `loadAppearance()` bỏ try/catch — `json()` không throw, `userRes.success` handle đúng. `externalAddonsSlice.updateAddonStatus` điền thêm description/author/image từ catalog. Import path fix cho 3 type (AddonContainerStatus, AddonPendingPhase, ExternalAddonManifest) từ `@namorix/core` → local `../addons`.
+- Versions: frontend 0.55.2, Namorix.Server 0.50.1.
 - Core: `addon/types.ts` — `displayName`→`name`, `nmxStore` optional. Icomoon rebuild + new icon symbols. NmxIcon types updated.
 - Backend: AddonManifest `DisplayName`→`Name`, `Description`/`Author` set. DockerMonitor reads Description/Author from container labels. AddonLabels constants expanded.
 - Frontend: All 8 builtin addon manifests renamed `displayName`→`name`. PackageCenter full refactor (Rail+Grid+Card). Controllers, components, selectors updated. New i18n keys.
