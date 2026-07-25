@@ -27,6 +27,15 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-07-25 (2) — parseUTCDate timezone fix, addon info dialog, OAuth config endpoint, silent refresh
+
+- Core: `parseUTCDate()` helper added to `utils/format.ts` — fixes `installedAt` showing wrong relative time due to missing timezone info. `formatRelativeTime` now uses it for all date parsing.
+- UI: NmxCard gains `onClick` prop. NmxAlertDialog/NmxDialog extended. base.ts updated with WithClickable type.
+- Styles: New `__card-clickable` SCSS block in package-center. Dialog tweaks.
+- Frontend: AddonGrid adds info dialog on double-tap (useDoubleTap + NmxMetaList) showing installedAt/version/author/description. All button handlers use `e.stopPropagation()` to prevent card hover + button hover conflict. AddonEventWatcher does silent full data reload after terminal status change (no loading flag).
+- Backend: `NmxOAuth2Client.ClientId` public, `OAuthEndpoints.Authorize` added. New `NmxOAuthConfigEndpointExtensions` — `MapNmxOAuthConfig()` serves `/.well-known/nmx-oauth-config` for addon standalone OAuth discovery.
+- Versions: @namorix/core 0.44.1, @namorix/styles 0.38.2, @namorix/ui 0.27.0, frontend 0.56.0, Namorix.Core 0.48.0.
+
 ### 2026-07-25 — AddonService DTO join, DockerMonitorWorker cleanup, auth guard, loadAppearance fix
 
 - Backend: AddonInstallation model moved from Namorix.Core → Namorix.Server. AddonService `GetInstalledAddonsAsync` LEFT JOIN với AddonCatalogEntries, DTO lấy Name/Description/Icon/Author từ catalog. AddonTaskExecutor bỏ copy cosmetic fields. DockerMonitorWorker bỏ đọc labels (Name/Description/Author). Migration files consolidated.

@@ -136,11 +136,11 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.55.2 | M4 (unauthorized handler guard, loadAppearance refactor, updateAddonStatus catalog enrichment) |
-| @namorix/core | 0.44.0 | M4 (OAuth browser client + createMount auto OAuth flow) |
-| @namorix/styles | 0.38.1 | M4 (rail/window SCSS fixes) |
-| @namorix/ui | 0.26.0 | M4 (ERROR icon symbol) |
-| Namorix.Core | 0.47.0 | M4 (OAuth PKCE: CodeChallenge/CodeVerifier, OAuth constants) |
+| frontend | 0.56.0 | M4 (addon info dialog, silent refresh after terminal status) |
+| @namorix/core | 0.44.1 | M4 (parseUTCDate helper for timezone-safe date formatting) |
+| @namorix/styles | 0.38.2 | M4 (card-clickable SCSS block, dialog tweaks) |
+| @namorix/ui | 0.27.0 | M4 (NmxCard onClick prop, NmxAlertDialog/NmxDialog extensions) |
+| Namorix.Core | 0.48.0 | M4 (OAuth config well-known endpoint extension, ClientId public, OAuthEndpoints.Authorize) |
 | Namorix.Server | 0.50.1 | M4 (AddonInstallation moved to Server, refactored AddonService with join DTO) |
 
 ## Version Rules
@@ -168,6 +168,14 @@
 - Không bao giờ bump cả Core + Server cùng lúc nếu chỉ 1 trong 2 thay đổi
 
 ## Version History
+
+### 2026-07-25 — parseUTCDate timezone fix, addon info dialog, OAuth config endpoint, silent refresh
+
+- @namorix/core 0.44.0 → 0.44.1: MODIFIED: `utils/format.ts` — added `parseUTCDate()` helper, `formatRelativeTime` now uses it for timezone-safe date parsing (fixes `installedAt` showing "7 hours ago" in UTC+7).
+- @namorix/styles 0.38.1 → 0.38.2: MODIFIED: `components/dialog.scss` — tweaks. `shell/addon/package-center.scss` — new `__card-clickable` block with cursor/hover. Theme CSS rebuilt.
+- @namorix/ui 0.26.0 → 0.27.0: MODIFIED: `Components/NmxCard/NmxCard.tsx` — added `onClick` prop. `Components/NmxAlertDialog/` — extended for size/confirmLabel/cancelLabel flexibility. `Components/NmxDialog/` — types and header extensions. `types/base.ts` — WithClickable support.
+- frontend 0.55.2 → 0.56.0: MODIFIED: `addons/PackageCenter/AddonGrid.tsx` — info dialog on double-tap (useDoubleTap), NmxMetaList with installedAt/version/author/description, e.stopPropagation() on all buttons. `AddonEventWatcher.tsx` — silent fetch full data after terminal status change. `i18n/locales/en.json` — new infoLabels keys. Theme CSS rebuilt.
+- Namorix.Core 0.47.0 → 0.48.0: MODIFIED: `OAuth/NmxOAuth2Client.cs` — `ClientId` public property. `OAuth/OAuthEndpoints.cs` — added `Authorize` constant. NEW: `OAuth/NmxOAuthConfigEndpointExtensions.cs` — `MapNmxOAuthConfig()` extension method serving `/.well-known/nmx-oauth-config` for addon standalone OAuth discovery.
 
 ### 2026-07-25 — AddonService DTO join, DockerMonitorWorker cleanup, auth guard, loadAppearance fix, AddonInstallation move
 
