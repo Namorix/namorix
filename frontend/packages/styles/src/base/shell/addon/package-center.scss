@@ -41,6 +41,15 @@
     position: relative;
   }
 
+  &__card:hover:not(:has(&__card-footer:hover)) {
+    cursor: pointer;
+    background: color-mix(
+      in oklab,
+      var(--nmx-color-surface-mid) 60%,
+      transparent
+    );
+  }
+
   &__card-header {
     margin: 0;
   }
@@ -158,5 +167,9 @@
     text-overflow: clip;
     overflow: hidden;
     min-width: 0;
+  }
+
+  &__info-dialog-icon {
+    font-size: var(--nmx-font-size-2xl);
   }
 }
