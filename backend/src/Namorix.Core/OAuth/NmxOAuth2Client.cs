@@ -10,12 +10,12 @@ namespace Namorix.Core.OAuth;
 
 public class NmxOAuth2Client(HttpClient http, NmxAddonConfig config, ILogger<NmxOAuth2Client> logger)
 {
+    public string? ClientId;
+
     private string CredentialsFile => $"{config.DataDir}/oauth.json";
-    
     private readonly RSA _key = RSA.Create();
     private (string Token, DateTime ExpiresAt)? _cached;
     public DateTime? CurrentTokenExpiresAt => _cached?.ExpiresAt;
-    private string? _clientId;
     private bool _initialized;
     
     private async Task EnsureInitializedAsync(CancellationToken ct)
@@ -28,7 +28,7 @@ public class NmxOAuth2Client(HttpClient http, NmxAddonConfig config, ILogger<Nmx
             var stored = JsonSerializer.Deserialize<StoredCredentials>(
                 await File.ReadAllTextAsync(CredentialsFile, ct));
             _key.ImportFromPem(stored!.PrivateKeyPem);
-            _clientId = stored.ClientId;
+            ClientId = stored.ClientId;
         }
         else if (config.RegistrationToken is not null)
         {
@@ -61,12 +61,12 @@ public class NmxOAuth2Client(HttpClient http, NmxAddonConfig config, ILogger<Nmx
             .ReadFromJsonAsync<RegisterResponse>(cancellationToken: ct);
         
         ArgumentNullException.ThrowIfNull(result);
-        _clientId = result.ClientId;
+        ClientId = result.ClientId;
         _key.ImportFromPem(privateKeyPem);
 
         Directory.CreateDirectory(Path.GetDirectoryName(CredentialsFile)!);
         await File.WriteAllTextAsync(CredentialsFile,
-            JsonSerializer.Serialize(new StoredCredentials(_clientId, privateKeyPem)), ct);
+            JsonSerializer.Serialize(new StoredCredentials(ClientId, privateKeyPem)), ct);
     }
     
     public async Task<string> GetAccessTokenAsync(CancellationToken ct = default)
@@ -78,9 +78,9 @@ public class NmxOAuth2Client(HttpClient http, NmxAddonConfig config, ILogger<Nmx
         var handler = new JwtSecurityTokenHandler();
         var assertion = handler.CreateEncodedJwt(new SecurityTokenDescriptor
         {
-            Issuer = _clientId,
+            Issuer = ClientId,
             Subject = new ClaimsIdentity([
-                new Claim(ClaimTypes.NameIdentifier, _clientId!),
+                new Claim(ClaimTypes.NameIdentifier, ClientId!),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("N")),
             ]),
             Audience = $"{config.ApiUrl}{OAuthEndpoints.Token}",
