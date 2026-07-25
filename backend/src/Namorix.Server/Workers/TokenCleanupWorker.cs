@@ -16,11 +16,16 @@ public class TokenCleanupWorker(IServiceProvider serviceProvider,
             var refreshCount = await db.RefreshTokens
                 .Where(rt => rt.ExpiresAt < DateTime.UtcNow)
                 .ExecuteDeleteAsync(cancellationToken);
+
             var regCount = await db.OAuthRegistrations
                 .Where(r => r.Used || r.ExpiresAt < DateTime.UtcNow)
                 .ExecuteDeleteAsync(cancellationToken);
             
-            if (refreshCount > 0 || regCount > 0)
+            var oauthRefreshCount = await db.OAuthRefreshTokens
+                .Where(r => r.Used || r.ExpiresAt < DateTime.UtcNow)
+                .ExecuteDeleteAsync(cancellationToken);
+            
+            if (refreshCount > 0 || regCount > 0 || oauthRefreshCount > 0)
             {
                 logger.LogInformation("Cleaned {RefreshCount} expired refresh tokens, {RegCount} expired registrations",
                     refreshCount, regCount);

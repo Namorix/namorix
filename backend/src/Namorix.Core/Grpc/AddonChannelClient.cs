@@ -30,7 +30,7 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
 
         var token = await oauth.GetAccessTokenAsync(ct);
 
-        _channel = GrpcChannel.ForAddress(config.GrpcUrl, new GrpcChannelOptions
+        _channel = GrpcChannel.ForAddress(config.DesktopGrpcUrl, new GrpcChannelOptions
         {
             HttpHandler = new SocketsHttpHandler
             {

@@ -2,12 +2,14 @@ namespace Namorix.Core.Constants;
 
 public static class OAuth
 {
+    public const string WellKnownPath = "/.well-known/nmx-oauth-config";
+    
     public static class NmxOAuth2Env
     {
-        public const string ApiUrl = "NMX_API_URL";
+        public const string DesktopApiUrl = "NMX_DESKTOP_API_URL";
+        public const string DesktopGrpcUrl = "NMX_DESKTOP_GRPC_URL";
         public const string RegistrationToken = "NMX_REGISTRATION_TOKEN";
         public const string DataDir = "NMX_DATA_DIR";
-        public const string GrpcUrl = "NMX_GRPC_URL";
     }
     
     public static class NmxOAuth2Defaults
@@ -15,7 +17,6 @@ public static class OAuth
         public const string Bearer = "Bearer";
         public const string JwtBearerAssertionType = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer";
         public const string DataDir = "./data" ;
-        public const string GrpcUrl = "http://localhost:5002";
     }
     
     public static class GrantTypes

@@ -23,6 +23,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IOptions<AppCo
     
     public DbSet<OAuthAuthorizationCode> OAuthAuthorizationCodes { get; set; }
     public DbSet<OAuthToken> OAuthTokens { get; set; }
+    public DbSet<OAuthRefreshToken> OAuthRefreshTokens { get; set; }
     public DbSet<OAuthConsent> OAuthConsents { get; set; }
     public DbSet<OAuthRegistration> OAuthRegistrations { get; set; }
     

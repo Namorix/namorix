@@ -6,5 +6,6 @@ public static class OAuthEndpoints
     public const string Register = BasePath + "/register";
     public const string Token = BasePath + "/token";
     public const string Authorize = BasePath + "/authorize";
+    public const string TokenRefresh = BasePath + "/token/refresh";
 
 }

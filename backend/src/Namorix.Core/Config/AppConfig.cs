@@ -15,5 +15,7 @@ public class AppConfig
     // Default false for development/testing (HTTP). Set to true in production (HTTPS).
     public bool SecureCookie { get; init; } = false;
     
+    public int OAuthRefreshTokenTtlDays { get; init; } = 1;
+
     public AddonCatalogConfig AddonCatalog { get; init; } = new();
 }

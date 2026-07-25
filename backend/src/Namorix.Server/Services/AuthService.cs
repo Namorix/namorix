@@ -9,6 +9,7 @@ using Namorix.Core.Config;
 using Namorix.Core.Constants;
 using Namorix.Core.Exceptions;
 using Namorix.Core.Models;
+using Namorix.Core.Utils;
 using Namorix.Server.Persistence;
 
 namespace Namorix.Server.Services;
@@ -126,7 +127,7 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig,
         {
             UserId = user.Id,
             Jti = jti,
-            TokenHash = HashToken(refreshToken),
+            TokenHash = TokenHash.HashToken(refreshToken),
             ExpiresAt = DateTime.UtcNow.AddDays(ttlDays),
             RememberMe = rememberMe,
             CreatedAt = DateTime.UtcNow,
@@ -153,9 +154,6 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig,
         }, out var validateToken);
         return (JwtSecurityToken)validateToken;
     }
-
-    private static string HashToken(string rawToken) =>
-        Convert.ToHexString(SHA256.HashData(Convert.FromBase64String(rawToken)));
     
     public (int userId, string username, int role)? VerifyAccessToken(string token)
     {
@@ -183,7 +181,7 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig,
 
         try
         {
-            tokenHash = HashToken(token);
+            tokenHash = TokenHash.HashToken(token);
         }
         catch (FormatException)
         {
@@ -249,7 +247,7 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig,
     {
         try
         {
-            var hash = HashToken(rawToken);
+            var hash = TokenHash.HashToken(rawToken);
             var token = await dbContext.RefreshTokens.FirstOrDefaultAsync(rt => rt.TokenHash == hash);
 
             if (token != null)

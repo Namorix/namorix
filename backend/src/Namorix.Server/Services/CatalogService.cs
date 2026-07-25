@@ -67,8 +67,7 @@ public class CatalogService(HttpClient httpClient, ILogger<CatalogService> logge
         foreach (var existingId in existingIds.Where(existingId => !fetchedIds.Contains(existingId)))
         {
             var orphan = await db.AddonCatalogEntries.FindAsync([existingId], ct);
-            if (orphan != null)
-                orphan.IsOrphaned = true;
+            orphan?.IsOrphaned = true;
         }
 
         await db.SaveChangesAsync(ct);

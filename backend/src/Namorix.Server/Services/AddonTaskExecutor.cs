@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using Namorix.Core.Config;
 using Namorix.Core.Constants;
 using Namorix.Core.Models;
+using Namorix.Server.Config;
 using Namorix.Server.Constants;
 using Namorix.Server.Infrastructure;
 using Namorix.Server.Models;
@@ -128,9 +129,13 @@ public class AddonTaskExecutor(
 
             var cfg = backendConfig.Value;
             var backendInContainer = DockerService.IsRunningInContainer();
-            var apiUrl = backendInContainer
+            var desktopApiUrl = backendInContainer
                 ? $"http://{cfg.ContainerName}:{cfg.Port}"
                 : $"http://host.docker.internal:{cfg.Port}";
+            
+            var desktopGrpcUrl = backendInContainer
+                ? $"http://{cfg.ContainerName}:{cfg.GrpcPort}"
+                : $"http://host.docker.internal:{cfg.GrpcPort}";
             
             if (backendInContainer)
                 await docker.EnsureNetworkExistsAsync(cfg.NetworkName);
@@ -141,7 +146,8 @@ public class AddonTaskExecutor(
             {
                 Image = image,
                 AddonId = addonId,
-                ApiUrl = apiUrl,
+                DesktopApiUrl = desktopApiUrl,
+                DesktopGrpcUrl = desktopGrpcUrl,
                 RegistrationToken = registrationToken,
                 PortMappings = portMappings,
                 ExtraHosts = backendInContainer ? null : ["host.docker.internal:host-gateway"],

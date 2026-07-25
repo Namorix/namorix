@@ -25,10 +25,34 @@ public class NmxOAuth2Client(HttpClient http, NmxAddonConfig config, ILogger<Nmx
         
         if (File.Exists(CredentialsFile))
         {
-            var stored = JsonSerializer.Deserialize<StoredCredentials>(
-                await File.ReadAllTextAsync(CredentialsFile, ct));
-            _key.ImportFromPem(stored!.PrivateKeyPem);
-            ClientId = stored.ClientId;
+            try
+            {
+                var stored = JsonSerializer.Deserialize<StoredCredentials>(
+                    await File.ReadAllTextAsync(CredentialsFile, ct));
+                
+                if (stored is not null
+                    && !string.IsNullOrEmpty(stored.ClientId)
+                    && !string.IsNullOrEmpty(stored.PrivateKeyPem))
+                {
+                    if (config.RegistrationToken is not null
+                        && config.RegistrationToken != stored.RegistrationToken)
+                    {
+                        _key.ImportFromPem(stored.PrivateKeyPem);
+                        ClientId = stored.ClientId;
+                        await RegisterAsync(ct, true);
+                        return;
+                    }
+                    
+                    _key.ImportFromPem(stored.PrivateKeyPem);
+                    ClientId = stored.ClientId;
+                    _initialized = true;
+                    return;
+                }
+            }
+            catch (JsonException ex)
+            {
+                logger.LogWarning(ex, "oauth.json corrupted, re-registering...");
+            }
         }
         else if (config.RegistrationToken is not null)
         {
@@ -43,30 +67,45 @@ public class NmxOAuth2Client(HttpClient http, NmxAddonConfig config, ILogger<Nmx
         _initialized = true;
     }
     
-    private async Task RegisterAsync(CancellationToken ct)
+    private async Task RegisterAsync(CancellationToken ct, bool reRegister = false)
     {
-        using var rsa = RSA.Create(2048);
-        var publicKeyPem = rsa.ExportSubjectPublicKeyInfoPem();
-        var privateKeyPem = rsa.ExportPkcs8PrivateKeyPem();
-        
-        var res = await http.PostAsJsonAsync(
-            $"{config.ApiUrl}{OAuthEndpoints.Register}",
-            new {
-                registrationToken = config.RegistrationToken,
-                publicKey = publicKeyPem
-            }, ct);
-        await EnsureSuccessAsync(res, "OAuth registration", ct);
-        
-        var result = await res.Content
-            .ReadFromJsonAsync<RegisterResponse>(cancellationToken: ct);
-        
-        ArgumentNullException.ThrowIfNull(result);
-        ClientId = result.ClientId;
-        _key.ImportFromPem(privateKeyPem);
-
-        Directory.CreateDirectory(Path.GetDirectoryName(CredentialsFile)!);
-        await File.WriteAllTextAsync(CredentialsFile,
-            JsonSerializer.Serialize(new StoredCredentials(ClientId, privateKeyPem)), ct);
+        if (!reRegister)
+        {
+            using var rsa = RSA.Create(2048);
+            var publicKeyPem = rsa.ExportSubjectPublicKeyInfoPem();
+            var privateKeyPem = rsa.ExportPkcs8PrivateKeyPem();
+            var res = await http.PostAsJsonAsync(
+                $"{config.DesktopApiUrl}{OAuthEndpoints.Register}",
+                new { registrationToken = config.RegistrationToken, publicKey = publicKeyPem }, ct);
+            
+            await EnsureSuccessAsync(res, "OAuth registration", ct);
+            var result = await res.Content.ReadFromJsonAsync<RegisterResponse>(cancellationToken: ct);
+            ArgumentNullException.ThrowIfNull(result);
+            
+            ClientId = result.ClientId;
+            _key.ImportFromPem(privateKeyPem);
+            Directory.CreateDirectory(Path.GetDirectoryName(CredentialsFile)!);
+            
+            await File.WriteAllTextAsync(CredentialsFile,
+                JsonSerializer.Serialize(new StoredCredentials(ClientId, privateKeyPem, config.RegistrationToken)), ct);
+        }
+        else
+        {
+            var publicKeyPem = _key.ExportSubjectPublicKeyInfoPem();
+            var res = await http.PostAsJsonAsync(
+                $"{config.DesktopApiUrl}{OAuthEndpoints.Register}",
+                new { registrationToken = config.RegistrationToken, publicKey = publicKeyPem }, ct);
+            
+            await EnsureSuccessAsync(res, "OAuth re-registration", ct);
+            var result = await res.Content.ReadFromJsonAsync<RegisterResponse>(cancellationToken: ct);
+            ArgumentNullException.ThrowIfNull(result);
+            
+            ClientId = result.ClientId;
+            Directory.CreateDirectory(Path.GetDirectoryName(CredentialsFile)!);
+            
+            await File.WriteAllTextAsync(CredentialsFile,
+                JsonSerializer.Serialize(new StoredCredentials(ClientId, _key.ExportPkcs8PrivateKeyPem(), config.RegistrationToken)), ct);
+        }
     }
     
     public async Task<string> GetAccessTokenAsync(CancellationToken ct = default)
@@ -83,7 +122,7 @@ public class NmxOAuth2Client(HttpClient http, NmxAddonConfig config, ILogger<Nmx
                 new Claim(ClaimTypes.NameIdentifier, ClientId!),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("N")),
             ]),
-            Audience = $"{config.ApiUrl}{OAuthEndpoints.Token}",
+            Audience = $"{config.DesktopApiUrl}{OAuthEndpoints.Token}",
             Expires = DateTime.UtcNow.AddMinutes(config.ClientAssertionTtlMinutes),
             SigningCredentials = new SigningCredentials(
                 new RsaSecurityKey(_key), SecurityAlgorithms.RsaSha256),
@@ -96,7 +135,7 @@ public class NmxOAuth2Client(HttpClient http, NmxAddonConfig config, ILogger<Nmx
             [Constants.OAuth.OAuthParameter.ClientAssertion] = assertion,
         });
         
-        var res = await http.PostAsync($"{config.ApiUrl}{OAuthEndpoints.Token}",
+        var res = await http.PostAsync($"{config.DesktopApiUrl}{OAuthEndpoints.Token}",
             form, ct);
         await EnsureSuccessAsync(res, "Oauth token request", ct);
 
@@ -125,5 +164,5 @@ public class NmxOAuth2Client(HttpClient http, NmxAddonConfig config, ILogger<Nmx
     }
 }
 
-public record StoredCredentials(string ClientId, string PrivateKeyPem);
+public record StoredCredentials(string ClientId, string PrivateKeyPem, string? RegistrationToken);
 public record RegisterResponse(string ClientId);

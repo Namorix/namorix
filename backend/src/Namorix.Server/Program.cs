@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Namorix.Core.Config;
 using Namorix.Core.Constants;
@@ -8,6 +9,7 @@ using Namorix.Core.Extensions;
 using Namorix.Core.Helpers;
 using Namorix.Core.Hubs;
 using Namorix.Core.Infrastructure;
+using Namorix.Server.Config;
 using Namorix.Server.Extensions;
 using Namorix.Server.Hubs;
 using Namorix.Server.Infrastructure;
@@ -17,17 +19,19 @@ using Namorix.Server.Services.Grpc;
 using Namorix.Server.Workers;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ListenAnyIP(5001, o => o.Protocols = HttpProtocols.Http1);
-    options.ListenAnyIP(5002, o => o.Protocols = HttpProtocols.Http2);
-});
+var backendConfig = builder.Configuration.GetSection("Backend").Get<BackendConfig>() ?? new BackendConfig();
 
 builder.Services.Configure<AppConfig>(builder.Configuration);
 builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("Jwt"));
 builder.Services.Configure<AddonCatalogConfig>(builder.Configuration.GetSection("AddonCatalog"));
 builder.Services.Configure<BackendConfig>(builder.Configuration.GetSection("Backend"));
+builder.Services.Configure<FrontendConfig>(builder.Configuration.GetSection("Frontend"));
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(backendConfig.Port, o => o.Protocols = HttpProtocols.Http1);
+    options.ListenAnyIP(backendConfig.GrpcPort, o => o.Protocols = HttpProtocols.Http2);
+});
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -49,6 +53,10 @@ builder.Services.AddHttpClient<CatalogService>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(15);
     client.DefaultRequestHeaders.UserAgent.ParseAdd("Namorix/1.0");
+    client.DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue
+    {
+        NoCache = true
+    };
 });
 
 builder.Services.AddNamorixCore<MainHub>(builder.Environment.IsDevelopment());

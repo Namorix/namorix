@@ -6,7 +6,7 @@ namespace Namorix.Core.OAuth;
 public static class NmxOAuthConfigEndpointExtensions
 {
     public static WebApplication MapNmxOAuthConfig(this WebApplication app,
-        string path = "/.well-known/nmx-oauth-config")
+        string path = Constants.OAuth.WellKnownPath)
     {
         app.MapGet(path, (NmxOAuth2Client oauth, NmxAddonConfig config, HttpRequest request) =>
         {
@@ -16,8 +16,8 @@ public static class NmxOAuthConfigEndpointExtensions
             var redirectUri = $"{request.Scheme}://{request.Host}";
             return Results.Ok(new
             {
-                authorizeUrl = $"{config.ApiUrl}{OAuthEndpoints.Authorize}",
-                tokenUrl = $"{config.ApiUrl}{OAuthEndpoints.Token}",
+                authorizeUrl = $"{config.DesktopApiUrl}{OAuthEndpoints.Authorize}",
+                tokenUrl = $"{config.DesktopApiUrl}{OAuthEndpoints.Token}",
                 clientId = oauth.ClientId,
                 redirectUri,
             });

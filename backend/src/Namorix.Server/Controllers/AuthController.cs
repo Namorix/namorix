@@ -4,6 +4,7 @@ using Namorix.Core.Attributes;
 using Namorix.Core.Config;
 using Namorix.Core.Constants;
 using Namorix.Core.Exceptions;
+using Namorix.Core.Extensions;
 using Namorix.Core.Models;
 using Namorix.Core.Responses;
 using Namorix.Core.Validation;
@@ -182,22 +183,13 @@ public class AuthController(AuthService authService, SettingsService settingsSer
     private string? GetAccessCookie() => Request.Cookies[CookieName.AccessToken];
     private string? GetRefreshCookie() => Request.Cookies[CookieName.RefreshToken];
 
-    private void SetCookie(string name, string token, DateTime expires)
-    {
-        Response.Cookies.Append(name, token, new CookieOptions
-        {
-            HttpOnly = true,
-            SameSite = SameSiteMode.Lax,
-            Secure = _appConfig.SecureCookie,
-            Expires = expires
-        });
-    }
-
     private void SetAccessCookie(string token) =>
-        SetCookie(CookieName.AccessToken, token, authService.GetAccessTokenExpirationDateTime());
+        Response.SetCookie(CookieName.AccessToken, token, authService.GetAccessTokenExpirationDateTime(),
+            _appConfig.SecureCookie);
 
     private void SetRefreshCookie(string token, bool rememberMe) =>
-        SetCookie(CookieName.RefreshToken, token, authService.GetRefreshTokenExpirationDatetime(rememberMe));
+        Response.SetCookie(CookieName.RefreshToken, token, authService.GetRefreshTokenExpirationDatetime(rememberMe),
+            _appConfig.SecureCookie);
 
     private void ClearAccessCookie() => Response.Cookies.Delete(CookieName.AccessToken);
     private void ClearRefreshCookie() => Response.Cookies.Delete(CookieName.RefreshToken);

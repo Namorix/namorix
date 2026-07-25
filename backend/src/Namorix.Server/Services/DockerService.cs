@@ -1,7 +1,6 @@
 using Docker.DotNet;
 using Docker.DotNet.Models;
 using Namorix.Core.Constants;
-using Namorix.Core.OAuth;
 using Namorix.Server.Constants;
 
 namespace Namorix.Server.Services;
@@ -58,7 +57,8 @@ public class DockerService
     {
         var envVars = new List<string>
         {
-            $"{OAuth.NmxOAuth2Env.ApiUrl}={spec.ApiUrl}"
+            $"{OAuth.NmxOAuth2Env.DesktopApiUrl}={spec.DesktopApiUrl}",
+            $"{OAuth.NmxOAuth2Env.DesktopGrpcUrl}={spec.DesktopGrpcUrl}"
         };
         
         if (spec.RegistrationToken is not null)
@@ -177,7 +177,8 @@ public class AddonContainerSpec
 {
     public string Image { get; init; } = string.Empty;
     public string AddonId { get; init; } = string.Empty;
-    public string ApiUrl { get; init; } = string.Empty;
+    public string DesktopApiUrl { get; init; } = string.Empty;
+    public string DesktopGrpcUrl { get; init; } = string.Empty;
     public string? RegistrationToken { get; init; }
     public List<PortMapping>? PortMappings { get; init; }
     public int? MemoryLimit { get; init; }
