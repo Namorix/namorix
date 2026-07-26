@@ -10,6 +10,7 @@ export type ReverseProxyRuleAccess =
   | "private"
   | "restricted"
   | "basicAuth"
+
 export type ReverseProxyRuleStatus = "inactive" | "active" | "error"
 
 export interface ReverseProxyRule {
@@ -44,6 +45,7 @@ export interface CreateReverseProxyRulePayload {
   destinationScheme: string
   destinationHost: string
   destinationPort: number
+  certificateId?: string
   access: ReverseProxyRuleAccess
   webSocketsSupport: boolean
   cacheAssets: boolean
@@ -54,6 +56,20 @@ export interface CreateReverseProxyRulePayload {
   trustForwardedProtoHeaders: boolean
   blockCommonExploits: boolean
   additionalHeadersJson?: string
+  locations?: {
+    path: string
+    scheme: string
+    forwardHost: string
+    forwardPort: number
+  }[]
+}
+
+export interface CertificateItem {
+  id: string
+  domain: string
+  issuer: string
+  type: string
+  expiresAt: string
 }
 
 async function listRules(
@@ -100,9 +116,19 @@ async function deleteRule(id: string): Promise<void> {
   if (!data.success) throw ApiError.fromResponse(data)
 }
 
+async function listCertificates(): Promise<CertificateItem[]> {
+  const data = await nmxHttp
+    .url(getApiBaseUrl() + ApiFrontgateRoutes.certificates)
+    .get()
+    .json<CertificateItem[]>()
+  if (!data.success) throw ApiError.fromResponse(data)
+  return data.data
+}
+
 export const frontgateController = {
   listRules,
   createRule,
   updateRule,
   deleteRule,
+  listCertificates,
 }

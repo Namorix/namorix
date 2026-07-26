@@ -1,11 +1,8 @@
 import type { TFunction } from "i18next"
-import {
-  type NmxAddonLocaleKeys,
-  type NmxNotificationDto,
-  toHtml,
-} from "@namorix/core"
+import { type NmxNotificationDto, toHtml } from "@namorix/core"
 import { resolveAddonLocaleTitleByKey } from "./addon"
 import { NmxIconFontSymbol, NmxIconSvgSymbol } from "@namorix/ui"
+import type { NmxAddonLocaleKeys } from "../addons"
 
 export const NOTIFICATION_TYPE_ICON: Record<string, NmxIconFontSymbol> = {
   info: NmxIconFontSymbol.INFO,

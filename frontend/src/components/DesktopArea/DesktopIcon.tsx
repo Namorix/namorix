@@ -37,7 +37,7 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
       ref={btnRef}
       className={cx("nmx-desktop-area__item", {
         "nmx-desktop-area__item--disabled": disabled,
-        "nmx-desktop-area__item--role-admin": isUserRoleAdmin,
+        "nmx-desktop-area__item--role-admin": disabled && isUserRoleAdmin,
       })}
       type="button"
       onClick={handleClick}

@@ -1,6 +1,6 @@
 import type { AddonItem } from "../types"
 import type { TFunction } from "i18next"
-import type { NmxAddonLocaleKeys } from "@namorix/core"
+import type { NmxAddonLocaleKeys } from "../addons"
 
 export function resolveAddonLocaleTitle(
   t: TFunction,

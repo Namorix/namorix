@@ -369,9 +369,17 @@
       },
       "pages": {
         "reverseProxy": {
+          "tabs": {
+            "general": "General",
+            "headers": "Headers",
+            "locations": "Locations",
+            "advanced": "Advanced"
+          },
           "actions": {
             "addProxy": "Add Proxy",
             "editProxy": "Edit Proxy",
+            "addHeader": "Add header",
+            "addLocation": "Add location",
             "save": "Save",
             "delete": "Delete",
             "cancel": "Cancel",
@@ -388,18 +396,38 @@
             "ssl": "SSL",
             "access": "Access",
             "status": "Status",
+            "certificate": "Certificate",
+            "certificatePlaceholder": "Select a certificate…",
+            "certificateNone": "None",
+            "certificateRequestNew": "Request a new Certificate…",
             "webSocketsSupport": "WebSockets",
             "cacheAssets": "Cache Assets",
             "forceSsl": "Force SSL",
             "http2Support": "HTTP/2",
             "hstsEnabled": "HSTS",
             "hstsSubdomains": "HSTS Subdomains",
-            "blockCommonExploits": "Block Common Exploits"
+            "trustForwardedProto": "Trust Forwarded Headers",
+            "blockCommonExploits": "Block Common Exploits",
+            "headerName": "Name",
+            "headerValue": "Value",
+
+            "statusOptions": {
+              "active": "Active",
+              "inactive": "Inactive"
+            },
+            "accessOptions": {
+              "public": "Public",
+              "private": "Private",
+              "restricted": "Restricted",
+              "basicAuth": "Basic Auth"
+            }
           },
           "fallbacks": {
             "loading": "Loading proxies...",
             "error": "Failed to load proxies",
-            "empty": "No proxies configured yet"
+            "empty": "No proxies configured yet",
+            "emptyHeaders": "No custom headers added yet",
+            "emptyLocations": "No custom locations added yet"
           }
         }
       }

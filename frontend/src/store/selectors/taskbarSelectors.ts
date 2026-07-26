@@ -17,7 +17,7 @@ export const selectorTaskbarButtonData =
     return {
       id: win.id,
       icon: win.item.icon,
-      title: win.item.displayName,
+      title: win.item.name,
       isActive: win.id === state.windowsState.activeId,
     }
   }

@@ -7,8 +7,8 @@ import {
 import React, { memo } from "react"
 import { useTranslation } from "react-i18next"
 import { resolveAddonLocaleTitleByKey } from "../../utils"
-import type { NmxAddonLocaleKeys } from "@namorix/core"
 import { useDoubleTap } from "@namorix/core/hooks/useDoubleTap"
+import type { NmxAddonLocaleKeys } from "../../addons"
 
 interface WindowTitleBarProps {
   title: string
