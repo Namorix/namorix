@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Net;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,7 @@ namespace Namorix.Server.Services;
 public class FrontgateProxyConfigProvider(IServiceScopeFactory scopeFactory) : IProxyConfigProvider
 {
     private FrontgateProxyConfig _config = new([], []);
+    public ConcurrentDictionary<string, byte> ForceSslSources { get; } = new();
 
     public IProxyConfig GetConfig() => _config;
 
@@ -87,6 +89,10 @@ public class FrontgateProxyConfigProvider(IServiceScopeFactory scopeFactory) : I
         var oldConfig = _config;
         _config = new FrontgateProxyConfig(routes, [.. clusters.Values]);
         oldConfig.SignalChange(); // notify YARP
+        
+        ForceSslSources.Clear();
+        foreach (var rule in rules.Where(r => r.ForceSsl))
+            ForceSslSources.TryAdd(rule.Source, 0);
     }
 }
 

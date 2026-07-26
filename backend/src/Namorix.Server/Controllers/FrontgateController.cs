@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Namorix.Core.Middleware;
 using Namorix.Core.Responses;
+using Namorix.Core.Validation;
 using Namorix.Server.Models;
 using Namorix.Server.Persistence;
 using Namorix.Server.Services;
+using Namorix.Server.Validation;
 
 namespace Namorix.Server.Controllers;
 
@@ -13,31 +15,43 @@ namespace Namorix.Server.Controllers;
 [Route("api/frontgate")]
 public class FrontgateController(AppDbContext db) : ControllerBase
 {
+    private const string RuleNotFound = "RULE_NOT_FOUND";
+    private const string DuplicateSourceError = "DUPLICATE_SOURCE";
+    
     [HttpGet("reverse-proxy")]
     public async Task<IActionResult> ListRules([FromQuery] int page = 1, [FromQuery] int size = 20)
     {
         var query = db.FgReverseProxyRules
+            .Include(r => r.Locations)
             .OrderByDescending(r => r.CreatedAt);
+        
         var total = await query.CountAsync();
         var items = await query
             .Skip((page - 1) * size)
             .Take(size)
             .ToListAsync();
+        
         return Ok(ApiResponse.Ok(new { items, total }));
     }
     
     [HttpPost("reverse-proxy")]
+    [Validate(typeof(FrontgateRuleSchema))]
     public async Task<IActionResult> CreateRule(
         [FromBody] CreateRuleRequest request,
         [FromServices] FrontgateProxyConfigProvider proxyProvider)
     {
+        var existing = await db.FgReverseProxyRules.AnyAsync(r => r.Source == request.Source);
+        if (existing)
+            return Conflict(ApiResponse.Fail(DuplicateSourceError));
+
         var rule = new FgReverseProxyRule
         {
             Source = request.Source,
             DestinationScheme = request.DestinationScheme,
             DestinationHost = request.DestinationHost,
             DestinationPort = request.DestinationPort,
-            Access = Enum.Parse<ProxyAccessMode>(request.Access),
+            Access = Enum.Parse<ProxyAccessMode>(request.Access, ignoreCase: true),
+            Status = Enum.Parse<ProxyRuleStatus>(request.Status, ignoreCase: true),
             CertificateId = request.CertificateId,
             WebSocketsSupport = request.WebSocketsSupport,
             CacheAssets = request.CacheAssets,
@@ -48,48 +62,58 @@ public class FrontgateController(AppDbContext db) : ControllerBase
             TrustForwardedProtoHeaders = request.TrustForwardedProtoHeaders,
             BlockCommonExploits = request.BlockCommonExploits,
             AdditionalHeadersJson = request.AdditionalHeadersJson,
-            Status = ProxyRuleStatus.Active
         };
-        
-        db.FgReverseProxyRules.Add(rule);
-        await db.SaveChangesAsync();
         
         if (request.Locations is { Count: > 0 })
         {
-            foreach (var loc in request.Locations)
-            {
-                db.FgReverseProxyLocations.Add(new FgReverseProxyLocation
+            rule.Locations =
+            [
+                .. request.Locations.Select(loc => new FgReverseProxyLocation
                 {
                     RuleId = rule.Id,
                     Path = loc.Path,
                     Scheme = loc.Scheme,
                     ForwardHost = loc.ForwardHost,
                     ForwardPort = loc.ForwardPort,
-                });
-            }
-            await db.SaveChangesAsync();
+                })
+            ];
         }
+
         
+        db.FgReverseProxyRules.Add(rule);
+        await db.SaveChangesAsync();
         await proxyProvider.UpdateAsync();
+        
         return Ok(ApiResponse.Ok(rule));
     }
     
     [HttpPut("reverse-proxy/{id}")]
+    [Validate(typeof(FrontgateRuleSchema))]
     public async Task<IActionResult> UpdateRule(
         string id,
         [FromBody] CreateRuleRequest request,
         [FromServices] FrontgateProxyConfigProvider proxyProvider)
     {
-        var rule = await db.FgReverseProxyRules.FindAsync(id);
+        var rule = await db.FgReverseProxyRules
+            .Include(r => r.Locations)
+            .FirstOrDefaultAsync(r => r.Id == id);
         if (rule == null)
-            return NotFound(ApiResponse.Fail("NOT_FOUND", "Rule not found"));
-        
+            return NotFound(ApiResponse.Fail(RuleNotFound));
+
+        if (request.Source != rule.Source)
+        {
+            var existing = await db.FgReverseProxyRules.AnyAsync(r => r.Source == request.Source);
+            if (existing)
+                return Conflict(ApiResponse.Fail(DuplicateSourceError));
+        }
+
         rule.Source = request.Source;
         rule.DestinationScheme = request.DestinationScheme;
         rule.DestinationHost = request.DestinationHost;
         rule.DestinationPort = request.DestinationPort;
         rule.CertificateId = request.CertificateId;
-        rule.Access = Enum.Parse<ProxyAccessMode>(request.Access);
+        rule.Access = Enum.Parse<ProxyAccessMode>(request.Access, ignoreCase: true);
+        rule.Status = Enum.Parse<ProxyRuleStatus>(request.Status, ignoreCase: true);
         rule.WebSocketsSupport = request.WebSocketsSupport;
         rule.CacheAssets = request.CacheAssets;
         rule.ForceSsl = request.ForceSsl;
@@ -101,21 +125,14 @@ public class FrontgateController(AppDbContext db) : ControllerBase
         rule.AdditionalHeadersJson = request.AdditionalHeadersJson;
         rule.UpdatedAt = DateTime.UtcNow;
         
-        db.FgReverseProxyLocations.RemoveRange(rule.Locations);
-        if (request.Locations is { Count: > 0 })
+        rule.Locations = request.Locations?.Select(loc => new FgReverseProxyLocation
         {
-            foreach (var loc in request.Locations)
-            {
-                db.FgReverseProxyLocations.Add(new FgReverseProxyLocation
-                {
-                    RuleId = rule.Id,
-                    Path = loc.Path,
-                    Scheme = loc.Scheme,
-                    ForwardHost = loc.ForwardHost,
-                    ForwardPort = loc.ForwardPort,
-                });
-            }
-        }
+            RuleId = rule.Id,
+            Path = loc.Path,
+            Scheme = loc.Scheme,
+            ForwardHost = loc.ForwardHost,
+            ForwardPort = loc.ForwardPort,
+        }).ToList() ?? [];
         
         await db.SaveChangesAsync();
         await proxyProvider.UpdateAsync();
@@ -129,7 +146,7 @@ public class FrontgateController(AppDbContext db) : ControllerBase
     {
         var rule = await db.FgReverseProxyRules.FindAsync(id);
         if (rule == null)
-            return NotFound(ApiResponse.Fail("NOT_FOUND", "Rule not found"));
+            return NotFound(ApiResponse.Fail(RuleNotFound));
         
         db.FgReverseProxyRules.Remove(rule);
         await db.SaveChangesAsync();
@@ -161,6 +178,7 @@ public record CreateRuleRequest(
     int DestinationPort,
     string? CertificateId,
     string Access,
+    string Status,
     bool WebSocketsSupport,
     bool CacheAssets,
     bool ForceSsl,

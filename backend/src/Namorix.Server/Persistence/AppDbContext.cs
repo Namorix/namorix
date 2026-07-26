@@ -79,6 +79,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IOptions<AppCo
             .IsUnique();
         
         modelBuilder.Entity<FgReverseProxyRule>()
+            .HasIndex(r => r.Source)
+            .IsUnique();
+        
+        modelBuilder.Entity<FgReverseProxyRule>()
             .Property(r => r.Access)
             .HasConversion<string>()
             .HasMaxLength(20);

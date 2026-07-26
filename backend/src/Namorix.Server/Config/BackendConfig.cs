@@ -8,4 +8,9 @@ public class BackendConfig
     public string NetworkName { get; init; } = "namorix-net";
     public int RegistrationTokenTtlMinutes { get; init; } = 60;
 
+    public int HttpPort { get; init; } = 80; // 0 = disabled, requires root/setcap
+    public int HttpsPort { get; init; } = 443; // 0 = disabled
+    public string? SslCertPath { get; init; } // PFX cert path
+    public string? SslCertPassword { get; init; } // PFX password
+    
 }

@@ -13,6 +13,7 @@ using Namorix.Server.Config;
 using Namorix.Server.Extensions;
 using Namorix.Server.Hubs;
 using Namorix.Server.Infrastructure;
+using Namorix.Server.Middleware;
 using Namorix.Server.Persistence;
 using Namorix.Server.Services;
 using Namorix.Server.Services.Grpc;
@@ -32,6 +33,18 @@ builder.WebHost.ConfigureKestrel(options =>
 {
     options.ListenAnyIP(backendConfig.Port, o => o.Protocols = HttpProtocols.Http1);
     options.ListenAnyIP(backendConfig.GrpcPort, o => o.Protocols = HttpProtocols.Http2);
+    
+    if (backendConfig.HttpPort > 0)
+        options.ListenAnyIP(backendConfig.HttpPort, o => o.Protocols = HttpProtocols.Http1);
+
+    if (backendConfig.HttpsPort > 0 && !string.IsNullOrEmpty(backendConfig.SslCertPath))
+    {
+        options.ListenAnyIP(backendConfig.HttpsPort, o =>
+        {
+            o.Protocols = HttpProtocols.Http1;
+            o.UseHttps(backendConfig.SslCertPath, backendConfig.SslCertPassword);
+        });
+    }
 });
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -117,6 +130,7 @@ app.UseNamorixCore<MainHub>(core =>
     app.UseAuth();
     app.UseOAuth2();
     app.UseTrustedProxy();
+    app.UseMiddleware<ForceSslMiddleware>();
 }, endpoints =>
 {
     endpoints.MapReverseProxy();
