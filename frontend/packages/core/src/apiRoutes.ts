@@ -8,6 +8,7 @@ export const API_SETTINGS_BASE = API_BASE + "/settings"
 export const API_NOTIFICATION_BASE = API_BASE + "/notifications"
 export const API_ADDON_BASE = API_BASE + "/addons"
 export const API_OAUTH_BASE = API_BASE + "/oauth"
+export const API_FRONTGATE_BASE = API_BASE + "/frontgate"
 
 export const ApiAuthRoutes = {
   status: API_AUTH_BASE + "/status",
@@ -73,4 +74,9 @@ export const ApiAddonRoutes = {
 
 export const ApiOAuthRoutes = {
   refresh: API_OAUTH_BASE + "/token/refresh",
+} as const
+
+export const ApiFrontgateRoutes = {
+  reverseProxy: API_FRONTGATE_BASE + "/reverse-proxy",
+  reverseProxyById: (id: string) => `${API_FRONTGATE_BASE}/reverse-proxy/${id}`,
 } as const
