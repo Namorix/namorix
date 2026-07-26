@@ -15,4 +15,5 @@ export interface NmxAlertDialogProps extends WithBaseProps {
   onCancel?: () => void
   onClose?: () => void
   loading?: boolean
+  noSpacingBody?: boolean
 }

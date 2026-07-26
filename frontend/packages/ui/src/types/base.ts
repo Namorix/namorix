@@ -7,6 +7,10 @@ export interface WithBaseProps {
   shouldRender?: boolean
 }
 
+export interface WithStylesheet {
+  style?: React.CSSProperties
+}
+
 export interface WithHTMLProps<T extends HTMLElement = HTMLDivElement>
   extends WithBaseProps, React.HtmlHTMLAttributes<T> {}
 

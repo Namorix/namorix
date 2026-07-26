@@ -7,6 +7,7 @@ import {
 } from "../NmxDialog"
 import type { NmxAlertDialogProps } from "./NmxAlertDialog.types"
 import { useTranslation } from "react-i18next"
+import { cx } from "../../utils"
 
 export const NmxAlertDialog = ({
   open,
@@ -21,6 +22,7 @@ export const NmxAlertDialog = ({
   onCancel,
   onClose,
   loading = false,
+  noSpacingBody = false,
   className,
   children,
 }: NmxAlertDialogProps) => {
@@ -45,7 +47,11 @@ export const NmxAlertDialog = ({
         icon={icon}
         onClose={loading ? undefined : (onClose ?? onCancel)}
       />
-      <NmxDialogBody>{children ?? description}</NmxDialogBody>
+      <NmxDialogBody
+        className={cx({ "nmx-dialog--no-spacing-body": noSpacingBody })}
+      >
+        {children ?? description}
+      </NmxDialogBody>
       <NmxDialogFooter>
         <NmxButton
           variant="ghost"
