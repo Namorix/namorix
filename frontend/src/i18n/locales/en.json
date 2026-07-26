@@ -376,8 +376,9 @@
             "advanced": "Advanced"
           },
           "actions": {
-            "addProxy": "Add Proxy",
-            "editProxy": "Edit Proxy",
+            "addProxy": "Add proxy",
+            "editProxy": "Edit proxy",
+            "deleteProxy": "Delete proxy",
             "addHeader": "Add header",
             "addLocation": "Add location",
             "save": "Save",
@@ -393,9 +394,9 @@
             "destinationHost": "Host",
             "destinationPort": "Port",
             "destinationHostPlaceholder": "e.g. 192.168.1.10",
-            "ssl": "SSL",
             "access": "Access",
             "status": "Status",
+            "delete": "Delete",
             "certificate": "Certificate",
             "certificatePlaceholder": "Select a certificate…",
             "certificateNone": "None",
@@ -428,6 +429,19 @@
             "empty": "No proxies configured yet",
             "emptyHeaders": "No custom headers added yet",
             "emptyLocations": "No custom locations added yet"
+          },
+          "errors": {
+            "ruleNotFound": "Rule not found",
+            "duplicateSource": "A rule with this source already exists"
+          },
+          "feedback": {
+            "createSuccess": "Reverse proxy rule created successfully",
+            "createError": "Failed to create reverse proxy rule",
+            "updateSuccess": "Reverse proxy rule updated successfully",
+            "updateError": "Failed to update reverse proxy rule",
+            "deleteSuccess": "Reverse proxy rule deleted successfully",
+            "deleteError": "Failed to delete reverse proxy rule",
+            "deleteConfirm": "Are you sure you want to delete the proxy rule for \"{{source}}\"?"
           }
         }
       }

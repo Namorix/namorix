@@ -21,9 +21,8 @@ import {
   NmxTabs,
   NmxToggle,
 } from "@namorix/ui"
-import { nmxToast, usePageSize } from "@namorix/core"
+import { formatCustomError, nmxToast, usePageSize } from "@namorix/core"
 import {
-  type CertificateItem,
   type CreateReverseProxyRulePayload,
   frontgateController,
   type ReverseProxyRule,
@@ -64,19 +63,25 @@ const tabs: NmxTab<FrontgateTab>[] = [
 ]
 
 const initialForm: CreateReverseProxyRulePayload = {
-  source: "",
+  source: "izerocs.space",
   destinationScheme: "http",
-  destinationHost: "",
-  destinationPort: 3000,
+  destinationHost: "192.168.31.150",
+  destinationPort: 5000,
   http2Support: false,
   hstsEnabled: false,
   hstsSubdomains: false,
   access: "public",
+  status: "active",
   webSocketsSupport: false,
   cacheAssets: false,
   forceSsl: false,
   trustForwardedProtoHeaders: true,
   blockCommonExploits: false,
+}
+
+const FrontgateErrorCodes = {
+  RULE_NOT_FOUND: "addon.frontgate.pages.reverseProxy.errors.ruleNotFound",
+  DUPLICATE_SOURCE: "addon.frontgate.pages.reverseProxy.errors.duplicateSource",
 }
 
 const CERT_REQUEST_NEW = "__request_new__"
@@ -92,17 +97,22 @@ export const FrontgateReverseProxy: React.FC = () => {
 
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [activeTab, setActiveTab] = useState<FrontgateTab>("general")
+  const [formSubmitting, setFormSubmitting] = useState(false)
+  const [editingRule, setEditingRule] = useState<ReverseProxyRule | null>(null)
+
+  const [deletingRule, setDeletingRule] = useState<ReverseProxyRule | null>(
+    null,
+  )
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false)
 
   // General tab
   const [formSource, setFormSource] = useState(initialForm.source)
   const [formScheme, setFormScheme] = useState(initialForm.destinationScheme)
   const [formHost, setFormHost] = useState(initialForm.destinationHost)
   const [formPort, setFormPort] = useState(initialForm.destinationPort)
-  const [formCertificateId, setFormCertificateId] = useState("")
   const [formForceSsl, setFormForceSsl] = useState(initialForm.forceSsl)
-  const [formStatus, setFormStatus] = useState("active")
-
-  const [certificates, setCertificates] = useState<CertificateItem[]>([])
+  const [formStatus, setFormStatus] = useState(initialForm.status)
+  const [formCertificateId, setFormCertificateId] = useState("")
   const [certificateOptions, setCertificateOptions] = useState<NmxSelectData[]>(
     [],
   )
@@ -123,7 +133,6 @@ export const FrontgateReverseProxy: React.FC = () => {
     initialForm.cacheAssets,
   )
   const [formHttp2, setFormHttp2] = useState(initialForm.http2Support)
-  const [formAdditionalHeaders, setFormAdditionalHeaders] = useState("")
 
   const [formHsts, setFormHsts] = useState(initialForm.hstsEnabled)
   const [formHstsSub, setFormHstsSub] = useState(initialForm.hstsSubdomains)
@@ -160,7 +169,6 @@ export const FrontgateReverseProxy: React.FC = () => {
     frontgateController
       .listCertificates()
       .then((certs) => {
-        setCertificates(certs)
         setCertificateOptions([
           {
             value: "",
@@ -184,17 +192,19 @@ export const FrontgateReverseProxy: React.FC = () => {
   }, [t])
 
   const resetForm = useCallback(() => {
+    setActiveTab("general")
+
     setFormSource(initialForm.source)
     setFormScheme(initialForm.destinationScheme)
     setFormHost(initialForm.destinationHost)
     setFormPort(initialForm.destinationPort)
     setFormCertificateId("")
+    setFormStatus(initialForm.status)
     setFormForceSsl(initialForm.forceSsl)
 
     setFormWebSockets(initialForm.webSocketsSupport)
     setFormCacheAssets(initialForm.cacheAssets)
     setFormHttp2(initialForm.http2Support)
-    setFormAdditionalHeaders("")
 
     setFormHsts(initialForm.hstsEnabled)
     setFormHstsSub(initialForm.hstsSubdomains)
@@ -207,12 +217,57 @@ export const FrontgateReverseProxy: React.FC = () => {
     setFormLocations([])
   }, [])
 
+  const fillForm = useCallback((rule: ReverseProxyRule) => {
+    setFormSource(rule.source)
+    setFormScheme(rule.destinationScheme)
+    setFormHost(rule.destinationHost)
+    setFormPort(rule.destinationPort)
+    setFormCertificateId(rule.certificateId ?? "")
+    setFormForceSsl(rule.forceSsl)
+    setFormStatus(rule.status)
+    setFormWebSockets(rule.webSocketsSupport)
+    setFormCacheAssets(rule.cacheAssets)
+    setFormHttp2(rule.http2Support)
+    setFormHsts(rule.hstsEnabled)
+    setFormHstsSub(rule.hstsSubdomains)
+    setFormTrustForwardedProto(rule.trustForwardedProtoHeaders)
+    setFormBlockExploits(rule.blockCommonExploits)
+    setFormAccess(rule.access)
+
+    if (rule.additionalHeadersJson) {
+      try {
+        const parsed = JSON.parse(rule.additionalHeadersJson) as Record<
+          string,
+          string
+        >
+        setFormHeaders(
+          Object.entries(parsed).map(([key, value]) => ({ key, value })),
+        )
+      } catch {
+        setFormHeaders([])
+      }
+    } else {
+      setFormHeaders([])
+    }
+
+    setFormLocations(
+      rule.locations?.map((loc) => ({
+        path: loc.path,
+        scheme: loc.scheme,
+        forwardHost: loc.forwardHost,
+        forwardPort: loc.forwardPort,
+      })) ?? [],
+    )
+  }, [])
+
   const handleDialogOpen = useCallback(() => {
+    setEditingRule(null)
     resetForm()
     setShowAddDialog(true)
   }, [resetForm])
 
   const handleDialogClose = useCallback(() => {
+    setEditingRule(null)
     resetForm()
     setShowAddDialog(false)
   }, [resetForm])
@@ -243,6 +298,140 @@ export const FrontgateReverseProxy: React.FC = () => {
       : undefined
   }, [formHeaders])
 
+  const handleConfirm = useCallback(() => {
+    if (!formSource.trim()) {
+      nmxToast.error(
+        t("core:common.validation.required", {
+          field: t("addon.frontgate.pages.reverseProxy.fields.source"),
+        }),
+      )
+      return
+    }
+
+    if (!formHost.trim()) {
+      nmxToast.error(
+        t("core:common.validation.required", {
+          field: t("addon.frontgate.pages.reverseProxy.fields.destinationHost"),
+        }),
+      )
+      return
+    }
+
+    if (isNaN(formPort) || formPort <= 0) {
+      nmxToast.error(
+        t("core:common.validation.invalidFormat", {
+          field: t("addon.frontgate.pages.reverseProxy.fields.destinationPort"),
+        }),
+      )
+      return
+    }
+
+    const payload: CreateReverseProxyRulePayload = {
+      source: formSource,
+      destinationScheme: formScheme,
+      destinationHost: formHost,
+      destinationPort: formPort,
+      certificateId: formCertificateId || undefined,
+      access: formAccess,
+      status: formStatus,
+      webSocketsSupport: formWebSockets,
+      cacheAssets: formCacheAssets,
+      forceSsl: formForceSsl,
+      http2Support: formHttp2,
+      hstsEnabled: formHsts,
+      hstsSubdomains: formHstsSub,
+      trustForwardedProtoHeaders: formTrustForwardedProto,
+      blockCommonExploits: formBlockExploits,
+      additionalHeadersJson: serializeHeaders(),
+      locations: formLocations.length > 0 ? formLocations : undefined,
+    }
+
+    setFormSubmitting(true)
+
+    const action = editingRule
+      ? frontgateController.updateRule(editingRule.id, payload)
+      : frontgateController.createRule(payload)
+
+    action
+      .then(() => {
+        nmxToast.success(
+          t(
+            editingRule
+              ? "addon.frontgate.pages.reverseProxy.feedback.updateSuccess"
+              : "addon.frontgate.pages.reverseProxy.feedback.createSuccess",
+          ),
+        )
+        setEditingRule(null)
+        resetForm()
+        setShowAddDialog(false)
+        return fetchRules(page, pageSize)
+      })
+      .catch((err) =>
+        nmxToast.error(
+          formatCustomError(t, err, FrontgateErrorCodes),
+          t(
+            editingRule
+              ? "addon.frontgate.pages.reverseProxy.feedback.updateError"
+              : "addon.frontgate.pages.reverseProxy.feedback.createError",
+          ),
+        ),
+      )
+      .finally(() => setFormSubmitting(false))
+  }, [
+    formSource,
+    formHost,
+    formPort,
+    formScheme,
+    formCertificateId,
+    formAccess,
+    formStatus,
+    formWebSockets,
+    formCacheAssets,
+    formForceSsl,
+    formHttp2,
+    formHsts,
+    formHstsSub,
+    formTrustForwardedProto,
+    formBlockExploits,
+    serializeHeaders,
+    formLocations,
+    editingRule,
+    t,
+    resetForm,
+    fetchRules,
+    page,
+    pageSize,
+  ])
+
+  const handleDelete = useCallback((rule: ReverseProxyRule) => {
+    setDeletingRule(rule)
+  }, [])
+
+  const handleDeleteConfirm = useCallback(() => {
+    if (!deletingRule) return
+    setDeleteSubmitting(true)
+    frontgateController
+      .deleteRule(deletingRule.id)
+      .then(() => {
+        nmxToast.success(
+          t("addon.frontgate.pages.reverseProxy.feedback.deleteSuccess"),
+        )
+        setDeletingRule(null)
+        return fetchRules(page, pageSize)
+      })
+      .catch((err) =>
+        nmxToast.error(
+          formatCustomError(t, err, FrontgateErrorCodes),
+          t("addon.frontgate.pages.reverseProxy.feedback.deleteError"),
+        ),
+      )
+      .finally(() => setDeleteSubmitting(false))
+  }, [deletingRule, fetchRules, t, page, pageSize])
+
+  const handleDeleteCancel = useCallback(() => {
+    setDeletingRule(null)
+  }, [])
+
   const columns: NmxDataTableColumn<ReverseProxyRule>[] = [
     {
       header: t("addon.frontgate.pages.reverseProxy.fields.source"),
@@ -258,22 +447,18 @@ export const FrontgateReverseProxy: React.FC = () => {
       enableUserSelectCell: true,
     },
     {
-      header: t("addon.frontgate.pages.reverseProxy.fields.ssl"),
-      renderCell: (row) => (
-        <NmxBadge semantic={row.ssl ? "success" : "default"} size="sm">
-          {row.ssl ? "HTTPS" : "HTTP"}
-        </NmxBadge>
-      ),
-      grow: 1,
-      alignHeader: "center",
-      alignCell: "center",
-      disableEllipsisCell: true,
-    },
-    {
       header: t("addon.frontgate.pages.reverseProxy.fields.access"),
       renderCell: (row) => (
         <NmxBadge
-          semantic={row.access === "public" ? "warning" : "info"}
+          semantic={
+            row.access === "public"
+              ? "warning"
+              : row.access === "private"
+                ? "info"
+                : row.access === "restricted"
+                  ? "error"
+                  : "debug"
+          }
           size="sm"
         >
           {row.access}
@@ -288,12 +473,13 @@ export const FrontgateReverseProxy: React.FC = () => {
       header: t("addon.frontgate.pages.reverseProxy.fields.status"),
       renderCell: (row) => (
         <NmxBadge
+          className={row.status}
           semantic={
             row.status === "active"
               ? "success"
               : row.status === "error"
                 ? "error"
-                : "default"
+                : "debug"
           }
           size="sm"
         >
@@ -301,6 +487,26 @@ export const FrontgateReverseProxy: React.FC = () => {
         </NmxBadge>
       ),
       grow: 1,
+      alignHeader: "center",
+      alignCell: "center",
+      disableEllipsisCell: true,
+    },
+    {
+      header: t("addon.frontgate.pages.reverseProxy.fields.delete"),
+      renderCell: (row) => (
+        <NmxButton
+          variant="ghost"
+          semantic="error"
+          onClick={(e) => {
+            e.stopPropagation()
+            handleDelete(row)
+          }}
+          className="nmx-addon-frontgate__btn-delete"
+        >
+          <NmxIconFont symbol={NmxIconFontSymbol.DELETE} />
+        </NmxButton>
+      ),
+      grow: 0,
       alignHeader: "center",
       alignCell: "center",
       disableEllipsisCell: true,
@@ -389,6 +595,12 @@ export const FrontgateReverseProxy: React.FC = () => {
           columns={columns}
           rows={rules}
           fallbackConditions={fallbackConditions}
+          clickableRows={true}
+          onRowClick={(row) => {
+            setEditingRule(row)
+            fillForm(row)
+            setShowAddDialog(true)
+          }}
           className="nmx-addon-page__data-table"
         />
 
@@ -415,14 +627,17 @@ export const FrontgateReverseProxy: React.FC = () => {
 
       <NmxAlertDialog
         open={showAddDialog}
-        title={t("addon.frontgate.pages.reverseProxy.actions.addProxy")}
+        title={t(
+          editingRule
+            ? "addon.frontgate.pages.reverseProxy.actions.editProxy"
+            : "addon.frontgate.pages.reverseProxy.actions.addProxy",
+        )}
         onClose={() => handleDialogClose()}
         size="md"
         noSpacingBody={true}
         noBodyScrollbar={true}
-        onConfirm={() => {
-          setShowAddDialog(false)
-        }}
+        onConfirm={handleConfirm}
+        loading={formSubmitting}
         confirmLabel={t("addon.frontgate.pages.reverseProxy.actions.save")}
         extraActionLabel={
           activeTab === "headers"
@@ -546,6 +761,7 @@ export const FrontgateReverseProxy: React.FC = () => {
                 onChange={setFormHeaders}
                 keyPlaceholder="X-Custom-Header"
                 valuePlaceholder="value"
+                buttonDeleteClass="nmx-addon-frontgate__btn-delete"
                 keyLabel={t(
                   "addon.frontgate.pages.reverseProxy.fields.headerName",
                 )}
@@ -584,7 +800,9 @@ export const FrontgateReverseProxy: React.FC = () => {
                           />
                           <NmxButton
                             variant="ghost"
+                            semantic="error"
                             onClick={() => removeLocation(idx)}
+                            className="nmx-addon-frontgate__btn-delete"
                           >
                             <NmxIconFont symbol={NmxIconFontSymbol.DELETE} />
                           </NmxButton>
@@ -709,6 +927,21 @@ export const FrontgateReverseProxy: React.FC = () => {
             </NmxFormField>
           </NmxForm>
         )}
+      </NmxAlertDialog>
+
+      <NmxAlertDialog
+        open={deletingRule !== null}
+        title={t("addon.frontgate.pages.reverseProxy.actions.deleteProxy")}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        loading={deleteSubmitting}
+        confirmLabel={t("addon.frontgate.pages.reverseProxy.actions.delete")}
+      >
+        <p>
+          {t("addon.frontgate.pages.reverseProxy.feedback.deleteConfirm", {
+            source: deletingRule?.source,
+          })}
+        </p>
       </NmxAlertDialog>
     </div>
   )

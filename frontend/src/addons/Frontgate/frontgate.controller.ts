@@ -19,7 +19,6 @@ export interface ReverseProxyRule {
   destinationScheme: string
   destinationHost: string
   destinationPort: number
-  ssl: boolean
   access: ReverseProxyRuleAccess
   status: ReverseProxyRuleStatus
   certificateId?: string
@@ -33,6 +32,12 @@ export interface ReverseProxyRule {
   trustForwardedProtoHeaders: boolean
   blockCommonExploits: boolean
   additionalHeadersJson?: string
+  locations?: {
+    path: string
+    scheme: string
+    forwardHost: string
+    forwardPort: number
+  }[]
 }
 
 export interface ReverseProxyRuleResponse {
@@ -47,6 +52,7 @@ export interface CreateReverseProxyRulePayload {
   destinationPort: number
   certificateId?: string
   access: ReverseProxyRuleAccess
+  status: ReverseProxyRuleStatus
   webSocketsSupport: boolean
   cacheAssets: boolean
   forceSsl: boolean
