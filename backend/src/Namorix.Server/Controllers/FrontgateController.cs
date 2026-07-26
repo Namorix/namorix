@@ -38,6 +38,7 @@ public class FrontgateController(AppDbContext db) : ControllerBase
             DestinationHost = request.DestinationHost,
             DestinationPort = request.DestinationPort,
             Access = Enum.Parse<ProxyAccessMode>(request.Access),
+            CertificateId = request.CertificateId,
             WebSocketsSupport = request.WebSocketsSupport,
             CacheAssets = request.CacheAssets,
             ForceSsl = request.ForceSsl,
@@ -52,6 +53,23 @@ public class FrontgateController(AppDbContext db) : ControllerBase
         
         db.FgReverseProxyRules.Add(rule);
         await db.SaveChangesAsync();
+        
+        if (request.Locations is { Count: > 0 })
+        {
+            foreach (var loc in request.Locations)
+            {
+                db.FgReverseProxyLocations.Add(new FgReverseProxyLocation
+                {
+                    RuleId = rule.Id,
+                    Path = loc.Path,
+                    Scheme = loc.Scheme,
+                    ForwardHost = loc.ForwardHost,
+                    ForwardPort = loc.ForwardPort,
+                });
+            }
+            await db.SaveChangesAsync();
+        }
+        
         await proxyProvider.UpdateAsync();
         return Ok(ApiResponse.Ok(rule));
     }
@@ -70,6 +88,7 @@ public class FrontgateController(AppDbContext db) : ControllerBase
         rule.DestinationScheme = request.DestinationScheme;
         rule.DestinationHost = request.DestinationHost;
         rule.DestinationPort = request.DestinationPort;
+        rule.CertificateId = request.CertificateId;
         rule.Access = Enum.Parse<ProxyAccessMode>(request.Access);
         rule.WebSocketsSupport = request.WebSocketsSupport;
         rule.CacheAssets = request.CacheAssets;
@@ -81,6 +100,22 @@ public class FrontgateController(AppDbContext db) : ControllerBase
         rule.BlockCommonExploits = request.BlockCommonExploits;
         rule.AdditionalHeadersJson = request.AdditionalHeadersJson;
         rule.UpdatedAt = DateTime.UtcNow;
+        
+        db.FgReverseProxyLocations.RemoveRange(rule.Locations);
+        if (request.Locations is { Count: > 0 })
+        {
+            foreach (var loc in request.Locations)
+            {
+                db.FgReverseProxyLocations.Add(new FgReverseProxyLocation
+                {
+                    RuleId = rule.Id,
+                    Path = loc.Path,
+                    Scheme = loc.Scheme,
+                    ForwardHost = loc.ForwardHost,
+                    ForwardPort = loc.ForwardPort,
+                });
+            }
+        }
         
         await db.SaveChangesAsync();
         await proxyProvider.UpdateAsync();
@@ -101,6 +136,22 @@ public class FrontgateController(AppDbContext db) : ControllerBase
         await proxyProvider.UpdateAsync();
         return Ok(ApiResponse.Ok());
     }
+    
+    [HttpGet("certificates")]
+    public async Task<IActionResult> ListCertificates()
+    {
+        var certs = await db.FgCertificates
+            .OrderByDescending(c => c.CreatedAt)
+            .Select(c => new {
+                c.Id,
+                c.Domain,
+                c.Issuer,
+                type = c.Type.ToString(),
+                expiresAt = c.ExpiresAt,
+            })
+            .ToListAsync();
+        return Ok(ApiResponse.Ok(certs));
+    }
 }
 
 public record CreateRuleRequest(
@@ -108,6 +159,7 @@ public record CreateRuleRequest(
     string DestinationScheme,
     string DestinationHost,
     int DestinationPort,
+    string? CertificateId,
     string Access,
     bool WebSocketsSupport,
     bool CacheAssets,
@@ -117,5 +169,13 @@ public record CreateRuleRequest(
     bool HstsSubdomains,
     bool TrustForwardedProtoHeaders,
     bool BlockCommonExploits,
-    string? AdditionalHeadersJson
+    string? AdditionalHeadersJson,
+    List<LocationRequest>? Locations
+);
+
+public abstract record LocationRequest(
+    string Path,
+    string Scheme,
+    string ForwardHost,
+    int ForwardPort
 );

@@ -27,7 +27,7 @@ public class FgReverseProxyRule
     [MaxLength(253)] public string DestinationHost { get; set; } = string.Empty;
     public int DestinationPort { get; set; } = 80;
     
-    [MaxLength(32)] public string? CertificateId { get; init; }
+    [MaxLength(32)] public string? CertificateId { get; set; }
     public FgCertificate? Certificate { get; init; }
     
     public ProxyAccessMode Access { get; set; } = ProxyAccessMode.Private;
