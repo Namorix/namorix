@@ -40,6 +40,10 @@
     text-align: center;
   }
 
+  &__btn-delete {
+    font-size: var(--nmx-font-size-md);
+  }
+
   &__location-editor {
     display: flex;
     flex-direction: column;

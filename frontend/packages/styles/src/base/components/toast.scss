@@ -7,7 +7,7 @@
   flex-direction: column;
   align-items: center;
   gap: var(--nmx-spacing-sm);
-  z-index: 99999;
+  z-index: var(--nmx-z-toast);
   pointer-events: none;
 }
 
@@ -16,7 +16,11 @@
   display: flex;
   align-items: center;
   gap: var(--nmx-spacing-sm);
-  background: color-mix(in oklab, var(--nmx-toast-color) 15%, var(--nmx-color-surface));
+  background: color-mix(
+    in oklab,
+    var(--nmx-toast-color) 15%,
+    var(--nmx-color-surface)
+  );
   padding: var(--nmx-spacing-md) var(--nmx-spacing-lg);
   border-radius: var(--nmx-radius-md);
   color: var(--nmx-toast-color);
@@ -55,7 +59,7 @@
 }
 
 @keyframes nmx-toast-in {
-  0%   {
+  0% {
     opacity: 0;
     transform: translateY(-10px) scale(0.9);
   }
@@ -67,7 +71,7 @@
 }
 
 @keyframes nmx-toast-out {
-  0%   {
+  0% {
     opacity: 1;
     transform: translateY(0) scale(1);
   }

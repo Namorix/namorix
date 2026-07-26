@@ -117,6 +117,9 @@
     }
 
     &-buttons {
+      display: flex;
+      flex-direction: row;
+      gap: var(--nmx-spacing-md);
     }
   }
 }

@@ -2368,6 +2368,11 @@ input[type=number] {
 .nmx-dialog__footer-actions {
   flex: 1;
 }
+.nmx-dialog__footer-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: var(--nmx-spacing-md);
+}
 .nmx-toast-provider {
   position: fixed;
   top: var(--nmx-spacing-lg);
@@ -2377,7 +2382,7 @@ input[type=number] {
   flex-direction: column;
   align-items: center;
   gap: var(--nmx-spacing-sm);
-  z-index: 99999;
+  z-index: var(--nmx-z-toast);
   pointer-events: none;
 }
 .nmx-toast {
@@ -2891,8 +2896,8 @@ input[type=number] {
   --nmx-z-dropdown: 100;
   --nmx-z-modal: 200;
   --nmx-z-tooltip: 300;
-  --nmx-z-toast: 400;
   --nmx-z-dialog: 1000;
+  --nmx-z-toast: 2000;
   --nmx-z-launcher: 9998;
   --nmx-z-notification: 9998;
 }
