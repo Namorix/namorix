@@ -53,7 +53,7 @@ FgReverseProxyRule ── 1:n ──> FgReverseProxyLocation     (Custom Locatio
 | `HstsSubdomains` | bool | includeSubDomains | ✅ |
 | `TrustForwardedProtoHeaders` | bool | Per-rule trust X-Forwarded-Proto (khác TrustedProxyMiddleware global) | ✅ |
 | `AdditionalHeadersJson` | string? | YARP transforms escape hatch | ✅ |
-| `BlockCommonExploits` | bool | WAF rule-set cơ bản | 🔜 Phase 1+ |
+| `BlockCommonExploits` | bool | WAF rule-set cơ bản | ✅ |
 
 ## YARP Transforms (2 layers)
 
@@ -62,6 +62,20 @@ Layer 1 — **TrustedProxyMiddleware (global)**: xử lý X-Forwarded-* từ req
 Layer 2 — **YARP built-in transforms**: tự động forward X-Forwarded-*, X-Real-IP header khi gửi request từ Frontgate tới backend addon. Có thể kiểm soát per-rule qua `AdditionalHeadersJson` field.
 
 Không có "raw custom config" kiểu Nginx — đây là design decision bảo mật, thay bằng structured transforms + escape hatch có kiểm soát.
+
+### YARP Feature Implementation Notes
+
+Tất cả các flag đều implement được bằng C#/YARP, không cần Nginx hay config bên ngoài:
+
+| Flag | Implementation Approach |
+|------|----------------------|
+| **WebSocketsSupport** | YARP built-in — tự động xử lý upgrade request, chỉ cần không disable |
+| **ForceSsl** | Middleware trước `MapReverseProxy()` — check `HttpContext.Request.Scheme`, redirect 301 nếu không phải HTTPS |
+| **CacheAssets** | YARP transform: `ResponseHeaderAppendTransform("Cache-Control", "public, max-age=86400")` kết hợp path condition |
+| **Http2Support** | YARP cluster config — dùng `HttpVersionPolicy.RequestVersionOrHigher`, tự động fallback nếu backend không hỗ trợ |
+| **HstsEnabled / HstsSubdomains** | Middleware hoặc YARP transform — thêm header `Strict-Transport-Security: max-age=31536000` (+ `includeSubDomains`) per-rule |
+| **TrustForwardedProtoHeaders** | YARP mặc định tự động thêm `X-Forwarded-*` headers. Có thể disable transform per-route nếu backend không tin cậy |
+| **BlockCommonExploits** | Middleware inspect request trước YARP — Regex pattern cho SQL injection, XSS, path traversal → 403 nếu khớp |
 
 ### Enums
 - `ProxyAccessMode`: Public, Private, Restricted, BasicAuth
@@ -100,14 +114,25 @@ Không có "raw custom config" kiểu Nginx — đây là design decision bảo 
 - [x] **NmxFormRow**: flex row component cho form layout
 - [x] **NmxFormField.rowFlex**: prop để set flex trong row
 - [x] **NmxAlertDialog.flush** (`noSpacingBody`): tắt padding body dialog
-- [x] **Add dialog UI**: tabs (General/Features/Security), reset form, destination row layout
-- [ ] **Form submit**: handleCreate gọi `frontgateController.createRule()`, validation
-- [ ] **Features/Security tab panels**: WebSockets, Cache, HSTS Sub, Block Exploits, Force SSL, Trusted Proto toggles
-- [ ] **Edit dialog**: pre-filled form, gọi `frontgateController.updateRule()`
+- [x] **NmxAlertDialog.extraAction**: thêm `extraActionLabel` + `onExtraAction` cho nút phụ bên trái footer
+- [x] **NmxSelect Floating UI migration**: chuyển từ native `<select>` sang custom div-based dropdown với `@floating-ui/react` (`useFloating`, `FloatingPortal`, `useClick`, `useDismiss`, `useListNavigation`), `renderOption` prop, keyboard nav
+- [x] **NmxKeyValueEditor component**: key-value pair editor dạng bảng (Name + Value header, delete row), SCSS trong `@namorix/styles`
+- [x] **Add dialog UI**: 4 tabs (General/Headers/Locations/Advanced), reset form, destination row layout
+- [x] **General tab**: Source, Destination row, Certificate (None + Request new), Status, Force SSL
+- [x] **Advanced tab**: gộp Features (WebSockets, Cache Assets, HTTP/2) + Security (HSTS + Subdomains, Trust Forwarded Proto, Block Common Exploits, Access select)
+- [x] **Headers tab**: NmxKeyValueEditor với empty state, nút Add Header qua `extraAction` của dialog
+- [x] **Status field**: formStatus state + statusOptions select (General tab)
+- [x] **Certificate selector**: options gồm None + Request a new Certificate + real certs từ API
+- [x] **BlockCommonExploits field**: thêm model, migration, API, frontend interface
+- [x] **Certificate API**: `GET /api/frontgate/certificates` + `CertificateItem` interface + `listCertificates()`
+- [x] **i18n keys**: `certificate`, `certificatePlaceholder`, `certificateNone`, `certificateRequestNew`, `trustForwardedProto`, `headerName`, `headerValue`, `additionalHeaders`, `statusOptions`, `accessOptions`, `addHeader`, `emptyHeaders`, `headers`, `locations`, `addLocation`, `emptyLocations`
+- [x] **Locations CRUD API**: backend xử lý `Locations` list trong CreateRule/UpdateRule, xóa cũ + thêm mới, Cascade delete
+- [x] **Locations UI**: card-based sub-routing editor (path + delete row, scheme/host/port row) trong Locations tab riêng
+- [x] **Additional Headers YARP transform**: backend deserial `AdditionalHeadersJson` + thêm RequestHeader transforms trong `FrontgateProxyConfigProvider`
+- [ ] **Form submit + validation**: `onConfirm` gọi `frontgateController.createRule()` với form data, client-side validation, error display
+- [ ] **Edit dialog**: pre-filled form + `editingRule` state, gọi `frontgateController.updateRule()`
 - [ ] **Delete with confirmation**: nút delete + confirmation dialog
 - [ ] **ForceSsl redirect middleware**: middleware check per-rule ForceSsl, redirect 301 HTTP→HTTPS trước MapReverseProxy
-- [ ] Clarify TrustForwardedProtoHeaders semantics: per-rule trust (lớp YARP→backend) vs TrustedProxyMiddleware global (lớp external→Frontgate)
-
 ### 🔜 Phase 2 — Certificate Management
 
 Thư viện ACME: **Certes** (`Certes` NuGet) — giao tiếp với Let's Encrypt, xử lý HTTP-01/DNS-01 challenge, tự động cấp và renew cert.

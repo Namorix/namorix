@@ -27,6 +27,14 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-07-26 — Frontgate Phase 1: Floating UI NmxSelect, NmxKeyValueEditor, Locations, 4-tab consolidation
+
+- @namorix/core 0.47.0 → 0.48.0: `apiRoutes.ts` — added `certificates` route. `toast/toast.types.ts` — `message` type fix.
+- @namorix/styles 0.40.0 → 0.41.0: New `key-value-editor.scss`. Floating UI select refactor. icomoon rebuild.
+- @namorix/ui 0.29.0 → 0.30.0: NEW `NmxKeyValueEditor`. NmxSelect Floating UI migration. NmxAlertDialog `extraAction`/`noSpacingBody`/`noBodyScrollbar`. New `CODE`, `ADVANCED` icon symbols. `@floating-ui/react` dep added.
+- frontend 0.60.0 → 0.61.0: FrontgateReverseProxy 4-tab form (General/Headers/Locations/Advanced). Floating UI NmxSelect for certificate/status/access. NmxKeyValueEditor for headers. Card-based location editor. Certificate selector with None/Request new/real certs. Location CRUD. i18n keys.
+- Namorix.Server 0.53.0 → 0.54.0: `ListCertificates` endpoint. Locations support in CreateRule/UpdateRule.
+
 ### 2026-07-26 — Frontgate Phase 1: YARP integration, CRUD API, full form UI
 
 - @namorix/ui 0.28.1 → 0.29.0: NEW `NmxTabs` generic tab component (controlled/uncontrolled). NEW `NmxFormRow` flex row layout. MODIFIED `NmxFormField` — added `rowFlex` prop. `NmxAlertDialog` — added `noSpacingBody` (flush) prop.

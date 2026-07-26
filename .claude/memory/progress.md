@@ -136,12 +136,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.60.0 | M4 (Frontgate Phase 1 — YARP CRUD, full form UI) |
-| @namorix/core | 0.47.0 | M4 (Frontgate API routes) |
-| @namorix/styles | 0.40.0 | M4 (tabs SCSS, frontgate form styles) |
-| @namorix/ui | 0.29.0 | M4 (NmxTabs, NmxFormRow, rowFlex, noSpacingBody) |
+| frontend | 0.61.0 | M4 (Frontgate Phase 1 — full 4-tab form UI, Locations, Floating UI) |
+| @namorix/core | 0.48.0 | M4 (Frontgate certificates API route, toast fix) |
+| @namorix/styles | 0.41.0 | M4 (key-value-editor SCSS, Floating UI select, icomoon icons) |
+| @namorix/ui | 0.30.0 | M4 (NmxKeyValueEditor, Floating UI NmxSelect, extraAction, noSpacingBody) |
 | Namorix.Core | 0.51.0 | M4 (configureEndpoints callback) |
-| Namorix.Server | 0.53.0 | M4 (FrontgateController CRUD, FrontgateProxyConfigProvider, YARP integration, BlockCommonExploits) |
+| Namorix.Server | 0.54.0 | M4 (Frontgate ListCertificates, Locations CRUD, AdditionalHeaders YARP transform) |
 
 ## Version Rules
 
@@ -174,6 +174,14 @@
 - @namorix/styles 0.38.2 → 0.39.0: MODIFIED: `base/tokens/icons.scss` — added `--nmx-icon-app-frontgate` CSS variable for new Frontgate icon.
 - @namorix/ui 0.27.0 → 0.28.0: MODIFIED: `Primitives/NmxIcon/NmxIconSvg.types.ts` — added `APP_FRONTGATE: "app-frontgate"` symbol.
 - frontend 0.57.0 → 0.58.0: NEW: `addons/Frontgate/Frontgate.addon.tsx` — addon manifest registered. NEW: `addons/Frontgate/Frontgate.tsx` — empty component scaffold. MODIFIED: `addons/index.ts` — added Frontgate import. `addons/types.ts` — added `frontgate` to NmxAddonId and NmxAddonLocaleKeys. `i18n/locales/en.json` — frontgate i18n keys. Themes CSS rebuilt.
+
+### 2026-07-26 — Frontgate Phase 1: Floating UI NmxSelect, NmxKeyValueEditor, Locations tab, 4-tab consolidation
+
+- @namorix/core 0.47.0 → 0.48.0: MODIFIED: `apiRoutes.ts` — added `certificates` route. `toast/toast.types.ts` — fixed `message` type (`string | unknown` → `unknown`).
+- @namorix/styles 0.40.0 → 0.41.0: NEW: `base/components/key-value-editor.scss` — table-style editor SCSS. MODIFIED: `select.scss` — Floating UI refactor (removed absolute positioning, z-index 100→1000). `pagination.scss` — `.nmx-select__control` cascade via `.nmx-pagination__size-wrap`. `tabs.scss`, `dialog.scss` (noSpacingBody), `form.scss`, `frontgate.scss` (location editor, empty state), icomoon rebuild (new icon symbols).
+- @namorix/ui 0.29.0 → 0.30.0: NEW: `Components/NmxKeyValueEditor/` — key-value pair editor with Name/Value header, delete rows. `package.json` — added `@floating-ui/react` dependency. MODIFIED: `Primitives/NmxSelect.tsx` — full Floating UI migration (`useFloating`, `FloatingPortal`, `useClick`, `useDismiss`, `useListNavigation`, `renderOption` prop, keyboard nav). `Components/NmxAlertDialog/` — added `extraActionLabel`/`onExtraAction` for contextual footer action, `noSpacingBody`, `noBodyScrollbar` props. `Primitives/NmxTabs.tsx` — tab component updates. `Primitives/NmxIcon/NmxIconFont.types.ts` — added `CODE`, `ADVANCED` symbols. `Components/NmxToastProvider.tsx` — toast message `String()` cast fix.
+- frontend 0.60.0 → 0.61.0: MODIFIED: `addons/Frontgate/FrontgateReverseProxy.tsx` — 4-tab form UI (General/Headers/Locations/Advanced), Floating UI NmxSelect for certificate/status/access, NmxKeyValueEditor for headers, card-based location editor with path+delete + scheme/host/port rows, Certificate selector (None + Request new + real certs), `serializeHeaders()` JSON transform, `resetForm` state, `extraAction` for Add Header/Add Location. `addons/Frontgate/frontgate.controller.ts` — added `CertificateItem` interface, `listCertificates()`, `locations` in payload. `i18n/locales/en.json` — added Frontgate i18n keys (certificate, statusOptions, accessOptions, headerName, locations etc.).
+- Namorix.Server 0.53.0 → 0.54.0: MODIFIED: `Controllers/FrontgateController.cs` — added `ListCertificates` (GET), Locations handling in CreateRule/UpdateRule. `Models/FgReverseProxyRule.cs` — minor updates.
 
 ### 2026-07-26 — Frontgate Phase 1: YARP integration, CRUD API, full form UI
 
