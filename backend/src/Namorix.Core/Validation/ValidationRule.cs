@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Namorix.Core.Constants;
 
@@ -72,11 +73,15 @@ public class FormatValidationRule : ValidationRule
     public string Pattern { get; init; } = string.Empty;
     public int? MinLength { get; init; }
     public int? MaxLength { get; init; }
+    public bool Trim { get; init; } = false;
 
     public override ValidationResult Validate(string field, object? value, object? requestObj = null)
     {
         if (value is not string str || string.IsNullOrEmpty(str))
             return IsRequired ? Fail(ValidationErrorCodes.Required, field) : Pass();
+        
+        if (Trim)
+            str = str.Trim();
         
         if (MinLength.HasValue && str.Length < MinLength.Value)
             return Fail(ValidationErrorCodes.TooShort, field, new ValidationMeta { MinLength = MinLength.Value });
@@ -104,7 +109,7 @@ public class EnumValidateRule : ValidationRule
         
         if (!Enum.IsDefined(EnumType, value))
             return Fail(ValidationErrorCodes.InvalidEnum, field,
-                new ValidationMeta { Enum = Enum.GetNames(EnumType).Cast<object>().ToArray() });
+                new ValidationMeta { Enum = [.. Enum.GetNames(EnumType)] });
 
         return Pass();
     }
@@ -122,5 +127,60 @@ public class AllowedValuesValidationRule : ValidationRule
             ? Pass()
             : Fail(ValidationErrorCodes.InvalidOption, field,
                 new ValidationMeta { AllowedValues = AllowedValues });
+    }
+}
+
+public class JsonValidationRule : ValidationRule
+{
+    public int? MinLength { get; init; }
+    public int? MaxLength { get; init; }
+
+    public override ValidationResult Validate(string field, object? value, object? requestObj = null)
+    {
+        if (value is not string str || string.IsNullOrEmpty(str))
+            return IsRequired ? Fail(ValidationErrorCodes.Required, field) : Pass();
+
+        if (MinLength.HasValue && str.Length < MinLength.Value)
+            return Fail(ValidationErrorCodes.TooShort, field, new ValidationMeta { MinLength = MinLength });
+
+        if (MaxLength.HasValue && str.Length > MaxLength.Value)
+            return Fail(ValidationErrorCodes.TooLong, field, new ValidationMeta { MaxLength = MaxLength });
+
+        try
+        {
+            JsonDocument.Parse(str);
+        }
+        catch (JsonException)
+        {
+            return Fail(ValidationErrorCodes.InvalidFormat, field, new ValidationMeta { Pattern = "JSON" });
+        }
+
+        return Pass();
+    }
+}
+
+public class CollectionValidationRule : ValidationRule
+{
+    public Func<object, ValidationResult>? ItemValidator { get; init; }
+    public override ValidationResult Validate(string field, object? value, object? requestObj = null)
+    {
+        if (value == null)
+            return Pass();
+
+        if (value is not System.Collections.IList list)
+            return Fail(ValidationErrorCodes.InvalidType, field);
+        
+        for (var i = 0; i < list.Count; i++)
+        {
+            var item = list[i];
+            if (item == null) continue;
+            var result = ItemValidator?.Invoke(item);
+            if (result != null && !result.IsValid)
+            {
+                return result with { FieldName = $"{field}[{i}].{result.FieldName}" };
+            }
+        }
+        
+        return Pass();
     }
 }
