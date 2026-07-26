@@ -90,17 +90,33 @@
     padding-bottom: 0;
     color: var(--nmx-color-on-surface);
     font-size: var(--nmx-font-size-sm);
+    overflow-x: hidden;
   }
 
   &--no-spacing-body {
     padding: 0;
   }
 
+  &--no-scrollbar-body {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
   &__footer {
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    flex-direction: row;
     gap: var(--nmx-spacing-md);
     padding: var(--nmx-spacing-xl);
+    margin-top: var(--nmx-spacing-xl);
+
+    &-actions {
+      flex: 1;
+    }
+
+    &-buttons {
+    }
   }
 }

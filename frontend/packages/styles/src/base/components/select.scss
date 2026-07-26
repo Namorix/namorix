@@ -1,10 +1,9 @@
 @use "../icomoon/variables" as *;
+@use "../abstract/mixins" as *;
 
 .nmx-select-wrap {
   position: relative;
   width: 100%;
-  display: flex;
-  align-items: center;
 
   &:after {
     content: "#{$ic-arrow-down}";
@@ -21,15 +20,23 @@
       transform 0.2s ease;
   }
 
-  &:has(select:focus-visible):after {
+  &:hover:after,
+  &.nmx-select--open:after,
+  &:has(.nmx-select__control:focus-visible):after {
+    color: var(--nmx-color-on-surface);
+  }
+
+  &.nmx-select--open:after,
+  &:has(.nmx-select__control:focus-visible):after {
     color: var(--nmx-color-on-surface);
     transform: translateY(-50%) rotate(180deg);
   }
 }
 
-.nmx-select-control {
-  appearance: none;
-  -webkit-appearance: none;
+.nmx-select__control {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
   font-size: var(--nmx-font-size-sm);
   padding: var(--nmx-spacing-md) var(--nmx-spacing-md);
   padding-right: calc(var(--nmx-spacing-md) * 3);
@@ -52,5 +59,37 @@
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+}
+
+.nmx-select__placeholder {
+  color: var(--nmx-color-text-disabled);
+}
+
+.nmx-select__dropdown {
+  z-index: 1000;
+  margin-top: var(--nmx-spacing-sm);
+  background: var(--nmx-color-surface);
+  border-radius: var(--nmx-radius-md);
+  box-shadow: var(--nmx-shadow-md);
+  max-height: 240px;
+  overflow-y: auto;
+
+  @include scrollbar;
+}
+
+.nmx-select__option {
+  color: var(--nmx-color-on-surface);
+  padding: var(--nmx-spacing-md) var(--nmx-spacing-lg);
+  font-size: var(--nmx-font-size-sm);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--nmx-color-surface-high);
+  }
+
+  &--selected {
+    background: var(--nmx-color-surface-mid);
+    font-weight: 600;
   }
 }

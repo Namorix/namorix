@@ -16,6 +16,26 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.ic-advanced {
+  &:before {
+    content: $ic-advanced; 
+  }
+}
+.ic-code {
+  &:before {
+    content: $ic-code; 
+  }
+}
+.ic-feature {
+  &:before {
+    content: $ic-feature; 
+  }
+}
+.ic-sliders {
+  &:before {
+    content: $ic-sliders; 
+  }
+}
 .ic-add {
   &:before {
     content: $ic-add; 

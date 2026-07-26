@@ -1,10 +1,20 @@
+@use "../abstract/mixins" as *;
+
 .nmx-tabs {
   display: flex;
   gap: 0;
   border-bottom: 1px solid var(--nmx-color-surface-mid);
   margin-bottom: var(--nmx-spacing-md);
+  overflow-x: auto;
+  container-type: inline-size;
+
+  @include scrollbar-none;
 
   &__tab {
+    display: flex;
+    flex-direction: row;
+    gap: var(--nmx-spacing-xs);
+    align-items: center;
     padding: var(--nmx-spacing-sm) var(--nmx-spacing-md);
     background: none;
     border: none;
@@ -13,7 +23,8 @@
     border-bottom: 2px solid transparent;
     margin-bottom: -1px;
     font-family: var(--nmx-font-sans), serif;
-    font-size: var(--nmx-font-size-md);
+    font-size: var(--nmx-font-size-sm);
+    outline: none;
 
     &:hover {
       color: var(--nmx-color-on-surface);
@@ -22,6 +33,18 @@
     &--active {
       color: var(--nmx-color-primary);
       border-bottom-color: var(--nmx-color-primary);
+    }
+  }
+
+  .nmx-tabs[data-count="3"] &__icon {
+    @container (max-width: 300px) {
+      display: none;
+    }
+  }
+
+  .nmx-tabs[data-count="4"] &__icon {
+    @container (max-width: 390px) {
+      display: none;
     }
   }
 }

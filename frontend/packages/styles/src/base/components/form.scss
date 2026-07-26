@@ -13,9 +13,9 @@
 .nmx-form-field__label {
   display: block;
   font-size: var(--nmx-font-size-sm);
-  font-weight: var(--nmx-font-weight-semibold);
-  font-family: var(--nmx-font-family-sans), serif;
-  letter-spacing: var(--nmx-letter-spacing-label);
+  font-weight: var(--nmx-font-weight-bold);
+  font-family: var(--nmx-font-sans), serif;
+  letter-spacing: var(--nmx-letter-spacing-normal);
   color: var(--nmx-color-on-surface);
 }
 

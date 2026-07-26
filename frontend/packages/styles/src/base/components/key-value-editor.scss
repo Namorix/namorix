@@ -1,0 +1,45 @@
+.nmx-key-value-editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nmx-spacing-sm);
+}
+
+.nmx-key-value-editor__header {
+  display: flex;
+  gap: var(--nmx-spacing-sm);
+  padding: 0 var(--nmx-spacing-sm);
+  > :first-child {
+    flex: 1;
+  }
+  > :nth-child(2) {
+    flex: 1;
+  }
+}
+
+.nmx-key-value-editor__header-spacer {
+  width: 44px; // button width
+  flex: 0 0 auto;
+}
+
+.nmx-key-value-editor__header-label {
+  font-size: var(--nmx-font-size-sm);
+  color: var(--nmx-color-on-surface);
+  letter-spacing: 0.05em;
+}
+
+.nmx-key-value-editor__row {
+  display: flex;
+
+  gap: var(--nmx-spacing-sm);
+  > :first-child {
+    flex: 1;
+  }
+
+  > :nth-child(2) {
+    flex: 1;
+  }
+
+  > :last-child {
+    flex: 0 0 auto;
+  }
+}
