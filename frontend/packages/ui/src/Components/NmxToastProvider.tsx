@@ -59,8 +59,11 @@ export const NmxToastProvider = () => {
           )}
           onClick={() => dismiss(t.id)}
         >
-          <NmxIconFont symbol={TOAST_ICONS[t.type]} className="nmx-toast__icon"/>
-          <span className="nmx-toast__msg">{t.message}</span>
+          <NmxIconFont
+            symbol={TOAST_ICONS[t.type]}
+            className="nmx-toast__icon"
+          />
+          <span className="nmx-toast__msg">{String(t.message)}</span>
         </button>
       ))}
     </div>

@@ -50,6 +50,10 @@ export const NmxIconFontSymbol = {
   REVERSE_PROXY: "ic-reverse-proxy",
   ERROR_PAGE: "ic-error-page",
   ADD: "ic-add",
+  SLIDERS: "ic-sliders",
+  FEATURE: "ic-feature",
+  CODE: "ic-code",
+  ADVANCED: "ic-advanced",
 } as const
 
 export type NmxIconFontSymbol =

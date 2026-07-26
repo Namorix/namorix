@@ -11,9 +11,12 @@ export interface NmxAlertDialogProps extends WithBaseProps {
   confirmLabel?: string
   cancelLabel?: string
   closeLabel?: string
+  extraActionLabel?: string
   onConfirm?: () => void
   onCancel?: () => void
   onClose?: () => void
+  onExtraAction?: () => void
   loading?: boolean
   noSpacingBody?: boolean
+  noBodyScrollbar?: boolean
 }

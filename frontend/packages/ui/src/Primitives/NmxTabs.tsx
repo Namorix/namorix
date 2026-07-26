@@ -1,15 +1,19 @@
 import { useState } from "react"
 import type { WithBaseProps } from "../types"
 import { cx } from "../utils"
+import type { TFunction } from "@namorix/core"
+import { NmxIconFont, type NmxIconFontSymbol } from "./NmxIcon"
 
 export interface NmxTab<T> {
   value: T
+  icon?: NmxIconFontSymbol
   label: string
 }
 
 interface NmxTabsProps<T> extends WithBaseProps {
   value?: string
   defaultValue?: string
+  t?: TFunction
   tabs: NmxTab<T>[]
   onChange?: (value: T) => void
 }
@@ -17,6 +21,7 @@ interface NmxTabsProps<T> extends WithBaseProps {
 export const NmxTabs = <T extends string = string>({
   value,
   defaultValue,
+  t,
   tabs,
   onChange,
   className,
@@ -38,7 +43,11 @@ export const NmxTabs = <T extends string = string>({
   }
 
   return (
-    <div {...rest} className={cx("nmx-tabs", className)}>
+    <div
+      {...rest}
+      className={cx("nmx-tabs", className)}
+      data-count={tabs.length}
+    >
       {tabs.map((tab) => (
         <button
           key={tab.value}
@@ -48,7 +57,12 @@ export const NmxTabs = <T extends string = string>({
           )}
           onClick={() => handleClick(tab.value)}
         >
-          {tab.label}
+          {tab.icon && (
+            <NmxIconFont symbol={tab.icon} className="nmx-tabs__icon" />
+          )}
+          <span className="nmx-tabs__label">
+            {!t ? tab.label : t(tab.label)}
+          </span>
         </button>
       ))}
     </div>
