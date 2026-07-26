@@ -48,15 +48,21 @@ class NmxToastBus {
     this.emit(message, "success", "short")
   }
 
-  error(message: string | unknown) {
+  error(message: string | unknown, fallbackMessage?: string) {
     if (message instanceof Error) {
       const err = message as ApiError
       const formatted = formatApiError(i18n.t, err)
+
       if (formatted) {
         this.emit(formatted, "error", "long")
         return
       }
-      this.emit(err.message || err.code || "Unknown error", "error", "long")
+
+      this.emit(
+        err.message || err.code || fallbackMessage || "Unknown error",
+        "error",
+        "long",
+      )
       return
     }
     this.emit(String(message), "error", "long")

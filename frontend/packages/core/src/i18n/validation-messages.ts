@@ -228,6 +228,17 @@ export function formatHttpError(t: TFunction, err: ApiError): string | null {
   return null
 }
 
+export function formatCustomError(
+  t: TFunction,
+  err: ApiError,
+  codeMap: Record<string, string>,
+): string | ApiError {
+  if (!err.code) return err
+  const i18nKey = codeMap[err.code] ?? err.code
+  const result = t(i18nKey)
+  return result !== i18nKey ? result : err
+}
+
 export function runValidation(
   t: TFunction,
   rules: ValidationRule[],
