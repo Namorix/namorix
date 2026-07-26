@@ -84,7 +84,7 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
 
   const columns: NmxDataTableColumn<TrafficLog>[] = [
     {
-      header: t("addon.networkTraffic.logs.statusCode"),
+      header: t("addon.networkTraffic.logs.fields.statusCode"),
       renderCell: (row) => (
         <NmxBadge
           semantic={statusToSemantic(row.statusCode)}
@@ -100,7 +100,7 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
       disableEllipsisCell: true,
     },
     {
-      header: t("addon.networkTraffic.logs.method"),
+      header: t("addon.networkTraffic.logs.fields.method"),
       renderCell: (row) => (
         <NmxBadge semantic={methodToSemantic(row?.method)} size="sm">
           {row?.method}
@@ -112,13 +112,13 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
       disableEllipsisCell: true,
     },
     {
-      header: t("addon.networkTraffic.logs.path"),
+      header: t("addon.networkTraffic.logs.fields.path"),
       renderCell: (row) => row?.path ?? "-",
       grow: 3,
       enableUserSelectCell: true,
     },
     {
-      header: t("addon.networkTraffic.logs.duration"),
+      header: t("addon.networkTraffic.logs.fields.duration"),
       renderCell: (row) => formatDuration(row.durationMs),
       grow: 1,
       alignHeader: "center",
@@ -127,7 +127,7 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
       hideBelow: "xl",
     },
     {
-      header: t("addon.networkTraffic.logs.size"),
+      header: t("addon.networkTraffic.logs.fields.size"),
       renderCell: (row) => formatSize(row.responseSizeBytes),
       grow: 1,
       alignHeader: "center",
@@ -136,13 +136,13 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
       hideBelow: "xl",
     },
     {
-      header: t("addon.networkTraffic.logs.ip"),
+      header: t("addon.networkTraffic.logs.fields.ip"),
       renderCell: (row) => row?.ip ?? "-",
       grow: 2,
       enableUserSelectCell: true,
     },
     {
-      header: t("addon.networkTraffic.logs.timestamp"),
+      header: t("addon.networkTraffic.logs.fields.timestamp"),
       renderCell: (row) => timestamp(row.timestamp),
       grow: 2,
       disableEllipsisCell: true,

@@ -2,5 +2,8 @@
   "auth": {
     "loginFailed": "Failed login attempt for **{{username}}** from **{{ip}}**",
     "userRegistered": "**{{username}}** (**{{email}}**) has registered"
+  },
+  "proxy": {
+    "untrustedProxy": "Untrusted proxy **{{remoteIp}}** blocked"
   }
 }

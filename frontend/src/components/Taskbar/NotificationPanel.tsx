@@ -278,6 +278,7 @@ export const NotificationPanel = memo(() => {
               </NmxIconBox>
             </div>
             <span
+              className="nmx-notification-dialog__description"
               dangerouslySetInnerHTML={{
                 __html: detail
                   ? resolveNotificationDescriptionHtml(t, detail)

@@ -126,7 +126,7 @@ export const LogViewer: React.FC = () => {
 
   const columns: NmxDataTableColumn<LogEntry>[] = [
     {
-      header: t("addon.logViewer.level"),
+      header: t("addon.logViewer.fields.level"),
       renderCell: (row) => {
         return (
           <NmxBadge
@@ -143,7 +143,7 @@ export const LogViewer: React.FC = () => {
       disableEllipsisCell: true,
     },
     {
-      header: t("addon.logViewer.group"),
+      header: t("addon.logViewer.fields.group"),
       renderCell: (row) => (
         <NmxBadge
           semantic={GROUP_TYPES[row.group]?.semantic ?? "info"}
@@ -158,20 +158,20 @@ export const LogViewer: React.FC = () => {
       disableEllipsisCell: true,
     },
     {
-      header: t("addon.logViewer.source"),
+      header: t("addon.logViewer.fields.source"),
       renderCell: (row) => row.source,
       grow: 2,
       hideBelow: "md",
       enableUserSelectCell: true,
     },
     {
-      header: t("addon.logViewer.message"),
+      header: t("addon.logViewer.fields.message"),
       renderCell: (row) => row.message,
       grow: 4,
       enableUserSelectCell: true,
     },
     {
-      header: t("addon.logViewer.timestamp"),
+      header: t("addon.logViewer.fields.timestamp"),
       renderCell: (row) => timestamp(row.timestamp),
       grow: 1,
       disableEllipsisCell: true,
