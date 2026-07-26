@@ -129,15 +129,24 @@ Tất cả các flag đều implement được bằng C#/YARP, không cần Ngin
 - [x] **Locations CRUD API**: backend xử lý `Locations` list trong CreateRule/UpdateRule, xóa cũ + thêm mới, Cascade delete
 - [x] **Locations UI**: card-based sub-routing editor (path + delete row, scheme/host/port row) trong Locations tab riêng
 - [x] **Additional Headers YARP transform**: backend deserial `AdditionalHeadersJson` + thêm RequestHeader transforms trong `FrontgateProxyConfigProvider`
-- [ ] **Form submit + validation**: `onConfirm` gọi `frontgateController.createRule()` với form data, client-side validation, error display
-- [ ] **Edit dialog**: pre-filled form + `editingRule` state, gọi `frontgateController.updateRule()`
-- [ ] **Delete with confirmation**: nút delete + confirmation dialog
-- [ ] **ForceSsl redirect middleware**: middleware check per-rule ForceSsl, redirect 301 HTTP→HTTPS trước MapReverseProxy
+- [x] **Form submit + validation**: `onConfirm` gọi `frontgateController.createRule()` với form data, client-side validation, error display
+- [x] **Backend validation — FormatValidationRule.Trim**: thêm Trim property cho FormatValidationRule
+- [x] **Backend validation — JsonValidationRule**: rule mới validate JSON string parse được, có MinLength/MaxLength
+- [x] **Backend validation — CollectionValidationRule**: rule generic validate collection items qua ItemValidator delegate
+- [x] **Backend validation — FrontgateRuleSchema**: schema với 7 fields (Source, DestinationHost, DestinationScheme, DestinationPort, Access, AdditionalHeadersJson, Locations)
+- [x] **Backend validation — [Validate] attribute**: thêm lên CreateRule và UpdateRule
+- [x] **Backend validation — Locations gộp vào 1 SaveChanges**: bỏ foreach riêng, gán rule.Locations navigation property
+- [x] **Core — formatCustomError**: function với `codeMap` parameter lookup `err.code` → i18n key, returns `string | ApiError`
+- [x] **Toast createPortal**: fix toast behind dialog overlay (stacking context với `contain: strict`)
+- [x] **Edit dialog**: pre-filled form + `editingRule` state, gọi `frontgateController.updateRule()`, dialog title dynamic (addProxy/editProxy)
+- [x] **Delete with confirmation**: nút delete + confirmation dialog, loading state
 ### 🔜 Phase 2 — Certificate Management
 
 Thư viện ACME: **Certes** (`Certes` NuGet) — giao tiếp với Let's Encrypt, xử lý HTTP-01/DNS-01 challenge, tự động cấp và renew cert.
 
-- [ ] Let's Encrypt ACME integration (Certes — HTTP-01 / DNS-01 challenge)
+- [x] **Port 80/443 binding**: optional Kestrel config (`ListenAnyIP(80)`, `ListenAnyIP(443)` với HTTPS), cần root/setcap, config qua env/appsettings
+- [x] **ForceSsl redirect middleware**: middleware check per-rule ForceSsl, redirect 301 HTTP→HTTPS trước MapReverseProxy
+- [ ] Let's Encrypt ACME integration (Certes — HTTP-01 challenge qua port 80)
 - [ ] Wildcard cert support (DNS-01 bắt buộc cho `*.namorix.local`)
 - [ ] Auto-renew worker (`IHostedService`)
 - [ ] Kestrel SNI certificate binding (ServerOptionsSelectionCallback)

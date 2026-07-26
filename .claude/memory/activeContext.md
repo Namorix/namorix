@@ -27,6 +27,24 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-07-26 — Frontgate Phase 1: Edit dialog, delete confirm, ForceSsl middleware, port 80/443
+
+- @namorix/core 0.49.0 → 0.50.0: NEW `formatCustomError` with `codeMap` parameter for error code → i18n translation mapping.
+- @namorix/styles 0.41.1 → 0.42.0: Dialog, toast, frontgate SCSS updates, elevation token fix.
+- @namorix/ui 0.30.1 → 0.30.2: NmxKeyValueEditor, NmxToastProvider, NmxSelect fixes.
+- frontend 0.62.0 → 0.63.0: Edit dialog with pre-filled form, delete with confirmation dialog, Status dropdown now functional. `updateSuccess`/`updateError`/`deleteSuccess`/`deleteError` i18n keys.
+- Namorix.Core 0.52.0 → 0.53.0: JsonStringEnumConverter(CamelCase) for lowercase enum serialization.
+- Namorix.Server 0.55.0 → 0.56.0: ForceSsl redirect middleware (ConcurrentDictionary + HTTP→HTTPS 301), port 80/443 optional Kestrel binding, Edit/Delete CRUD endpoints, Status fix in CreateRuleRequest, ListRules Include Locations, FrontgateProxyConfigProvider.ForceSslSources.
+
+### 2026-07-26 — Frontgate Phase 1: Form submit + validation, backend validation, toast createPortal, error codes
+
+- @namorix/core 0.48.0 → 0.49.0: NEW `formatServerError` — looks up `err.code` as i18n key, returns `string | ApiError` for flexible error handling. Toast error handling improved.
+- @namorix/styles 0.41.0 → 0.41.1: Toast SCSS z-index fix, elevation token fix.
+- @namorix/ui 0.30.0 → 0.30.1: NmxToastProvider wrapped in createPortal(document.body) — fixes toast behind dialog overlay (stacking context).
+- frontend 0.61.0 → 0.62.0: Frontgate form submit + validation, handleConfirm with .then().catch().finally(), formSubmitting loading state. Frontgate i18n error codes (ruleNotFound, duplicateSource).
+- Namorix.Core 0.51.0 → 0.52.0: NEW validation rules — FormatValidationRule.Trim, JsonValidationRule, CollectionValidationRule.
+- Namorix.Server 0.54.0 → 0.55.0: Frontgate backend validation via [Validate(FrontgateRuleSchema)], duplicate source check, Enum.Parse ignoreCase fix, Locations navigation property.
+
 ### 2026-07-26 — Frontgate Phase 1: Floating UI NmxSelect, NmxKeyValueEditor, Locations, 4-tab consolidation
 
 - @namorix/core 0.47.0 → 0.48.0: `apiRoutes.ts` — added `certificates` route. `toast/toast.types.ts` — `message` type fix.

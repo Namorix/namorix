@@ -136,12 +136,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.61.0 | M4 (Frontgate Phase 1 — full 4-tab form UI, Locations, Floating UI) |
-| @namorix/core | 0.48.0 | M4 (Frontgate certificates API route, toast fix) |
-| @namorix/styles | 0.41.0 | M4 (key-value-editor SCSS, Floating UI select, icomoon icons) |
-| @namorix/ui | 0.30.0 | M4 (NmxKeyValueEditor, Floating UI NmxSelect, extraAction, noSpacingBody) |
-| Namorix.Core | 0.51.0 | M4 (configureEndpoints callback) |
-| Namorix.Server | 0.54.0 | M4 (Frontgate ListCertificates, Locations CRUD, AdditionalHeaders YARP transform) |
+| frontend | 0.63.0 | M4 (Frontgate Phase 1 — edit dialog, delete confirm, Status functional) |
+| @namorix/core | 0.50.0 | M4 (formatCustomError, error handling) |
+| @namorix/styles | 0.42.0 | M4 (frontgate SCSS, dialog/toast fixes) |
+| @namorix/ui | 0.30.2 | M4 (NmxKeyValueEditor, NmxSelect fixes) |
+| Namorix.Core | 0.53.0 | M4 (JsonStringEnumConverter, validation rules) |
+| Namorix.Server | 0.56.0 | M4 (ForceSsl middleware, port 80/443, Edit/Delete API, Status fix) |
 
 ## Version Rules
 
@@ -191,6 +191,24 @@
 - frontend 0.59.0 → 0.60.0: NEW: `addons/Frontgate/frontgate.controller.ts` — `CreateReverseProxyRulePayload`, `ReverseProxyRuleResponse` types, `createRule()`/`updateRule()`/`deleteRule()` methods with `UpdateAsync()` integration. MODIFIED: `addons/Frontgate/FrontgateReverseProxy.tsx` — full add dialog with NmxTabs (General/Features/Security), NmxFormRow destination layout (scheme+host+port), toggle controls for WebSockets/Cache/HTTP2/ForceSSL/HSTS/BlockExploits, `resetForm` pattern, states for all form fields. `i18n/locales/en.json` — Frontgate form field i18n keys.
 - Namorix.Core 0.50.0 → 0.51.0: MODIFIED: `Extensions/ApplicationBuilderExtensions.cs` — added `Action<IEndpointRouteBuilder>? configureEndpoints = null` callback for Server-only endpoint registration without Core referencing YARP.
 - Namorix.Server 0.52.0 → 0.53.0: NEW: `Services/FrontgateProxyConfigProvider.cs` — `IProxyConfigProvider` reading active `FgReverseProxyRules` from DB, building YARP clusters/routes with transforms (WebSockets, HTTP/2, HSTS, ForwardedHeaders, X-Forwarded-For). Uses `CancellationChangeToken` for runtime config reload. NEW: `Controllers/FrontgateController.cs` — full CRUD: `ListRules` (GET, paginated, RequireAdmin), `CreateRule` (POST, calls `UpdateAsync()`), `UpdateRule` (PUT, calls `UpdateAsync()`), `DeleteRule` (DELETE, calls `UpdateAsync()`). MODIFIED: `Models/FgReverseProxyRule.cs` — added `BlockCommonExploits` field. `Program.cs` — YARP DI: `AddSingleton<FrontgateProxyConfigProvider>()`, `AddReverseProxy()`, `IProxyConfigConfigProvider` singleton, `MapReverseProxy()` via configureEndpoints callback. `Persistence/AppDbContext.cs` — FgReverseProxyRule relationships. NEW migration `AddBlockCommonExploits`. `.claude/plans/frontgate-proxy-architecture.md` — updated with granular Phase 1 items.
+
+### 2026-07-26 — Frontgate Phase 1: Form submit + validation, backend validation, toast createPortal, error codes
+
+- @namorix/core 0.48.0 → 0.49.0: NEW: `i18n/validation-messages.ts` — `formatServerError` function (looks up `err.code` as i18n key, returns `string | ApiError`). MODIFIED: `toast/toast.service.ts` — improved error handling with ApiError code fallback chain.
+- @namorix/styles 0.41.0 → 0.41.1: MODIFIED: `base/components/toast.scss` — z-index adjustments. `base/tokens/elevation.scss` — token fix.
+- @namorix/ui 0.30.0 → 0.30.1: MODIFIED: `Components/NmxToastProvider.tsx` — wrapped in `createPortal(document.body)` to fix toast behind dialog overlay (stacking context issue with `contain: strict` on `#root`).
+- frontend 0.61.0 → 0.62.0: MODIFIED: `addons/Frontgate/FrontgateReverseProxy.tsx` — form submit + validation (`handleConfirm` with client-side validation, API call via `createRule()` with `.then().catch().finally()` pattern, `formSubmitting` loading state, `nmxToast.error` for errors). Removed unused `certificates` state, `formatApiError` import. Added `feedback.createSuccess`/`createError` i18n keys. `i18n/locales/en.json` — added `errors.ruleNotFound`, `errors.duplicateSource` keys.
+- Namorix.Core 0.51.0 → 0.52.0: NEW: `Validation/ValidationRule.cs` — `FormatValidationRule.Trim` property (whitespace trim before validation), `JsonValidationRule` (validates JSON string parseable via `JsonDocument.Parse`, MinLength/MaxLength), `CollectionValidationRule` (validates IList items via `ItemValidator` delegate with indexed field names).
+- Namorix.Server 0.54.0 → 0.55.0: MODIFIED: `Controllers/FrontgateController.cs` — added `[Validate(typeof(FrontgateRuleSchema))]` on CreateRule/UpdateRule, duplicate Source check with `DUPLICATE_SOURCE` error code, `Enum.Parse(ignoreCase: true)` fix, Locations via navigation property (single `SaveChangesAsync()`). NEW: `Validation/FrontgateRuleSchema.cs` — validation schema with 7 properties (Source, DestinationHost, DestinationScheme, DestinationPort, Access, AdditionalHeadersJson, Locations).
+
+### 2026-07-26 — Frontgate Phase 1: Edit dialog, delete confirm, ForceSsl, port 80/443
+
+- @namorix/core 0.49.0 → 0.50.0: NEW: `i18n/validation-messages.ts` — `formatCustomError` function with `codeMap` parameter for `err.code` → i18n key mapping, returns `string | ApiError` if no match. MODIFIED: `toast/toast.service.ts` — error handling improvements.
+- @namorix/styles 0.41.1 → 0.42.0: MODIFIED: `base/components/dialog.scss` — NmxAlertDialog style updates. `base/components/toast.scss` — z-index fixes. `base/shell/addon/frontgate.scss` — Frontgate form styles. `base/tokens/elevation.scss` — token adjustments.
+- @namorix/ui 0.30.1 → 0.30.2: MODIFIED: `Components/NmxKeyValueEditor/NmxKeyValueEditor.tsx` — component fixes. `Components/NmxToastProvider.tsx` — createPortal migration. `Primitives/NmxSelect.tsx` — cleanup.
+- frontend 0.62.0 → 0.63.0: MODIFIED: `addons/Frontgate/FrontgateReverseProxy.tsx` — edit dialog (`editingRule` state + `fillForm` pre-fill), delete confirmation flow (`deletingRule` + `deleteSubmitting` + `handleDeleteConfirm`), delete column with stopPropagation, Status form dropdown now functional. `addons/Frontgate/frontgate.controller.ts` — `status` field in `CreateReverseProxyRulePayload`. `i18n/locales/en.json` — `updateSuccess`, `updateError`, `deleteSuccess`, `deleteError`, `confirmDelete` keys.
+- Namorix.Core 0.52.0 → 0.53.0: MODIFIED: `Extensions/ServiceCollectionExtensions.cs` — added `JsonStringEnumConverter(JsonNamingPolicy.CamelCase)` for lowercase enum serialization. `Validation/ValidationRule.cs` — new rules.
+- Namorix.Server 0.55.0 → 0.56.0: MODIFIED: `Controllers/FrontgateController.cs` — ListRules `.Include(r => r.Locations)`, `CreateRuleRequest.Status` field, `Enum.Parse(ignoreCase: true)` fix, update duplicate source check wraps in `if (request.Source != rule.Source)`. `Config/BackendConfig.cs` — added `HttpPort`, `HttpsPort`, `SslCertPath`, `SslCertPassword`. `Program.cs` — port 80/443 optional Kestrel binding, `app.UseMiddleware<ForceSslMiddleware>()`. `appsettings.json` — added HttpPort/HttpsPort/Ssl config. `Services/FrontgateProxyConfigProvider.cs` — `ConcurrentDictionary<string, byte> ForceSslSources` populated from rules. NEW: `Middleware/ForceSslMiddleware.cs` — HTTP→HTTPS 301 redirect per-rule. `.claude/plans/frontgate-proxy-architecture.md` — Phase 2 items 1-2 marked done.
 
 ### 2026-07-25 — OAuth reuse detection, formatHttpError, Frontgate pages, token cleanup
 
