@@ -17,6 +17,7 @@ using Namorix.Server.Persistence;
 using Namorix.Server.Services;
 using Namorix.Server.Services.Grpc;
 using Namorix.Server.Workers;
+using Yarp.ReverseProxy.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 var backendConfig = builder.Configuration.GetSection("Backend").Get<BackendConfig>() ?? new BackendConfig();
@@ -45,6 +46,11 @@ builder.Services.AddScoped<NotificationService>();
 builder.Services.AddSingleton<DockerService>();
 builder.Services.AddScoped<AddonService>();
 builder.Services.AddScoped<OAuthService>();
+builder.Services.AddSingleton<FrontgateProxyConfigProvider>();
+builder.Services.AddReverseProxy()
+    .Services.AddSingleton<IProxyConfigProvider>(
+        sp => sp.GetRequiredService<FrontgateProxyConfigProvider>());
+
 builder.Services.AddScoped<INotificationNotifier, SignalRNotificationNotifier<MainHub>>();
 builder.Services.AddScoped<ISystemMonitorNotifier, SignalRSystemMonitorNotifier>();
 builder.Services.AddScoped<IAddonNotifier, SignalRAddonNotifier>();
@@ -111,6 +117,9 @@ app.UseNamorixCore<MainHub>(core =>
     app.UseAuth();
     app.UseOAuth2();
     app.UseTrustedProxy();
+}, endpoints =>
+{
+    endpoints.MapReverseProxy();
 });
 
 app.MapGrpcService<AddonChannelService>();

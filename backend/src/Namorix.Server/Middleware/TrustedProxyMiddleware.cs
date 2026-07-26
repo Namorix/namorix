@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Net;
 using Namorix.Core.Constants;
 using Namorix.Core.Responses;
@@ -7,7 +8,11 @@ namespace Namorix.Server.Middleware;
 
 public class TrustedProxyMiddleware(RequestDelegate requestDelegate, ILogger<TrustedProxyMiddleware> logger)
 {
-    public async Task InvokeAsync(HttpContext httpContext, SettingsService settingsService)
+    private static readonly TimeSpan NotifyCooldown = TimeSpan.FromSeconds(10);
+    private readonly ConcurrentDictionary<string, DateTime> _lastNotifiedAt = new();
+    
+    public async Task InvokeAsync(HttpContext httpContext, SettingsService settingsService,
+        NotificationService notificationService)
     {
         if (HttpMethods.IsOptions(httpContext.Request.Method))
         {
@@ -49,6 +54,13 @@ public class TrustedProxyMiddleware(RequestDelegate requestDelegate, ILogger<Tru
         {
             logger.LogWarning("Untrusted proxy blocked: remoteIp={RemoteIp}, path={Path}",
                 remoteIp, httpContext.Request.Path);
+            
+            if (ShouldNotify(remoteIp))
+            {
+                await notificationService.CreateForAdminsAsync(
+                    "security", "proxy:untrustedProxy", "system",
+                    new { remoteIp = remoteIp?.ToString() });
+            }
 
             httpContext.Items[HttpContextKeys.Validated] = true;
             httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
@@ -72,4 +84,16 @@ public class TrustedProxyMiddleware(RequestDelegate requestDelegate, ILogger<Tru
         await requestDelegate(httpContext);
     }
     
+    private bool ShouldNotify(IPAddress? remoteIp)
+    {
+        var key = remoteIp?.ToString() ?? "unknown";
+        var now = DateTime.UtcNow;
+
+        var stored = _lastNotifiedAt.AddOrUpdate(
+            key,
+            addValueFactory: _ => now,
+            updateValueFactory: (_, last) => now - last > NotifyCooldown ? now : last);
+
+        return stored == now;
+    }
 }

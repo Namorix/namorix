@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Namorix.Server.Persistence;
 
@@ -10,9 +11,11 @@ using Namorix.Server.Persistence;
 namespace Namorix.Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260726020807_UpdateFgReverseProxyRule")]
+    partial class UpdateFgReverseProxyRule
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
@@ -714,9 +717,6 @@ namespace Namorix.Server.Migrations
 
                     b.Property<string>("AdditionalHeadersJson")
                         .HasColumnType("TEXT");
-
-                    b.Property<bool>("BlockCommonExploits")
-                        .HasColumnType("INTEGER");
 
                     b.Property<bool>("CacheAssets")
                         .HasColumnType("INTEGER");

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 using Namorix.Core.Constants;
 using Namorix.Core.Hubs;
 using Namorix.Core.Middleware;
@@ -14,7 +15,8 @@ public static class ApplicationBuilderExtensions
             return app.UseNamorixCore<NmxHub>(configurePipeline);
         }
 
-        public IApplicationBuilder UseNamorixCore<THub>(Action<IApplicationBuilder>? configurePipeline = null) where THub : NmxHub
+        public IApplicationBuilder UseNamorixCore<THub>(Action<IApplicationBuilder>? configurePipeline = null,
+            Action<IEndpointRouteBuilder>? configureEndpoints = null) where THub : NmxHub
         {
             app.UseApiErrorHandling();
             app.UseSecurityHeaders();
@@ -29,6 +31,7 @@ public static class ApplicationBuilderExtensions
             {
                 endpoints.MapControllers();
                 endpoints.MapHub<THub>(SignalRPath.HubMain);
+                configureEndpoints?.Invoke(endpoints);
             });
     
             return app;

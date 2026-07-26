@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Namorix.Server.Persistence;
 
@@ -10,9 +11,11 @@ using Namorix.Server.Persistence;
 namespace Namorix.Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260726003620_AddReverseProxyRule")]
+    partial class AddReverseProxyRule
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
@@ -590,114 +593,7 @@ namespace Namorix.Server.Migrations
                     b.ToTable("AddonInstallations");
                 });
 
-            modelBuilder.Entity("Namorix.Server.Models.FgAccessPolicy", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(32)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("RulesJson")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FgAccessPolicies");
-                });
-
-            modelBuilder.Entity("Namorix.Server.Models.FgCertificate", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(32)
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("AutoRenew")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("CertificateChain")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Domain")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Issuer")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("PrivateKeyEncrypted")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FgCertificates");
-                });
-
-            modelBuilder.Entity("Namorix.Server.Models.FgReverseProxyLocation", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(32)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ForwardHost")
-                        .IsRequired()
-                        .HasMaxLength(253)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("ForwardPort")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Path")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("RuleId")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Scheme")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RuleId");
-
-                    b.ToTable("FgReverseProxyLocations");
-                });
-
-            modelBuilder.Entity("Namorix.Server.Models.FgReverseProxyRule", b =>
+            modelBuilder.Entity("Namorix.Server.Models.ReverseProxyRule", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(32)
@@ -708,77 +604,33 @@ namespace Namorix.Server.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("AccessPolicyId")
-                        .HasMaxLength(32)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("AdditionalHeadersJson")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("BlockCommonExploits")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("CacheAssets")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("CertificateId")
-                        .HasMaxLength(32)
-                        .HasColumnType("TEXT");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("DestinationHost")
+                    b.Property<string>("Destination")
                         .IsRequired()
-                        .HasMaxLength(253)
+                        .HasMaxLength(500)
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("DestinationPort")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("DestinationScheme")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("ForceSsl")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("HstsEnabled")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("HstsSubdomains")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("Http2Support")
-                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Source")
                         .IsRequired()
                         .HasMaxLength(253)
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("SslEnabled")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("TrustForwardedProtoHeaders")
-                        .HasColumnType("INTEGER");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("WebSocketsSupport")
-                        .HasColumnType("INTEGER");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("AccessPolicyId");
-
-                    b.HasIndex("CertificateId");
-
-                    b.ToTable("FgReverseProxyRules");
+                    b.ToTable("ReverseProxyRules");
                 });
 
             modelBuilder.Entity("Namorix.Core.Models.RefreshToken", b =>
@@ -822,34 +674,6 @@ namespace Namorix.Server.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Namorix.Server.Models.FgReverseProxyLocation", b =>
-                {
-                    b.HasOne("Namorix.Server.Models.FgReverseProxyRule", "Rule")
-                        .WithMany("Locations")
-                        .HasForeignKey("RuleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Rule");
-                });
-
-            modelBuilder.Entity("Namorix.Server.Models.FgReverseProxyRule", b =>
-                {
-                    b.HasOne("Namorix.Server.Models.FgAccessPolicy", "AccessPolicy")
-                        .WithMany("ReverseProxyRules")
-                        .HasForeignKey("AccessPolicyId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("Namorix.Server.Models.FgCertificate", "Certificate")
-                        .WithMany("ReverseProxyRules")
-                        .HasForeignKey("CertificateId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("AccessPolicy");
-
-                    b.Navigation("Certificate");
-                });
-
             modelBuilder.Entity("Namorix.Core.Models.Permission", b =>
                 {
                     b.Navigation("UserPermissions");
@@ -862,21 +686,6 @@ namespace Namorix.Server.Migrations
                     b.Navigation("UserPermissions");
 
                     b.Navigation("UserSettings");
-                });
-
-            modelBuilder.Entity("Namorix.Server.Models.FgAccessPolicy", b =>
-                {
-                    b.Navigation("ReverseProxyRules");
-                });
-
-            modelBuilder.Entity("Namorix.Server.Models.FgCertificate", b =>
-                {
-                    b.Navigation("ReverseProxyRules");
-                });
-
-            modelBuilder.Entity("Namorix.Server.Models.FgReverseProxyRule", b =>
-                {
-                    b.Navigation("Locations");
                 });
 #pragma warning restore 612, 618
         }
