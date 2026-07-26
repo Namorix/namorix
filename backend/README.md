@@ -133,7 +133,6 @@ backend/
     │   │   ├── AddonInstallation.cs    # Installed addon (Docker container reference)
     │   │   ├── Notification.cs         # Notification entity (i18n key + params)
     │   │   ├── OAuthAuthorizationCode.cs  # PKCE authorization code
-    │   │   ├── OAuthConsent.cs         # User consent record
     │   │   ├── OAuthRegistration.cs    # Addon self-registration token
     │   │   ├── OAuthToken.cs           # Issued OAuth token
     │   │   ├── Permission.cs
@@ -198,13 +197,18 @@ backend/
         ├── Models/
         │   ├── AddonCatalogEntry.cs  # Cached catalog entry
         │   ├── AddonTask.cs          # Background task state for addon operations
+        │   ├── FgReverseProxyRule.cs      # Frontgate reverse proxy rule (source, destination, SSL, features)
+        │   ├── FgCertificate.cs           # Frontgate SSL certificate
+        │   ├── FgAccessPolicy.cs          # Frontgate access control policy
+        │   ├── FgReverseProxyLocation.cs  # Frontgate per-rule path-based sub-routing
         │   └── Catalog/              # Catalog DTOs
         │       ├── AddonManifestDto.cs
         │       ├── CatalogIndex.cs
         │       └── PortDto.cs
         ├── Services/
-        │   ├── AuthService.cs           # Login, Register, RefreshToken, RevokeToken, VerifyAccessToken
-        │   ├── PermissionService.cs     # User permission management
+        │   ├── AuthService.cs               # Login, Register, RefreshToken, RevokeToken, VerifyAccessToken
+        │   ├── FrontgateProxyConfigProvider.cs  # YARP reverse proxy config (reads FgReverseProxyRules from DB)
+        │   ├── PermissionService.cs         # User permission management
         │   ├── SettingsService.cs       # System settings, appearance defaults, trusted proxies
         │   ├── UserSettingsService.cs   # User appearance settings (IMemoryCache)
         │   ├── ThemeService.cs          # Built-in theme list
@@ -221,6 +225,7 @@ backend/
         │       └── AddonChannelService.cs  # gRPC bidirectional stream handler + interceptor auth
         ├── Controllers/
         │   ├── AuthController.cs        # 7 auth endpoints (login, register, logout, session, refresh, status, logout-all)
+        │   ├── FrontgateController.cs   # Frontgate reverse proxy CRUD (list, create, update, delete + YARP reload)
         │   ├── HealthController.cs      # Health check endpoint
         │   ├── SettingsController.cs    # System settings + appearance defaults + options
         │   ├── ThemeController.cs       # Theme list
@@ -315,6 +320,15 @@ backend/
 |--------|------|-------------|
 | GET | `/api/health` | Health check |
 
+### Frontgate (`/api/frontgate`) — Reverse Proxy
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/frontgate/reverse-proxy` | Admin | List reverse proxy rules (paginated: `page`, `pageSize`) |
+| POST | `/api/frontgate/reverse-proxy` | Admin | Create rule (source, destination, features, access) |
+| PUT | `/api/frontgate/reverse-proxy/{id}` | Admin | Update rule, triggers YARP runtime reload |
+| DELETE | `/api/frontgate/reverse-proxy/{id}` | Admin | Delete rule, triggers YARP runtime reload |
+
 > All endpoints except health, login, register, status, and some OAuth paths require authentication.
 
 ## Middleware Pipeline
@@ -323,7 +337,7 @@ Thứ tự middleware trong `Program.cs` (Kestrel 2-port: REST API + SignalR on 
 
 ### REST Pipeline (port 5001)
 ```
-CORS → SecurityHeaders → TrustedProxy → Routing → CSRF → JsonError → Exception → Controllers
+CORS → SecurityHeaders → TrustedProxy → Routing → CSRF → JsonError → Exception → **YARP Reverse Proxy** → Controllers
 ```
 
 - **CORS**: Allow any origin + credentials (dev). `AllowedOrigins` from config + DB for production.
@@ -416,9 +430,12 @@ SQLite database file (`namorix.db`), tạo tự động khi chạy migrations.
 - **AddonTask** — `id`, `addonId`, `taskType`, `status`, `createdAt`, `completedAt`
 - **OAuthAuthorizationCode** — `id`, `code`, `clientId`, `userId`, `scope`, `redirectUri`, `codeChallenge`, `codeChallengeMethod`, `expiresAt`
 - **OAuthToken** — `id`, `tokenId`, `clientId`, `userId`, `type`, `expiresAt`
-- **OAuthConsent** — `id`, `clientId`, `userId`, `scope`
 - **OAuthRegistration** — `id`, `clientId`, `token`, `expiresAt`
 - **OAuthRefreshToken** — `id`, `clientId`, `tokenHash`, `expiresAt`, `createdAt`, `used`
+- **FgReverseProxyRule** — `id`, `source`, `destinationScheme`, `destinationHost`, `destinationPort`, `access`, `status`, SSL/feature flags (WebSocketsSupport, CacheAssets, ForceSsl, Http2Support, HstsEnabled, HstsSubdomains, BlockCommonExploits, TrustForwardedProtoHeaders, AdditionalHeadersJson), `CertificateId` (FK), `AccessPolicyId` (FK)
+- **FgCertificate** — `id`, `domain`, `issuer`, `type`, `privateKeyEncrypted`, `certificateChain`, `expiresAt`, `autoRenew`
+- **FgAccessPolicy** — `id`, `name`, `type`, `rulesJson`
+- **FgReverseProxyLocation** — `id`, `ruleId` (FK), `path`, `scheme`, `forwardHost`, `forwardPort` (Cascade delete)
 
 ### Migrations
 

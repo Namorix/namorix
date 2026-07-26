@@ -48,6 +48,8 @@ frontend/
 │   │   ├── Settings/                # Appearance (theme, accent, density, font, language, date/time), System, Account
 │   │   ├── SystemMonitor/           # CPU, memory, uptime, disk, IO real-time (SignalR)
 │   │   └── Terminal/                # Terminal emulator scaffold
+│   │   │
+│   │   ├── Frontgate/               # Reverse proxy management (YARP integration, CRUD UI, routing rules)
 │   │
 │   ├── components/
 │   │   ├── AuthView.tsx             # Two-column layout (hero + form panel)
@@ -78,6 +80,7 @@ frontend/
 │   │   ├── log.controller.ts        # listLogs with level/source filters
 │   │   ├── health.controller.ts     # Health check, untrusted proxy detection
 │   │   └── addon.controller.ts      # Addon install/start/stop/uninstall/list/catalog
+│   │   └── frontgate.controller.ts  # Frontgate reverse proxy CRUD (listRules, createRule, updateRule, deleteRule)
 │   │
 │   ├── hooks/
 │   │   ├── useTaskbarClock.ts       # Live clock for taskbar (uses appearance date/time format)
@@ -180,7 +183,7 @@ export const addonController = {
 |---------|---------|
 | `@namorix/core` | Types, auth service, http client, i18n, SignalR hooks, store, guards, theme, toast, oauth (PKCE), mount (createMount, AddonModeProvider) |
 | `@namorix/styles` | SCSS design tokens, reset, variables, theme files, icomoon icons |
-| `@namorix/ui` | Primitives (NmxButton, NmxForm, NmxInlineAlert, NmxToggle, NmxChip, NmxIcon, NmxBadge, NmxSpinner, NmxSelect, NmxSlider, NmxSearchInput, etc.) + Composite (NmxCard, NmxDataTable, NmxDialog, NmxMetaList, NmxRail, NmxSettings, NmxToolbar, NmxAddon, NmxToastProvider, NmxTabContext, etc.) + Layouts (NmxHorizontalWrap, NmxGrid) |
+| `@namorix/ui` | Primitives (NmxButton, NmxForm {NmxFormField.rowFlex}, NmxInlineAlert, NmxToggle, NmxChip, NmxIcon, NmxBadge, NmxSpinner, NmxSelect, NmxSlider, NmxSearchInput, etc.) + Composite (NmxCard, NmxDataTable, NmxDialog {NmxAlertDialog.noSpacingBody}, NmxMetaList, NmxRail, NmxSettings, NmxToolbar, NmxAddon, NmxToastProvider, NmxTabContext, NmxTabs, NmxFormRow, etc.) + Layouts (NmxHorizontalWrap, NmxGrid) |
 | `react-router-dom` | Client-side routing with GuardedRoute pattern |
 | `react-i18next` / `i18next` | i18n with layered namespaces |
 | `@reduxjs/toolkit` / `react-redux` | State management |
@@ -200,7 +203,7 @@ Built-in addons use the same contract as external addons (M4):
 - **NmxAddonManifest**: id, name, description?, localeKey?, icon?, defaultWidth?, defaultHeight?, preferFullSize?, role?, instanceMode?
 - **AddonContext**: addonId, nmxStore?, store?, isExternal?, sendCommand?
 
-Eight built-in addons: About, LogViewer, NetworkTraffic, SystemMonitor, Settings, FileManager (scaffold), Terminal (scaffold), PackageCenter.
+Nine built-in addons: About, LogViewer, NetworkTraffic, SystemMonitor, Settings, FileManager (scaffold), Terminal (scaffold), PackageCenter, Frontgate.
 
 ### External Addons (Docker-based)
 
@@ -221,4 +224,5 @@ External addons integrate via two modes:
 - **M2** — Full auth backend ✅
 - **M3** — System Addons (Built-in): addon contract + registry, 8 built-in addons, theme system, SignalR realtime ✅
 - **M4** — External addon system: Docker lifecycle, OAuth2 (PKCE + client_credentials), gRPC, addon catalog, standalone mode ✅
+    - **Frontgate addon**: YARP reverse proxy with runtime config reload, CRUD API and management UI (Phase 1 ✅)
 - **M5** — `@namorix/core` publish npm + addon integration guide

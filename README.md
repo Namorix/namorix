@@ -11,7 +11,8 @@ Browser-based desktop shell, self-hosted.
 ## Features
 
 - **Desktop Shell** — Window manager, taskbar, launcher, desktop icon shortcuts
-- **System Addons** — Built-in addons (About, NetworkTraffic, Log Viewer, Settings, SystemMonitor, File Manager, Terminal, Package Center) via addon contract
+- **System Addons** — Built-in addons (About, NetworkTraffic, Log Viewer, Settings, SystemMonitor, File Manager, Terminal, Package Center, Frontgate) via addon contract
+- **Reverse Proxy** — YARP-based reverse proxy management (Frontgate): route traffic to addons via custom domains, SSL termination, WebSocket support, access control
 - **External Addons** — Docker-based addons with widget (Module Federation mount) and standalone (OAuth PKCE, own server) modes
 - **Centralized Auth** — Single auth server for shell and addons, OAuth2 authorization server (authorization_code + PKCE, client_credentials + private_key_jwt)
 
@@ -130,7 +131,7 @@ namorix/
 │       │   ├── registry.ts   # registerAddon, resolveAddon, listAddons
 │       │   ├── About/           # About Namorix (version, meta, GitHub links)
 │       │   ├── FileManager/     # File browser scaffold
-│       │   ├── Frontgate/       # Reverse proxy routing management scaffold
+│       │   ├── Frontgate/       # Reverse proxy management (YARP integration, CRUD UI, routing rules)
 │       │   ├── LogViewer/       # Level filter chips + multi-select, paginated table
 │       │   ├── NetworkTraffic/  # Overview/Logs with SignalR + flat file backend
 │       │   ├── PackageCenter/   # External addon management scaffold
@@ -184,7 +185,7 @@ namorix/
 |---------|---------|---------------|
 | `@namorix/core` | Types, auth guards, http client with auto-refresh + CSRF, `ApiError`, i18n (NmxI18n, ValidationRunner), SignalR hooks (useSignalR, useSignalREvent, useSignalRGroup, useSignalRStatus), store (nmxStore), theme, fingerprint, cache (useTabCache, Show), hooks (usePageSize, useLocalStorage), toast (NmxToastBus), notification (NmxNotificationDto, SignalR events, API routes), oauth (PKCE browser client — authorizeRedirect, handleRedirectCallback, getAccessToken), mount (createMount, AddonModeProvider, useIsStandalone, useIsWidget) | frontend, @namorix/ui, external addons |
 | `@namorix/styles` | SCSS tokens, reset, fonts, icomoon icons, component/layout SCSS (shared by all themes), shell-specific SCSS | frontend, @namorix/ui, external addons |
-| `@namorix/ui` | Primitives (NmxButton, NmxForm, NmxIcon, NmxInlineAlert, NmxToggle, NmxSelect, NmxSelectMultiple, NmxSlider, NmxSegmentedGroup, NmxBadge, NmxChip, NmxLoadingOverlay, NmxSpinner, NmxPagination, NmxPulseDot, NmxSearchInput, NmxStatCard, NmxTagInput) + Composite (NmxCard, NmxDataTable, NmxMetaList, NmxRail, NmxSettings, NmxToolbar, NmxAddon, NmxDialog, NmxAlertDialog, NmxToastProvider, NmxTabContext, NmxTabProvider) + NmxHostContext + Layouts (NmxHorizontalWrap, NmxGrid) | frontend |
+| `@namorix/ui` | Primitives (NmxButton, NmxForm {NmxFormField.rowFlex}, NmxIcon, NmxInlineAlert, NmxToggle, NmxSelect, NmxSelectMultiple, NmxSlider, NmxSegmentedGroup, NmxBadge, NmxChip, NmxLoadingOverlay, NmxSpinner, NmxPagination, NmxPulseDot, NmxSearchInput, NmxStatCard, NmxTagInput) + Composite (NmxCard, NmxDataTable, NmxMetaList, NmxRail, NmxSettings, NmxToolbar, NmxAddon, NmxDialog, NmxAlertDialog {noSpacingBody}, NmxToastProvider, NmxTabContext, NmxTabProvider, NmxTabs, NmxFormRow) + NmxHostContext + Layouts (NmxHorizontalWrap, NmxGrid) | frontend |
 | `backend` | ASP.NET Core 10 API server: OAuth2 authorization server (authorization_code + PKCE, client_credentials + private_key_jwt), Docker addon lifecycle, gRPC bidirectional streaming, SignalR realtime, SQLite + EF Core, flat file traffic + logs, validation filter, CORS | - |
 | `frontend` | Vite React shell (Redux Toolkit, SignalR client, addon system) | - |
 
@@ -233,7 +234,7 @@ public class AuthController(AuthService authService) : ControllerBase
 
 ### Internal Addons (M3 — Built-in)
 
-System addons (NetworkTraffic, Log Viewer, Settings, SystemMonitor) sử dụng chung addon contract với external addons:
+System addons (About, NetworkTraffic, Log Viewer, Settings, SystemMonitor, File Manager, Terminal, Package Center, Frontgate) sử dụng chung addon contract với external addons:
 - **AddonEntry**: `mount(container, context)` / `unmount()` lifecycle
 - **NmxAddonManifest**: id, name, description?, icon?, defaultWidth?, defaultHeight?, instanceMode?
 - **AddonContext**: addonId, nmxStore?, store?, isExternal?, sendCommand?
@@ -295,4 +296,5 @@ Addon có 2 mode tích hợp:
 2. **M2** — Full auth backend (login/register/logout/refresh/session, decorators, i18n, validation) ✅
 3. **M3** — System Addons (Built-in): addon contract + registry, About, Log Viewer, NetworkTraffic (SignalR + flat file storage), SystemMonitor, Settings (Appearance/System/Account), theme system (hot swap CSS, server-driven), File Manager, Terminal, Package Center
 4. **M4** — External addon system: Docker lifecycle, OAuth2 (client_credentials + private_key_jwt + authorization_code + PKCE), gRPC bidirectional streaming, addon catalog sync, standalone mode, web UI ✅
+    - **Frontgate addon**: YARP reverse proxy with runtime config reload, CRUD API and management UI (Phase 1 ✅), certificate management (🔜 Phase 2), access control (🔜 Phase 3)
 5. **M5** — @namorix/core publish npm + addon integration guide

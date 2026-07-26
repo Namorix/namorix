@@ -136,12 +136,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.59.0 | M4 (Frontgate pages, DesktopArea role guard, minimize fix) |
-| @namorix/core | 0.46.0 | M4 (useUserRoleAdmin hook, formatHttpError, FORBIDDEN code, HTTP error i18n) |
-| @namorix/styles | 0.39.1 | M4 (SCSS tweaks, icomoon rebuild) |
-| @namorix/ui | 0.28.1 | M4 (icon type updates) |
-| Namorix.Core | 0.50.0 | M4 (OAuthRefreshErrors constants, DeleteCookie extension) |
-| Namorix.Server | 0.52.0 | M4 (OAuth reuse detection + revoke chain, token cleanup, OAuthConsent removed) |
+| frontend | 0.60.0 | M4 (Frontgate Phase 1 — YARP CRUD, full form UI) |
+| @namorix/core | 0.47.0 | M4 (Frontgate API routes) |
+| @namorix/styles | 0.40.0 | M4 (tabs SCSS, frontgate form styles) |
+| @namorix/ui | 0.29.0 | M4 (NmxTabs, NmxFormRow, rowFlex, noSpacingBody) |
+| Namorix.Core | 0.51.0 | M4 (configureEndpoints callback) |
+| Namorix.Server | 0.53.0 | M4 (FrontgateController CRUD, FrontgateProxyConfigProvider, YARP integration, BlockCommonExploits) |
 
 ## Version Rules
 
@@ -174,6 +174,15 @@
 - @namorix/styles 0.38.2 → 0.39.0: MODIFIED: `base/tokens/icons.scss` — added `--nmx-icon-app-frontgate` CSS variable for new Frontgate icon.
 - @namorix/ui 0.27.0 → 0.28.0: MODIFIED: `Primitives/NmxIcon/NmxIconSvg.types.ts` — added `APP_FRONTGATE: "app-frontgate"` symbol.
 - frontend 0.57.0 → 0.58.0: NEW: `addons/Frontgate/Frontgate.addon.tsx` — addon manifest registered. NEW: `addons/Frontgate/Frontgate.tsx` — empty component scaffold. MODIFIED: `addons/index.ts` — added Frontgate import. `addons/types.ts` — added `frontgate` to NmxAddonId and NmxAddonLocaleKeys. `i18n/locales/en.json` — frontgate i18n keys. Themes CSS rebuilt.
+
+### 2026-07-26 — Frontgate Phase 1: YARP integration, CRUD API, full form UI
+
+- @namorix/ui 0.28.1 → 0.29.0: NEW: `Primitives/NmxTabs.tsx` — generic tab component `<T extends string = string>` with controlled/uncontrolled pattern. NEW: `Primitives/NmxForm/NmxFormRow.tsx` — flex row layout component. MODIFIED: `Primitives/NmxForm/NmxFormField.tsx` — added `rowFlex` prop for row layouts. `Components/NmxAlertDialog/NmxAlertDialog.types.ts` — added `noSpacingBody` (flush) prop to remove body padding.
+- @namorix/styles 0.39.1 → 0.40.0: MODIFIED: SCSS component updates for tabs and frontgate form layout.
+- @namorix/core 0.46.0 → 0.47.0: MODIFIED: `apiRoutes.ts` — added `ApiFrontgateRoutes` with reverseProxy and reverseProxyById routes.
+- frontend 0.59.0 → 0.60.0: NEW: `addons/Frontgate/frontgate.controller.ts` — `CreateReverseProxyRulePayload`, `ReverseProxyRuleResponse` types, `createRule()`/`updateRule()`/`deleteRule()` methods with `UpdateAsync()` integration. MODIFIED: `addons/Frontgate/FrontgateReverseProxy.tsx` — full add dialog with NmxTabs (General/Features/Security), NmxFormRow destination layout (scheme+host+port), toggle controls for WebSockets/Cache/HTTP2/ForceSSL/HSTS/BlockExploits, `resetForm` pattern, states for all form fields. `i18n/locales/en.json` — Frontgate form field i18n keys.
+- Namorix.Core 0.50.0 → 0.51.0: MODIFIED: `Extensions/ApplicationBuilderExtensions.cs` — added `Action<IEndpointRouteBuilder>? configureEndpoints = null` callback for Server-only endpoint registration without Core referencing YARP.
+- Namorix.Server 0.52.0 → 0.53.0: NEW: `Services/FrontgateProxyConfigProvider.cs` — `IProxyConfigProvider` reading active `FgReverseProxyRules` from DB, building YARP clusters/routes with transforms (WebSockets, HTTP/2, HSTS, ForwardedHeaders, X-Forwarded-For). Uses `CancellationChangeToken` for runtime config reload. NEW: `Controllers/FrontgateController.cs` — full CRUD: `ListRules` (GET, paginated, RequireAdmin), `CreateRule` (POST, calls `UpdateAsync()`), `UpdateRule` (PUT, calls `UpdateAsync()`), `DeleteRule` (DELETE, calls `UpdateAsync()`). MODIFIED: `Models/FgReverseProxyRule.cs` — added `BlockCommonExploits` field. `Program.cs` — YARP DI: `AddSingleton<FrontgateProxyConfigProvider>()`, `AddReverseProxy()`, `IProxyConfigConfigProvider` singleton, `MapReverseProxy()` via configureEndpoints callback. `Persistence/AppDbContext.cs` — FgReverseProxyRule relationships. NEW migration `AddBlockCommonExploits`. `.claude/plans/frontgate-proxy-architecture.md` — updated with granular Phase 1 items.
 
 ### 2026-07-25 — OAuth reuse detection, formatHttpError, Frontgate pages, token cleanup
 

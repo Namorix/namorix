@@ -27,6 +27,15 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-07-26 — Frontgate Phase 1: YARP integration, CRUD API, full form UI
+
+- @namorix/ui 0.28.1 → 0.29.0: NEW `NmxTabs` generic tab component (controlled/uncontrolled). NEW `NmxFormRow` flex row layout. MODIFIED `NmxFormField` — added `rowFlex` prop. `NmxAlertDialog` — added `noSpacingBody` (flush) prop.
+- @namorix/styles 0.39.1 → 0.40.0: SCSS updates for tabs and frontgate form.
+- @namorix/core 0.46.0 → 0.47.0: `apiRoutes.ts` — new `ApiFrontgateRoutes` (reverseProxy, reverseProxyById).
+- frontend 0.59.0 → 0.60.0: New `frontgate.controller.ts` with full CRUD methods + types. `FrontgateReverseProxy.tsx` — full form dialog with 3-tab layout (General/Features/Security), NmxFormRow destination fields, toggles for WebSockets/Cache/HTTP2/ForceSSL/HSTS/BlockExploits, resetForm pattern.
+- Namorix.Core 0.50.0 → 0.51.0: `ApplicationBuilderExtensions` — added `configureEndpoints` callback for clean Core/Server separation.
+- Namorix.Server 0.52.0 → 0.53.0: NEW `FrontgateProxyConfigProvider` — YARP IProxyConfigProvider reading active rules from DB with CancellationChangeToken. NEW `FrontgateController` — full CRUD (ListRules/CreateRule/UpdateRule/DeleteRule), each write calls `UpdateAsync()` for runtime reload. `FgReverseProxyRule` — added `BlockCommonExploits`. YARP DI in Program.cs via configureEndpoints. New migration `AddBlockCommonExploits`.
+
 ### 2026-07-25 — OAuth reuse detection, formatHttpError, Frontgate pages, token cleanup
 
 - @namorix/core 0.45.0 → 0.46.0: NEW `useUserRoleAdmin` hook, `formatHttpError` function with FORBIDDEN/HTTP error codes. Toast error resolution now covers all error categories.
