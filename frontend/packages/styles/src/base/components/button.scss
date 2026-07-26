@@ -7,8 +7,8 @@
   border-radius: var(--nmx-radius-md);
   align-items: center;
   justify-content: center;
-  gap: var(--nmx-spacing-md);
-  padding: var(--nmx-spacing-sm) var(--nmx-spacing-2xl);
+  gap: var(--nmx-spacing-sm);
+  padding: var(--nmx-spacing-sm) var(--nmx-spacing-lg);
   font-size: var(--nmx-font-size-xs);
   font-weight: var(--nmx-font-weight-extrabold);
   font-family: inherit;
@@ -59,7 +59,7 @@
 
 .nmx-button__live,
 .nmx-button__refresh {
-  padding: var(--nmx-spacing-sm) var(--nmx-spacing-md);
+  padding: var(--nmx-spacing-md);
   font-size: var(--nmx-font-size-lg);
 }
 

@@ -16,6 +16,11 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.ic-add {
+  &:before {
+    content: $ic-add; 
+  }
+}
 .ic-lock {
   &:before {
     content: $ic-lock; 

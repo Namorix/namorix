@@ -300,4 +300,8 @@
   flex-direction: row;
   align-items: center;
   gap: var(--nmx-spacing-md);
+
+  &__description {
+    @include user-select;
+  }
 }

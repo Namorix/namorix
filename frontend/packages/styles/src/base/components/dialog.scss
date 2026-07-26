@@ -92,11 +92,15 @@
     font-size: var(--nmx-font-size-sm);
   }
 
+  &--no-spacing-body {
+    padding: 0;
+  }
+
   &__footer {
     display: flex;
     align-items: center;
     justify-content: flex-end;
     gap: var(--nmx-spacing-md);
-    padding: var(--nmx-spacing-lg) var(--nmx-spacing-xl);
+    padding: var(--nmx-spacing-xl);
   }
 }

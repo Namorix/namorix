@@ -7,20 +7,21 @@
 .nmx-form-field {
   display: flex;
   flex-direction: column;
-  gap: var(--nmx-spacing-lg);
+  gap: var(--nmx-spacing-md);
 }
 
 .nmx-form-field__label {
   display: block;
-  font-size: var(--nmx-font-size-xs);
+  font-size: var(--nmx-font-size-sm);
   font-weight: var(--nmx-font-weight-semibold);
+  font-family: var(--nmx-font-family-sans), serif;
   letter-spacing: var(--nmx-letter-spacing-label);
-  text-transform: uppercase;
   color: var(--nmx-color-on-surface);
 }
 
 .nmx-form-field--required {
   color: var(--nmx-color-red-500);
+  margin-left: var(--nmx-spacing-xs);
 }
 
 .nmx-form-field__error-message {
@@ -33,6 +34,18 @@
   margin: 0;
   color: var(--nmx-color-on-surface-variant);
   font-size: var(--nmx-font-size-xs);
+}
+
+.nmx-form-field--inline {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nmx-form-row {
+  display: flex;
+  flex-direction: row;
+  gap: var(--nmx-spacing-md);
 }
 
 .nmx-form-input {
