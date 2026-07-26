@@ -22,6 +22,7 @@ interface NmxKeyValueEditorProps extends WithBaseProps {
   valueLabel?: string
   keyPlaceholder?: string
   valuePlaceholder?: string
+  buttonDeleteClass?: string
 }
 
 export const NmxKeyValueEditor: React.FC<NmxKeyValueEditorProps> = ({
@@ -31,6 +32,7 @@ export const NmxKeyValueEditor: React.FC<NmxKeyValueEditorProps> = ({
   valueLabel = "Value",
   keyPlaceholder = "Key",
   valuePlaceholder = "Value",
+  buttonDeleteClass,
   className,
 }) => {
   const update = (idx: number, field: "key" | "value", val: string) =>
@@ -60,7 +62,12 @@ export const NmxKeyValueEditor: React.FC<NmxKeyValueEditorProps> = ({
             onValueChange={(v) => update(idx, "value", v)}
             placeholder={valuePlaceholder}
           />
-          <NmxButton variant="ghost" onClick={() => remove(idx)}>
+          <NmxButton
+            variant="ghost"
+            semantic="error"
+            onClick={() => remove(idx)}
+            className={buttonDeleteClass}
+          >
             <NmxIconFont symbol={NmxIconFontSymbol.DELETE} />
           </NmxButton>
         </NmxFormRow>

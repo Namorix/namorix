@@ -84,7 +84,6 @@ export const NmxSelect = <T extends string = string>({
   )
 
   const handleSelect = (opt: NmxSelectData<T>) => {
-    console.log("handle select")
     onChange?.(opt.value)
     setOpen(false)
   }

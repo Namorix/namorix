@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { nmxToast, type NmxToastEvent, type NmxToastType } from "@namorix/core"
 import { cx } from "../utils"
 import { NmxIconFont, NmxIconFontSymbol } from "../Primitives"
+import { createPortal } from "react-dom"
 
 const TOAST_DURATION = { short: 2500, long: 4000 }
 const EXIT_ANIM_MS = 300
@@ -47,7 +48,7 @@ export const NmxToastProvider = () => {
     })
   }, [dismiss])
 
-  return (
+  return createPortal(
     <div className="nmx-toast-provider">
       {toasts.map((t) => (
         <button
@@ -66,6 +67,7 @@ export const NmxToastProvider = () => {
           <span className="nmx-toast__msg">{String(t.message)}</span>
         </button>
       ))}
-    </div>
+    </div>,
+    document.body,
   )
 }
