@@ -29,6 +29,7 @@ import {
   type ReverseProxyRuleAccess,
   type ReverseProxyRuleStatus,
 } from "./frontgate.controller"
+import { FrontgateErrorCodes } from "./Frontgate.types"
 
 type FrontgateTab = "general" | "headers" | "locations" | "advanced"
 
@@ -77,11 +78,6 @@ const initialForm: CreateReverseProxyRulePayload = {
   forceSsl: false,
   trustForwardedProtoHeaders: true,
   blockCommonExploits: false,
-}
-
-const FrontgateErrorCodes = {
-  RULE_NOT_FOUND: "addon.frontgate.pages.reverseProxy.errors.ruleNotFound",
-  DUPLICATE_SOURCE: "addon.frontgate.pages.reverseProxy.errors.duplicateSource",
 }
 
 const CERT_REQUEST_NEW = "__request_new__"
@@ -467,6 +463,7 @@ export const FrontgateReverseProxy: React.FC = () => {
       grow: 1,
       alignHeader: "center",
       alignCell: "center",
+      hideBelow: "md",
       disableEllipsisCell: true,
     },
     {
@@ -502,6 +499,7 @@ export const FrontgateReverseProxy: React.FC = () => {
             handleDelete(row)
           }}
           className="nmx-addon-frontgate__btn-delete"
+          data-row-action
         >
           <NmxIconFont symbol={NmxIconFontSymbol.DELETE} />
         </NmxButton>
@@ -583,7 +581,7 @@ export const FrontgateReverseProxy: React.FC = () => {
   return (
     <div className="nmx-addon-frontgate__page">
       <div className="nmx-addon-frontgate__actions">
-        <NmxButton onClick={() => handleDialogOpen()}>
+        <NmxButton onClick={() => handleDialogOpen()} semantic="success">
           <NmxIconFont symbol={NmxIconFontSymbol.ADD} />
           <span>
             {t("addon.frontgate.pages.reverseProxy.actions.addProxy")}
@@ -932,10 +930,12 @@ export const FrontgateReverseProxy: React.FC = () => {
       <NmxAlertDialog
         open={deletingRule !== null}
         title={t("addon.frontgate.pages.reverseProxy.actions.deleteProxy")}
+        confirmLabel={t("addon.frontgate.pages.reverseProxy.actions.delete")}
+        confirmSemantic="error"
         onClose={handleDeleteCancel}
         onConfirm={handleDeleteConfirm}
         loading={deleteSubmitting}
-        confirmLabel={t("addon.frontgate.pages.reverseProxy.actions.delete")}
+        markupToHtmlEnabled={true}
       >
         <p>
           {t("addon.frontgate.pages.reverseProxy.feedback.deleteConfirm", {

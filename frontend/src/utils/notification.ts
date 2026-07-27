@@ -1,5 +1,5 @@
 import type { TFunction } from "i18next"
-import { type NmxNotificationDto, toHtml } from "@namorix/core"
+import { type NmxNotificationDto, markupToHtml } from "@namorix/core"
 import { resolveAddonLocaleTitleByKey } from "./addon"
 import { NmxIconFontSymbol, NmxIconSvgSymbol } from "@namorix/ui"
 import type { NmxAddonLocaleKeys } from "../addons"
@@ -39,7 +39,7 @@ export function resolveNotificationDescriptionHtml(
   notification: NmxNotificationDto,
 ): string {
   const desc = resolveNotificationDescription(t, notification)
-  return desc ? toHtml(desc) : ""
+  return desc ? markupToHtml(desc) : ""
 }
 
 export function resolveSourceName(t: TFunction, source?: string): string {

@@ -128,5 +128,3 @@ export const NotificationItemSkeleton: React.FC = () => {
     />
   )
 }
-
-NotificationItem.displayName = "NotificationItem"

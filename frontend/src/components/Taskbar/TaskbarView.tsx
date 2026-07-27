@@ -89,5 +89,3 @@ export const TaskbarView = memo<TaskViewProps>(
     )
   },
 )
-
-TaskbarView.displayName = "TaskbarView"

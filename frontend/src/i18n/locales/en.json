@@ -432,7 +432,8 @@
           },
           "errors": {
             "ruleNotFound": "Rule not found",
-            "duplicateSource": "A rule with this source already exists"
+            "duplicateSource": "A rule with this source already exists",
+            "certificateNotFound": "Certificate not found"
           },
           "feedback": {
             "createSuccess": "Reverse proxy rule created successfully",
@@ -441,7 +442,46 @@
             "updateError": "Failed to update reverse proxy rule",
             "deleteSuccess": "Reverse proxy rule deleted successfully",
             "deleteError": "Failed to delete reverse proxy rule",
-            "deleteConfirm": "Are you sure you want to delete the proxy rule for \"{{source}}\"?"
+            "deleteConfirm": "Are you sure you want to delete the proxy rule [color:warning]**{{source}}**[/color] this?"
+          }
+        },
+        "certificate": {
+          "titleInformation": "Information",
+          "actions": {
+            "addCertificate": "Add certificate",
+            "renew": "Renew",
+            "retry": "Retry",
+            "download": "Download",
+            "delete": "Delete"
+          },
+          "fields": {
+            "domain": "Domain",
+            "issuer": "Issuer",
+            "type": "Type",
+            "expires": "Expires",
+            "status": "Status",
+            "action": "Action",
+
+            "statusValues": {
+              "active": "Active",
+              "pending": "Pending",
+              "error": "Error"
+            },
+            "inUse": "In Use",
+            "inUseValues": {
+              "true": "In Use",
+              "false": "Not Used"
+            }
+          },
+          "options": {
+            "letsEncryptHttp": "Let's encrypt via HTTP",
+            "letsEncryptDns": "Let's encrypt via DNS",
+            "custom": "Custom certificate"
+          },
+          "feedback": {
+            "deleteConfirm": "Are you sure [color:warning]**{{domain}}**[/color] should be permanently deleted?",
+            "deleteSuccess": "Certificate deleted successfully",
+            "deleteError": "Failed to delete certificate"
           }
         }
       }

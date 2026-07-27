@@ -2,7 +2,7 @@ import {
   formatRelativeTime,
   nmxToast,
   semverCompare,
-  toHtml,
+  markupToHtml,
 } from "@namorix/core"
 import { addonController, mapDtoToManifest } from "../../controllers"
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -559,7 +559,7 @@ export const AddonGrid: React.FC = () => {
       >
         <span
           dangerouslySetInnerHTML={{
-            __html: toHtml(
+            __html: markupToHtml(
               t("addon.packageCenter.uninstallConfirm", {
                 name: uninstallTarget?.name,
               }),

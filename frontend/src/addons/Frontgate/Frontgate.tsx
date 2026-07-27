@@ -38,7 +38,7 @@ export const Frontgate: React.FC = () => {
 
   return (
     <NmxAddonRoot>
-      <NmxToolbar<FrontgateTab> defaultTab="reverseProxy">
+      <NmxToolbar<FrontgateTab> defaultTab="certificate">
         <NmxToolbarHeader>
           <NmxToolbarList items={TABS} t={t} />
         </NmxToolbarHeader>

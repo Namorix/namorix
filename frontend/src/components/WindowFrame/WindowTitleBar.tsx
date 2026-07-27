@@ -116,5 +116,3 @@ export const WindowTitleBar = memo(
     )
   },
 )
-
-WindowTitleBar.displayName = "WindowTitleBar"

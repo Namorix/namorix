@@ -19,5 +19,3 @@ export const WindowResizeHandles = memo(
     </>
   ),
 )
-
-WindowResizeHandles.displayName = "WindowResizeHandles"

@@ -89,5 +89,3 @@ export const Taskbar: React.FC = () => {
     />
   )
 }
-
-Taskbar.displayName = "Taskbar"

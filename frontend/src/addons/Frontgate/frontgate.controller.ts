@@ -13,6 +13,8 @@ export type ReverseProxyRuleAccess =
 
 export type ReverseProxyRuleStatus = "inactive" | "active" | "error"
 
+export type ReverseCertificateStatus = "active" | "pending" | "error"
+
 export interface ReverseProxyRule {
   id: string
   source: string
@@ -76,6 +78,8 @@ export interface CertificateItem {
   issuer: string
   type: string
   expiresAt: string
+  status: ReverseCertificateStatus
+  isInUse?: boolean
 }
 
 async function listRules(
@@ -131,10 +135,19 @@ async function listCertificates(): Promise<CertificateItem[]> {
   return data.data
 }
 
+async function deleteCertificate(id: string): Promise<void> {
+  const data = await nmxHttp
+    .url(getApiBaseUrl() + ApiFrontgateRoutes.certificateById(id))
+    .delete()
+    .json()
+  if (!data.success) throw ApiError.fromResponse(data)
+}
+
 export const frontgateController = {
   listRules,
   createRule,
   updateRule,
   deleteRule,
   listCertificates,
+  deleteCertificate,
 }

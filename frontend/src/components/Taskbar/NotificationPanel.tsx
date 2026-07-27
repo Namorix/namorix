@@ -291,4 +291,3 @@ export const NotificationPanel = memo(() => {
     </div>
   )
 })
-NotificationPanel.displayName = "NotificationPanel"

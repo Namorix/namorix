@@ -73,5 +73,3 @@ export const TaskbarAppButton = memo<TaskbarAppButtonProps>(
     )
   },
 )
-
-TaskbarAppButton.displayName = "TaskbarAppButton"
