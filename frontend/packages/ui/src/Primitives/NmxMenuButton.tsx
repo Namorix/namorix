@@ -21,12 +21,16 @@ import type {
 import React, { useRef, useState } from "react"
 import { cx, cxSemantic, cxVariant } from "../utils"
 
+interface NmxMenuButtonDivider<T> {
+  value: T
+  position: "top" | "bottom"
+}
+
 export interface NmxMenuButtonOption<T = string> {
   value: T
   label: string
   semantic?: NmxSemanticColor
   icon?: NmxIconFontSymbol
-  divider?: boolean
 }
 
 interface NmxMenuButtonProps<T>
@@ -41,6 +45,7 @@ interface NmxMenuButtonProps<T>
   label?: string
   options: NmxMenuButtonOption<T>[]
   filterItem?: (option: NmxMenuButtonOption<T>) => boolean
+  dividerIndexes?: NmxMenuButtonDivider<T>[]
   onSelect: (value: T) => void
   disabled?: boolean
   arrowDisabled?: boolean
@@ -50,6 +55,7 @@ export const NmxMenuButton = <T extends string = string>({
   label,
   options,
   filterItem,
+  dividerIndexes,
   onSelect,
   variant = "filled",
   semantic = "primary",
@@ -94,6 +100,8 @@ export const NmxMenuButton = <T extends string = string>({
     },
   })
 
+  const filteredOptions = options.filter((opt) => filterItem?.(opt) ?? true)
+
   const handleSelect = (opt: NmxMenuButtonOption<T>) => {
     onSelect(opt.value)
     setOpen(false)
@@ -133,10 +141,18 @@ export const NmxMenuButton = <T extends string = string>({
             className="nmx-menu-button__dropdown"
             {...getFloatingProps()}
           >
-            {options
-              .filter((opt) => filterItem?.(opt) ?? true)
-              .map((opt, i) => (
+            {filteredOptions.map((opt, i) => {
+              const divider = dividerIndexes?.find((d) => d.value === opt.value)
+              const showTopDivider = divider?.position === "top" && i > 0
+              const showBottomDivider =
+                divider?.position === "bottom" && i < filteredOptions.length - 1
+
+              return (
                 <React.Fragment key={opt.value}>
+                  {showTopDivider && (
+                    <div className="nmx-menu-button__divider" />
+                  )}
+
                   <button
                     type="button"
                     ref={(el) => {
@@ -169,11 +185,12 @@ export const NmxMenuButton = <T extends string = string>({
                     <span>{opt.label}</span>
                   </button>
 
-                  {opt.divider === true && i < options.length - 1 && (
-                    <div className="nmx-menu-button__divider"></div>
+                  {showBottomDivider && (
+                    <div className="nmx-menu-button__divider" />
                   )}
                 </React.Fragment>
-              ))}
+              )
+            })}
           </div>
         </FloatingPortal>
       )}

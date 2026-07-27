@@ -18,6 +18,7 @@ import {
 export interface NmxSelectData<T = string> {
   value: T
   label: string
+  description?: string
 }
 
 interface NmxSelectProps<T> extends WithBaseProps {
@@ -141,7 +142,16 @@ export const NmxSelect = <T extends string = string>({
                 {renderOption ? (
                   renderOption(opt, opt.value === value)
                 ) : (
-                  <span>{opt.label}</span>
+                  <>
+                    <span className="nmx-select__option-label">
+                      {opt.label}
+                    </span>
+                    {opt.description && (
+                      <span className="nmx-select__option-description">
+                        {opt.description}
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
             ))}
