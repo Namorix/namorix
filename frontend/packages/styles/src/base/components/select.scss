@@ -79,6 +79,9 @@
 }
 
 .nmx-select__option {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nmx-spacing-sm);
   color: var(--nmx-color-on-surface);
   padding: var(--nmx-spacing-md) var(--nmx-spacing-lg);
   font-size: var(--nmx-font-size-sm);
@@ -91,5 +94,16 @@
   &--selected {
     background: var(--nmx-color-surface-mid);
     font-weight: 600;
+  }
+
+  &-label,
+  &-description {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+
+  &-description {
+    color: var(--nmx-color-on-surface-variant);
   }
 }

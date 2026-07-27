@@ -25,9 +25,9 @@
 .nmx-menu-button__item {
   display: flex;
   align-items: center;
-  gap: var(--nmx-spacing-md);
+  gap: var(--nmx-spacing-sm);
   width: 100%;
-  padding: var(--nmx-spacing-md) var(--nmx-spacing-lg);
+  padding: var(--nmx-spacing-sm) var(--nmx-spacing-lg);
   font-size: var(--nmx-font-size-sm);
   color: var(--nmx-color-on-surface);
   background: none;
@@ -37,7 +37,7 @@
   text-align: start;
 
   &-icon {
-    font-size: var(--nmx-font-size-xl);
+    font-size: var(--nmx-font-size-md);
   }
 
   &:hover,
@@ -48,5 +48,5 @@
 
 .nmx-menu-button__divider {
   border-top: 1px solid var(--nmx-color-surface-low);
-  margin: var(--nmx-spacing-sm) 0;
+  margin: var(--nmx-spacing-xs) 0;
 }

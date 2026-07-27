@@ -52,6 +52,10 @@
   color: var(--nmx-button-text);
 }
 
+.nmx-button .nmx-icon-font {
+  font-size: var(--nmx-font-size-sm);
+}
+
 .nmx-button--full-width {
   width: 100%;
 }

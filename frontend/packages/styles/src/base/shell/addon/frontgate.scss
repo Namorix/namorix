@@ -12,22 +12,24 @@
     display: flex;
     flex-direction: column;
     flex: 1;
+    min-height: 0;
   }
 
   &__actions {
     display: flex;
     flex-direction: row;
+    flex-shrink: 0;
     align-items: center;
     margin-left: auto;
     padding: var(--nmx-spacing-md);
+    gap: var(--nmx-spacing-md);
   }
 
   &__list {
-    flex: 1;
     display: flex;
     flex-direction: column;
+    flex: 1;
     min-height: 0;
-    overflow: hidden;
   }
 
   &__form {
