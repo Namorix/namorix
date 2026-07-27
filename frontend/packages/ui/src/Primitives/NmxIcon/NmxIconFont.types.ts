@@ -25,6 +25,7 @@ export const NmxIconFontSymbol = {
   NODES: "ic-nodes",
   STATS: "ic-stats",
   MENU: "ic-menu",
+  MENU_VERTICAL: "ic-menu-vertical",
   MENU_FOLD: "ic-menu-fold",
   ARROW_NEXT: "ic-arrow-next",
   ARROW_PREV: "ic-arrow-prev",
@@ -54,6 +55,11 @@ export const NmxIconFontSymbol = {
   FEATURE: "ic-feature",
   CODE: "ic-code",
   ADVANCED: "ic-advanced",
+  UPLOAD: "ic-upload",
+  HTTP: "ic-http",
+  HTTPS: "ic-https",
+  DNS: "ic-dns",
+  DOWNLOAD: "ic-download",
 } as const
 
 export type NmxIconFontSymbol =

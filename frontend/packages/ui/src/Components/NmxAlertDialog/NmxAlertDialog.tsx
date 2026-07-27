@@ -8,6 +8,7 @@ import {
 import type { NmxAlertDialogProps } from "./NmxAlertDialog.types"
 import { useTranslation } from "react-i18next"
 import { cx } from "../../utils"
+import { markupToHtmlFromNode } from "@namorix/core"
 
 export const NmxAlertDialog = ({
   open,
@@ -16,6 +17,7 @@ export const NmxAlertDialog = ({
   description,
   size = "md",
   confirmLabel,
+  confirmSemantic = "primary",
   cancelLabel,
   closeLabel,
   extraActionLabel,
@@ -26,6 +28,7 @@ export const NmxAlertDialog = ({
   loading = false,
   noSpacingBody = false,
   noBodyScrollbar = false,
+  markupToHtmlEnabled = false,
   className,
   children,
 }: NmxAlertDialogProps) => {
@@ -55,8 +58,13 @@ export const NmxAlertDialog = ({
           "nmx-dialog--no-spacing-body": noSpacingBody,
           "nmx-dialog--no-scrollbar-body": noBodyScrollbar,
         })}
+        html={
+          markupToHtmlEnabled
+            ? markupToHtmlFromNode(description ?? children)
+            : undefined
+        }
       >
-        {children ?? description}
+        {markupToHtmlEnabled ? null : (children ?? description)}
       </NmxDialogBody>
       <NmxDialogFooter>
         {extraActionLabel && (
@@ -83,7 +91,7 @@ export const NmxAlertDialog = ({
             className="nmx-dialog__button"
           />
           <NmxButton
-            semantic="info"
+            semantic={confirmSemantic}
             label={confirm}
             onClick={onConfirm}
             disabled={loading}

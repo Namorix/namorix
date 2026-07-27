@@ -1,5 +1,5 @@
 import type { ReactNode } from "react"
-import type { WithBaseProps } from "../../types"
+import type { NmxSemanticColor, WithBaseProps } from "../../types"
 import type { NmxDialogSize } from "../NmxDialog"
 
 export interface NmxAlertDialogProps extends WithBaseProps {
@@ -9,6 +9,7 @@ export interface NmxAlertDialogProps extends WithBaseProps {
   description?: string | ReactNode
   size?: NmxDialogSize
   confirmLabel?: string
+  confirmSemantic?: NmxSemanticColor
   cancelLabel?: string
   closeLabel?: string
   extraActionLabel?: string
@@ -19,4 +20,5 @@ export interface NmxAlertDialogProps extends WithBaseProps {
   loading?: boolean
   noSpacingBody?: boolean
   noBodyScrollbar?: boolean
+  markupToHtmlEnabled?: boolean
 }

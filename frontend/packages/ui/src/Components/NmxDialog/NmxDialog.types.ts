@@ -20,6 +20,7 @@ export interface NmxDialogHeaderProps extends WithBaseProps {
 
 export interface NmxDialogBodyProps extends WithBaseProps {
   children: ReactNode
+  html?: string
 }
 
 export interface NmxDialogFooterProps extends WithBaseProps {
