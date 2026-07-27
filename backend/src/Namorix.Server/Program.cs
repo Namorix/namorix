@@ -88,11 +88,14 @@ builder.Services.AddHttpClient<CatalogService>(client =>
 });
 
 builder.Services.AddNamorixCore<MainHub>(builder.Environment.IsDevelopment());
+
 builder.Services.AddHostedService<TokenCleanupWorker>();
 builder.Services.AddHostedService<NotificationCleanupWorker>();
 builder.Services.AddHostedService<SystemMonitorStatsWorker>();
 builder.Services.AddHostedService<DockerMonitorWorker>();
 builder.Services.AddHostedService<CatalogSyncWorker>();
+builder.Services.AddHostedService<FgCertPendingResetWorker>();
+
 builder.Services.AddSingleton<AddonTaskQueue>();
 builder.Services.AddHostedService<AddonTaskQueue>(sp => sp.GetRequiredService<AddonTaskQueue>());
 builder.Services.AddScoped<AddonTaskExecutor>();

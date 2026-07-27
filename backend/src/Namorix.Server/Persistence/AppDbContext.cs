@@ -96,6 +96,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .Property(c => c.Status)
             .HasConversion<string>()
             .HasMaxLength(20);
+
+        modelBuilder.Entity<FgCertificate>()
+            .Property(c => c.Source)
+            .HasConversion<string>()
+            .HasMaxLength(20);
         
         modelBuilder.Entity<FgAccessPolicy>()
             .HasMany(p => p.ReverseProxyRules)

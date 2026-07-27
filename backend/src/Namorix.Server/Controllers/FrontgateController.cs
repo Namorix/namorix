@@ -156,19 +156,31 @@ public class FrontgateController(AppDbContext db) : ControllerBase
     }
     
     [HttpGet("certificates")]
-    public async Task<IActionResult> ListCertificates()
+    public async Task<IActionResult> ListCertificates(
+        [FromQuery] int page = 0, [FromQuery] int size = 20)
     {
-        var certs = await db.FgCertificates
+        var query = db.FgCertificates
             .OrderByDescending(c => c.CreatedAt)
             .Select(c => new {
-                c.Id, c.Domain, c.Issuer,
-                type = c.Type,
+                c.Id, c.Domain, c.Issuer, c.Type,
+                source = c.Source,
                 status = c.Status,
                 isInUse = c.ReverseProxyRules.Any(),
                 expiresAt = c.ExpiresAt,
-            })
+            });
+        
+        if (page <= 0)
+        {
+            var all = await query.ToListAsync();
+            return Ok(ApiResponse.Ok(all));
+        }
+        
+        var total = await query.CountAsync();
+        var items = await query
+            .Skip((page - 1) * size)
+            .Take(size)
             .ToListAsync();
-        return Ok(ApiResponse.Ok(certs));
+        return Ok(ApiResponse.Ok(new { items, total }));
     }
     
     [HttpDelete("certificates/{id}")]

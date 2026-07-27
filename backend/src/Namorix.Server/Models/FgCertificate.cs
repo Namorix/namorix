@@ -10,6 +10,7 @@ public enum CertificateType
 }
 
 public enum FgCertificateStatus { Active, Pending, Error }
+public enum FgCertificateSource { LetsEncryptHttp, LetsEncryptDns, Custom }
 
 public class FgCertificate
 {
@@ -18,6 +19,8 @@ public class FgCertificate
     [MaxLength(500)] public string Domain { get; init; } = string.Empty;   // wildcard: *.namorix.local
     [MaxLength(50)] public string Issuer { get; init; } = "Let's Encrypt";
     
+    public FgCertificateSource Source { get; init; } = FgCertificateSource.LetsEncryptHttp;
+
     public CertificateType Type { get; init; } = CertificateType.Rsa;
     
     public string PrivateKeyEncrypted { get; init; } = string.Empty;
