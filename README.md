@@ -11,7 +11,7 @@ Browser-based desktop shell, self-hosted.
 ## Features
 
 - **Desktop Shell** — Window manager, taskbar, launcher, desktop icon shortcuts
-- **System Addons** — Built-in addons (About, NetworkTraffic, Log Viewer, Settings, SystemMonitor, File Manager, Terminal, Package Center, Frontgate) via addon contract
+- **System Addons** — Built-in addons (About, NetworkTraffic, Log Viewer, Settings, SystemMonitor, File Manager, Terminal, Package Center, Frontgate, Beacon) via addon contract
 - **Reverse Proxy** — YARP-based reverse proxy management (Frontgate): route traffic to addons via custom domains, SSL termination, WebSocket support, access control
 - **External Addons** — Docker-based addons with widget (Module Federation mount) and standalone (OAuth PKCE, own server) modes
 - **Centralized Auth** — Single auth server for shell and addons, OAuth2 authorization server (authorization_code + PKCE, client_credentials + private_key_jwt)
@@ -147,6 +147,7 @@ namorix/
 │       ├── addons/           # Built-in addon registry + implementations
 │       │   ├── registry.ts   # registerAddon, resolveAddon, listAddons
 │       │   ├── About/           # About Namorix (version, meta, GitHub links)
+│       │   ├── Beacon/          # DNS updater — updates DNS when IP changes
 │       │   ├── FileManager/     # File browser scaffold
 │       │   ├── Frontgate/       # Reverse proxy management (YARP integration, CRUD UI, routing rules)
 │       │   ├── LogViewer/       # Level filter chips + multi-select, paginated table

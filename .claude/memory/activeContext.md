@@ -27,6 +27,13 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-07-27 — Frontgate Phase 2: NmxMenuButton divider refactor, filterItem, FgCertPendingResetWorker
+
+- @namorix/ui 0.32.0 → 0.33.0: NmxMenuButton dividerIndexes prop refactor — replaced `divider?: boolean` on option with `dividerIndexes?: { value, position }[]` on props. Divider follows option by value, renders above/below. filterItem edge case: no options → hide trigger. NEW `APP_BEACON` icon symbol.
+- @namorix/styles 0.44.0 → 0.44.1: Menu button divider SCSS styles, button/frontgate/dark tokens tweaks. NEW `--nmx-icon-app-beacon` icon token.
+- frontend 0.65.0 → 0.66.0: FrontgateCertificate 3-state filterItem (pending→delete only, error→retry+delete, other→renew+download+delete). dividerIndexes on action menu. LogViewer pagination repositioned (below data table). NEW internal addon **Beacon** (DNS updater — scaffold). Beacon i18n keys, app-beacon.svg icon, addon registration.
+- Namorix.Server 0.56.0 → 0.57.0: NEW FgCertPendingResetWorker — one-shot BackgroundService resetting Pending→Error on startup.
+
 ### 2026-07-26 — Frontgate Phase 1: Edit dialog, delete confirm, ForceSsl middleware, port 80/443
 
 - @namorix/core 0.49.0 → 0.50.0: NEW `formatCustomError` with `codeMap` parameter for error code → i18n translation mapping.
@@ -413,6 +420,13 @@ Cả 3 attribute filter (`RequireAuthAttribute`, `RequireAdminAttribute`, `Requi
 - frontend 0.63.0 → 0.64.0: Full Frontgate Certificate tab — NmxDataTable, NmxMenuButton action menu (Renew/Retry/Download/Delete), info dialog on row click, delete confirm with toast. certificateById API route. i18n certificate section (44 lines). frontgate.html landing page.
 - Namorix.Core 0.51.0 → 0.52.0: DataPaths constants. DataBasePath centralization. FlatFileOptions BasePath removed (shared path).
 - Namorix.Server 0.54.0 → 0.55.0: FgCertificateStatus enum + migration. DeleteCertificate endpoint. ListCertificates fix. Pipeline separation (UseWhen). SelfSignedCertificateProvider. BackendConfig HttpPort/HttpsPort.
+
+### 2026-07-27 — Frontgate Phase 2: Certificate pagination, NmxSelect description, Source field
+
+- @namorix/ui 0.31.0 → 0.32.0: NmxSelectData added `description` field. NmxSelect renders description in dropdown.
+- @namorix/styles 0.43.0 → 0.44.0: New `.nmx-select__option-label`/`-description` selectors. Option `flex-direction: column`.
+- frontend 0.64.0 → 0.65.0: Certificate tab pagination (NmxPagination, usePageSize). Certificate dropdown options with description (None/Request New/existing with issuer+expiry). listAllCertificates returns CertificateResponse.
+- Namorix.Server 0.55.0 → 0.56.0: FgCertificateSource enum + Source column. ListCertificates pagination (page≤0 flat array, page>0 paginated).
 
 ### 2026-07-27 — Frontgate Phase 2: Pipeline separation, self-signed cert, frontgate.html landing page
 
