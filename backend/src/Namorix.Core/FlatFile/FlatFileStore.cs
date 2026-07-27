@@ -3,15 +3,13 @@ using Namorix.Core.IO;
 
 namespace Namorix.Core.FlatFile;
 
-public class FlatFileStore(FlatFileOptions options) : IFlatFileStore
+public class FlatFileStore(DataDirectory dataDir) : IFlatFileStore
 {
-    private readonly string _basePath = options.BasePath;
-    private readonly DataDirectory _dataDir = new(options.BasePath);
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = new();
 
     private string GetFilePath<T>(DateTime timestamp) where T : class, IFlatFileSerializer<T>
     {
-        var dir = Path.Combine(_basePath, T.Category);
+        var dir = Path.Combine(dataDir.BasePath, T.Category);
         return Path.Combine(dir, $"{T.Category}-{timestamp:yyyy-MM-dd}.log");
     }
     
@@ -86,12 +84,12 @@ public class FlatFileStore(FlatFileOptions options) : IFlatFileStore
 
     public Task<int> DeleteBeforeAsync(DateTime cutoff)
     {
-        return _dataDir.PurgeAllAsync(cutoff);
+        return dataDir.PurgeAllAsync(cutoff);
     }
 
     private IEnumerable<string> GetFilesForCategory<T>() where T : class, IFlatFileSerializer<T>
     {
-        var dir = Path.Combine(_basePath, T.Category);
+        var dir = Path.Combine(dataDir.BasePath, T.Category);
         if (!Directory.Exists(dir)) yield break;
         foreach (var file in Directory.GetFiles(dir, "*.log", SearchOption.AllDirectories)
                      .OrderBy(f => f))
@@ -103,8 +101,8 @@ public class FlatFileStore(FlatFileOptions options) : IFlatFileStore
     private string GetFilePath<T>(DateTime timestamp, string? subDirectory) where T : class, IFlatFileSerializer<T>
     {
         var dir = string.IsNullOrEmpty(subDirectory)
-            ? Path.Combine(_basePath, T.Category)
-            : Path.Combine(_basePath, T.Category, subDirectory);
+            ? Path.Combine(dataDir.BasePath, T.Category)
+            : Path.Combine(dataDir.BasePath, T.Category, subDirectory);
         var prefix = string.IsNullOrEmpty(subDirectory) ? T.Category : subDirectory;
         return Path.Combine(dir, $"{prefix}-{timestamp:yyyy-MM-dd}.log");
     }

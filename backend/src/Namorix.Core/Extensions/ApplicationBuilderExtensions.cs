@@ -37,23 +37,23 @@ public static class ApplicationBuilderExtensions
             return app;
         }
 
-        private void UseApiErrorHandling()
+        public void UseApiErrorHandling()
         {
             app.UseMiddleware<ExceptionMiddleware>();
             app.UseMiddleware<JsonErrorMiddleware>();
         }
 
-        private void UseCsrfProtection()
+        public void UseCsrfProtection()
         {
             app.UseMiddleware<CsrfMiddleware>();
         }
 
-        private void UseSecurityHeaders()
+        public void UseSecurityHeaders()
         {
             app.UseMiddleware<SecurityHeadersMiddleware>();
         }
 
-        private void UseNotFoundHandler()
+        public void UseNotFoundHandler()
         {
             app.UseMiddleware<NotFoundMiddleware>();
         }

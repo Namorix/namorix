@@ -3,7 +3,6 @@ namespace Namorix.Core.Config;
 public class AppConfig
 {
     public JwtConfig Jwt { get; init; } = new();
-    public string ConnectionString { get; init; } = string.Empty;
     
     // Supplementary origins loaded from appsettings.json. Applied alongside DB-configured origins.
     // Has no effect when AllowedOrigins is not set in DB (allow-all mode via trusted proxy).
@@ -16,6 +15,7 @@ public class AppConfig
     public bool SecureCookie { get; init; } = false;
     
     public int OAuthRefreshTokenTtlDays { get; init; } = 1;
-
+    public string DataBasePath { get; init; } = "data";
+    
     public AddonCatalogConfig AddonCatalog { get; init; } = new();
 }

@@ -9,6 +9,8 @@ public class DataDirectory(string basePath)
     public string BasePath => basePath;
     public string TrafficPath => Path.Combine(basePath, "traffic");
     public string LogsPath => Path.Combine(basePath, "logs");
+    public string PkiPath => Path.Combine(basePath, "pki");
+
 
     public void EnsureInitialized()
     {
@@ -98,6 +100,14 @@ public class DataDirectory(string basePath)
             }
         }
         return Task.FromResult(deleted);
+    }
+    
+    public string WriteFile(string subPath, byte[] data)
+    {
+        var fullPath = Path.Combine(basePath, subPath);
+        Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+        File.WriteAllBytes(fullPath, data);
+        return fullPath;
     }
     
     private static string LogPattern => "*.log";

@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Namorix.Core.Config;
 using Namorix.Core.Constants;
 using Namorix.Core.Filters;
 using Namorix.Core.FlatFile;
@@ -32,8 +34,9 @@ public static class ServiceCollectionExtensions
         });
         
         services.AddSingleton<FlatFileOptions>();
+        services.AddSingleton<DataDirectory>(sp =>
+            new DataDirectory(sp.GetRequiredService<IOptions<AppConfig>>().Value.DataBasePath));
         services.AddSingleton<IFlatFileStore, FlatFileStore>();
-        services.AddSingleton<DataDirectory>(_ => new DataDirectory("data"));
         services.AddSingleton<TrafficMonitorService>();
         services.AddSingleton<LogService>();
         services.AddSingleton<ILogNotifier, SignalRLogNotifier<THub>>();
@@ -52,8 +55,7 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<TrafficCleanupWorker>();
         services.AddHostedService<TrafficStatsWorker>();
         services.AddHostedService<LogCleanupWorker>();
-
-
+        
         services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
         {
             options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
