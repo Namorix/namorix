@@ -48,6 +48,10 @@
   }
 }
 
+.nmx-button__content.nmx-button__semantic {
+  color: var(--nmx-button-text);
+}
+
 .nmx-button--full-width {
   width: 100%;
 }

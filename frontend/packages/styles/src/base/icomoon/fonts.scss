@@ -16,6 +16,36 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.ic-menu-vertical {
+  &:before {
+    content: $ic-menu-vertical; 
+  }
+}
+.ic-upload {
+  &:before {
+    content: $ic-upload; 
+  }
+}
+.ic-download {
+  &:before {
+    content: $ic-download; 
+  }
+}
+.ic-dns {
+  &:before {
+    content: $ic-dns; 
+  }
+}
+.ic-http {
+  &:before {
+    content: $ic-http; 
+  }
+}
+.ic-https {
+  &:before {
+    content: $ic-https; 
+  }
+}
 .ic-advanced {
   &:before {
     content: $ic-advanced; 

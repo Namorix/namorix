@@ -34,6 +34,10 @@
     padding-top: var(--nmx-spacing-lg);
   }
 
+  &__meta-item {
+    font-size: var(--nmx-font-size-xs);
+  }
+
   &__refresh-btn {
     margin-top: var(--nmx-spacing-4xl);
   }

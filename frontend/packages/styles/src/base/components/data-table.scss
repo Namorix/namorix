@@ -67,7 +67,7 @@
     &--clickable {
       cursor: pointer;
 
-      &:hover {
+      &:hover:not(:has([data-row-action]:hover)) {
         background: color-mix(
           in oklab,
           var(--nmx-color-surface-mid) 50%,

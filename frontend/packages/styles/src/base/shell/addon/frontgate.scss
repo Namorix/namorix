@@ -40,8 +40,13 @@
     text-align: center;
   }
 
-  &__btn-delete {
+  &__btn-delete,
+  &__btn-menu {
     font-size: var(--nmx-font-size-md);
+  }
+
+  &__btn-menu {
+    color: var(--nmx-color-on-surface);
   }
 
   &__location-editor {

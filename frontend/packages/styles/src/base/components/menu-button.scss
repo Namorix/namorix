@@ -1,0 +1,52 @@
+@use "../abstract/mixins" as *;
+@use "../icomoon/variables" as *;
+
+.nmx-menu-button__trigger::after {
+  content: "#{$ic-arrow-down}";
+  font-size: var(--nmx-font-size-2xs);
+  font-family: var(--nmx-font-icommon), serif;
+  transition: transform 0.2s;
+}
+
+.nmx-menu-button--open::after {
+  transform: rotate(180deg);
+}
+
+.nmx-menu-button__dropdown {
+  z-index: 1000;
+  min-width: 180px;
+  background: var(--nmx-color-surface);
+  border-radius: var(--nmx-radius-md);
+  box-shadow: var(--nmx-shadow-md);
+  padding: var(--nmx-spacing-sm) 0;
+  @include scrollbar;
+}
+
+.nmx-menu-button__item {
+  display: flex;
+  align-items: center;
+  gap: var(--nmx-spacing-md);
+  width: 100%;
+  padding: var(--nmx-spacing-md) var(--nmx-spacing-lg);
+  font-size: var(--nmx-font-size-sm);
+  color: var(--nmx-color-on-surface);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: start;
+
+  &-icon {
+    font-size: var(--nmx-font-size-xl);
+  }
+
+  &:hover,
+  &--active {
+    background: var(--nmx-color-surface-high);
+  }
+}
+
+.nmx-menu-button__divider {
+  border-top: 1px solid var(--nmx-color-surface-low);
+  margin: var(--nmx-spacing-sm) 0;
+}
