@@ -136,12 +136,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.63.0 | M4 (Frontgate Phase 1 — edit dialog, delete confirm, Status functional) |
-| @namorix/core | 0.50.0 | M4 (formatCustomError, error handling) |
-| @namorix/styles | 0.42.0 | M4 (frontgate SCSS, dialog/toast fixes) |
-| @namorix/ui | 0.30.2 | M4 (NmxKeyValueEditor, NmxSelect fixes) |
-| Namorix.Core | 0.53.0 | M4 (JsonStringEnumConverter, validation rules) |
-| Namorix.Server | 0.56.0 | M4 (ForceSsl middleware, port 80/443, Edit/Delete API, Status fix) |
+| frontend | 0.64.0 | M4 (Frontgate Certificate tab, action menu, delete confirm) |
+| @namorix/core | 0.51.0 | M4 (markupToHtml ReactNode, certificateById route, dateOnly) |
+| @namorix/styles | 0.43.0 | M4 (menu-button SCSS, icomoon rebuild, frontgate/blocked SCSS) |
+| @namorix/ui | 0.31.0 | M4 (NmxMenuButton Floating UI, NmxAlertDialog markupToHtml) |
+| Namorix.Core | 0.52.0 | M4 (DataBasePath centralization, DataPaths constants) |
+| Namorix.Server | 0.55.0 | M4 (Certificate lifecycle API, pipeline separation, self-signed cert) |
 
 ## Version Rules
 
@@ -168,6 +168,15 @@
 - Không bao giờ bump cả Core + Server cùng lúc nếu chỉ 1 trong 2 thay đổi
 
 ## Version History
+
+### 2026-07-27 — Frontgate Phase 2: Certificate tab, NmxMenuButton, pipeline separation, self-signed cert
+
+- @namorix/ui 0.30.2 → 0.31.0: NEW: `Primitives/NmxMenuButton.tsx` — Floating UI dropdown (useFloating, FloatingPortal, useClick, useDismiss, useListNavigation), `filterItem` prop, `NmxMenuButtonOption<T>` interface with value/label/semantic/icon/divider, `getReferenceProps` compose pattern for row click isolation, `data-row-action` attribute. MODIFIED: `Components/NmxAlertDialog/NmxAlertDialog.types.ts` — added `markupToHtmlEnabled` prop. `Components/NmxAlertDialog/NmxAlertDialog.tsx` — `markupToHtmlEnabled` renders description via `dangerouslySetInnerHTML`. `Components/NmxDialog/NmxDialog.types.ts` — added `noSpacingBody` prop. `Components/NmxDialog/NmxDialogBody.tsx` — noSpacingBody support (flush dialog body). `Primitives/NmxIcon/NmxIconFont.types.ts` — added MENU_VERTICAL, REFRESH, DOWNLOAD, HTTP, DNS, UPLOAD icon symbols. `Primitives/index.ts` — added NmxMenuButton export.
+- @namorix/core 0.50.0 → 0.51.0: MODIFIED: `utils/markup.ts` — markupToHtml overload accepting ReactNode (pass through). `apiRoutes.ts` — added `certificateById`. `hooks/useDateTimeFormat.ts` — added `dateOnly` formatter.
+- @namorix/styles 0.42.0 → 0.43.0: NEW: `base/components/menu-button.scss` — NmxMenuButton styles (trigger arrow, Floating UI dropdown, items, divider, item-icon). MODIFIED: `base/components/index.scss` — added menu-button forward. `base/components/button.scss`, `base/components/data-table.scss` — tweaks. `base/icomoon/` — fonts, variables, selection.json, _font-face.scss rebuild (new icon symbols). `base/shell/addon/frontgate.scss` — page/actions/list styles. `base/shell/components/blocked.scss` — style updates.
+- frontend 0.63.0 → 0.64.0: NEW: `addons/Frontgate/FrontgateCertificate.tsx` — full certificate tab (NmxDataTable with domain/issuer/type/status-expiry/action columns, NmxMenuButton action menu with filterItem for Renew/Retry/Download/Delete, clickable rows → detail NmxAlertDialog with NmxMetaList, delete with confirmation dialog, toast feedback, renderType/renderStatus/renderExpiry helpers). NEW: `addons/Frontgate/Frontgate.types.ts` — FrontgateErrorCodes enum. MODIFIED: `addons/Frontgate/frontgate.controller.ts` — CertificateItem type with status/isInUse, deleteCertificate method, certificateById route. `addons/Frontgate/Frontgate.tsx` — minor updates. `i18n/locales/en.json` — 44-line certificate section (titleInformation, actions, fields, statusValues/inUseValues, options, feedback). `addons/Frontgate/FrontgateReverseProxy.tsx` — minor updates. Various taskbar/window files — unused import cleanup. `frontend/public/frontgate.html` — frontgate standalone landing page (nmx-card, nmx-meta-list, nmx-icon-box from theme system).
+- Namorix.Core 0.51.0 → 0.52.0: NEW: `Constants/DataPaths.cs` — central path constants. MODIFIED: `Config/AppConfig.cs` — DataBasePath property from appsettings. `Extensions/ApplicationBuilderExtensions.cs`, `Extensions/ServiceCollectionExtensions.cs` — DataBasePath integration. `FlatFile/FlatFileOptions.cs` — removed BasePath (uses shared DataBasePath). `FlatFile/FlatFileStore.cs` — DataDirectory integration. `IO/DataDirectory.cs` — uses AppConfig.DataBasePath.
+- Namorix.Server 0.54.0 → 0.55.0: NEW: `Models/FgCertificate.cs` — FgCertificateStatus enum (Active/Pending/Error) + Status property. `Infrastructure/SelfSignedCertificateProvider.cs` — auto-gen PFX when HttpsPort > 0 without SslCertPath, saves to data/pki/. `Migrations/20260727063316_AddFgCertificateStatus.cs` — adds Status column to FgCertificates. MODIFIED: `Controllers/FrontgateController.cs` — DeleteCertificate endpoint (DELETE /certificates/{id}), ListCertificates removed .ToString() (JsonStringEnumConverter handles serialization), added isInUse = ReverseProxyRules.Any(). `Persistence/AppDbContext.cs` — FgCertificateStatus config (HasConversion<string>, HasMaxLength(20)). `Program.cs` — pipeline separation (UseWhen: API port full pipeline, proxy ports only ForceSsl + YARP + static). `Config/BackendConfig.cs` — HttpPort, HttpsPort, SslCertPath, SslCertPassword. `appsettings.json` — HttpPort/HttpsPort config.
 
 ### 2026-07-25 — Frontgate addon scaffold, APP_FRONTGATE icon symbol
 

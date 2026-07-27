@@ -405,6 +405,24 @@ Cả 3 attribute filter (`RequireAuthAttribute`, `RequireAdminAttribute`, `Requi
 - `/api/themes` handler — đã implement ✅
 - `public/themes/registry.json` — đã tạo ✅
 
+### 2026-07-27 — Frontgate Phase 2: Certificate tab, NmxMenuButton, action menu, pipeline separation
+
+- @namorix/ui 0.30.2 → 0.31.0: NEW `NmxMenuButton` — Floating UI dropdown with filterItem prop, getReferenceProps compose pattern, data-row-action. NmxAlertDialog markupToHtmlEnabled. NmxDialog noSpacingBody. New icon symbols (MENU_VERTICAL, REFRESH, DOWNLOAD, HTTP, DNS, UPLOAD).
+- @namorix/core 0.50.0 → 0.51.0: markupToHtml ReactNode overload. certificateById API route. dateOnly formatter.
+- @namorix/styles 0.42.0 → 0.43.0: New menu-button.scss. Icomoon rebuild. Frontgate/blocked SCSS updates.
+- frontend 0.63.0 → 0.64.0: Full Frontgate Certificate tab — NmxDataTable, NmxMenuButton action menu (Renew/Retry/Download/Delete), info dialog on row click, delete confirm with toast. certificateById API route. i18n certificate section (44 lines). frontgate.html landing page.
+- Namorix.Core 0.51.0 → 0.52.0: DataPaths constants. DataBasePath centralization. FlatFileOptions BasePath removed (shared path).
+- Namorix.Server 0.54.0 → 0.55.0: FgCertificateStatus enum + migration. DeleteCertificate endpoint. ListCertificates fix. Pipeline separation (UseWhen). SelfSignedCertificateProvider. BackendConfig HttpPort/HttpsPort.
+
+### 2026-07-27 — Frontgate Phase 2: Pipeline separation, self-signed cert, frontgate.html landing page
+
+- **Pipeline separation**: `UseWhen` branch — API port (5001) gets full pipeline (CORS/Auth/CSRF/Controllers/SignalR), proxy ports (80/443) only ForceSsl + YARP + static fallback
+- **Self-signed certificate**: `SelfSignedCertificateProvider` — auto-gen PFX khi `HttpsPort > 0` mà không có `SslCertPath`, lưu vào `data/pki/`
+- **DataBasePath centralization**: `AppConfig.DataBasePath` từ `appsettings.json`, dùng chung cho `DataDirectory`, `FlatFileStore`, cert storage. Xoá `FlatFileOptions.BasePath` redundant
+- **Frontgate landing page**: `frontend/public/frontgate.html` — standalone HTML dùng CSS variables từ `@namorix/styles`, cùng theme với desktop, trả về khi truy cập proxy ports không YARP route. Refactored từ custom `.fg-*` classes sang dùng `nmx-card`, `nmx-meta-list`, `nmx-meta-list--contained`, `nmx-icon-box`, `nmx-icon-font` có sẵn trong theme system
+- **Dev path**: Backend serve `frontend/public/` qua `PhysicalFileProvider` — path resolve từ project directory (`backend/src/Namorix.Server/`) lên repo root cần 3 `..`: `../../frontend/public/`
+- **Production note**: Frontend sẽ built vào backend output, serve từ 1 port duy nhất — cần replace PhysicalFileProvider path bằng production build path
+
 ## Next Steps
 
 1. **M5** — @namorix/core publish npm + addon integration guide

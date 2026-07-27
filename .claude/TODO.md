@@ -30,6 +30,20 @@
 
 **Related**: Liên quan tới addon external (SignalR groups), xử lý sau khi làm M4.
 
+## SignalR — Dialog loading overlay khi mất kết nối
+
+**Context**: Khi SignalR mất kết nối (reconnecting state), dialog (NmxAlertDialog, NmxDialog) bị loading overlay che mất nội dung. Cần phân biệt SignalR loading state với dialog loading state.
+
+**Approach**:
+- Nguyên nhân: SignalR reconnecting state propagate qua global store/context, dialog `loading` prop bị ảnh hưởng
+- Fix: tách biệt dialog loading state (form submitting) khỏi global SignalR connection state
+
+**Files**:
+- `frontend/src/App.tsx` — kiểm tra `shouldShowReconnecting` và các effect liên quan
+- `frontend/packages/ui/src/Components/NmxDialog/NmxDialog.tsx` — kiểm tra `loading` prop propagation
+
+---
+
 ## SignalR — Auth check when reconnect fails
 
 **Context**: `scheduleReconnect()` retry vô hạn, nếu JWT expired → loading/reconnect mãi. Cần check session auth sau N lần failed, nếu expired thì redirect về login, không retry tiếp.
@@ -195,5 +209,13 @@
 - Beam (media)
 - Scout (Camera)
 - Vault (Drive)
+
+---
+
+## Frontgate — Replace dev static path on production build
+
+**Context**: Proxy ports serve `frontend/public/` via `PhysicalFileProvider` với path tạm thời (`../../frontend/public/` từ project dir). Build production cần replace bằng frontend built output path.
+
+**Files**: `Program.cs` — proxy branch `PhysicalFileProvider` + `MapFallbackToFile` paths.
 
 	

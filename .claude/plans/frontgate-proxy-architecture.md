@@ -140,17 +140,60 @@ Tất cả các flag đều implement được bằng C#/YARP, không cần Ngin
 - [x] **Toast createPortal**: fix toast behind dialog overlay (stacking context với `contain: strict`)
 - [x] **Edit dialog**: pre-filled form + `editingRule` state, gọi `frontgateController.updateRule()`, dialog title dynamic (addProxy/editProxy)
 - [x] **Delete with confirmation**: nút delete + confirmation dialog, loading state
-### 🔜 Phase 2 — Certificate Management
+### 🔜 Phase 2 — Certificate & Infrastructure
 
-Thư viện ACME: **Certes** (`Certes` NuGet) — giao tiếp với Let's Encrypt, xử lý HTTP-01/DNS-01 challenge, tự động cấp và renew cert.
+Thư viện ACME: **Certes** (`Certes` NuGet) — giao tiếp với Let's Encrypt, xử lý challenge, cấp và renew cert.
+
+**3 flow tạo cert riêng biệt** (tham khảo Nginx Proxy Manager), không gộp chung — mỗi flow dùng challenge/nguồn cert khác, code path riêng.
+
+#### ✅ Done (Foundation)
 
 - [x] **Port 80/443 binding**: optional Kestrel config (`ListenAnyIP(80)`, `ListenAnyIP(443)` với HTTPS), cần root/setcap, config qua env/appsettings
 - [x] **ForceSsl redirect middleware**: middleware check per-rule ForceSsl, redirect 301 HTTP→HTTPS trước MapReverseProxy
-- [ ] Let's Encrypt ACME integration (Certes — HTTP-01 challenge qua port 80)
-- [ ] Wildcard cert support (DNS-01 bắt buộc cho `*.namorix.local`)
-- [ ] Auto-renew worker (`IHostedService`)
-- [ ] Kestrel SNI certificate binding (ServerOptionsSelectionCallback)
-- [ ] Frontgate UI: Certificate tab (list, add, delete)
+- [x] **Self-signed certificate auto-generation**: `SelfSignedCertificateProvider` — tự gen PFX khi `HttpsPort > 0` mà không có `SslCertPath`
+- [x] **DataBasePath centralization**: `AppConfig.DataBasePath` từ `appsettings.json`, dùng chung cho `DataDirectory`, `FlatFileStore`, cert storage
+- [x] **Pipeline separation**: `UseWhen` branch — API port (5001) full pipeline (CORS/Auth/CSRF), proxy ports (5080/5443) only ForceSsl + YARP
+- [x] **Custom proxy port response**: `MapFallbackToFile("frontgate.html")` — standalone landing page ở `frontend/public/frontgate.html`, dùng `nmx-card`, `nmx-meta-list`, `nmx-icon-box` từ theme system, cùng giao diện với desktop
+- [x] **`FgCertificateStatus` enum + migration**: `Active`, `Pending`, `Error` lifecycle status
+- [x] **`ListCertificates` API fix**: bỏ `.ToString()` — dùng `JsonStringEnumConverter(CamelCase)` global
+- [x] **`NmxMenuButton` improvements**: `filterItem` prop, `React.Fragment key` fix, `divider` support, `getReferenceProps` compose pattern fix row click leak, `semantic` + icon on options
+- [x] **Delete certificate API**: `DELETE /certificates/{id}` + frontend controller + confirm dialog + toast
+- [x] **Certificate tab UI**: list cert (Domain, Issuer, Type, Status gộp InUse, ExpiresAt), action menu (Renew/Retry/Download/Delete), click row show detail dialog. i18n keys cho status values, inUse values, actions, feedback.
+- [x] **Json enum serialization**: `JsonStringEnumConverter(CamelCase)` trong `AddNamorixCore` — tất cả enum serialize thành camelCase string
+
+#### 🔨 Schema Changes
+
+- [ ] **`FgCertificates.Source` enum**: `LetsEncryptHttp`, `LetsEncryptDns`, `Custom` — không lẫn với `CertificateType` (Rsa/Ecdsa là key algorithm)
+- [ ] **Multi-domain support**: `FgCertificates.Domain` string đơn → JSON list domain hoặc bảng con `FgCertificateDomains`
+- [ ] **`FgDnsProviders` table**: `Id`, `Name`, `ProviderType` (Cloudflare, Route53, DigitalOcean), `CredentialsEncrypted`
+- [ ] **`FgCertificates.DnsProviderId` (FK nullable)**: chỉ set khi `Source = LetsEncryptDns`
+
+#### 🔨 Let's Encrypt via HTTP (HTTP-01)
+
+- [ ] **ACME challenge middleware**: serve `.well-known/acme-challenge/{token}` trên proxy port, đặt trước ForceSslMiddleware (tránh redirect HTTPS)
+- [ ] **Domain validation**: DNS lookup confirm domain trỏ đúng IP Frontgate trước khi gọi Certes, cảnh báo nếu chưa đúng
+- [ ] **Wildcard reject**: validate input, reject `*.` domain ở flow này
+- [ ] **Dry-run test**: nút "Test" ở UI = dry-run challenge trước khi Save, tránh burn Let's Encrypt rate-limit
+
+#### 🔨 Let's Encrypt via DNS (DNS-01)
+
+- [ ] **`IDnsProvider` interface**: `CreateTxtRecordAsync(domain, token)` / `DeleteTxtRecordAsync(domain, token)`
+- [ ] **`CloudflareDnsProvider`**: implement đầu tiên (dùng API token, không dùng Global API Key)
+- [ ] **Certes DNS-01 flow**: tạo challenge → gọi `CreateTxtRecordAsync` → chờ propagation → verify → cleanup
+- [ ] **Wildcard allowed**: chỉ flow này cho phép `*.domain.com` — validate input cho phép wildcard
+
+#### 🔨 Custom Certificate (Upload)
+
+- [ ] **3-file upload**: Certificate Key, Certificate, Intermediate Certificate (optional)
+- [ ] **Keypair validation**: parse PEM, verify public key trong Certificate khớp Certificate Key
+- [ ] **Passphrase reject**: reject nếu Key có passphrase, yêu cầu user strip trước khi upload
+- [ ] **`AutoRenew` mặc định `false`**: custom cert không đưa vào renew worker
+
+#### 🔨 Auto-renew Worker & SNI
+
+- [ ] **Renew worker**: `IHostedService` chạy daily, check cert `AutoRenew = true` và `ExpiresAt < now + 30 days`. Gọi lại đúng flow (HTTP-01/DNS-01) theo `Source` gốc
+- [ ] **Kestrel SNI binding**: `ServerOptionsSelectionCallback` (async) — query DB theo SNI hostname, fallback self-signed cert nếu không match
+- [x] **Certificate tab UI**: list cert (Domain, Issuer, Type, Status gộp InUse, ExpiresAt), action menu (Renew/Download/Delete), click row show detail dialog. `NmxMenuButton` với `getReferenceProps` compose pattern fix row click leak. i18n keys cho status values, inUse values, actions.
 
 ### 🔜 Phase 3 — Access Control
 - [ ] IP Allowlist/Denylist (qua AccessPolicy)

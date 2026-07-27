@@ -72,6 +72,23 @@ cd frontend && pnpm dev         # Frontend (Vite port 5000)
 | 5401 | namorix-vault (backend) | — | Reserved — addon backend |
 | 5402 | namorix-vault (gRPC) | — | Reserved — addon gRPC |
 
+### Linux: Binding Ports Below 1024 Without Root
+
+The Frontgate proxy uses ports 80 (HTTP) and 443 (HTTPS). On Linux, ports below 1024 require root by default. For development machines, lower the unprivileged port threshold instead of using `sudo` or `setcap`:
+
+```bash
+# Temporary (until reboot)
+sudo sysctl net.ipv4.ip_unprivileged_port_start=80
+
+# Permanent
+echo 'net.ipv4.ip_unprivileged_port_start=80' | sudo tee /etc/sysctl.d/99-unprivileged-ports.conf
+sudo sysctl --system
+```
+
+Setting this to 80 means all ports ≥ 80 are available to unprivileged processes — enough to cover both 80 and 443. After this, `dotnet run` on the backend can bind port 80/443 normally.
+
+**Do not use this on production systems** — it weakens the kernel's privilege boundary. Production should use a dedicated reverse proxy (Nginx, HAProxy) or `setcap` on the binary instead.
+
 ## Repository Structure
 
 ```
