@@ -80,4 +80,5 @@ export const ApiFrontgateRoutes = {
   reverseProxy: API_FRONTGATE_BASE + "/reverse-proxy",
   reverseProxyById: (id: string) => `${API_FRONTGATE_BASE}/reverse-proxy/${id}`,
   certificates: API_FRONTGATE_BASE + "/certificates",
+  certificateById: (id: string) => `${API_FRONTGATE_BASE}/certificates/${id}`,
 } as const
