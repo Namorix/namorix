@@ -15,6 +15,7 @@ import "./FileManager/FileManager.addon"
 import "./Terminal/Terminal.addon"
 import "./PackageCenter/PackageCenter.addon"
 import "./Frontgate/Frontgate.addon"
+import "./Beacon/Beacon.addon"
 
 export const addonToItems = (addon: AddonModule): AddonItem => ({
   ...addon.manifest,

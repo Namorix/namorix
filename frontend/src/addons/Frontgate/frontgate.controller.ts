@@ -77,9 +77,15 @@ export interface CertificateItem {
   domain: string
   issuer: string
   type: string
+  source: string
   expiresAt: string
   status: ReverseCertificateStatus
   isInUse?: boolean
+}
+
+export interface CertificateResponse {
+  items: CertificateItem[]
+  total: number
 }
 
 async function listRules(
@@ -126,11 +132,24 @@ async function deleteRule(id: string): Promise<void> {
   if (!data.success) throw ApiError.fromResponse(data)
 }
 
-async function listCertificates(): Promise<CertificateItem[]> {
+async function listCertificates(
+  page: number,
+  size: number,
+): Promise<CertificateResponse> {
+  const data = await nmxHttp
+    .url(getApiBaseUrl() + ApiFrontgateRoutes.certificates)
+    .query({ page, size })
+    .get()
+    .json<CertificateResponse>()
+  if (!data.success) throw ApiError.fromResponse(data)
+  return data.data
+}
+
+async function listAllCertificates(): Promise<CertificateResponse> {
   const data = await nmxHttp
     .url(getApiBaseUrl() + ApiFrontgateRoutes.certificates)
     .get()
-    .json<CertificateItem[]>()
+    .json<CertificateResponse>()
   if (!data.success) throw ApiError.fromResponse(data)
   return data.data
 }
@@ -149,5 +168,6 @@ export const frontgateController = {
   updateRule,
   deleteRule,
   listCertificates,
+  listAllCertificates,
   deleteCertificate,
 }

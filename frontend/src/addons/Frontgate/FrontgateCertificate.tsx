@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react"
 import {
   NmxAlertDialog,
   NmxBadge,
+  NmxButton,
   NmxDataTable,
   type NmxDataTableColumn,
   type NmxDataTableFallback,
@@ -11,6 +12,7 @@ import {
   type NmxMenuButtonOption,
   NmxMetaItem,
   NmxMetaList,
+  NmxPagination,
   type NmxSemanticColor,
 } from "@namorix/ui"
 import { useTranslation } from "react-i18next"
@@ -18,7 +20,12 @@ import {
   type CertificateItem,
   frontgateController,
 } from "./frontgate.controller"
-import { formatCustomError, nmxToast, useDateTimeFormat } from "@namorix/core"
+import {
+  formatCustomError,
+  nmxToast,
+  useDateTimeFormat,
+  usePageSize,
+} from "@namorix/core"
 import type { TFunction } from "i18next"
 import { FrontgateErrorCodes } from "./Frontgate.types"
 
@@ -79,31 +86,45 @@ function renderExpiry(expiresAt: string, dateOnly: (d: string) => string) {
   )
 }
 
+function renderSource(source: string) {
+  return (
+    <NmxBadge semantic="info" size="sm" uppercase={false}>
+      {source}
+    </NmxBadge>
+  )
+}
+
 export const FrontgateCertificate: React.FC = () => {
   const { t } = useTranslation()
   const { dateOnly } = useDateTimeFormat()
   const [certs, setCerts] = useState<CertificateItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<unknown>()
+  const { pageSize, setPageSize, options: pageSizeOptions } = usePageSize()
+  const [page, setPage] = useState(1)
+  const [total, setTotal] = useState(0)
 
   const [selectedCert, setSelectedCert] = useState<CertificateItem | null>(null)
   const [deletingCert, setDeletingCert] = useState<CertificateItem | null>(null)
   const [deleteSubmitting, setDeleteSubmitting] = useState(false)
 
-  const fetchCerts = useCallback(() => {
+  const fetchCerts = useCallback((pg: number, sz: number) => {
     setLoading(true)
     setError(undefined)
     frontgateController
-      .listCertificates()
-      .then(setCerts)
+      .listCertificates(pg, sz)
+      .then((res) => {
+        setCerts(res.items)
+        setTotal(res.total)
+      })
       .catch(setError)
       .finally(() => setLoading(false))
   }, [])
 
   useEffect(() => {
-    const timeout = setTimeout(() => fetchCerts(), 0)
+    const timeout = setTimeout(() => fetchCerts(page, pageSize), 0)
     return () => clearTimeout(timeout)
-  }, [fetchCerts])
+  }, [fetchCerts, page, pageSize])
 
   const handleAction = useCallback(
     (value: FrontgateActionMenuType, row: CertificateItem) => {
@@ -123,7 +144,7 @@ export const FrontgateCertificate: React.FC = () => {
           t("addon.frontgate.pages.certificate.feedback.deleteSuccess"),
         )
         setDeletingCert(null)
-        fetchCerts()
+        fetchCerts(page, pageSize)
       })
       .catch((err) => {
         nmxToast.error(
@@ -132,7 +153,7 @@ export const FrontgateCertificate: React.FC = () => {
         )
       })
       .finally(() => setDeleteSubmitting(false))
-  }, [deletingCert, fetchCerts, t])
+  }, [deletingCert, fetchCerts, page, pageSize, t])
 
   const actionOptions: NmxMenuButtonOption<FrontgateActionMenuType>[] = [
     {
@@ -151,7 +172,6 @@ export const FrontgateCertificate: React.FC = () => {
       value: "download",
       label: t("addon.frontgate.pages.certificate.actions.download"),
       icon: NmxIconFontSymbol.DOWNLOAD,
-      divider: true,
     },
     {
       value: "delete",
@@ -204,14 +224,17 @@ export const FrontgateCertificate: React.FC = () => {
         <NmxMenuButton
           options={actionOptions}
           filterItem={(opt) =>
-            row.status !== "error"
-              ? opt.value !== "retry"
-              : opt.value !== "renew"
+            row.status === "pending"
+              ? opt.value === "delete"
+              : row.status !== "error"
+                ? opt.value !== "retry"
+                : opt.value !== "renew" && opt.value !== "download"
           }
           onSelect={(menu) => handleAction(menu, row)}
           variant="ghost"
           semantic="trace"
           arrowDisabled={true}
+          dividerIndexes={[{ value: "delete", position: "top" }]}
           className="nmx-addon-frontgate__btn-menu"
         >
           <NmxIconFont symbol={NmxIconFontSymbol.MENU_VERTICAL} />
@@ -261,18 +284,40 @@ export const FrontgateCertificate: React.FC = () => {
             {t("addon.frontgate.pages.certificate.actions.addCertificate")}
           </span>
         </NmxMenuButton>
+        <NmxButton onClick={() => fetchCerts(page, pageSize)}>
+          <NmxIconFont symbol={NmxIconFontSymbol.REFRESH} />
+          <span>{t("addon.frontgate.pages.certificate.actions.refresh")}</span>
+        </NmxButton>
       </div>
 
-      <div className="nmx-addon-frontgate__list">
-        <NmxDataTable
-          columns={columns}
-          rows={certs}
-          clickableRows={true}
-          onRowClick={(row) => setSelectedCert(row)}
-          fallbackConditions={fallbackConditions}
-          className="nmx-addon-page__data-table"
+      <NmxDataTable
+        columns={columns}
+        rows={certs}
+        clickableRows={true}
+        onRowClick={(row) => setSelectedCert(row)}
+        fallbackConditions={fallbackConditions}
+        className="nmx-addon-page__data-table"
+      />
+
+      {total > 0 && (
+        <NmxPagination
+          page={page}
+          totalPages={Math.ceil(total / pageSize)}
+          totalItems={total}
+          pageSize={pageSize}
+          pageSizeOptions={pageSizeOptions}
+          onPageSizeChange={(size) => {
+            setPageSize(size)
+            setError(undefined)
+            setPage(1)
+          }}
+          onPageChange={(pg) => {
+            setLoading(true)
+            setError(undefined)
+            setPage(pg)
+          }}
         />
-      </div>
+      )}
 
       <NmxAlertDialog
         open={!!selectedCert}
@@ -292,6 +337,12 @@ export const FrontgateCertificate: React.FC = () => {
               value={selectedCert.issuer}
               alignValue="end"
             />
+            <NmxMetaItem
+              label={t("addon.frontgate.pages.certificate.fields.source")}
+              alignValue="end"
+            >
+              {renderSource(selectedCert.source)}
+            </NmxMetaItem>
             <NmxMetaItem
               label={t("addon.frontgate.pages.certificate.fields.type")}
               alignValue="end"

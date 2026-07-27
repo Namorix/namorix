@@ -376,6 +376,7 @@
             "advanced": "Advanced"
           },
           "actions": {
+            "refresh": "Refresh",
             "addProxy": "Add proxy",
             "editProxy": "Edit proxy",
             "deleteProxy": "Delete proxy",
@@ -443,11 +444,17 @@
             "deleteSuccess": "Reverse proxy rule deleted successfully",
             "deleteError": "Failed to delete reverse proxy rule",
             "deleteConfirm": "Are you sure you want to delete the proxy rule [color:warning]**{{source}}**[/color] this?"
+          },
+          "certificateOptions": {
+            "noneDescription": "Disable SSL/TLS encryption for this host",
+            "requestNewDescription": "Automatically provision a new Let's Encrypt SSL certificate",
+            "existingDescription": "{{issuer}} — Expires: {{expires}}"
           }
         },
         "certificate": {
           "titleInformation": "Information",
           "actions": {
+            "refresh": "Refresh",
             "addCertificate": "Add certificate",
             "renew": "Renew",
             "retry": "Retry",
@@ -458,6 +465,7 @@
             "domain": "Domain",
             "issuer": "Issuer",
             "type": "Type",
+            "source": "Source",
             "expires": "Expires",
             "status": "Status",
             "action": "Action",
@@ -485,6 +493,10 @@
           }
         }
       }
+    },
+    "beacon": {
+      "title": "Beacon",
+      "description": "Updates your DNS when your IP changes"
     }
   }
 }

@@ -244,6 +244,26 @@ export const LogViewer: React.FC = () => {
         onRowClick={(row) => setSelectedLog(row)}
       />
 
+      {total > 0 && (
+        <NmxPagination
+          page={page}
+          totalPages={totalPages}
+          totalItems={total}
+          pageSize={pageSize}
+          pageSizeOptions={pageSizeOptions}
+          onPageSizeChange={(size) => {
+            setPageSize(size)
+            setError(undefined)
+            setPage(1)
+          }}
+          onPageChange={(pg) => {
+            setLoading(true)
+            setError(undefined)
+            setPage(pg)
+          }}
+        />
+      )}
+
       <NmxAlertDialog
         open={!!selectedLog}
         title={timestamp(selectedLog?.timestamp ?? "")}
@@ -282,26 +302,6 @@ export const LogViewer: React.FC = () => {
           </NmxMetaList>
         )}
       </NmxAlertDialog>
-
-      {total > 0 && (
-        <NmxPagination
-          page={page}
-          totalPages={totalPages}
-          totalItems={total}
-          pageSize={pageSize}
-          pageSizeOptions={pageSizeOptions}
-          onPageSizeChange={(size) => {
-            setPageSize(size)
-            setError(undefined)
-            setPage(1)
-          }}
-          onPageChange={(pg) => {
-            setLoading(true)
-            setError(undefined)
-            setPage(pg)
-          }}
-        />
-      )}
     </NmxAddonRoot>
   )
 }

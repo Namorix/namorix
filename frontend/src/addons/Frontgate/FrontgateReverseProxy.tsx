@@ -21,7 +21,12 @@ import {
   NmxTabs,
   NmxToggle,
 } from "@namorix/ui"
-import { formatCustomError, nmxToast, usePageSize } from "@namorix/core"
+import {
+  formatCustomError,
+  nmxToast,
+  useDateTimeFormat,
+  usePageSize,
+} from "@namorix/core"
 import {
   type CreateReverseProxyRulePayload,
   frontgateController,
@@ -84,6 +89,7 @@ const CERT_REQUEST_NEW = "__request_new__"
 
 export const FrontgateReverseProxy: React.FC = () => {
   const { t } = useTranslation()
+  const { dateOnly } = useDateTimeFormat()
   const { pageSize, setPageSize, options: pageSizeOptions } = usePageSize()
   const [rules, setRules] = useState<ReverseProxyRule[]>([])
   const [page, setPage] = useState(1)
@@ -163,7 +169,7 @@ export const FrontgateReverseProxy: React.FC = () => {
 
   useEffect(() => {
     frontgateController
-      .listCertificates()
+      .listAllCertificates()
       .then((certs) => {
         setCertificateOptions([
           {
@@ -171,16 +177,26 @@ export const FrontgateReverseProxy: React.FC = () => {
             label: t(
               "addon.frontgate.pages.reverseProxy.fields.certificateNone",
             ),
+            description: t(
+              "addon.frontgate.pages.reverseProxy.certificateOptions.noneDescription",
+            ),
           },
           {
             value: CERT_REQUEST_NEW,
             label: t(
               "addon.frontgate.pages.reverseProxy.fields.certificateRequestNew",
             ),
+            description: t(
+              "addon.frontgate.pages.reverseProxy.certificateOptions.requestNewDescription",
+            ),
           },
-          ...certs.map((c) => ({
+          ...certs.items.map((c) => ({
             value: c.id,
-            label: `${c.domain} (${c.issuer})`,
+            label: `${c.domain}`,
+            description: t(
+              "addon.frontgate.pages.reverseProxy.certificateOptions.existingDescription",
+              { issuer: c.issuer, expires: dateOnly(c.expiresAt) },
+            ),
           })),
         ])
       })
@@ -586,6 +602,10 @@ export const FrontgateReverseProxy: React.FC = () => {
           <span>
             {t("addon.frontgate.pages.reverseProxy.actions.addProxy")}
           </span>
+        </NmxButton>
+        <NmxButton onClick={() => fetchRules(page, pageSize)}>
+          <NmxIconFont symbol={NmxIconFontSymbol.REFRESH} />
+          <span>{t("addon.frontgate.pages.reverseProxy.actions.refresh")}</span>
         </NmxButton>
       </div>
       <div className="nmx-addon-frontgate__list">

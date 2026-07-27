@@ -918,6 +918,9 @@ input[type=number] {
 .nmx-button__content.nmx-button__semantic {
   color: var(--nmx-button-text);
 }
+.nmx-button .nmx-icon-font {
+  font-size: var(--nmx-font-size-sm);
+}
 .nmx-button--full-width {
   width: 100%;
 }
@@ -1765,6 +1768,9 @@ input[type=number] {
   scrollbar-color: color-mix(in oklab, var(--nmx-color-on-surface-variant) 50%, transparent) transparent;
 }
 .nmx-select__option {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nmx-spacing-sm);
   color: var(--nmx-color-on-surface);
   padding: var(--nmx-spacing-md) var(--nmx-spacing-lg);
   font-size: var(--nmx-font-size-sm);
@@ -1776,6 +1782,14 @@ input[type=number] {
 .nmx-select__option--selected {
   background: var(--nmx-color-surface-mid);
   font-weight: 600;
+}
+.nmx-select__option-label, .nmx-select__option-description {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.nmx-select__option-description {
+  color: var(--nmx-color-on-surface-variant);
 }
 .nmx-slider {
   display: flex;
@@ -2919,9 +2933,9 @@ input[type=number] {
 .nmx-menu-button__item {
   display: flex;
   align-items: center;
-  gap: var(--nmx-spacing-md);
+  gap: var(--nmx-spacing-sm);
   width: 100%;
-  padding: var(--nmx-spacing-md) var(--nmx-spacing-lg);
+  padding: var(--nmx-spacing-sm) var(--nmx-spacing-lg);
   font-size: var(--nmx-font-size-sm);
   color: var(--nmx-color-on-surface);
   background: none;
@@ -2931,14 +2945,14 @@ input[type=number] {
   text-align: start;
 }
 .nmx-menu-button__item-icon {
-  font-size: var(--nmx-font-size-xl);
+  font-size: var(--nmx-font-size-md);
 }
 .nmx-menu-button__item:hover, .nmx-menu-button__item--active {
   background: var(--nmx-color-surface-high);
 }
 .nmx-menu-button__divider {
   border-top: 1px solid var(--nmx-color-surface-low);
-  margin: var(--nmx-spacing-sm) 0;
+  margin: var(--nmx-spacing-xs) 0;
 }
 :root {
   --nmx-accent-color-blue: #378ADD;
@@ -2998,6 +3012,7 @@ input[type=number] {
   --nmx-icon-app-notification-center: url("/icons/app-notification-center.svg");
   --nmx-icon-app-package-center: url("/icons/app-package-center.svg");
   --nmx-icon-app-frontgate: url("/icons/app-frontgate.svg");
+  --nmx-icon-app-beacon: url("/icons/app-beacon.svg");
 }
 :root {
   --nmx-split-panel-min-width: 480px;
@@ -3119,7 +3134,7 @@ input[type=number] {
   --nmx-color-surface-high: #343434; /* Hover state for cards/chips/buttons on dark surfaces */
   --nmx-color-surface-highest: #404040; /*Strong emphasis (active chip, focused tile, key CTA container) */
   --nmx-color-on-surface: #e2e8f0;
-  --nmx-color-on-surface-variant: #4c535c;
+  --nmx-color-on-surface-variant: #6c747c;
   --nmx-color-primary: var(--nmx-color-blue-500);
   --nmx-color-on-primary: #ffffff;
   --nmx-color-scrim: rgba(0, 0, 0, 0.65);
@@ -3128,7 +3143,7 @@ input[type=number] {
   --nmx-color-trace: var(--nmx-color-slate-400);
   --nmx-color-debug: var(--nmx-color-violet-500);
   --nmx-color-info: var(--nmx-color-blue-500);
-  --nmx-color-success: var(--nmx-color-green-500);
+  --nmx-color-success: var(--nmx-color-green-600);
   --nmx-color-warning: var(--nmx-color-amber-500);
   --nmx-color-error: var(--nmx-color-red-500);
   --nmx-color-fatal: var(--nmx-color-rose-600);
