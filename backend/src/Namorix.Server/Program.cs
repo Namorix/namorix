@@ -4,11 +4,13 @@ using Namorix.Core.Config;
 using Namorix.Core.Constants;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Namorix.Core.Extensions;
 using Namorix.Core.Helpers;
 using Namorix.Core.Hubs;
 using Namorix.Core.Infrastructure;
+using Namorix.Core.IO;
 using Namorix.Server.Config;
 using Namorix.Server.Extensions;
 using Namorix.Server.Hubs;
@@ -22,6 +24,13 @@ using Yarp.ReverseProxy.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 var backendConfig = builder.Configuration.GetSection("Backend").Get<BackendConfig>() ?? new BackendConfig();
+var dataBasePath = builder.Configuration.GetValue<string>("DataBasePath") ?? "data";
+var dbPath = Path.Combine(dataBasePath, "namorix.db");
+
+if (backendConfig.HttpsPort > 0 && string.IsNullOrEmpty(backendConfig.SslCertPath))
+{
+    SelfSignedCertificateProvider.Ensure(ref backendConfig, new DataDirectory(dataBasePath));
+}
 
 builder.Services.Configure<AppConfig>(builder.Configuration);
 builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("Jwt"));
@@ -48,7 +57,7 @@ builder.WebHost.ConfigureKestrel(options =>
 });
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlite($"Data Source={dbPath}"));
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<UserSettingsService>();
@@ -99,19 +108,20 @@ var appConfig = app.Services.GetRequiredService<IOptions<AppConfig>>().Value;
 var configOrigins = appConfig.AllowedOrigins
     .Split(",", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
-app.UseNamorixCore<MainHub>(core =>
+// Common middleware cho ALL ports
+app.UseApiErrorHandling();
+app.UseSecurityHeaders();
+
+// API port (backendConfig.Port = 5001): full pipeline
+app.UseWhen(ctx => ctx.Connection.LocalPort == backendConfig.Port, api =>
 {
-    core.UseCors(policy =>
+    api.UseCors(policy =>
     {
         policy.SetIsOriginAllowed(origin =>
             {
                 if (!memoryCache.TryGetValue(SettingKeys.AllowedOrigins, out string? value)
                     || string.IsNullOrEmpty(value))
                 {
-                    // Intentionally allow all origins when AllowedOrigins is not configured.
-                    // The server is assumed to be running behind a trusted reverse proxy
-                    // that handles origin filtering — admins only need to configure
-                    // TrustedProxies, not AllowedOrigins.
                     return true;
                 }
 
@@ -126,15 +136,51 @@ app.UseNamorixCore<MainHub>(core =>
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
-    
+
     app.UseAuth();
     app.UseOAuth2();
     app.UseTrustedProxy();
-    app.UseMiddleware<ForceSslMiddleware>();
-}, endpoints =>
-{
-    endpoints.MapReverseProxy();
+
+    api.UseNotFoundHandler();
+    api.UseCsrfProtection();
+    api.UseRouting();
+    api.UseRateLimiter();
+    api.UseEndpoints(endpoints =>
+    {
+        endpoints.MapControllers();
+        endpoints.MapHub<MainHub>(SignalRPath.HubMain);
+        endpoints.MapReverseProxy();
+    });
 });
+
+// Proxy ports (HttpPort, HttpsPort): ForceSsl + YARP only
+var proxyPorts = new[] { backendConfig.HttpPort, backendConfig.HttpsPort }
+    .Where(p => p > 0)
+    .ToArray();
+
+if (proxyPorts.Length > 0)
+{
+    app.UseWhen(ctx => proxyPorts.Contains(ctx.Connection.LocalPort), proxy =>
+    {
+        var pathPublic = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "frontend", "public");
+        
+        proxy.UseMiddleware<ForceSslMiddleware>();
+        proxy.UseStaticFiles(new StaticFileOptions
+        {
+            FileProvider = new PhysicalFileProvider(pathPublic)
+        });
+        
+        proxy.UseRouting();
+        proxy.UseEndpoints(endpoints =>
+        {
+            endpoints.MapReverseProxy();
+            endpoints.MapFallbackToFile("frontgate.html", new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(pathPublic)
+            });
+        });
+    });
+}
 
 app.MapGrpcService<AddonChannelService>();
 

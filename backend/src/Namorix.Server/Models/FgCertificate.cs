@@ -9,6 +9,8 @@ public enum CertificateType
     Ecdsa
 }
 
+public enum FgCertificateStatus { Active, Pending, Error }
+
 public class FgCertificate
 {
     [Key]
@@ -20,6 +22,8 @@ public class FgCertificate
     
     public string PrivateKeyEncrypted { get; init; } = string.Empty;
     public string CertificateChain { get; init; } = string.Empty;
+    
+    public FgCertificateStatus Status { get; init; } = FgCertificateStatus.Active;
     
     public DateTime ExpiresAt { get; init; }
     public bool AutoRenew { get; init; } = true;

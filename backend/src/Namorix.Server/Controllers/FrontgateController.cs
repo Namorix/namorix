@@ -16,6 +16,7 @@ namespace Namorix.Server.Controllers;
 public class FrontgateController(AppDbContext db) : ControllerBase
 {
     private const string RuleNotFound = "RULE_NOT_FOUND";
+    private const string CertificateNotFound = "CERTIFICATE_NOT_FOUND";
     private const string DuplicateSourceError = "DUPLICATE_SOURCE";
     
     [HttpGet("reverse-proxy")]
@@ -160,15 +161,28 @@ public class FrontgateController(AppDbContext db) : ControllerBase
         var certs = await db.FgCertificates
             .OrderByDescending(c => c.CreatedAt)
             .Select(c => new {
-                c.Id,
-                c.Domain,
-                c.Issuer,
-                type = c.Type.ToString(),
+                c.Id, c.Domain, c.Issuer,
+                type = c.Type,
+                status = c.Status,
+                isInUse = c.ReverseProxyRules.Any(),
                 expiresAt = c.ExpiresAt,
             })
             .ToListAsync();
         return Ok(ApiResponse.Ok(certs));
     }
+    
+    [HttpDelete("certificates/{id}")]
+    public async Task<IActionResult> DeleteCertificate(string id)
+    {
+        var cert = await db.FgCertificates.FindAsync(id);
+        if (cert == null)
+            return NotFound(ApiResponse.Fail(CertificateNotFound));
+    
+        db.FgCertificates.Remove(cert);  // FK SetNull → rules apply, certId is cleared instead of deleting the related records
+        await db.SaveChangesAsync();
+        return Ok(ApiResponse.Ok());
+    }
+
 }
 
 public record CreateRuleRequest(

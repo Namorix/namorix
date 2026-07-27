@@ -1,15 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using Namorix.Core.Config;
 using Namorix.Core.Models;
 using Namorix.Server.Models;
 
 namespace Namorix.Server.Persistence;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options, IOptions<AppConfig>? config) : DbContext(options)
+public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
-    private readonly AppConfig? _config = config?.Value;
-    
+
     public DbSet<User> Users { get; set; }
     public DbSet<UserSetting> UserSettings { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
@@ -30,14 +27,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IOptions<AppCo
     public DbSet<FgCertificate> FgCertificates { get; set; }
     public DbSet<FgAccessPolicy> FgAccessPolicies { get; set; }
     public DbSet<FgReverseProxyLocation> FgReverseProxyLocations { get; set; }
-    
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        if (!optionsBuilder.IsConfigured && _config != null)
-        {
-            optionsBuilder.UseSqlite(_config.ConnectionString);
-        }
-    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -100,6 +89,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IOptions<AppCo
         
         modelBuilder.Entity<FgCertificate>()
             .Property(c => c.Type)
+            .HasConversion<string>()
+            .HasMaxLength(20);
+        
+        modelBuilder.Entity<FgCertificate>()
+            .Property(c => c.Status)
             .HasConversion<string>()
             .HasMaxLength(20);
         
