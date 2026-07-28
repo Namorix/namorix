@@ -73,7 +73,7 @@ const GROUP_TYPES: Record<
 
 export const LogViewer: React.FC = () => {
   const { t } = useTranslation()
-  const { timestamp } = useDateTimeFormat()
+  const { dateTime } = useDateTimeFormat()
   const { pageSize, setPageSize, options: pageSizeOptions } = usePageSize()
   const [entries, setEntries] = useState<LogEntry[]>([])
   const [total, setTotal] = useState(0)
@@ -171,8 +171,8 @@ export const LogViewer: React.FC = () => {
       enableUserSelectCell: true,
     },
     {
-      header: t("addon.logViewer.fields.timestamp"),
-      renderCell: (row) => timestamp(row.timestamp),
+      header: t("addon.logViewer.fields.dateTime"),
+      renderCell: (row) => dateTime(row.timestamp),
       grow: 1,
       disableEllipsisCell: true,
       hideBelow: "lg",
@@ -266,7 +266,7 @@ export const LogViewer: React.FC = () => {
 
       <NmxAlertDialog
         open={!!selectedLog}
-        title={timestamp(selectedLog?.timestamp ?? "")}
+        title={dateTime(selectedLog?.timestamp ?? "")}
         onClose={() => setSelectedLog(null)}
         size="lg"
       >

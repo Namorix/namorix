@@ -34,7 +34,7 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
   live,
 }) => {
   const { t } = useTranslation()
-  const { timestamp } = useDateTimeFormat()
+  const { dateTime } = useDateTimeFormat()
   const { pageSize, setPageSize, options: pageSizeOptions } = usePageSize()
   const [logs, setLogs] = useState<TrafficLog[]>([])
   const [page, setPage] = useState(1)
@@ -142,8 +142,8 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
       enableUserSelectCell: true,
     },
     {
-      header: t("addon.networkTraffic.logs.fields.timestamp"),
-      renderCell: (row) => timestamp(row.timestamp),
+      header: t("addon.networkTraffic.logs.fields.dateTime"),
+      renderCell: (row) => dateTime(row.timestamp),
       grow: 2,
       disableEllipsisCell: true,
       hideBelow: "lg",
@@ -182,7 +182,7 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
       />
       <NmxAlertDialog
         open={!!selectedLog}
-        title={timestamp(selectedLog?.timestamp ?? "")}
+        title={dateTime(selectedLog?.timestamp ?? "")}
         onClose={() => setSelectedLog(null)}
         size="md"
       >

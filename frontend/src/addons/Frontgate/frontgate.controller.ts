@@ -24,6 +24,7 @@ export interface ReverseProxyRule {
   destinationPort: number
   access: ReverseProxyRuleAccess
   status: ReverseProxyRuleStatus
+  createdAt: string
   certificateId?: string
   accessPolicyId?: string
   webSocketsSupport: boolean
@@ -74,14 +75,16 @@ export interface CreateReverseProxyRulePayload {
 }
 
 export interface CreateLetsEncryptCertPayload {
-  domain: string
+  domains: string[]
   keyType: FrontgateCertificateKeyType
+  autoRenew: boolean
 }
 
 export interface CreateLetsEncryptDnsCertPayload {
-  domain: string
+  domains: string[]
   keyType: FrontgateCertificateKeyType
   dnsProviderId: string
+  autoRenew: boolean
 }
 
 export interface CreateCustomCertPayload {
@@ -93,10 +96,11 @@ export interface CreateCustomCertPayload {
 
 export interface CertificateItem {
   id: string
-  domain: string
+  domains: string[]
   issuer: string
   type: FrontgateCertificateKeyType
   source: string
+  createdAt: string
   expiresAt: string
   status: ReverseCertificateStatus
   isInUse?: boolean
@@ -173,6 +177,15 @@ async function listAllCertificates(): Promise<CertificateResponse> {
   return data.data
 }
 
+async function listUnusedDomains(): Promise<string[]> {
+  const data = await nmxHttp
+    .url(getApiBaseUrl() + ApiFrontgateRoutes.certificateUnusedDomains)
+    .get()
+    .json<string[]>()
+  if (!data.success) throw ApiError.fromResponse(data)
+  return data.data
+}
+
 async function deleteCertificate(id: string): Promise<void> {
   const data = await nmxHttp
     .url(getApiBaseUrl() + ApiFrontgateRoutes.certificateById(id))
@@ -230,6 +243,7 @@ export const frontgateController = {
   deleteRule,
   listCertificates,
   listAllCertificates,
+  listUnusedDomains,
   deleteCertificate,
   createLetsEncryptCert,
   createLetsEncryptDnsCert,

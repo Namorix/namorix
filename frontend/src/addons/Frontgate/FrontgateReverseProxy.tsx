@@ -89,7 +89,7 @@ const CERT_REQUEST_NEW = "__request_new__"
 
 export const FrontgateReverseProxy: React.FC = () => {
   const { t } = useTranslation()
-  const { dateOnly } = useDateTimeFormat()
+  const { dateOnly, dateTime } = useDateTimeFormat()
   const { pageSize, setPageSize, options: pageSizeOptions } = usePageSize()
   const [rules, setRules] = useState<ReverseProxyRule[]>([])
   const [page, setPage] = useState(1)
@@ -192,13 +192,19 @@ export const FrontgateReverseProxy: React.FC = () => {
           },
           ...certs.items.map((c) => ({
             value: c.id,
-            label: `${c.domain}`,
+            label: (
+              <div className="nmx-addon-frontgate__select-domain-list">
+                {c.domains?.map((d) => (
+                  <span>{d}</span>
+                ))}
+              </div>
+            ),
             description: t(
               "addon.frontgate.pages.reverseProxy.certificateOptions.existingDescription",
               { issuer: c.issuer, expires: dateOnly(c.expiresAt) },
             ),
           })),
-        ])
+        ] as NmxSelectData[])
       })
       .catch((err) => nmxToast.error(err))
   }, [dateOnly, t])
@@ -447,7 +453,26 @@ export const FrontgateReverseProxy: React.FC = () => {
   const columns: NmxDataTableColumn<ReverseProxyRule>[] = [
     {
       header: t("addon.frontgate.pages.reverseProxy.fields.source"),
-      renderCell: (row) => row.source,
+      renderCell: (row) => (
+        <div className="nmx-addon-frontgate__domain-wrap">
+          <div className="nmx-addon-frontgate__domain-list">
+            <a
+              href={`https://${row.source}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="nmx-addon-frontgate__domain-item"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {row.source}
+            </a>
+          </div>
+          <div className="nmx-addon-frontgate__created">
+            {t("addon.frontgate.pages.reverseProxy.fields.createdAt", {
+              time: dateTime(row.createdAt),
+            })}
+          </div>
+        </div>
+      ),
       grow: 3,
       enableUserSelectCell: true,
     },
@@ -505,7 +530,7 @@ export const FrontgateReverseProxy: React.FC = () => {
       disableEllipsisCell: true,
     },
     {
-      header: t("addon.frontgate.pages.reverseProxy.fields.delete"),
+      header: "",
       renderCell: (row) => (
         <NmxButton
           variant="ghost"
@@ -651,7 +676,7 @@ export const FrontgateReverseProxy: React.FC = () => {
             : "addon.frontgate.pages.reverseProxy.actions.addProxy",
         )}
         onClose={() => handleDialogClose()}
-        size="md"
+        size="lg"
         noSpacingBody={true}
         noBodyScrollbar={true}
         onConfirm={handleConfirm}

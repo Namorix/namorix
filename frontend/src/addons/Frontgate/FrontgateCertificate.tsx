@@ -21,6 +21,8 @@ import {
   NmxSelect,
   type NmxSelectData,
   type NmxSemanticColor,
+  NmxTagInput,
+  NmxToggle,
 } from "@namorix/ui"
 import { useTranslation } from "react-i18next"
 import {
@@ -84,14 +86,22 @@ const renderStatus = (
   )
 }
 
-function renderExpiry(expiresAt: string, dateOnly: (d: string) => string) {
+function renderExpiry(
+  expiresAt: string,
+  status: string | undefined,
+  dateOnly: (d: string) => string,
+) {
+  const hidden =
+    !expiresAt ||
+    expiresAt.startsWith("0001") ||
+    (status && status !== "active")
   return (
     <NmxBadge
-      semantic={getExpirySemantic(expiresAt)}
+      semantic={hidden ? "trace" : getExpirySemantic(expiresAt)}
       size="sm"
       bgEnabled={false}
     >
-      {dateOnly(expiresAt)}
+      {hidden ? "—" : dateOnly(expiresAt)}
     </NmxBadge>
   )
 }
@@ -106,7 +116,7 @@ function renderSource(source: string) {
 
 export const FrontgateCertificate: React.FC = () => {
   const { t } = useTranslation()
-  const { dateOnly } = useDateTimeFormat()
+  const { dateOnly, dateTime } = useDateTimeFormat()
   const [certs, setCerts] = useState<CertificateItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<unknown>()
@@ -119,12 +129,14 @@ export const FrontgateCertificate: React.FC = () => {
   const [deleteSubmitting, setDeleteSubmitting] = useState(false)
   const [addDialogType, setAddDialogType] =
     useState<FrontgateCertificateType | null>(null)
+  const [domainSuggestions, setDomainSuggestions] = useState<string[]>([])
 
   const [certName, setCertName] = useState("")
-  const [certDomain, setCertDomain] = useState("")
+  const [certDomains, setCertDomains] = useState<string[]>([])
   const [certType, setCertType] = useState<FrontgateCertificateKeyType>("ecdsa")
   const [dnsProviders, setDnsProviders] = useState<string[]>([])
   const [dnsProvider, setDnsProvider] = useState("")
+  const [certAutoRenew, setCertAutoRenew] = useState(false)
   const [certKey, setCertKey] = useState("")
   const [certBody, setCertBody] = useState("")
   const [certIntermediate, setCertIntermediate] = useState("")
@@ -152,6 +164,13 @@ export const FrontgateCertificate: React.FC = () => {
     frontgateController
       .listDnsProviders()
       .then(setDnsProviders)
+      .catch((err) => nmxToast.error(err))
+  }, [])
+
+  useEffect(() => {
+    frontgateController
+      .listUnusedDomains()
+      .then(setDomainSuggestions)
       .catch((err) => nmxToast.error(err))
   }, [])
 
@@ -212,8 +231,30 @@ export const FrontgateCertificate: React.FC = () => {
 
   const columns: NmxDataTableColumn<CertificateItem>[] = [
     {
-      header: t("addon.frontgate.pages.certificate.fields.domain"),
-      renderCell: (row) => row.domain,
+      header: t("addon.frontgate.pages.certificate.fields.domains"),
+      renderCell: (row) => (
+        <div className="nmx-addon-frontgate__domain-wrap">
+          <div className="nmx-addon-frontgate__domain-list">
+            {row.domains?.map((d) => (
+              <a
+                key={d}
+                href={`https://${d}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="nmx-addon-frontgate__domain-item"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {d}
+              </a>
+            ))}
+          </div>
+          <span className="nmx-addon-frontgate__created">
+            {t("addon.frontgate.pages.certificate.fields.createdAt", {
+              time: dateTime(row.createdAt),
+            })}
+          </span>
+        </div>
+      ),
       grow: 3,
     },
     {
@@ -241,14 +282,14 @@ export const FrontgateCertificate: React.FC = () => {
     },
     {
       header: t("addon.frontgate.pages.certificate.fields.expires"),
-      renderCell: (row) => renderExpiry(row.expiresAt, dateOnly),
+      renderCell: (row) => renderExpiry(row.expiresAt, row.status, dateOnly),
       grow: 1,
       alignHeader: "center",
       alignCell: "center",
       disableEllipsisCell: true,
     },
     {
-      header: t("addon.frontgate.pages.certificate.fields.action"),
+      header: "",
       renderCell: (row) => (
         <NmxMenuButton
           options={actionOptions}
@@ -327,9 +368,10 @@ export const FrontgateCertificate: React.FC = () => {
             setAddDialogType(value)
             setAddSubmitting(false)
             setCertName("")
-            setCertDomain("")
+            setCertDomains([])
             setCertType("ecdsa")
             setDnsProvider("")
+            setCertAutoRenew(false)
             setCertKey("")
             setCertBody("")
             setCertIntermediate("")
@@ -350,6 +392,7 @@ export const FrontgateCertificate: React.FC = () => {
       <NmxDataTable
         columns={columns}
         rows={certs}
+        rowCellSpacing="xs"
         clickableRows={true}
         onRowClick={(row) => setSelectedCert(row)}
         fallbackConditions={fallbackConditions}
@@ -380,18 +423,36 @@ export const FrontgateCertificate: React.FC = () => {
         open={!!selectedCert}
         title={t("addon.frontgate.pages.certificate.titleInformation")}
         onClose={() => setSelectedCert(null)}
-        size="sm"
+        size="md"
       >
         {selectedCert && (
           <NmxMetaList>
             <NmxMetaItem
-              label={t("addon.frontgate.pages.certificate.fields.domain")}
-              value={selectedCert.domain}
+              label={t("addon.frontgate.pages.certificate.fields.domains")}
               alignValue="end"
-            />
+            >
+              <div className="nmx-addon-frontgate__domain-list">
+                {selectedCert.domains?.map((d) => (
+                  <a
+                    key={d}
+                    href={`https://${d}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="nmx-addon-frontgate__domain-item"
+                  >
+                    {d}
+                  </a>
+                ))}
+              </div>
+            </NmxMetaItem>
             <NmxMetaItem
               label={t("addon.frontgate.pages.certificate.fields.issuer")}
               value={selectedCert.issuer}
+              alignValue="end"
+            />
+            <NmxMetaItem
+              label={t("addon.frontgate.pages.certificate.fields.createdAt")}
+              value={dateOnly(selectedCert.createdAt)}
               alignValue="end"
             />
             <NmxMetaItem
@@ -416,7 +477,11 @@ export const FrontgateCertificate: React.FC = () => {
               label={t("addon.frontgate.pages.certificate.fields.expires")}
               alignValue="end"
             >
-              {renderExpiry(selectedCert.expiresAt, dateOnly)}
+              {renderExpiry(
+                selectedCert.expiresAt,
+                selectedCert.status,
+                dateOnly,
+              )}
             </NmxMetaItem>
           </NmxMetaList>
         )}
@@ -434,7 +499,7 @@ export const FrontgateCertificate: React.FC = () => {
       >
         <p>
           {t("addon.frontgate.pages.certificate.feedback.deleteConfirm", {
-            domain: deletingCert?.domain,
+            domain: deletingCert?.domains?.[0],
           })}
         </p>
       </NmxAlertDialog>
@@ -451,13 +516,17 @@ export const FrontgateCertificate: React.FC = () => {
           "addon.frontgate.pages.certificate.dialogs.letsEncryptHttp.test",
         )}
         loading={addSubmitting}
-        confirmDisabled={!certDomain.trim()}
-        extraActionDisabled={!certDomain.trim()}
+        confirmDisabled={certDomains.every((d) => !d.trim())}
+        extraActionDisabled={certDomains.every((d) => !d.trim())}
         onClose={() => setAddDialogType(null)}
         onConfirm={() => {
           setAddSubmitting(true)
           frontgateController
-            .createLetsEncryptCert({ domain: certDomain, keyType: certType })
+            .createLetsEncryptCert({
+              domains: certDomains.map((d) => d.trim()).filter(Boolean),
+              keyType: certType,
+              autoRenew: certAutoRenew,
+            })
             .then(() => {
               setAddDialogType(null)
               fetchCerts(page, pageSize)
@@ -488,12 +557,13 @@ export const FrontgateCertificate: React.FC = () => {
             )}
           />
           <NmxFormField
-            label={t("addon.frontgate.pages.certificate.fields.domain")}
+            label={t("addon.frontgate.pages.certificate.fields.domains")}
             required
           >
-            <NmxFormInput
-              value={certDomain}
-              onValueChange={setCertDomain}
+            <NmxTagInput
+              value={certDomains}
+              onChange={setCertDomains}
+              suggestions={domainSuggestions}
               placeholder={t(
                 "addon.frontgate.pages.certificate.dialogs.letsEncryptHttp.domainPlaceholder",
               )}
@@ -507,6 +577,17 @@ export const FrontgateCertificate: React.FC = () => {
               value={certType}
               options={certTypeOptions}
               onChange={setCertType}
+            />
+          </NmxFormField>
+          <NmxFormField
+            label={t(
+              "addon.frontgate.pages.certificate.dialogs.letsEncryptHttp.autoRenew",
+            )}
+            inline
+          >
+            <NmxToggle
+              checked={certAutoRenew}
+              onCheckedChanged={setCertAutoRenew}
             />
           </NmxFormField>
         </NmxForm>
@@ -524,16 +605,17 @@ export const FrontgateCertificate: React.FC = () => {
           "addon.frontgate.pages.certificate.dialogs.letsEncryptDns.test",
         )}
         loading={addSubmitting}
-        confirmDisabled={!certDomain.trim()}
-        extraActionDisabled={!certDomain.trim()}
+        confirmDisabled={certDomains.every((d) => !d.trim())}
+        extraActionDisabled={certDomains.every((d) => !d.trim())}
         onClose={() => setAddDialogType(null)}
         onConfirm={() => {
           setAddSubmitting(true)
           frontgateController
             .createLetsEncryptDnsCert({
-              domain: certDomain,
+              domains: certDomains.map((d) => d.trim()).filter(Boolean),
               keyType: certType,
               dnsProviderId: dnsProvider,
+              autoRenew: certAutoRenew,
             })
             .then(() => {
               setAddDialogType(null)
@@ -564,12 +646,13 @@ export const FrontgateCertificate: React.FC = () => {
             )}
           />
           <NmxFormField
-            label={t("addon.frontgate.pages.certificate.fields.domain")}
+            label={t("addon.frontgate.pages.certificate.fields.domains")}
             required
           >
-            <NmxFormInput
-              value={certDomain}
-              onValueChange={setCertDomain}
+            <NmxTagInput
+              value={certDomains}
+              onChange={setCertDomains}
+              suggestions={domainSuggestions}
               placeholder={t(
                 "addon.frontgate.pages.certificate.dialogs.letsEncryptDns.domainPlaceholder",
               )}
@@ -598,6 +681,17 @@ export const FrontgateCertificate: React.FC = () => {
               placeholder={t(
                 "addon.frontgate.pages.certificate.dialogs.letsEncryptDns.dnsProviderPlaceholder",
               )}
+            />
+          </NmxFormField>
+          <NmxFormField
+            label={t(
+              "addon.frontgate.pages.certificate.dialogs.letsEncryptDns.autoRenew",
+            )}
+            inline
+          >
+            <NmxToggle
+              checked={certAutoRenew}
+              onCheckedChanged={setCertAutoRenew}
             />
           </NmxFormField>
         </NmxForm>
