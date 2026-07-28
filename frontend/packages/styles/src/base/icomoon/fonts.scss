@@ -16,6 +16,11 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.ic-file-link {
+  &:before {
+    content: $ic-file-link; 
+  }
+}
 .ic-menu-vertical {
   &:before {
     content: $ic-menu-vertical; 

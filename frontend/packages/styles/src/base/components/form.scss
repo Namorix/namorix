@@ -17,6 +17,9 @@
   font-family: var(--nmx-font-sans), serif;
   letter-spacing: var(--nmx-letter-spacing-normal);
   color: var(--nmx-color-on-surface);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .nmx-form-field--required {

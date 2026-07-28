@@ -1,0 +1,59 @@
+.nmx-file-input {
+  &__native {
+    display: none;
+  }
+
+  &__area {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--nmx-spacing-md);
+    padding: var(--nmx-spacing-md);
+    border-radius: var(--nmx-radius-md);
+    background: var(--nmx-color-surface-lowest);
+    cursor: pointer;
+  }
+
+  &__area:hover:not(:has(&__clear:hover)) {
+    background: var(--nmx-color-surface-mid);
+  }
+
+  &__info {
+    display: flex;
+    align-items: center;
+    gap: var(--nmx-spacing-md);
+    min-width: 0; // allow shrink
+    font-size: var(--nmx-font-size-sm);
+  }
+
+  &__filename {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__size {
+    color: var(--nmx-color-on-surface-variant);
+    white-space: nowrap;
+  }
+
+  &__clear {
+    padding: var(--nmx-spacing-xs);
+  }
+
+  &__dropzone {
+    display: flex;
+    align-items: center;
+    gap: var(--nmx-spacing-2);
+    background: none;
+    border: none;
+    color: var(--nmx-color-on-surface-lower);
+    cursor: pointer;
+    width: 100%;
+    font-size: var(--nmx-font-size-sm);
+
+    &:hover {
+      color: var(--nmx-color-on-surface);
+    }
+  }
+}
