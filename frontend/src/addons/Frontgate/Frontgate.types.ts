@@ -4,3 +4,5 @@ export const FrontgateErrorCodes = {
     "addon.frontgate.pages.reverseProxy.errors.certificateNotFound",
   DUPLICATE_SOURCE: "addon.frontgate.pages.reverseProxy.errors.duplicateSource",
 }
+
+export type FrontgateCertificateKeyType = "rsa" | "ecdsa"

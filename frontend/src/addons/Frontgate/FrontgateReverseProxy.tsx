@@ -201,7 +201,7 @@ export const FrontgateReverseProxy: React.FC = () => {
         ])
       })
       .catch((err) => nmxToast.error(err))
-  }, [t])
+  }, [dateOnly, t])
 
   const resetForm = useCallback(() => {
     setActiveTab("general")
@@ -828,7 +828,7 @@ export const FrontgateReverseProxy: React.FC = () => {
                       </NmxFormField>
                     </NmxFormRow>
                     <NmxFormRow className="nmx-addon-frontgate__location-editor__card-row">
-                      <NmxFormField label="Scheme" rowFlex="0 0 100px">
+                      <NmxFormField label="Scheme" rowFlex="0 0 85px">
                         <NmxSelect
                           value={loc.scheme}
                           options={schemeOptions}
@@ -844,7 +844,7 @@ export const FrontgateReverseProxy: React.FC = () => {
                           placeholder="192.168.1.20"
                         />
                       </NmxFormField>
-                      <NmxFormField label="Port" rowFlex="0 0 100px">
+                      <NmxFormField label="Port" rowFlex="0 0 80px">
                         <NmxFormInput
                           value={String(loc.forwardPort)}
                           onValueChange={(v) =>

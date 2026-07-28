@@ -6,13 +6,20 @@ import {
   NmxDataTable,
   type NmxDataTableColumn,
   type NmxDataTableFallback,
+  NmxFileInput,
+  NmxForm,
+  NmxFormField,
+  NmxFormInput,
   NmxIconFont,
   NmxIconFontSymbol,
+  NmxInlineAlert,
   NmxMenuButton,
   type NmxMenuButtonOption,
   NmxMetaItem,
   NmxMetaList,
   NmxPagination,
+  NmxSelect,
+  type NmxSelectData,
   type NmxSemanticColor,
 } from "@namorix/ui"
 import { useTranslation } from "react-i18next"
@@ -27,7 +34,10 @@ import {
   usePageSize,
 } from "@namorix/core"
 import type { TFunction } from "i18next"
-import { FrontgateErrorCodes } from "./Frontgate.types"
+import {
+  type FrontgateCertificateKeyType,
+  FrontgateErrorCodes,
+} from "./Frontgate.types"
 
 type FrontgateCertificateType = "letsEncryptHttp" | "letsEncryptDns" | "custom"
 type FrontgateActionMenuType = "renew" | "retry" | "download" | "delete"
@@ -39,7 +49,7 @@ function getExpirySemantic(expiresAt: string): NmxSemanticColor {
   return days < 0 ? "error" : days < 30 ? "warning" : "success"
 }
 
-function renderType(type: string) {
+function renderType(type: FrontgateCertificateKeyType) {
   return (
     <NmxBadge semantic={type === "ecdsa" ? "info" : "debug"} size="sm">
       {type}
@@ -107,6 +117,18 @@ export const FrontgateCertificate: React.FC = () => {
   const [selectedCert, setSelectedCert] = useState<CertificateItem | null>(null)
   const [deletingCert, setDeletingCert] = useState<CertificateItem | null>(null)
   const [deleteSubmitting, setDeleteSubmitting] = useState(false)
+  const [addDialogType, setAddDialogType] =
+    useState<FrontgateCertificateType | null>(null)
+
+  const [certName, setCertName] = useState("")
+  const [certDomain, setCertDomain] = useState("")
+  const [certType, setCertType] = useState<FrontgateCertificateKeyType>("ecdsa")
+  const [dnsProviders, setDnsProviders] = useState<string[]>([])
+  const [dnsProvider, setDnsProvider] = useState("")
+  const [certKey, setCertKey] = useState("")
+  const [certBody, setCertBody] = useState("")
+  const [certIntermediate, setCertIntermediate] = useState("")
+  const [addSubmitting, setAddSubmitting] = useState(false)
 
   const fetchCerts = useCallback((pg: number, sz: number) => {
     setLoading(true)
@@ -125,6 +147,13 @@ export const FrontgateCertificate: React.FC = () => {
     const timeout = setTimeout(() => fetchCerts(page, pageSize), 0)
     return () => clearTimeout(timeout)
   }, [fetchCerts, page, pageSize])
+
+  useEffect(() => {
+    frontgateController
+      .listDnsProviders()
+      .then(setDnsProviders)
+      .catch((err) => nmxToast.error(err))
+  }, [])
 
   const handleAction = useCallback(
     (value: FrontgateActionMenuType, row: CertificateItem) => {
@@ -265,6 +294,24 @@ export const FrontgateCertificate: React.FC = () => {
     },
   ]
 
+  const certTypeOptions: NmxSelectData<FrontgateCertificateKeyType>[] = [
+    {
+      value: "ecdsa",
+      label: t("addon.frontgate.pages.certificate.fields.keyTypes.ecdsa"),
+    },
+    {
+      value: "rsa",
+      label: t("addon.frontgate.pages.certificate.fields.keyTypes.rsa"),
+    },
+  ]
+
+  const dnsProviderOptions: NmxSelectData<string>[] = dnsProviders.map(
+    (id) => ({
+      value: id,
+      label: t(`addon.frontgate.pages.certificate.dnsProviders.${id}`),
+    }),
+  )
+
   const fallbackConditions: NmxDataTableFallback[] = [
     { state: "loading", condition: loading },
     { state: "error", condition: !!error },
@@ -276,7 +323,17 @@ export const FrontgateCertificate: React.FC = () => {
       <div className="nmx-addon-frontgate__actions">
         <NmxMenuButton
           options={certOptions}
-          onSelect={() => {}}
+          onSelect={(value) => {
+            setAddDialogType(value)
+            setAddSubmitting(false)
+            setCertName("")
+            setCertDomain("")
+            setCertType("ecdsa")
+            setDnsProvider("")
+            setCertKey("")
+            setCertBody("")
+            setCertIntermediate("")
+          }}
           semantic="success"
         >
           <NmxIconFont symbol={NmxIconFontSymbol.ADD} />
@@ -380,6 +437,259 @@ export const FrontgateCertificate: React.FC = () => {
             domain: deletingCert?.domain,
           })}
         </p>
+      </NmxAlertDialog>
+
+      <NmxAlertDialog
+        open={addDialogType === "letsEncryptHttp"}
+        title={t(
+          "addon.frontgate.pages.certificate.dialogs.letsEncryptHttp.title",
+        )}
+        confirmLabel={t(
+          "addon.frontgate.pages.certificate.dialogs.letsEncryptHttp.confirm",
+        )}
+        extraActionLabel={t(
+          "addon.frontgate.pages.certificate.dialogs.letsEncryptHttp.test",
+        )}
+        loading={addSubmitting}
+        confirmDisabled={!certDomain.trim()}
+        extraActionDisabled={!certDomain.trim()}
+        onClose={() => setAddDialogType(null)}
+        onConfirm={() => {
+          setAddSubmitting(true)
+          frontgateController
+            .createLetsEncryptCert({ domain: certDomain, keyType: certType })
+            .then(() => {
+              setAddDialogType(null)
+              fetchCerts(page, pageSize)
+              nmxToast.success(
+                t(
+                  "addon.frontgate.pages.certificate.dialogs.letsEncryptHttp.success",
+                ),
+              )
+            })
+            .catch((err) => {
+              nmxToast.error(
+                formatCustomError(t, err, FrontgateErrorCodes),
+                t(
+                  "addon.frontgate.pages.certificate.dialogs.letsEncryptHttp.error",
+                ),
+              )
+            })
+            .finally(() => setAddSubmitting(false))
+        }}
+        size="md"
+      >
+        <NmxForm>
+          <NmxInlineAlert
+            semantic="info"
+            shouldRender={true}
+            message={t(
+              "addon.frontgate.pages.certificate.dialogs.letsEncryptHttp.info",
+            )}
+          />
+          <NmxFormField
+            label={t("addon.frontgate.pages.certificate.fields.domain")}
+            required
+          >
+            <NmxFormInput
+              value={certDomain}
+              onValueChange={setCertDomain}
+              placeholder={t(
+                "addon.frontgate.pages.certificate.dialogs.letsEncryptHttp.domainPlaceholder",
+              )}
+            />
+          </NmxFormField>
+          <NmxFormField
+            label={t("addon.frontgate.pages.certificate.fields.keyType")}
+            required
+          >
+            <NmxSelect
+              value={certType}
+              options={certTypeOptions}
+              onChange={setCertType}
+            />
+          </NmxFormField>
+        </NmxForm>
+      </NmxAlertDialog>
+
+      <NmxAlertDialog
+        open={addDialogType === "letsEncryptDns"}
+        title={t(
+          "addon.frontgate.pages.certificate.dialogs.letsEncryptDns.title",
+        )}
+        confirmLabel={t(
+          "addon.frontgate.pages.certificate.dialogs.letsEncryptDns.confirm",
+        )}
+        extraActionLabel={t(
+          "addon.frontgate.pages.certificate.dialogs.letsEncryptDns.test",
+        )}
+        loading={addSubmitting}
+        confirmDisabled={!certDomain.trim()}
+        extraActionDisabled={!certDomain.trim()}
+        onClose={() => setAddDialogType(null)}
+        onConfirm={() => {
+          setAddSubmitting(true)
+          frontgateController
+            .createLetsEncryptDnsCert({
+              domain: certDomain,
+              keyType: certType,
+              dnsProviderId: dnsProvider,
+            })
+            .then(() => {
+              setAddDialogType(null)
+              fetchCerts(page, pageSize)
+              nmxToast.success(
+                t(
+                  "addon.frontgate.pages.certificate.dialogs.letsEncryptDns.success",
+                ),
+              )
+            })
+            .catch((err) => {
+              nmxToast.error(
+                formatCustomError(t, err, FrontgateErrorCodes),
+                t(
+                  "addon.frontgate.pages.certificate.dialogs.letsEncryptDns.error",
+                ),
+              )
+            })
+            .finally(() => setAddSubmitting(false))
+        }}
+        size="md"
+      >
+        <NmxForm>
+          <NmxInlineAlert
+            semantic="info"
+            message={t(
+              "addon.frontgate.pages.certificate.dialogs.letsEncryptDns.info",
+            )}
+          />
+          <NmxFormField
+            label={t("addon.frontgate.pages.certificate.fields.domain")}
+            required
+          >
+            <NmxFormInput
+              value={certDomain}
+              onValueChange={setCertDomain}
+              placeholder={t(
+                "addon.frontgate.pages.certificate.dialogs.letsEncryptDns.domainPlaceholder",
+              )}
+            />
+          </NmxFormField>
+          <NmxFormField
+            label={t("addon.frontgate.pages.certificate.fields.keyType")}
+            required
+          >
+            <NmxSelect
+              value={certType}
+              options={certTypeOptions}
+              onChange={setCertType}
+            />
+          </NmxFormField>
+          <NmxFormField
+            label={t(
+              "addon.frontgate.pages.certificate.dialogs.letsEncryptDns.dnsProvider",
+            )}
+            required
+          >
+            <NmxSelect
+              value={dnsProvider}
+              options={dnsProviderOptions}
+              onChange={setDnsProvider}
+              placeholder={t(
+                "addon.frontgate.pages.certificate.dialogs.letsEncryptDns.dnsProviderPlaceholder",
+              )}
+            />
+          </NmxFormField>
+        </NmxForm>
+      </NmxAlertDialog>
+
+      <NmxAlertDialog
+        open={addDialogType === "custom"}
+        title={t("addon.frontgate.pages.certificate.dialogs.custom.title")}
+        confirmLabel={t(
+          "addon.frontgate.pages.certificate.dialogs.custom.confirm",
+        )}
+        loading={addSubmitting}
+        confirmDisabled={!certKey.trim() || !certBody.trim()}
+        onClose={() => setAddDialogType(null)}
+        onConfirm={() => {
+          setAddSubmitting(true)
+          frontgateController
+            .createCustomCert({
+              name: certName,
+              certificateKey: certKey,
+              certificate: certBody,
+              intermediate: certIntermediate || undefined,
+            })
+            .then(() => {
+              setAddDialogType(null)
+              fetchCerts(page, pageSize)
+              nmxToast.success(
+                t("addon.frontgate.pages.certificate.dialogs.custom.success"),
+              )
+            })
+            .catch((err) => {
+              nmxToast.error(
+                formatCustomError(t, err, FrontgateErrorCodes),
+                t("addon.frontgate.pages.certificate.dialogs.custom.error"),
+              )
+            })
+            .finally(() => setAddSubmitting(false))
+        }}
+        size="md"
+      >
+        <NmxForm>
+          <NmxFormField
+            label={t("addon.frontgate.pages.certificate.dialogs.custom.name")}
+            required
+          >
+            <NmxFormInput
+              value={certName}
+              onValueChange={setCertName}
+              placeholder="e.g. my-domain-cert"
+            />
+          </NmxFormField>
+
+          <NmxFormField
+            label={t(
+              "addon.frontgate.pages.certificate.dialogs.custom.certificateKey",
+            )}
+            required
+          >
+            <NmxFileInput
+              value={certKey}
+              onValueChange={setCertKey}
+              accept=".pem,.key,.txt"
+            />
+          </NmxFormField>
+
+          <NmxFormField
+            label={t(
+              "addon.frontgate.pages.certificate.dialogs.custom.certificate",
+            )}
+            required
+          >
+            <NmxFileInput
+              value={certBody}
+              onValueChange={setCertBody}
+              accept=".pem,.crt,.cert,.txt"
+              placeholder="Select certificate file..."
+            />
+          </NmxFormField>
+
+          <NmxFormField
+            label={t(
+              "addon.frontgate.pages.certificate.dialogs.custom.intermediate",
+            )}
+          >
+            <NmxFileInput
+              value={certIntermediate}
+              onValueChange={setCertIntermediate}
+              accept=".pem,.crt,.cert,.txt"
+              placeholder="Select intermediate certificate (optional)..."
+            />
+          </NmxFormField>
+        </NmxForm>
       </NmxAlertDialog>
     </div>
   )

@@ -4,6 +4,7 @@ import {
   getApiBaseUrl,
   nmxHttp,
 } from "@namorix/core"
+import type { FrontgateCertificateKeyType } from "./Frontgate.types"
 
 export type ReverseProxyRuleAccess =
   | "public"
@@ -72,11 +73,29 @@ export interface CreateReverseProxyRulePayload {
   }[]
 }
 
+export interface CreateLetsEncryptCertPayload {
+  domain: string
+  keyType: FrontgateCertificateKeyType
+}
+
+export interface CreateLetsEncryptDnsCertPayload {
+  domain: string
+  keyType: FrontgateCertificateKeyType
+  dnsProviderId: string
+}
+
+export interface CreateCustomCertPayload {
+  name: string
+  certificateKey: string
+  certificate: string
+  intermediate?: string
+}
+
 export interface CertificateItem {
   id: string
   domain: string
   issuer: string
-  type: string
+  type: FrontgateCertificateKeyType
   source: string
   expiresAt: string
   status: ReverseCertificateStatus
@@ -147,7 +166,7 @@ async function listCertificates(
 
 async function listAllCertificates(): Promise<CertificateResponse> {
   const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiFrontgateRoutes.certificates)
+    .url(getApiBaseUrl() + ApiFrontgateRoutes.certificatesAll)
     .get()
     .json<CertificateResponse>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -162,6 +181,48 @@ async function deleteCertificate(id: string): Promise<void> {
   if (!data.success) throw ApiError.fromResponse(data)
 }
 
+async function createLetsEncryptCert(
+  payload: CreateLetsEncryptCertPayload,
+): Promise<CertificateItem> {
+  const data = await nmxHttp
+    .url(getApiBaseUrl() + ApiFrontgateRoutes.certificatesLetsEncryptHttp)
+    .post(payload)
+    .json<CertificateItem>()
+  if (!data.success) throw ApiError.fromResponse(data)
+  return data.data
+}
+
+async function createLetsEncryptDnsCert(
+  payload: CreateLetsEncryptDnsCertPayload,
+): Promise<CertificateItem> {
+  const data = await nmxHttp
+    .url(getApiBaseUrl() + ApiFrontgateRoutes.certificatesLetsEncryptDns)
+    .post(payload)
+    .json<CertificateItem>()
+  if (!data.success) throw ApiError.fromResponse(data)
+  return data.data
+}
+
+async function createCustomCert(
+  payload: CreateCustomCertPayload,
+): Promise<CertificateItem> {
+  const data = await nmxHttp
+    .url(getApiBaseUrl() + ApiFrontgateRoutes.certificatesCustom)
+    .post(payload)
+    .json<CertificateItem>()
+  if (!data.success) throw ApiError.fromResponse(data)
+  return data.data
+}
+
+async function listDnsProviders(): Promise<string[]> {
+  const data = await nmxHttp
+    .url(getApiBaseUrl() + ApiFrontgateRoutes.dnsProviders)
+    .get()
+    .json<string[]>()
+  if (!data.success) throw ApiError.fromResponse(data)
+  return data.data
+}
+
 export const frontgateController = {
   listRules,
   createRule,
@@ -170,4 +231,8 @@ export const frontgateController = {
   listCertificates,
   listAllCertificates,
   deleteCertificate,
+  createLetsEncryptCert,
+  createLetsEncryptDnsCert,
+  createCustomCert,
+  listDnsProviders,
 }
