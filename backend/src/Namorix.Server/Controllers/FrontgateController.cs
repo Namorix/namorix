@@ -1,5 +1,7 @@
+using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Namorix.Core.IO;
 using Namorix.Core.Middleware;
 using Namorix.Core.Responses;
 using Namorix.Core.Validation;
@@ -13,7 +15,7 @@ namespace Namorix.Server.Controllers;
 [ApiController]
 [RequireAdmin]
 [Route("api/frontgate")]
-public class FrontgateController(AppDbContext db) : ControllerBase
+public class FrontgateController(AppDbContext db, DataDirectory dataDir) : ControllerBase
 {
     private const string RuleNotFound = "RULE_NOT_FOUND";
     private const string CertificateNotFound = "CERTIFICATE_NOT_FOUND";
@@ -157,7 +159,7 @@ public class FrontgateController(AppDbContext db) : ControllerBase
     
     [HttpGet("certificates")]
     public async Task<IActionResult> ListCertificates(
-        [FromQuery] int page = 0, [FromQuery] int size = 20)
+        [FromQuery] int page = 1, [FromQuery] int size = 20)
     {
         var query = db.FgCertificates
             .OrderByDescending(c => c.CreatedAt)
@@ -168,19 +170,30 @@ public class FrontgateController(AppDbContext db) : ControllerBase
                 isInUse = c.ReverseProxyRules.Any(),
                 expiresAt = c.ExpiresAt,
             });
-        
-        if (page <= 0)
-        {
-            var all = await query.ToListAsync();
-            return Ok(ApiResponse.Ok(all));
-        }
-        
+
         var total = await query.CountAsync();
         var items = await query
             .Skip((page - 1) * size)
             .Take(size)
             .ToListAsync();
         return Ok(ApiResponse.Ok(new { items, total }));
+    }
+
+    [HttpGet("certificates/all")]
+    public async Task<IActionResult> GetAllCertificates()
+    {
+        var items = await db.FgCertificates
+            .OrderByDescending(c => c.CreatedAt)
+            .Select(c => new {
+                c.Id, c.Domain, c.Issuer, c.Type,
+                source = c.Source,
+                status = c.Status,
+                isInUse = c.ReverseProxyRules.Any(),
+                expiresAt = c.ExpiresAt,
+            })
+            .ToListAsync();
+
+        return Ok(ApiResponse.Ok(new { items, total = items.Count }));
     }
     
     [HttpDelete("certificates/{id}")]
@@ -194,7 +207,76 @@ public class FrontgateController(AppDbContext db) : ControllerBase
         await db.SaveChangesAsync();
         return Ok(ApiResponse.Ok());
     }
+    
+    [HttpPost("certificates/letsencrypt-http")]
+    public async Task<IActionResult> CreateLetsEncryptCert(
+        [FromBody] CreateLetsEncryptCertRequest request)
+    {
+        // TODO: ACME HTTP-01 challenge via Certes
+        var cert = new FgCertificate
+        {
+            Domain = request.Domain,
+            Type = Enum.Parse<CertificateType>(request.KeyType, ignoreCase: true),
+            Source = FgCertificateSource.LetsEncryptHttp,
+            Status = FgCertificateStatus.Pending,
+        };
+        db.FgCertificates.Add(cert);
+        await db.SaveChangesAsync();
+        return Ok(ApiResponse.Ok(cert));
+    }
 
+    [HttpPost("certificates/letsencrypt-dns")]
+    public async Task<IActionResult> CreateLetsEncryptDnsCert(
+        [FromBody] CreateLetsEncryptDnsCertRequest request)
+    {
+        var cert = new FgCertificate
+        {
+            Domain = request.Domain,
+            Type = Enum.Parse<CertificateType>(request.KeyType, ignoreCase: true),
+            Source = FgCertificateSource.LetsEncryptDns,
+            Status = FgCertificateStatus.Pending,
+            DnsProviderId = request.DnsProviderId,
+        };
+        db.FgCertificates.Add(cert);
+        await db.SaveChangesAsync();
+        return Ok(ApiResponse.Ok(cert));
+    }
+
+    [HttpPost("certificates/custom")]
+    public async Task<IActionResult> CreateCustomCert(
+        [FromBody] CreateCustomCertRequest request)
+    {
+        var name = request.Name;
+        var keyPath = dataDir.WriteFile(
+            $"certs/{name}/privkey.pem",
+            Encoding.UTF8.GetBytes(request.CertificateKey));
+
+        var certContent = string.IsNullOrEmpty(request.Intermediate)
+            ? request.Certificate
+            : $"{request.Certificate}\n{request.Intermediate}";
+        
+        var certPath = dataDir.WriteFile(
+            $"certs/{name}/fullchain.pem",
+            Encoding.UTF8.GetBytes(certContent));
+
+        var cert = new FgCertificate
+        {
+            Domain = name,
+            Source = FgCertificateSource.Custom,
+            Status = FgCertificateStatus.Active,
+        };
+        
+        db.FgCertificates.Add(cert);
+        await db.SaveChangesAsync();
+        return Ok(ApiResponse.Ok(cert));
+    }
+
+    [HttpGet("dns-providers")]
+    public IActionResult ListDnsProviders()
+    {
+        var ids = DnsProviders.All.Select(p => p.Id).ToList();
+        return Ok(ApiResponse.Ok(ids));
+    }
 }
 
 public record CreateRuleRequest(
@@ -222,4 +304,20 @@ public abstract record LocationRequest(
     string Scheme,
     string ForwardHost,
     int ForwardPort
+);
+
+public record CreateLetsEncryptCertRequest(
+    string Domain,
+    string KeyType  // "rsa" | "ecdsa"
+);
+public record CreateLetsEncryptDnsCertRequest(
+    string Domain,
+    string KeyType,
+    string DnsProviderId
+);
+public record CreateCustomCertRequest(
+    string Name,
+    string CertificateKey,
+    string Certificate,
+    string? Intermediate
 );

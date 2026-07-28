@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Namorix.Server.Persistence;
 
@@ -10,9 +11,11 @@ using Namorix.Server.Persistence;
 namespace Namorix.Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260728090149_AddFgCertificateDnsProviderId")]
+    partial class AddFgCertificateDnsProviderId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
@@ -627,6 +630,10 @@ namespace Namorix.Server.Migrations
                     b.Property<bool>("AutoRenew")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("CertificateChain")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
@@ -645,6 +652,10 @@ namespace Namorix.Server.Migrations
                     b.Property<string>("Issuer")
                         .IsRequired()
                         .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PrivateKeyEncrypted")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Source")

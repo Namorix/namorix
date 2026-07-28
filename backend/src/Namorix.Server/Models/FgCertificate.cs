@@ -20,14 +20,13 @@ public class FgCertificate
     [MaxLength(50)] public string Issuer { get; init; } = "Let's Encrypt";
     
     public FgCertificateSource Source { get; init; } = FgCertificateSource.LetsEncryptHttp;
-
-    public CertificateType Type { get; init; } = CertificateType.Rsa;
     
-    public string PrivateKeyEncrypted { get; init; } = string.Empty;
-    public string CertificateChain { get; init; } = string.Empty;
+    public CertificateType Type { get; init; } = CertificateType.Rsa;
     
     public FgCertificateStatus Status { get; init; } = FgCertificateStatus.Active;
     
+    [MaxLength(50)] public string? DnsProviderId { get; init; }
+
     public DateTime ExpiresAt { get; init; }
     public bool AutoRenew { get; init; } = true;
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
