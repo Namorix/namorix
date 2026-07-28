@@ -14,7 +14,7 @@ export function useDateTimeFormat() {
       clock: (input: Date | string) =>
         formatDateTime(input, timeFormat, dateFormat),
 
-      timestamp: (input: Date | string) =>
+      dateTime: (input: Date | string) =>
         formatTimestamp(input, timeFormat, dateFormat),
 
       dateOnly: (input: Date | string) =>

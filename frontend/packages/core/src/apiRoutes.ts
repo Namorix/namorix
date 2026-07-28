@@ -79,8 +79,10 @@ export const ApiOAuthRoutes = {
 export const ApiFrontgateRoutes = {
   reverseProxy: API_FRONTGATE_BASE + "/reverse-proxy",
   reverseProxyById: (id: string) => `${API_FRONTGATE_BASE}/reverse-proxy/${id}`,
+
   certificates: API_FRONTGATE_BASE + "/certificates",
   certificatesAll: API_FRONTGATE_BASE + "/certificates/all",
+  certificateUnusedDomains: `${API_FRONTGATE_BASE}/certificates/unused-domains`,
   certificateById: (id: string) => `${API_FRONTGATE_BASE}/certificates/${id}`,
   certificatesLetsEncryptHttp:
     API_FRONTGATE_BASE + "/certificates/letsencrypt-http",

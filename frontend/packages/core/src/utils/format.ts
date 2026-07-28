@@ -33,7 +33,7 @@ export function formatDateTime(
   timeFormat: string,
   dateFormat: string,
 ) {
-  const dateTime = typeof input === "string" ? new Date(input) : input
+  const dateTime = parseUTCDate(input)
   return format(dateTime, timeFormat, dateFormat)
 }
 
@@ -42,7 +42,7 @@ export function formatTimestamp(
   timeFormat: string,
   dateFormat: string,
 ) {
-  const dateTime = typeof input === "string" ? new Date(input) : input
+  const dateTime = parseUTCDate(input)
   const { time, date } = format(dateTime, timeFormat, dateFormat)
   const pad = (n: number) => String(n).padStart(2, "0")
   const seconds = pad(dateTime.getSeconds())
