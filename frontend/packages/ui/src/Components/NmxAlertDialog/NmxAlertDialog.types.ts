@@ -9,10 +9,12 @@ export interface NmxAlertDialogProps extends WithBaseProps {
   description?: string | ReactNode
   size?: NmxDialogSize
   confirmLabel?: string
+  confirmDisabled?: boolean
   confirmSemantic?: NmxSemanticColor
   cancelLabel?: string
   closeLabel?: string
   extraActionLabel?: string
+  extraActionDisabled?: boolean
   onConfirm?: () => void
   onCancel?: () => void
   onClose?: () => void

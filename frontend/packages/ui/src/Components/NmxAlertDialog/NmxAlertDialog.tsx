@@ -17,10 +17,12 @@ export const NmxAlertDialog = ({
   description,
   size = "md",
   confirmLabel,
+  confirmDisabled = false,
   confirmSemantic = "primary",
   cancelLabel,
   closeLabel,
   extraActionLabel,
+  extraActionDisabled = false,
   onConfirm,
   onCancel,
   onClose,
@@ -74,7 +76,7 @@ export const NmxAlertDialog = ({
               semantic="success"
               label={extraActionLabel}
               onClick={onExtraAction}
-              disabled={loading}
+              disabled={loading || extraActionDisabled}
               uppercase={true}
               className="nmx-dialog__button nmx-dialog__button-extra"
             />
@@ -94,7 +96,7 @@ export const NmxAlertDialog = ({
             semantic={confirmSemantic}
             label={confirm}
             onClick={onConfirm}
-            disabled={loading}
+            disabled={loading || confirmDisabled}
             shouldRender={!!onConfirm}
             uppercase={true}
             className="nmx-dialog__button"

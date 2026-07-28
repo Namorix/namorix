@@ -60,6 +60,7 @@ export const NmxIconFontSymbol = {
   HTTPS: "ic-https",
   DNS: "ic-dns",
   DOWNLOAD: "ic-download",
+  FILE_LINK: "ic-file-link",
 } as const
 
 export type NmxIconFontSymbol =

@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom"
 import React from "react"
 import type { WithBaseProps } from "../types"
 import { cx } from "../utils"
@@ -15,7 +16,7 @@ export const NmxLoadingOverlay: React.FC<NmxLoadingProps> = ({
 }) => {
   if (!shouldRender) return null
 
-  return (
+  return createPortal(
     <div {...rest} className={cx("nmx-loading", className)}>
       <div
         className={cx("nmx-loading__overlay", {
@@ -24,6 +25,7 @@ export const NmxLoadingOverlay: React.FC<NmxLoadingProps> = ({
       >
         <NmxSpinner size="lg" />
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
