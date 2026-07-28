@@ -24,9 +24,10 @@ Use **YARP (Yet Another Reverse Proxy)** — Microsoft's official reverse proxy 
 ### Core Entities
 
 ```
-FgReverseProxyRule ──[CertificateId]──> FgCertificate    (nhiều rule dùng chung 1 cert)
-FgReverseProxyRule ──[AccessPolicyId]──> FgAccessPolicy  (nhiều rule dùng chung 1 policy)
-FgReverseProxyRule ── 1:n ──> FgReverseProxyLocation     (Custom Locations sub-routing)
+FgReverseProxyRule ──[CertificateId]──> FgCertificate          (nhiều rule dùng chung 1 cert)
+FgReverseProxyRule ──[AccessPolicyId]──> FgAccessPolicy        (nhiều rule dùng chung 1 policy)
+FgReverseProxyRule ── 1:n ──> FgReverseProxyLocation           (Custom Locations sub-routing)
+FgCertificate       ── 1:n ──> FgCertificateDomain             (Multi-domain SANs, Cascade delete)
 ```
 
 ### Các bảng đã tạo
@@ -34,7 +35,8 @@ FgReverseProxyRule ── 1:n ──> FgReverseProxyLocation     (Custom Locatio
 | Table | Fields | Status |
 |-------|--------|--------|
 | `FgReverseProxyRules` | Id, Source, DestinationScheme, DestinationHost, DestinationPort, CertificateId (FK), Access, AccessPolicyId (FK), WebSocketsSupport, CacheAssets, ForceSsl, Http2Support, HstsEnabled, HstsSubdomains, TrustForwardedProtoHeaders, AdditionalHeadersJson, Status, CreatedAt, UpdatedAt | ✅ |
-| `FgCertificates` | Id, Domain, Issuer, Type, Source, Status, KeyPath, CertPath, DnsProviderId, ExpiresAt, AutoRenew, CreatedAt | ✅ |
+| `FgCertificates` | Id, Issuer, Type, Source, Status, DnsProviderId, ExpiresAt, AutoRenew, CreatedAt | ✅ |
+| `FgCertificateDomains` | Id, Domain, CertificateId (FK → FgCertificates, Cascade), Index trên Domain | ✅ |
 | `FgAccessPolicies` | Id, Name, Type, RulesJson, CreatedAt | ✅ |
 | `FgReverseProxyLocations` | Id, RuleId (FK), Path, Scheme, ForwardHost, ForwardPort (Cascade delete) | ✅ |
 
@@ -168,7 +170,7 @@ Thư viện ACME: **Certes** (`Certes` NuGet) — giao tiếp với Let's Encryp
 - [x] **DNS providers API**: `GET /api/frontgate/dns-providers` trả về mảng id + `ApiFrontgateRoutes.dnsProviders` + `listDnsProviders()` controller + `en.json` labels cho từng provider
 - [x] **`FgCertificateSource` enum**: `LetsEncryptHttp`, `LetsEncryptDns`, `Custom` — không lẫn với `CertificateType` (Rsa/Ecdsa là key algorithm)
 - [x] **3 POST certificate endpoints**: `POST /certificates/letsencrypt-http`, `POST /certificates/letsencrypt-dns`, `POST /certificates/custom` + request records + frontend routes + controller functions
-- [x] **Certificate file storage**: bỏ `PrivateKeyEncrypted`/`CertificateChain` khỏi DB, thay bằng `KeyPath`/`CertPath` — ghi PEM files qua `DataDirectory.WriteFile()`
+- [x] **Certificate file storage**: bỏ `PrivateKeyEncrypted`/`CertificateChain` khỏi DB — PEM files lưu disk qua `DataDirectory.WriteFile()`, không lưu path trong DB (tự suy từ domain đầu tiên: `certs/{primaryDomain}/privkey.pem`, `certs/{primaryDomain}/fullchain.pem`)
 - [x] **en.json dnsProviders**: ~80 DNS provider labels
 - [x] **en.json dialogs**: title, confirm, info, placeholder keys cho 3 cert dialogs
 
@@ -176,12 +178,27 @@ Thư viện ACME: **Certes** (`Certes` NuGet) — giao tiếp với Let's Encryp
 
 - [x] **`FgCertificateSource` enum** — đã implement
 - [x] **`FgCertificates.DnsProviderId`** — đã thêm field
-- [x] **`FgCertificates.KeyPath` / `CertPath`** — thay thế `PrivateKeyEncrypted`/`CertificateChain`
+- [x] **Bỏ `PrivateKeyEncrypted`/`CertificateChain`** — chuyển sang file-based storage
+- [x] **Multi-domain support**: bảng `FgCertificateDomains` (Id, Domain, CertificateId FK, Index trên Domain). FK Cascade delete. Query SNI: `SELECT CertificateId FROM FgCertificateDomains WHERE Domain = @sniHost` — O(log n). Domain đầu tiên là primary dùng để derive cert file path. `FgReverseProxyRule.Source` giữ nguyên (không FK).
 
-#### 🔮 Future Schema
+#### ✅ UI & Integration Polish
 
-- [ ] **Multi-domain support**: `FgCertificates.Domain` string đơn → JSON list domain hoặc bảng con `FgCertificateDomains`
-- [ ] **`FgDnsProviders` table**: `Id`, `ProviderType`, `CredentialsEncrypted`
+- [x] **Multi-domain bảng riêng**: `FgCertificateDomain` model + migration + FK Cascade delete + Index trên Domain
+- [x] **Backend API unused-domains**: `GET /certificates/unused-domains` — lấy reverse proxy domains chưa gán cert
+- [x] **Frontend listUnusedDomains**: `nmxHttp` pattern + `ApiFrontgateRoutes.certificateUnusedDomains`
+- [x] **NmxTagInput suggestions**: fix dropdown chỉ hiện khi có input → show all suggestions on focus, bỏ `input ?` guard
+- [x] **NmxTagInput empty tag fix**: `useState<string[]>([""])` → `useState<string[]>([])` — xóa tag rỗng
+- [x] **NmxDataTable zebra striping**: `nth-child(even)` background với `color-mix`
+- [x] **NmxDataTable rowCellSpacing**: prop `rowCellSpacing?: NmxSpacing` + `cxSpacing` + SCSS spacing modifiers qua `sizes` mixin
+- [x] **NmxSelect ReactNode label**: label type `string | React.ReactNode`, render JSX trực tiếp (không function)
+- [x] **Circular reference fix**: `ReferenceHandler.IgnoreCycles` trong `ServiceCollectionExtensions.cs`
+- [x] **ExpiresAt display fix**: `renderExpiry` kiểm tra `status` — chỉ active mới hiện date, pending/error hiển thị "—"
+- [x] **Cert selector reverse proxy**: `c.domain` → JSX domain list, dùng `c.domains?.map` render inline spans
+- [x] **createdAt API**: thêm `createdAt = c.CreatedAt` vào 2 projection certificates + certificates/all
+- [x] **createdAt interfaces**: thêm `createdAt: string` vào `CertificateItem` + `ReverseProxyRule`
+- [x] **createdAt i18n**: thêm `"createdAt": "Created"` cho cả `reverseProxy.fields` và `certificate.fields`
+- [x] **createdAt UI**: column createdAt trong Certificate table + meta item trong detail dialog
+- [x] **UTC parse fix**: `formatDateTime`/`formatTimestamp` dùng `parseUTCDate` thay vì `new Date(input)` — fix timezone sai khi backend gửi ISO string không có Z
 
 #### 🔨 Let's Encrypt via HTTP (HTTP-01)
 
@@ -201,16 +218,16 @@ Thư viện ACME: **Certes** (`Certes` NuGet) — giao tiếp với Let's Encryp
 
 - [x] **NmxFileInput component**: primitive file input, click area mở file picker, icon UPLOAD ↔ FILE_LINK
 - [x] **PEM file storage**: `DataDirectory.WriteFile()` ghi `certs/{name}/privkey.pem` + `fullchain.pem`
-- [ ] **Cert validation via `X509Certificate2.CreateFromPem()`**: parse PEM, auto check key match, expiry, passphrase (throw `CryptographicException` nếu invalid). Gộp chung keypair validation + passphrase reject + expiry check.
-- [ ] **File size limit**: max 64KB per field trước khi parse, chặn DoS/file giả dạng
-- [ ] **Auto-generate filename**: dùng domain name, không dùng filename gốc từ upload (tránh path traversal)
-- [ ] **`AutoRenew` mặc định `false`**
+- [x] **Cert validation via `X509Certificate2.CreateFromPem()`**: parse PEM, auto check key match, expiry, passphrase (throw `CryptographicException` nếu invalid). Gộp chung keypair validation + passphrase reject + expiry check.
+- [x] **File size limit**: max 64KB per field trước khi parse, chặn DoS/file giả dạng
+- [x] **Auto-generate filename**: dùng domain name, không dùng filename gốc từ upload (tránh path traversal)
+- [x] **Auto-renew toggle**: `NmxToggle` ở 2 dialog LE (http + dns), mặc định `true`. Custom cert không có auto-renew.
 
-#### 🔨 Remaining (Wire up)
+#### ✅ Remaining (Wire up)
 
-- [ ] **Wire 3 onConfirm handlers**: gọi API tương ứng, then/catch/finally với nmxToast + fetchCerts
-- [ ] **en.json**: thêm 6 keys `dialogs.letsEncryptHttp.success/error`, `letsEncryptDns.success/error`, `custom.success/error`
-- [ ] **Controller inject `DataDirectory`**: sửa primary constructor `FrontgateController(AppDbContext db, DataDirectory dataDir)`
+- [x] **Wire 3 onConfirm handlers**: gọi API tương ứng, then/catch/finally với nmxToast + fetchCerts
+- [x] **en.json**: thêm 6 keys `dialogs.letsEncryptHttp.success/error`, `letsEncryptDns.success/error`, `custom.success/error`
+- [x] **Controller inject `DataDirectory`**: sửa primary constructor `FrontgateController(AppDbContext db, DataDirectory dataDir)`
 
 #### 🔨 Auto-renew Worker & SNI
 

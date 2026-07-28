@@ -136,12 +136,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.67.0 | M4 (Frontgate Phase 2: 3 cert dialogs, NmxFileInput, file-input.scss, DNS providers) |
-| @namorix/core | 0.52.0 | M4 (Frontgate cert endpoints: letsencrypt-http, letsencrypt-dns, custom, dnsProviders) |
-| @namorix/styles | 0.45.0 | M4 (file-input.scss, form/select SCSS tweaks, icomoon rebuild) |
-| @namorix/ui | 0.34.0 | M4 (NmxFileInput primitive, NmxAlertDialog confirmDisabled prop, loading createPortal) |
-| Namorix.Core | 0.52.0 | M4 (DataBasePath centralization, DataPaths constants) |
-| Namorix.Server | 0.58.0 | M4 (DnsProviders model, 3 POST cert endpoints, cert file storage, KeyPath/CertPath) |
+| frontend | 0.68.0 | M4 (Frontgate Phase 2: createdAt column, Issues tab, cert expiresAt fix, domain spacing) |
+| @namorix/core | 0.53.0 | M4 (unused-domains route, useDateTimeFormat timestamp→dateTime, format UTC parse fix) |
+| @namorix/styles | 0.45.1 | M4 (data-table rowCellSpacing SCSS, select/frontgate fixes, theme CSS rebuild) |
+| @namorix/ui | 0.35.0 | M4 (NmxDataTable rowCellSpacing prop, NmxSelect/NmxTagInput bug fixes) |
+| Namorix.Core | 0.52.1 | M4 (ServiceCollectionExtensions internal changes) |
+| Namorix.Server | 0.59.0 | M4 (FgCertificateDomain model, unused-domains endpoint, CreatedAt field, cert query params) |
 
 ## Version Rules
 
@@ -168,6 +168,15 @@
 - Không bao giờ bump cả Core + Server cùng lúc nếu chỉ 1 trong 2 thay đổi
 
 ## Version History
+
+### 2026-07-28 — Frontgate Phase 2: Certificate domain table, createdAt column, Issues tab, rowCellSpacing, UTC parse fix
+
+- @namorix/core 0.52.0 → 0.53.0: MODIFIED: `apiRoutes.ts` — added unused-domains route. `hooks/useDateTimeFormat.ts` — renamed `timestamp` → `dateTime`. `utils/format.ts` — `formatDateTime`/`formatTimestamp` UTC parse fix (parseUTCDate auto-appends Z).
+- @namorix/styles 0.45.0 → 0.45.1: MODIFIED: `base/components/data-table.scss` — rowCellSpacing spacing classes via `sizes` mixin. `base/components/select.scss` — NmxSelect fixes. `base/shell/addon/frontgate.scss` — Frontgate style updates. Themes CSS rebuild (default + dark).
+- @namorix/ui 0.34.0 → 0.35.0: MODIFIED: `Components/NmxDataTable/NmxDataTable.tsx` — added `rowCellSpacing` prop. `Components/NmxDataTable/NmxDataTable.type.ts` — `rowCellSpacing` type (`NmxSpacing`). `Primitives/NmxSelect.tsx` — bug fix. `Primitives/NmxTagInput.tsx` — bug fix.
+- frontend 0.67.0 → 0.68.0: MODIFIED: `addons/Frontgate/FrontgateCertificate.tsx` — createdAt column, expiresAt status-aware fix (show "—" for non-active), Issues tab button. `addons/Frontgate/FrontgateReverseProxy.tsx` — createdAt column, domain list fix, rowCellSpacing on tables. `addons/Frontgate/frontgate.controller.ts` — CertificateItem createdAt/createdBy, ReverseProxyRule createdAt, unusedDomains method. `addons/Frontgate/Frontgate.types.ts` — type updates. `addons/LogViewer/LogViewer.tsx` — mod. `addons/NetworkTraffic/NetworkTrafficLogs.tsx` — mod. `i18n/locales/en.json` — createdAt, issues, unusedDomains i18n keys.
+- Namorix.Core 0.52.0 → 0.52.1: MODIFIED: `Extensions/ServiceCollectionExtensions.cs` — internal changes.
+- Namorix.Server 0.58.0 → 0.59.0: NEW: `Models/FgCertificateDomain.cs` — domain entity. `Migrations/20260728101116_AddFgCertificateDomainsTable.cs` — new migration. MODIFIED: `Controllers/FrontgateController.cs` — GetUnusedCertDomains endpoint, cert query params (createdBy). `Models/FgCertificate.cs` — added `CreatedAt` field. `Persistence/AppDbContext.cs` — FgCertificateDomain config. `Migrations/AppDbContextModelSnapshot.cs` — updated.
 
 ### 2026-07-28 — Frontgate Phase 2: Certificate creation, file storage, DNS providers, NmxFileInput
 

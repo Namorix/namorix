@@ -27,6 +27,15 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-07-28 — Frontgate Phase 2: Certificate domain table, createdAt column, Issues tab, rowCellSpacing, UTC parse fix
+
+- @namorix/core 0.52.0 → 0.53.0: apiRoutes — unused-domains route. useDateTimeFormat timestamp→dateTime rename. format.ts UTC parse fix (parseUTCDate).
+- @namorix/styles 0.45.0 → 0.45.1: data-table.scss rowCellSpacing via sizes mixin. select.scss fixes. frontgate.scss updates. Theme CSS rebuild.
+- @namorix/ui 0.34.0 → 0.35.0: NmxDataTable rowCellSpacing prop. NmxSelect/NmxTagInput bug fixes.
+- frontend 0.67.0 → 0.68.0: FrontgateCertificate createdAt column, expiresAt status-aware fix, Issues tab button. FrontgateReverseProxy createdAt column, domain list fix, rowCellSpacing. frontgate.controller new types/unusedDomains. en.json i18n additions.
+- Namorix.Core 0.52.0 → 0.52.1: ServiceCollectionExtensions internal changes.
+- Namorix.Server 0.58.0 → 0.59.0: NEW FgCertificateDomain model + migration. GetUnusedCertDomains endpoint. FgCertificate CreatedAt field.
+
 ### 2026-07-28 — Frontgate Phase 2: Certificate creation dialogs, file storage, NmxFileInput, DNS providers
 
 - @namorix/core 0.51.0 → 0.52.0: apiRoutes.ts — 3 new cert routes (letsencrypt-http, letsencrypt-dns, custom), dnsProviders, certificatesAll.
