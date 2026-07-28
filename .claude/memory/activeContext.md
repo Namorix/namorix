@@ -27,7 +27,13 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
-### 2026-07-27 — Frontgate Phase 2: NmxMenuButton divider refactor, filterItem, FgCertPendingResetWorker
+### 2026-07-28 — Frontgate Phase 2: Certificate creation dialogs, file storage, NmxFileInput, DNS providers
+
+- @namorix/core 0.51.0 → 0.52.0: apiRoutes.ts — 3 new cert routes (letsencrypt-http, letsencrypt-dns, custom), dnsProviders, certificatesAll.
+- @namorix/styles 0.44.1 → 0.45.0: NEW file-input.scss. form.scss/select.scss tweaks. Icomoon rebuild.
+- @namorix/ui 0.33.0 → 0.34.0: NEW NmxFileInput primitive (hidden input, click area, icon swap). NmxAlertDialog confirmDisabled prop. NmxLoadingOverlay createPortal fix. FILE_LINK/UPLOAD icon symbols.
+- frontend 0.66.0 → 0.67.0: 3 cert dialogs (letsEncryptHttp, letsEncryptDns, custom) with domain/keyType/DNS provider/NmxFileInput fields, confirmDisabled, resetForm. New frontgate.controller payload types + create functions + listDnsProviders. i18n en.json +124 lines (dnsProviders, dialogs).
+- Namorix.Server 0.57.0 → 0.58.0: NEW DnsProviders model (~80 providers). 3 POST cert endpoints with file-based storage via DataDirectory.WriteFile. FgCertificate KeyPath/CertPath replacing PEM columns. DnsProviderId field.
 
 - @namorix/ui 0.32.0 → 0.33.0: NmxMenuButton dividerIndexes prop refactor — replaced `divider?: boolean` on option with `dividerIndexes?: { value, position }[]` on props. Divider follows option by value, renders above/below. filterItem edge case: no options → hide trigger. NEW `APP_BEACON` icon symbol.
 - @namorix/styles 0.44.0 → 0.44.1: Menu button divider SCSS styles, button/frontgate/dark tokens tweaks. NEW `--nmx-icon-app-beacon` icon token.

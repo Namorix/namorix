@@ -136,12 +136,12 @@
 
 | Package | Version | Milestone |
 |---------|---------|-----------|
-| frontend | 0.66.0 | M4 (Frontgate cert filterItem, NmxMenuButton dividerIndexes, Beacon addon scaffold) |
-| @namorix/core | 0.51.0 | M4 (markupToHtml ReactNode, certificateById route, dateOnly) |
-| @namorix/styles | 0.44.1 | M4 (menu button divider SCSS, button/frontgate tweaks) |
-| @namorix/ui | 0.33.0 | M4 (NmxMenuButton dividerIndexes prop, divider value+position) |
+| frontend | 0.67.0 | M4 (Frontgate Phase 2: 3 cert dialogs, NmxFileInput, file-input.scss, DNS providers) |
+| @namorix/core | 0.52.0 | M4 (Frontgate cert endpoints: letsencrypt-http, letsencrypt-dns, custom, dnsProviders) |
+| @namorix/styles | 0.45.0 | M4 (file-input.scss, form/select SCSS tweaks, icomoon rebuild) |
+| @namorix/ui | 0.34.0 | M4 (NmxFileInput primitive, NmxAlertDialog confirmDisabled prop, loading createPortal) |
 | Namorix.Core | 0.52.0 | M4 (DataBasePath centralization, DataPaths constants) |
-| Namorix.Server | 0.57.0 | M4 (FgCertPendingResetWorker, Pending→Error on startup) |
+| Namorix.Server | 0.58.0 | M4 (DnsProviders model, 3 POST cert endpoints, cert file storage, KeyPath/CertPath) |
 
 ## Version Rules
 
@@ -169,7 +169,13 @@
 
 ## Version History
 
-### 2026-07-27 — Frontgate Phase 2: Certificate tab, NmxMenuButton, pipeline separation, self-signed cert
+### 2026-07-28 — Frontgate Phase 2: Certificate creation, file storage, DNS providers, NmxFileInput
+
+- @namorix/core 0.51.0 → 0.52.0: MODIFIED: `apiRoutes.ts` — added 3 cert routes (letsencrypt-http, letsencrypt-dns, custom), dnsProviders, certificatesAll.
+- @namorix/styles 0.44.1 → 0.45.0: NEW: `base/components/file-input.scss` — NmxFileInput styles. MODIFIED: `base/components/form.scss` — form-field inline layout. `base/components/select.scss` — Floating UI tweaks. `base/icomoon/` — font/variables rebuild (new icon symbols).
+- @namorix/ui 0.33.0 → 0.34.0: NEW: `Primitives/NmxFileInput.tsx` — file input primitive (hidden input, click area, icon UPLOAD↔FILE_LINK, FileReader text content). MODIFIED: `Components/NmxAlertDialog/NmxAlertDialog.types.ts` — added `confirmDisabled` prop. `Components/NmxAlertDialog/NmxAlertDialog.tsx` — confirmDisabled disables confirm button. `Components/NmxLoadingOverlay.tsx` — wrapped in createPortal(document.body) for correct z-index stacking. `Primitives/NmxIcon/NmxIconFont.types.ts` — added FILE_LINK, UPLOAD icon symbols. `Primitives/index.ts` — added NmxFileInput export.
+- frontend 0.66.0 → 0.67.0: MODIFIED: `addons/Frontgate/FrontgateCertificate.tsx` — 3 NmxAlertDialog cert creation dialogs (letsEncryptHttp, letsEncryptDns, custom) with domain/keyType/DNS provider fields, NmxFileInput for PEM upload, confirmDisabled validation, resetForm pattern, addSubmitting state. `addons/Frontgate/frontgate.controller.ts` — added payload types (CreateLetsEncryptCertPayload, CreateLetsEncryptDnsCertPayload, CreateCustomCertPayload) + create functions (createLetsEncryptCert, createLetsEncryptDnsCert, createCustomCert) + listDnsProviders. `addons/Frontgate/Frontgate.types.ts` — FrontgateCertificateKeyType. `i18n/locales/en.json` — ~124 lines: dnsProviders labels (~80), 3 dialogs with title/confirm/info/placeholder, certType options, dialogs section.
+- Namorix.Server 0.57.0 → 0.58.0: NEW: `Models/DnsProviders.cs` — ~80 DNS providers (8 implemented: Cloudflare/Route53/DigitalOcean/GoDaddy/Azure DNS/Google Cloud/Namecheap/ACME-DNS), DnsProvider record with CredentialFields. MODIFIED: `Controllers/FrontgateController.cs` — added 3 POST cert endpoints (letsencrypt-http, letsencrypt-dns, custom) with FgCertificateSource distinction, file-based cert storage via DataDirectory.WriteFile, DnsProviderId support. `Models/FgCertificate.cs` — replaced PrivateKeyEncrypted/CertificateChain with KeyPath/CertPath file paths, added DnsProviderId. NEW migrations: `AddFgCertificateDnsProviderId`, `AddFgCertificateFilePaths`.
 
 - @namorix/ui 0.30.2 → 0.31.0: NEW: `Primitives/NmxMenuButton.tsx` — Floating UI dropdown (useFloating, FloatingPortal, useClick, useDismiss, useListNavigation), `filterItem` prop, `NmxMenuButtonOption<T>` interface with value/label/semantic/icon/divider, `getReferenceProps` compose pattern for row click isolation, `data-row-action` attribute. MODIFIED: `Components/NmxAlertDialog/NmxAlertDialog.types.ts` — added `markupToHtmlEnabled` prop. `Components/NmxAlertDialog/NmxAlertDialog.tsx` — `markupToHtmlEnabled` renders description via `dangerouslySetInnerHTML`. `Components/NmxDialog/NmxDialog.types.ts` — added `noSpacingBody` prop. `Components/NmxDialog/NmxDialogBody.tsx` — noSpacingBody support (flush dialog body). `Primitives/NmxIcon/NmxIconFont.types.ts` — added MENU_VERTICAL, REFRESH, DOWNLOAD, HTTP, DNS, UPLOAD icon symbols. `Primitives/index.ts` — added NmxMenuButton export.
 - @namorix/core 0.50.0 → 0.51.0: MODIFIED: `utils/markup.ts` — markupToHtml overload accepting ReactNode (pass through). `apiRoutes.ts` — added `certificateById`. `hooks/useDateTimeFormat.ts` — added `dateOnly` formatter.

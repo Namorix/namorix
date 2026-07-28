@@ -34,7 +34,7 @@ FgReverseProxyRule ── 1:n ──> FgReverseProxyLocation     (Custom Locatio
 | Table | Fields | Status |
 |-------|--------|--------|
 | `FgReverseProxyRules` | Id, Source, DestinationScheme, DestinationHost, DestinationPort, CertificateId (FK), Access, AccessPolicyId (FK), WebSocketsSupport, CacheAssets, ForceSsl, Http2Support, HstsEnabled, HstsSubdomains, TrustForwardedProtoHeaders, AdditionalHeadersJson, Status, CreatedAt, UpdatedAt | ✅ |
-| `FgCertificates` | Id, Domain, Issuer, Type, PrivateKeyEncrypted, CertificateChain, ExpiresAt, AutoRenew, CreatedAt | ✅ |
+| `FgCertificates` | Id, Domain, Issuer, Type, Source, Status, KeyPath, CertPath, DnsProviderId, ExpiresAt, AutoRenew, CreatedAt | ✅ |
 | `FgAccessPolicies` | Id, Name, Type, RulesJson, CreatedAt | ✅ |
 | `FgReverseProxyLocations` | Id, RuleId (FK), Path, Scheme, ForwardHost, ForwardPort (Cascade delete) | ✅ |
 
@@ -124,7 +124,7 @@ Tất cả các flag đều implement được bằng C#/YARP, không cần Ngin
 - [x] **Status field**: formStatus state + statusOptions select (General tab)
 - [x] **Certificate selector**: options gồm None + Request a new Certificate + real certs từ API
 - [x] **BlockCommonExploits field**: thêm model, migration, API, frontend interface
-- [x] **Certificate API**: `GET /api/frontgate/certificates` + `CertificateItem` interface + `listCertificates()`
+- [x] **Certificate API**: `GET /api/frontgate/certificates` (paginated) + `GET /api/frontgate/certificates/all` (all) + `CertificateItem` interface + `listCertificates()` / `listAllCertificates()`
 - [x] **i18n keys**: `certificate`, `certificatePlaceholder`, `certificateNone`, `certificateRequestNew`, `trustForwardedProto`, `headerName`, `headerValue`, `additionalHeaders`, `statusOptions`, `accessOptions`, `addHeader`, `emptyHeaders`, `headers`, `locations`, `addLocation`, `emptyLocations`
 - [x] **Locations CRUD API**: backend xử lý `Locations` list trong CreateRule/UpdateRule, xóa cũ + thêm mới, Cascade delete
 - [x] **Locations UI**: card-based sub-routing editor (path + delete row, scheme/host/port row) trong Locations tab riêng
@@ -160,13 +160,28 @@ Thư viện ACME: **Certes** (`Certes` NuGet) — giao tiếp với Let's Encryp
 - [x] **Delete certificate API**: `DELETE /certificates/{id}` + frontend controller + confirm dialog + toast
 - [x] **Certificate tab UI**: list cert (Domain, Issuer, Type, Status gộp InUse, ExpiresAt), action menu (Renew/Retry/Download/Delete), click row show detail dialog. i18n keys cho status values, inUse values, actions, feedback.
 - [x] **Json enum serialization**: `JsonStringEnumConverter(CamelCase)` trong `AddNamorixCore` — tất cả enum serialize thành camelCase string
+- [x] **Certificate endpoint split**: tách `ListCertificates` thành 2 endpoint riêng — `GET /certificates` (paginated, page ≥ 1) và `GET /certificates/all` (flat list), cập nhật `ApiFrontgateRoutes.certificatesAll` + frontend controller
+- [x] **NmxLoadingOverlay createPortal**: fix z-index stacking context với `#root { contain: strict }` — dùng `createPortal` render ra `document.body`, cùng level với FloatingPortal dialogs/menus
+- [x] **NmxFileInput component**: primitive file input với styled drop zone, icon thay đổi UPLOAD ↔ FILE_LINK, click anywhere mở file picker
+- [x] **Certificate add dialogs UI**: 3 NmxAlertDialog (letsEncryptHttp, letsEncryptDns, custom) với form fields (domain, key type, dns provider, name, cert PEM upload), i18n keys, state management
+- [x] **DnsProviders model**: class tĩnh với danh sách ~80 DNS provider, credential fields, `Implemented` flag, bỏ label (dùng i18n frontend)
+- [x] **DNS providers API**: `GET /api/frontgate/dns-providers` trả về mảng id + `ApiFrontgateRoutes.dnsProviders` + `listDnsProviders()` controller + `en.json` labels cho từng provider
+- [x] **`FgCertificateSource` enum**: `LetsEncryptHttp`, `LetsEncryptDns`, `Custom` — không lẫn với `CertificateType` (Rsa/Ecdsa là key algorithm)
+- [x] **3 POST certificate endpoints**: `POST /certificates/letsencrypt-http`, `POST /certificates/letsencrypt-dns`, `POST /certificates/custom` + request records + frontend routes + controller functions
+- [x] **Certificate file storage**: bỏ `PrivateKeyEncrypted`/`CertificateChain` khỏi DB, thay bằng `KeyPath`/`CertPath` — ghi PEM files qua `DataDirectory.WriteFile()`
+- [x] **en.json dnsProviders**: ~80 DNS provider labels
+- [x] **en.json dialogs**: title, confirm, info, placeholder keys cho 3 cert dialogs
 
-#### 🔨 Schema Changes
+#### ✅ Schema Changes
 
-- [ ] **`FgCertificates.Source` enum**: `LetsEncryptHttp`, `LetsEncryptDns`, `Custom` — không lẫn với `CertificateType` (Rsa/Ecdsa là key algorithm)
+- [x] **`FgCertificateSource` enum** — đã implement
+- [x] **`FgCertificates.DnsProviderId`** — đã thêm field
+- [x] **`FgCertificates.KeyPath` / `CertPath`** — thay thế `PrivateKeyEncrypted`/`CertificateChain`
+
+#### 🔮 Future Schema
+
 - [ ] **Multi-domain support**: `FgCertificates.Domain` string đơn → JSON list domain hoặc bảng con `FgCertificateDomains`
-- [ ] **`FgDnsProviders` table**: `Id`, `Name`, `ProviderType` (Cloudflare, Route53, DigitalOcean), `CredentialsEncrypted`
-- [ ] **`FgCertificates.DnsProviderId` (FK nullable)**: chỉ set khi `Source = LetsEncryptDns`
+- [ ] **`FgDnsProviders` table**: `Id`, `ProviderType`, `CredentialsEncrypted`
 
 #### 🔨 Let's Encrypt via HTTP (HTTP-01)
 
@@ -184,10 +199,18 @@ Thư viện ACME: **Certes** (`Certes` NuGet) — giao tiếp với Let's Encryp
 
 #### 🔨 Custom Certificate (Upload)
 
-- [ ] **3-file upload**: Certificate Key, Certificate, Intermediate Certificate (optional)
-- [ ] **Keypair validation**: parse PEM, verify public key trong Certificate khớp Certificate Key
-- [ ] **Passphrase reject**: reject nếu Key có passphrase, yêu cầu user strip trước khi upload
-- [ ] **`AutoRenew` mặc định `false`**: custom cert không đưa vào renew worker
+- [x] **NmxFileInput component**: primitive file input, click area mở file picker, icon UPLOAD ↔ FILE_LINK
+- [x] **PEM file storage**: `DataDirectory.WriteFile()` ghi `certs/{name}/privkey.pem` + `fullchain.pem`
+- [ ] **Cert validation via `X509Certificate2.CreateFromPem()`**: parse PEM, auto check key match, expiry, passphrase (throw `CryptographicException` nếu invalid). Gộp chung keypair validation + passphrase reject + expiry check.
+- [ ] **File size limit**: max 64KB per field trước khi parse, chặn DoS/file giả dạng
+- [ ] **Auto-generate filename**: dùng domain name, không dùng filename gốc từ upload (tránh path traversal)
+- [ ] **`AutoRenew` mặc định `false`**
+
+#### 🔨 Remaining (Wire up)
+
+- [ ] **Wire 3 onConfirm handlers**: gọi API tương ứng, then/catch/finally với nmxToast + fetchCerts
+- [ ] **en.json**: thêm 6 keys `dialogs.letsEncryptHttp.success/error`, `letsEncryptDns.success/error`, `custom.success/error`
+- [ ] **Controller inject `DataDirectory`**: sửa primary constructor `FrontgateController(AppDbContext db, DataDirectory dataDir)`
 
 #### 🔨 Auto-renew Worker & SNI
 
