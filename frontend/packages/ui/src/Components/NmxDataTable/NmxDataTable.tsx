@@ -4,7 +4,7 @@ import type {
   NmxDataTableProps,
 } from "./NmxDataTable.type"
 import React, { useEffect, useRef, useState } from "react"
-import { cx, getBreakpointDefaults } from "../../utils"
+import { cx, cxSpacing, getBreakpointDefaults } from "../../utils"
 
 function buildGridTemplateColumns<T>(
   cols: ReadonlyArray<NmxDataTableColumn<T>>,
@@ -52,6 +52,7 @@ export const NmxDataTable = <T extends object>({
   shouldRender = true,
   headerClass,
   rowClass,
+  rowCellSpacing = "md",
   className,
   ...rest
 }: NmxDataTableProps<T>) => {
@@ -167,6 +168,7 @@ export const NmxDataTable = <T extends object>({
                       role="cell"
                       className={cx(
                         "nmx-data-table__row-cell",
+                        cxSpacing("nmx-data-table__row-cell", rowCellSpacing),
                         alignClass("row", col.alignCell),
                         {
                           "nmx-data-table--ellipsis-disabled":

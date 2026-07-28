@@ -17,7 +17,7 @@ import {
 
 export interface NmxSelectData<T = string> {
   value: T
-  label: string
+  label: string | React.ReactNode
   description?: string
 }
 
@@ -143,9 +143,13 @@ export const NmxSelect = <T extends string = string>({
                   renderOption(opt, opt.value === value)
                 ) : (
                   <>
-                    <span className="nmx-select__option-label">
-                      {opt.label}
-                    </span>
+                    {typeof opt.label === "string" ? (
+                      <span className="nmx-select__option-label">
+                        {opt.label}
+                      </span>
+                    ) : (
+                      opt.label
+                    )}
                     {opt.description && (
                       <span className="nmx-select__option-description">
                         {opt.description}

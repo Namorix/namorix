@@ -1,5 +1,5 @@
 import React from "react"
-import type { WithBaseProps } from "../../types"
+import type { NmxSpacing, WithBaseProps } from "../../types"
 
 export type NmxDataTableAlignType = "start" | "center" | "end"
 
@@ -33,4 +33,5 @@ export interface NmxDataTableProps<T = unknown> extends WithBaseProps {
   onRowClick?: (row: T, rowIndex: number) => void
   headerClass?: string
   rowClass?: string
+  rowCellSpacing?: NmxSpacing
 }

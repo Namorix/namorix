@@ -28,14 +28,12 @@ export const NmxTagInput: React.FC<NmxTagInputProps> = ({
 
   if (!shouldRender) return null
 
-  const filtered = input
-    ? suggestions.filter((s) => {
-        const match = caseSensitive
-          ? s.includes(input)
-          : s.toLowerCase().includes(input.toLowerCase())
-        return match && !value.includes(s)
-      })
-    : []
+  const filtered = suggestions.filter((s) => {
+    const match = caseSensitive
+      ? s.includes(input)
+      : s.toLowerCase().includes(input.toLowerCase())
+    return match && !value.includes(s)
+  })
 
   const totalItems = (input ? 1 : 0) + filtered.length
 
