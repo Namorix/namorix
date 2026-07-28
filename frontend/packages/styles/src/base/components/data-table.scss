@@ -64,13 +64,21 @@
     grid-column: 1 / -1;
     align-items: center;
 
+    &:nth-child(even) {
+      background: color-mix(
+        in oklab,
+        var(--nmx-color-surface-mid) 40%,
+        transparent
+      );
+    }
+
     &--clickable {
       cursor: pointer;
 
       &:hover:not(:has([data-row-action]:hover)) {
         background: color-mix(
           in oklab,
-          var(--nmx-color-surface-mid) 50%,
+          var(--nmx-color-surface-high) 50%,
           transparent
         );
       }
@@ -86,9 +94,19 @@
     font-size: var(--nmx-font-size-sm);
     font-weight: var(--nmx-font-weight-regular);
     letter-spacing: var(--nmx-letter-spacing-normal);
-    padding: var(--nmx-spacing-sm) var(--nmx-spacing-md);
+    padding: var(--nmx-spacing-sm) var(--nmx-data-table__row-cell-spacing);
     white-space: nowrap;
     text-transform: none;
+
+    @include spacings("nmx-data-table__row-cell");
+
+    &:first-child {
+      padding-left: var(--nmx-spacing-md);
+    }
+
+    &:last-child {
+      padding-right: var(--nmx-spacing-md);
+    }
   }
 
   &__header-cell,

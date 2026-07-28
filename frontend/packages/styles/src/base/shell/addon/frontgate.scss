@@ -45,10 +45,45 @@
   &__btn-delete,
   &__btn-menu {
     font-size: var(--nmx-font-size-md);
+    padding-left: var(--nmx-spacing-sm);
+    padding-right: var(--nmx-spacing-sm);
   }
 
   &__btn-menu {
     color: var(--nmx-color-on-surface);
+  }
+
+  &__domain-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: var(--nmx-spacing-md);
+  }
+
+  &__domain-list,
+  &__select-domain-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--nmx-spacing-md);
+  }
+
+  &__domain-item {
+    display: inline-block;
+    color: var(--nmx-color-on-surface);
+    font-size: var(--nmx-font-size-sm);
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    min-width: 0;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__created {
+    color: var(--nmx-color-on-surface-variant);
+    font-size: var(--nmx-font-size-sm);
   }
 
   &__location-editor {

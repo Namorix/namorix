@@ -87,6 +87,14 @@
   font-size: var(--nmx-font-size-sm);
   cursor: pointer;
 
+  &:nth-child(even) {
+    background: color-mix(
+      in oklab,
+      var(--nmx-color-surface-mid) 40%,
+      transparent
+    );
+  }
+
   &:hover {
     background: var(--nmx-color-surface-high);
   }

@@ -1458,11 +1458,14 @@ input[type=number] {
   grid-column: 1/-1;
   align-items: center;
 }
+.nmx-data-table__row:nth-child(even) {
+  background: color-mix(in oklab, var(--nmx-color-surface-mid) 40%, transparent);
+}
 .nmx-data-table__row--clickable {
   cursor: pointer;
 }
 .nmx-data-table__row--clickable:hover:not(:has([data-row-action]:hover)) {
-  background: color-mix(in oklab, var(--nmx-color-surface-mid) 50%, transparent);
+  background: color-mix(in oklab, var(--nmx-color-surface-high) 50%, transparent);
 }
 .nmx-data-table--user-select {
   -webkit-user-select: text;
@@ -1473,9 +1476,30 @@ input[type=number] {
   font-size: var(--nmx-font-size-sm);
   font-weight: var(--nmx-font-weight-regular);
   letter-spacing: var(--nmx-letter-spacing-normal);
-  padding: var(--nmx-spacing-sm) var(--nmx-spacing-md);
+  padding: var(--nmx-spacing-sm) var(--nmx-data-table__row-cell-spacing);
   white-space: nowrap;
   text-transform: none;
+}
+.nmx-data-table__row-cell--xs {
+  --nmx-data-table__row-cell-spacing: var(--nmx-spacing-xs);
+}
+.nmx-data-table__row-cell--sm {
+  --nmx-data-table__row-cell-spacing: var(--nmx-spacing-sm);
+}
+.nmx-data-table__row-cell--md {
+  --nmx-data-table__row-cell-spacing: var(--nmx-spacing-md);
+}
+.nmx-data-table__row-cell--lg {
+  --nmx-data-table__row-cell-spacing: var(--nmx-spacing-lg);
+}
+.nmx-data-table__row-cell--xl {
+  --nmx-data-table__row-cell-spacing: var(--nmx-spacing-xl);
+}
+.nmx-data-table__row-cell:first-child {
+  padding-left: var(--nmx-spacing-md);
+}
+.nmx-data-table__row-cell:last-child {
+  padding-right: var(--nmx-spacing-md);
 }
 .nmx-data-table__header-cell, .nmx-data-table__row-cell {
   overflow: hidden;
@@ -1781,6 +1805,9 @@ input[type=number] {
   padding: var(--nmx-spacing-md) var(--nmx-spacing-lg);
   font-size: var(--nmx-font-size-sm);
   cursor: pointer;
+}
+.nmx-select__option:nth-child(even) {
+  background: color-mix(in oklab, var(--nmx-color-surface-mid) 40%, transparent);
 }
 .nmx-select__option:hover {
   background: var(--nmx-color-surface-high);
