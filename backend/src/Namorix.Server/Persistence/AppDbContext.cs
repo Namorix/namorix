@@ -25,6 +25,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     
     public DbSet<FgReverseProxyRule> FgReverseProxyRules { get; set; }
     public DbSet<FgCertificate> FgCertificates { get; set; }
+    public DbSet<FgCertificateDomain> FgCertificateDomains { get; init; } = null!;
     public DbSet<FgAccessPolicy> FgAccessPolicies { get; set; }
     public DbSet<FgReverseProxyLocation> FgReverseProxyLocations { get; set; }
 
@@ -101,6 +102,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .Property(c => c.Source)
             .HasConversion<string>()
             .HasMaxLength(20);
+        
+        modelBuilder.Entity<FgCertificateDomain>(entity =>
+        {
+            entity.HasIndex(d => d.Domain); // Index for future SNI lookup
+    
+            entity.HasOne(d => d.Certificate)
+                .WithMany(c => c.CertificateDomains)
+                .HasForeignKey(d => d.CertificateId)
+                .OnDelete(DeleteBehavior.Cascade); // Delete cert -> delete domains as well
+        });
         
         modelBuilder.Entity<FgAccessPolicy>()
             .HasMany(p => p.ReverseProxyRules)

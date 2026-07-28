@@ -16,7 +16,9 @@ public class FgCertificate
 {
     [Key]
     [MaxLength(32)] public string Id { get; init; } = Guid.NewGuid().ToString("N");
-    [MaxLength(500)] public string Domain { get; init; } = string.Empty;   // wildcard: *.namorix.local
+    
+    public ICollection<FgCertificateDomain> CertificateDomains { get; init; } = new List<FgCertificateDomain>();
+    
     [MaxLength(50)] public string Issuer { get; init; } = "Let's Encrypt";
     
     public FgCertificateSource Source { get; init; } = FgCertificateSource.LetsEncryptHttp;

@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +21,11 @@ public class FrontgateController(AppDbContext db, DataDirectory dataDir) : Contr
 {
     private const string RuleNotFound = "RULE_NOT_FOUND";
     private const string CertificateNotFound = "CERTIFICATE_NOT_FOUND";
+    private const string CertificateKeyToLarge = "CERTIFICATE_KEY_TOO_LARGE";
+    private const string CertificateTooLarge = "CERTIFICATE_TOO_LARGE";
+    private const string CertificateIntermediateTooLarge = "CERTIFICATE_INTERMEDIATE_TOO_LARGE";
     private const string DuplicateSourceError = "DUPLICATE_SOURCE";
+    private const string InvalidCertificate = "INVALID_CERTIFICATE";
     
     [HttpGet("reverse-proxy")]
     public async Task<IActionResult> ListRules([FromQuery] int page = 1, [FromQuery] int size = 20)
@@ -36,6 +42,23 @@ public class FrontgateController(AppDbContext db, DataDirectory dataDir) : Contr
         
         return Ok(ApiResponse.Ok(new { items, total }));
     }
+    
+    [HttpGet("certificates/unused-domains")]
+    public async Task<IActionResult> GetUnusedDomains()
+    {
+        var usedDomains = await db.FgCertificateDomains
+            .Select(d => d.Domain)
+            .ToListAsync();
+    
+        var unused = await db.FgReverseProxyRules
+            .Where(r => r.CertificateId == null)
+            .Select(r => r.Source)
+            .Where(s => !usedDomains.Contains(s))
+            .ToListAsync();
+    
+        return Ok(ApiResponse.Ok(unused));
+    }
+
     
     [HttpPost("reverse-proxy")]
     [Validate(typeof(FrontgateRuleSchema))]
@@ -163,11 +186,15 @@ public class FrontgateController(AppDbContext db, DataDirectory dataDir) : Contr
     {
         var query = db.FgCertificates
             .OrderByDescending(c => c.CreatedAt)
-            .Select(c => new {
-                c.Id, c.Domain, c.Issuer, c.Type,
+            .Select(c => new
+            {
+                c.Id,
+                domains = c.CertificateDomains.Select(d => d.Domain).ToList(),
+                c.Issuer, c.Type,
                 source = c.Source,
                 status = c.Status,
                 isInUse = c.ReverseProxyRules.Any(),
+                createdAt = c.CreatedAt,
                 expiresAt = c.ExpiresAt,
             });
 
@@ -184,11 +211,15 @@ public class FrontgateController(AppDbContext db, DataDirectory dataDir) : Contr
     {
         var items = await db.FgCertificates
             .OrderByDescending(c => c.CreatedAt)
-            .Select(c => new {
-                c.Id, c.Domain, c.Issuer, c.Type,
+            .Select(c => new
+            {
+                c.Id,
+                domains = c.CertificateDomains.Select(d => d.Domain).ToList(),
+                c.Issuer, c.Type,
                 source = c.Source,
                 status = c.Status,
                 isInUse = c.ReverseProxyRules.Any(),
+                createdAt = c.CreatedAt,
                 expiresAt = c.ExpiresAt,
             })
             .ToListAsync();
@@ -215,11 +246,19 @@ public class FrontgateController(AppDbContext db, DataDirectory dataDir) : Contr
         // TODO: ACME HTTP-01 challenge via Certes
         var cert = new FgCertificate
         {
-            Domain = request.Domain,
+            CertificateDomains =
+            [
+                .. request.Domains.Select(d => new FgCertificateDomain
+                {
+                    Domain = d,
+                })
+            ],
             Type = Enum.Parse<CertificateType>(request.KeyType, ignoreCase: true),
             Source = FgCertificateSource.LetsEncryptHttp,
             Status = FgCertificateStatus.Pending,
+            AutoRenew = request.AutoRenew,
         };
+        
         db.FgCertificates.Add(cert);
         await db.SaveChangesAsync();
         return Ok(ApiResponse.Ok(cert));
@@ -231,39 +270,71 @@ public class FrontgateController(AppDbContext db, DataDirectory dataDir) : Contr
     {
         var cert = new FgCertificate
         {
-            Domain = request.Domain,
+            CertificateDomains =
+            [
+                .. request.Domains.Select(d => new FgCertificateDomain
+                {
+                    Domain = d,
+                })
+            ],
             Type = Enum.Parse<CertificateType>(request.KeyType, ignoreCase: true),
             Source = FgCertificateSource.LetsEncryptDns,
             Status = FgCertificateStatus.Pending,
             DnsProviderId = request.DnsProviderId,
+            AutoRenew = request.AutoRenew,
         };
+        
         db.FgCertificates.Add(cert);
         await db.SaveChangesAsync();
         return Ok(ApiResponse.Ok(cert));
     }
-
+    
     [HttpPost("certificates/custom")]
     public async Task<IActionResult> CreateCustomCert(
         [FromBody] CreateCustomCertRequest request)
     {
-        var name = request.Name;
-        var keyPath = dataDir.WriteFile(
-            $"certs/{name}/privkey.pem",
-            Encoding.UTF8.GetBytes(request.CertificateKey));
+        const int maxSize = 64 * 1024; // 64KB
+        
+        // Size limit (DoS protection)
+        if (request.CertificateKey.Length > maxSize)
+            return BadRequest(ApiResponse.Fail(CertificateKeyToLarge));
+        
+        if (request.Certificate.Length > maxSize)
+            return BadRequest(ApiResponse.Fail(CertificateTooLarge));
+        
+        if (request.Intermediate?.Length > maxSize)
+            return BadRequest(ApiResponse.Fail(CertificateIntermediateTooLarge));
 
+        // Parse + validate PEM: keypair match, passphrase, format
+        X509Certificate2 parsedCert;
+        try
+        {
+            parsedCert = X509Certificate2.CreateFromPem(request.Certificate, request.CertificateKey);
+        }
+        catch (CryptographicException)
+        {
+            return BadRequest(ApiResponse.Fail(InvalidCertificate));
+        }
+        
+        var name = request.Name;
         var certContent = string.IsNullOrEmpty(request.Intermediate)
             ? request.Certificate
             : $"{request.Certificate}\n{request.Intermediate}";
         
-        var certPath = dataDir.WriteFile(
-            $"certs/{name}/fullchain.pem",
-            Encoding.UTF8.GetBytes(certContent));
-
+        dataDir.WriteFile($"certs/{name}/privkey.pem", Encoding.UTF8.GetBytes(request.CertificateKey));
+        dataDir.WriteFile($"certs/{name}/fullchain.pem", Encoding.UTF8.GetBytes(certContent));
+        
         var cert = new FgCertificate
         {
-            Domain = name,
             Source = FgCertificateSource.Custom,
             Status = FgCertificateStatus.Active,
+            Type = parsedCert.GetRSAPrivateKey() != null ? CertificateType.Rsa : CertificateType.Ecdsa,
+            Issuer = parsedCert.Issuer,
+            ExpiresAt = parsedCert.NotAfter.ToUniversalTime(),
+            CertificateDomains = new List<FgCertificateDomain>
+            {
+                new() { Domain = name }
+            },
         };
         
         db.FgCertificates.Add(cert);
@@ -307,13 +378,16 @@ public abstract record LocationRequest(
 );
 
 public record CreateLetsEncryptCertRequest(
-    string Domain,
-    string KeyType  // "rsa" | "ecdsa"
+    List<string> Domains,
+    string KeyType,
+    bool AutoRenew
 );
 public record CreateLetsEncryptDnsCertRequest(
-    string Domain,
+    List<string> Domains,
     string KeyType,
-    string DnsProviderId
+    string DnsProviderId,
+    bool AutoRenew
+
 );
 public record CreateCustomCertRequest(
     string Name,
