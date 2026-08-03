@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useState } from "react"
 import {
   NmxAlertDialog,
+  NmxAlign,
   NmxBadge,
   NmxButton,
   NmxDataTable,
   type NmxDataTableColumn,
-  type NmxDataTableFallback,
+  type NmxFallback,
   NmxFileInput,
   NmxForm,
   NmxFormField,
@@ -164,14 +165,14 @@ export const FrontgateCertificate: React.FC = () => {
     frontgateController
       .listDnsProviders()
       .then(setDnsProviders)
-      .catch((err) => nmxToast.error(err))
+      .catch(nmxToast.error)
   }, [])
 
   useEffect(() => {
     frontgateController
       .listUnusedDomains()
       .then(setDomainSuggestions)
-      .catch((err) => nmxToast.error(err))
+      .catch(nmxToast.error)
   }, [])
 
   const handleAction = useCallback(
@@ -302,10 +303,8 @@ export const FrontgateCertificate: React.FC = () => {
           }
           onSelect={(menu) => handleAction(menu, row)}
           variant="ghost"
-          semantic="trace"
           arrowDisabled={true}
           dividerIndexes={[{ value: "delete", position: "top" }]}
-          className="nmx-addon-frontgate__btn-menu"
         >
           <NmxIconFont symbol={NmxIconFontSymbol.MENU_VERTICAL} />
         </NmxMenuButton>
@@ -314,6 +313,7 @@ export const FrontgateCertificate: React.FC = () => {
       alignHeader: "center",
       alignCell: "center",
       disableEllipsisCell: true,
+      btnIsMenu: true,
     },
   ]
 
@@ -353,7 +353,7 @@ export const FrontgateCertificate: React.FC = () => {
     }),
   )
 
-  const fallbackConditions: NmxDataTableFallback[] = [
+  const fallbackConditions: NmxFallback[] = [
     { state: "loading", condition: loading },
     { state: "error", condition: !!error },
     { state: "empty", condition: certs.length === 0 },
@@ -361,7 +361,7 @@ export const FrontgateCertificate: React.FC = () => {
 
   return (
     <div className="nmx-addon-frontgate__page">
-      <div className="nmx-addon-frontgate__actions">
+      <NmxAlign direction="row" justify="end">
         <NmxMenuButton
           options={certOptions}
           onSelect={(value) => {
@@ -387,7 +387,7 @@ export const FrontgateCertificate: React.FC = () => {
           <NmxIconFont symbol={NmxIconFontSymbol.REFRESH} />
           <span>{t("addon.frontgate.pages.certificate.actions.refresh")}</span>
         </NmxButton>
-      </div>
+      </NmxAlign>
 
       <NmxDataTable
         columns={columns}

@@ -14,12 +14,12 @@ export function useAppearanceSync() {
   const user = useUserStore()
 
   useEffect(() => {
-    authController.loadAppearance().catch((err) => nmxToast.error(err))
+    authController.loadAppearance().catch(nmxToast.error)
   }, [user])
 
   useSignalREvent(SignalREvent.SystemConfigChanged, (data: ConfigChanged) => {
     if (data.key === NMX_APPEARANCE_DEFAULTS_KEY) {
-      authController.loadAppearance().catch((err) => nmxToast.error(err))
+      authController.loadAppearance().catch(nmxToast.error)
     }
   })
 
@@ -27,7 +27,7 @@ export function useAppearanceSync() {
     SignalREvent.UserSettingsChanged,
     (data: UserSettingsChanged) => {
       if (user?.id === data.userId) {
-        authController.loadAppearance().catch((err) => nmxToast.error(err))
+        authController.loadAppearance().catch(nmxToast.error)
       }
     },
   )

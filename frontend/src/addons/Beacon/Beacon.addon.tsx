@@ -10,8 +10,6 @@ registerAddon(
       description: "Updates your DNS when your IP changes",
       localeKey: NmxAddonLocaleKeys.beacon,
       icon: NmxIconSvgSymbol.APP_BEACON,
-      defaultWidth: 450,
-      defaultHeight: 770,
     },
     Beacon,
   ),

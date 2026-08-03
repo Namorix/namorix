@@ -48,7 +48,7 @@ export const App: React.FC = () => {
         }
         addOnCloseHandler(handler)
       })
-      .catch((err) => nmxToast.error(err))
+      .catch(nmxToast.error)
       .finally(() => setChecking(false))
 
     return () => removeOnCloseHandler(handler)

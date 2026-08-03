@@ -2,11 +2,12 @@ import React, { useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
   NmxAlertDialog,
+  NmxAlign,
   NmxBadge,
   NmxButton,
   NmxDataTable,
   type NmxDataTableColumn,
-  type NmxDataTableFallback,
+  type NmxFallback,
   NmxForm,
   NmxFormField,
   NmxFormInput,
@@ -206,7 +207,7 @@ export const FrontgateReverseProxy: React.FC = () => {
           })),
         ] as NmxSelectData[])
       })
-      .catch((err) => nmxToast.error(err))
+      .catch(nmxToast.error)
   }, [dateOnly, t])
 
   const resetForm = useCallback(() => {
@@ -539,7 +540,6 @@ export const FrontgateReverseProxy: React.FC = () => {
             e.stopPropagation()
             handleDelete(row)
           }}
-          className="nmx-addon-frontgate__btn-delete"
           data-row-action
         >
           <NmxIconFont symbol={NmxIconFontSymbol.DELETE} />
@@ -549,10 +549,11 @@ export const FrontgateReverseProxy: React.FC = () => {
       alignHeader: "center",
       alignCell: "center",
       disableEllipsisCell: true,
+      btnIsIcon: true,
     },
   ]
 
-  const fallbackConditions: NmxDataTableFallback[] = [
+  const fallbackConditions: NmxFallback[] = [
     {
       state: "loading",
       condition: loading,
@@ -621,7 +622,7 @@ export const FrontgateReverseProxy: React.FC = () => {
 
   return (
     <div className="nmx-addon-frontgate__page">
-      <div className="nmx-addon-frontgate__actions">
+      <NmxAlign direction="row" justify="end">
         <NmxButton onClick={() => handleDialogOpen()} semantic="success">
           <NmxIconFont symbol={NmxIconFontSymbol.ADD} />
           <span>
@@ -632,7 +633,7 @@ export const FrontgateReverseProxy: React.FC = () => {
           <NmxIconFont symbol={NmxIconFontSymbol.REFRESH} />
           <span>{t("addon.frontgate.pages.reverseProxy.actions.refresh")}</span>
         </NmxButton>
-      </div>
+      </NmxAlign>
       <div className="nmx-addon-frontgate__list">
         <NmxDataTable
           columns={columns}

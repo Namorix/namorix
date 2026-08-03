@@ -1,4 +1,9 @@
 {
+  "common": {
+    "fields": {
+      "hostname": "Hostname"
+    }
+  },
   "blocked": {
     "untrusted": {
       "title": "Untrusted Proxy Detected",
@@ -374,7 +379,10 @@
         "certificateKeyTooLarge": "Certificate key exceeds maximum size",
         "certificateTooLarge": "Certificate exceeds maximum size",
         "certificateIntermediateTooLarge": "Intermediate certificate exceeds maximum size",
-        "invalidCertificate": "Invalid certificate or key. Make sure the key and certificate match and the key has no passphrase"
+        "invalidCertificate": "Invalid certificate or key. Make sure the key and certificate match and the key has no passphrase",
+        "certificateAlreadyExists": "A certificate with this identifier already exists",
+        "certificateDomainsRequired": "Certificate must include at least one domain",
+        "wildcardNotAllowed": "Wildcard certificates are not allowed"
       },
       "pages": {
         "reverseProxy": {
@@ -625,7 +633,181 @@
     },
     "beacon": {
       "title": "Beacon",
-      "description": "Updates your DNS when your IP changes"
+      "description": "Updates your DNS when your IP changes",
+      "tabs": {
+        "hostnames": "Hostnames",
+        "activity": "Activity log",
+        "settings": "Settings"
+      },
+      "nav": {
+        "healthy": "{{healthy}}/{{total}} healthy",
+        "lastCheck": "Last check {{time}} ago"
+      },
+      "errors": {
+        "noIp": "No public IP is available to push",
+        "invalidCredentials": "Provider rejected the credentials — check your token or API key",
+        "hostnameNotFound": "Hostname '{{hostname}}' was not found with this provider",
+        "zoneNotFound": "Zone '{{zone}}' was not found with this provider",
+        "accountBlocked": "Provider blocked this account — contact support if you believe this is a mistake",
+        "unavailable": "Provider service is temporarily unavailable — will retry on the next check",
+        "rateLimited": "Provider rate limited the request — will retry on the next check",
+        "providerError": "Provider returned an error (HTTP {{httpStatus}})",
+        "recordNotFound": "Hostname not found",
+        "duplicateHostname": "This hostname is already tracked",
+
+        "configInvalid": "Missing required config field: {{field}}",
+        "configFields": {
+          "urlTemplate": "URL template",
+          "endpointTemplate": "Endpoint URL",
+          "recordLookupTemplate": "Record lookup URL",
+          "token": "Token",
+          "username": "Username",
+          "password": "Password",
+          "apiToken": "API Token",
+          "apiKey": "API Key",
+          "apiSecret": "API Secret",
+          "zone": "Zone"
+        }
+      },
+      "hostnames": {
+        "add": "Add hostname",
+        "fields": {
+          "hostname": "Hostname",
+          "provider": "Provider",
+          "currentIp": "Current IP",
+          "status": "Status"
+        },
+        "actions": {
+          "delete": "Delete",
+          "disable": "Disable",
+          "enable": "Enable"
+        },
+
+        "fallbacks": {
+          "loading": "Loading hostnames…",
+          "error": "Failed to load hostnames",
+          "empty": "No hostnames yet. Add one to keep a domain pointed at this network."
+        },
+
+        "status": {
+          "active": "Active",
+          "disabled": "Disabled",
+          "error": "Error"
+        },
+
+        "feedback": {
+          "createSuccess": "Hostname added",
+          "createError": "Failed to add hostname",
+          "updateSuccess": "Hostname updated",
+          "updateError": "Failed to update hostname",
+          "deleteSuccess": "Hostname removed",
+          "deleteError": "Failed to remove hostname",
+          "deleteConfirm": "Remove [color:warning]{{hostname}}[/color] permanently? This cannot be undone",
+          "enableSuccess": "Hostname enabled",
+          "disableSuccess": "Hostname disabled",
+          "toggleError": "Failed to update hostname status"
+        }
+      },
+      "providers": {
+        "cloudflare": "Cloudflare",
+        "namecheap": "Namecheap",
+        "noip": "No-IP",
+        "duckdns": "DuckDNS",
+        "dynu": "Dynu",
+        "godaddy": "GoDaddy",
+        "custom": "Custom provider"
+      },
+      "addDialog": {
+        "title": "Add hostname",
+        "editTitle": "Edit hostname",
+        "provider": "Provider",
+        "empty": "Choose a provider to continue",
+        "hostname": "Hostname",
+        "hostnamePlaceholder": "e.g. home.izerocs.space",
+        "token": "Update token / password",
+        "tokenHint": "Not your account password — a DDNS-specific key from the provider's dashboard.",
+        "getMethod": "single signed GET request on each check — no record ID lookup needed.",
+        "apiToken": "API token",
+        "zone": "Zone / domain",
+        "restMethod": "Beacon looks up the record ID once, then sends a REST update whenever the IP changes.",
+        "providerLabel": "Provider label",
+        "providerLabelHint": "Just for display in your hostname list.",
+        "providerLabelPlaceholder": "e.g. Self-hosted PowerDNS",
+        "updateStyle": "Update style",
+        "simpleGet": "Simple GET",
+        "simpleGetDesc": "One URL, plain-text response",
+        "restJson": "REST / JSON",
+        "restJsonDesc": "Method + body, JSON response",
+        "urlTemplate": "Update URL template",
+        "urlTemplateHint": "Available placeholders: {hostname} {ip} {ipv6} {token} {user} {password}",
+        "urlTemplatePlaceholder": "https://ddns.example.com/update?host={hostname}&ip={ip}&token={token}",
+        "auth": "Auth",
+        "authNone": "None (token in URL)",
+        "authBasic": "HTTP Basic",
+        "successMeans": "Success means",
+        "successContains": "Response contains \"OK\"",
+        "successHttp200": "HTTP 200 status only",
+        "successCustom": "Custom match…",
+        "endpointUrl": "Endpoint URL",
+        "method": "Method",
+        "methodPatch": "PATCH",
+        "methodPut": "PUT",
+        "methodPost": "POST",
+        "authType": "Auth type",
+        "authBearer": "Bearer token",
+        "authCustomHeader": "Custom header",
+        "credential": "Credential",
+        "bodyTemplate": "Request body template",
+        "bodyTemplateHint": "JSON — placeholders same as above",
+        "successPath": "Success path",
+        "successPathHint": "e.g. \"success\" — checked for a truthy value in the JSON response",
+        "test": "Test connection",
+        "testSuccess": "Reached endpoint and parsed a valid response.",
+        "testError": "Request failed — check the URL, auth, and success-match settings.",
+        "cancel": "Cancel",
+        "save": "Save hostname",
+
+        "credentialFields": {
+          "username": "Username",
+          "password": "Password",
+          "token": "Token",
+          "apiToken": "API Token",
+          "apiKey": "API Key",
+          "apiSecret": "API Secret",
+          "zone": "Zone"
+        }
+      },
+      "activity": {
+        "title": "Activity log",
+        "updated": "Updated to {{ip}}",
+        "rateLimited": "Rate limited, retry {{retryAt}}",
+        "refresh": "Refresh",
+
+        "fallbacks": {
+          "loading": "Loading activity…",
+          "error": "Failed to load activity",
+          "empty": "No activity yet."
+        }
+      },
+      "settings": {
+        "checkInterval": "Check interval",
+        "checkIntervalHint": "How often Beacon checks whether your public IP has changed.",
+        "interval5m": "Every 5 minutes",
+        "interval15m": "Every 15 minutes",
+        "interval1h": "Every hour",
+        "ipDetection": "IP detection service",
+        "ipDetectionHint": "Used to discover this network's current public IP.",
+        "ipAuto": "Auto (try multiple, use first response)",
+        "ipIfconfig": "ifconfig.co",
+        "ipIpify": "ipify.org",
+        "updateIpv6": "Also update IPv6 (AAAA) records when supported by the provider",
+        "save": "Save",
+
+        "feedback": {
+          "saveSuccess": "Settings saved",
+          "saveError": "Failed to save settings"
+        }
+      }
     }
   }
 }

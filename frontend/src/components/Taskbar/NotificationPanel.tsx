@@ -119,7 +119,7 @@ export const NotificationPanel = memo(() => {
             t("notification.deleteAllReadSuccess", { count: readCount }),
           )
         })
-        .catch((err) => nmxToast.error(err))
+        .catch(nmxToast.error)
     },
     [dispatch, readCount, t],
   )
@@ -150,7 +150,7 @@ export const NotificationPanel = memo(() => {
                 onClick={() => {
                   apiMarkAllAsRead()
                     .then(() => dispatch(markAllAsRead()))
-                    .catch((err) => nmxToast.error(err))
+                    .catch(nmxToast.error)
                 }}
               >
                 <NmxIconFont
@@ -218,7 +218,7 @@ export const NotificationPanel = memo(() => {
                 onRead={() => {
                   apiMarkAsRead(notification.id)
                     .then(() => dispatch(markAsRead(notification.id)))
-                    .catch((err) => nmxToast.error(err))
+                    .catch(nmxToast.error)
                 }}
                 onDetail={() => setDetail(notification)}
               />

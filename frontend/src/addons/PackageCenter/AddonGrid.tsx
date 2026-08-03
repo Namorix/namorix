@@ -172,7 +172,7 @@ export const AddonGrid: React.FC = () => {
   )
 
   useEffect(() => {
-    loadData().catch((err) => nmxToast.error(err))
+    loadData().catch(nmxToast.error)
   }, [loadData])
 
   useServerSignalREvent<{ addonId: string; taskPhase: string | null }>(

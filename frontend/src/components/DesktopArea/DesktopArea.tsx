@@ -79,7 +79,7 @@ export const DesktopArea: React.FC = () => {
 
   const handleDisabledClick = (addon: AddonItem) => {
     if (isUserRoleAdmin) {
-      addonController.start(addon.id).catch((err) => nmxToast.error(err))
+      addonController.start(addon.id).catch(nmxToast.error)
     }
   }
 
@@ -88,7 +88,7 @@ export const DesktopArea: React.FC = () => {
       addonController
         .list()
         .then((list) => dispatch(setAddons(list.map(mapDtoToManifest))))
-        .catch((err) => nmxToast.error(err))
+        .catch(nmxToast.error)
       return
     }
 
@@ -97,7 +97,7 @@ export const DesktopArea: React.FC = () => {
         dispatch(setAddons(list.map(mapDtoToManifest)))
         dispatch(setCatalog(catalog))
       })
-      .catch((err) => nmxToast.error(err))
+      .catch(nmxToast.error)
   }, [dispatch, isUserRoleAdmin])
 
   return (

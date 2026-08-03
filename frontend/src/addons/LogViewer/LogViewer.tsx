@@ -16,7 +16,6 @@ import {
   NmxDataTable,
   NmxPagination,
   type NmxDataTableColumn,
-  type NmxDataTableFallback,
   type NmxSemanticColor,
   NmxSearchInput,
   NmxHorizontalWrap,
@@ -28,6 +27,7 @@ import {
   NmxAlertDialog,
   NmxMetaList,
   NmxMetaItem,
+  type NmxFallback,
 } from "@namorix/ui"
 import { logController } from "./log.controller"
 
@@ -179,7 +179,7 @@ export const LogViewer: React.FC = () => {
     },
   ]
 
-  const fallbackConditions: NmxDataTableFallback[] = [
+  const fallbackConditions: NmxFallback[] = [
     {
       state: "loading",
       condition: loading && entries.length === 0,

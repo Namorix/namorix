@@ -61,14 +61,14 @@ export const SettingsAppearance: React.FC = () => {
     settingsController
       .getAppearanceOptions()
       .then(setOptions)
-      .catch((err) => nmxToast.error(err))
+      .catch(nmxToast.error)
 
     settingsController
       .getThemes()
       .then((list) =>
         setThemes(list.map((t) => ({ value: t.id, label: t.name }))),
       )
-      .catch((err) => nmxToast.error(err))
+      .catch(nmxToast.error)
 
     settingsController
       .getUserSettings()
@@ -97,7 +97,7 @@ export const SettingsAppearance: React.FC = () => {
           s.appearance_date_format ?? AppearanceDefaults.appearance_date_format,
         )
       })
-      .catch((err) => nmxToast.error(err))
+      .catch(nmxToast.error)
   }, [])
 
   const densityIconMap: Record<string, NmxIconFontSymbol> = {

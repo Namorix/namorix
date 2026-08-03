@@ -2,6 +2,7 @@ import {
   NmxAlertDialog,
   NmxBadge,
   NmxDataTable,
+  type NmxFallback,
   NmxMetaItem,
   NmxMetaList,
   NmxPagination,
@@ -9,7 +10,7 @@ import {
 import React, { useCallback, useEffect, useRef, useState } from "react"
 import { trafficController, type TrafficLog } from "./traffic.controller"
 import { useTranslation } from "react-i18next"
-import type { NmxDataTableColumn, NmxDataTableFallback } from "@namorix/ui"
+import type { NmxDataTableColumn } from "@namorix/ui"
 import { methodToSemantic, statusToSemantic } from "./utils"
 import {
   formatDuration,
@@ -150,7 +151,7 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
     },
   ]
 
-  const fallbackConditions: NmxDataTableFallback[] = [
+  const fallbackConditions: NmxFallback[] = [
     {
       state: "loading",
       condition: loading,
