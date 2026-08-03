@@ -1,0 +1,68 @@
+@use "../abstract/mixins" as *;
+
+.nmx-align {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--nmx-align-spacing, var(--nmx-spacing-md));
+  padding: var(--nmx-spacing-md);
+  min-width: 0;
+
+  @include spacings("nmx-align");
+
+  &--column {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  &--wrap {
+    flex-wrap: wrap;
+  }
+
+  &--grow {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &--align-start {
+    align-items: flex-start;
+  }
+
+  &--align-end {
+    align-items: flex-end;
+  }
+
+  &--align-stretch {
+    align-items: stretch;
+  }
+
+  &--align-baseline {
+    align-items: baseline;
+  }
+
+  &--justify-start {
+    justify-content: flex-start;
+  }
+
+  &--justify-center {
+    justify-content: center;
+  }
+
+  &--justify-end {
+    justify-content: flex-end;
+  }
+
+  &--justify-between {
+    justify-content: space-between;
+  }
+
+  &--justify-around {
+    justify-content: space-around;
+  }
+
+  &--justify-evenly {
+    justify-content: space-evenly;
+  }
+}

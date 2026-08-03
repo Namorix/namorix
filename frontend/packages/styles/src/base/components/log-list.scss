@@ -1,0 +1,67 @@
+@use "../abstract/mixins" as *;
+
+.nmx-log-list {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--nmx-spacing-xs);
+  min-height: 0;
+  overflow-y: auto;
+
+  @include scrollbar;
+
+  &--contained {
+    background: var(--nmx-color-surface-low);
+    box-shadow: var(--nmx-shadow-sm);
+  }
+
+  &__item {
+    display: flex;
+    align-items: baseline;
+    gap: var(--nmx-spacing-md);
+    padding: var(--nmx-spacing-md);
+
+    &:nth-child(even) {
+      background: color-mix(
+        in oklab,
+        var(--nmx-color-surface-mid) 40%,
+        transparent
+      );
+    }
+  }
+
+  &__item-time {
+    flex-shrink: 0;
+    font-family: var(--nmx-font-mono), serif;
+    font-size: var(--nmx-font-size-xs);
+    color: var(--nmx-color-on-surface-variant);
+    white-space: nowrap;
+  }
+
+  &__item-message {
+    font-size: var(--nmx-font-size-sm);
+    word-break: break-word;
+    color: var(--nmx-log-text, var(--nmx-color-on-surface));
+
+    @include semantic-variants("nmx-log", false, true);
+  }
+
+  &__fallback {
+    color: var(--nmx-color-on-surface-variant);
+    font-size: var(--nmx-font-size-sm);
+    padding: var(--nmx-spacing-lg);
+    text-align: center;
+
+    &--empty {
+      color: var(--nmx-color-warning);
+    }
+
+    &--error {
+      color: var(--nmx-color-error);
+    }
+
+    &--loading {
+      color: var(--nmx-color-on-surface);
+    }
+  }
+}

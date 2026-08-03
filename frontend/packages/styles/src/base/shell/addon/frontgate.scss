@@ -8,23 +8,7 @@
     @include scrollbar;
   }
 
-  &__page {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-  }
-
-  &__actions {
-    display: flex;
-    flex-direction: row;
-    flex-shrink: 0;
-    align-items: center;
-    margin-left: auto;
-    padding: var(--nmx-spacing-md);
-    gap: var(--nmx-spacing-md);
-  }
-
+  &__page,
   &__list {
     display: flex;
     flex-direction: column;
@@ -42,21 +26,10 @@
     text-align: center;
   }
 
-  &__btn-delete,
-  &__btn-menu {
-    font-size: var(--nmx-font-size-md);
-    padding-left: var(--nmx-spacing-sm);
-    padding-right: var(--nmx-spacing-sm);
-  }
-
-  &__btn-menu {
-    color: var(--nmx-color-on-surface);
-  }
-
   &__domain-wrap {
     display: flex;
     flex-direction: column;
-    gap: var(--nmx-spacing-md);
+    gap: var(--nmx-spacing-sm);
   }
 
   &__domain-list,

@@ -13,6 +13,10 @@
     --nmx-rail-current-width: var(--nmx-rail-collapse-width);
   }
 
+  &--collapsed &__footer {
+    display: none;
+  }
+
   &--disable-collapsed .nmx-rail-item--active {
     pointer-events: none;
     cursor: auto;
@@ -26,6 +30,7 @@
     background: var(--nmx-color-surface-low);
     box-shadow: var(--nmx-shadow-sm);
     transition: width var(--nmx-duration-normal) var(--nmx-easing-standard);
+    z-index: 1000;
   }
 
   &-content {
@@ -34,12 +39,28 @@
     padding: var(--nmx-spacing-3xl) var(--nmx-spacing-md);
     overflow-x: hidden;
     overflow-y: auto;
+    z-index: 0;
 
     @include scrollbar();
+
+    &--spacing-horizontal-disabled {
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    &--spacing-vertical-disabled {
+      padding-top: 0;
+      padding-bottom: 0;
+    }
 
     .nmx-addon-page {
       display: contents;
     }
+  }
+
+  &__footer {
+    margin-top: auto;
+    padding: var(--nmx-spacing-sm);
   }
 }
 

@@ -1,3 +1,5 @@
+@use "../abstract/mixins" as *;
+
 .nmx-toast-provider {
   position: fixed;
   top: var(--nmx-spacing-lg);
@@ -32,6 +34,8 @@
   max-width: min(420px, calc(100vw - var(--nmx-spacing-lg) * 2));
   font-size: var(--nmx-font-size-sm);
   font-family: inherit;
+
+  @include user-select;
 
   &--success {
     --nmx-toast-color: var(--nmx-color-success);

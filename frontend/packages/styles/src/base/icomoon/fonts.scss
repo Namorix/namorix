@@ -16,6 +16,16 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.ic-activity {
+  &:before {
+    content: $ic-activity; 
+  }
+}
+.ic-hostname {
+  &:before {
+    content: $ic-hostname; 
+  }
+}
 .ic-file-link {
   &:before {
     content: $ic-file-link; 

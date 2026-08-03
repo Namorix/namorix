@@ -150,4 +150,15 @@
       color: var(--nmx-color-warning);
     }
   }
+
+  &--btn-icon .nmx-button,
+  &--btn-menu .nmx-button {
+    font-size: var(--nmx-font-size-md);
+    padding-left: var(--nmx-spacing-sm);
+    padding-right: var(--nmx-spacing-sm);
+  }
+
+  &--btn-menu .nmx-button {
+    color: var(--nmx-color-on-surface);
+  }
 }
