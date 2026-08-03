@@ -12,4 +12,5 @@ export type ApiResponse<T = null> =
       code?: ApiErrorCode
       field?: string
       meta?: ValidationErrorMeta
+      params?: Record<string, unknown>
     }

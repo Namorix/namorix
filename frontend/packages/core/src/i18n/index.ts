@@ -10,7 +10,10 @@ const _coreLocales = {
 } satisfies Record<NmxI18nLang, Record<string, unknown>>
 
 export class NmxI18n {
-  private _resources: Record<string, Record<string, Record<string, unknown>>>
+  private readonly _resources: Record<
+    string,
+    Record<string, Record<string, unknown>>
+  >
   private _started = false
 
   constructor() {

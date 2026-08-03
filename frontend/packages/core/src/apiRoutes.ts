@@ -9,6 +9,7 @@ export const API_NOTIFICATION_BASE = API_BASE + "/notifications"
 export const API_ADDON_BASE = API_BASE + "/addons"
 export const API_OAUTH_BASE = API_BASE + "/oauth"
 export const API_FRONTGATE_BASE = API_BASE + "/frontgate"
+export const API_BEACON_BASE = API_BASE + "/beacon"
 
 export const ApiAuthRoutes = {
   status: API_AUTH_BASE + "/status",
@@ -91,3 +92,14 @@ export const ApiFrontgateRoutes = {
   certificatesCustom: API_FRONTGATE_BASE + "/certificates/custom",
   dnsProviders: API_FRONTGATE_BASE + "/dns-providers",
 } as const
+
+export const ApiBeaconRoutes = {
+  hostnames: API_BEACON_BASE + "/hostnames",
+  hostnameById: (id: string) => `${API_BEACON_BASE}/hostnames/${id}`,
+  hostnameTest: API_BEACON_BASE + "/hostnames/test",
+  activity: API_BEACON_BASE + "/activity",
+  providers: API_BEACON_BASE + "/providers",
+  settings: API_BEACON_BASE + "/settings",
+  status: API_BEACON_BASE + "/status",
+  hostnameToggle: (id: string) => `${API_BEACON_BASE}/hostnames/${id}/toggle`,
+}

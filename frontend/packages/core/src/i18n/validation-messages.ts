@@ -235,7 +235,7 @@ export function formatCustomError(
 ): string | ApiError {
   if (!err.code) return err
   const i18nKey = codeMap[err.code] ?? err.code
-  const result = t(i18nKey)
+  const result = t(i18nKey, { field: err.field, ...(err.meta ?? {}) })
   return result !== i18nKey ? result : err
 }
 
