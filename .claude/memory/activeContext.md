@@ -25,7 +25,16 @@ M4 — External Addon System ✅ Complete
 
 ## Recent Changes
 
-Xem chi tiết tại [versionHistory-06-2026.md](versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
+Xem chi tiết tại [versionHistory-08-2026.md](versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
+
+### 2026-08-03 — Beacon DDNS addon đầy đủ + config validation + error i18n
+
+- Backend (Namorix.Server 0.60.0): Beacon full — BcnController (hostnames CRUD/toggle/test/activity/providers/settings/status), BcnProviderRegistry + 6 provider + custom SimpleGet/RestJson, BcnCheckWorker (update loop, backoff, status active/disabled/error), BcnActivityCleanupWorker (pruning 7d), IPublicIpDetector/PublicIpService, migrations. **Config validation 2 lớp**: runtime guard trong provider + save-time `BcnController.ValidateConfig` (built-in qua registry CredentialFields, custom theo Kind) → `BCN_CONFIG_INVALID` + `ApiResponse.Fail(..., field)`. Frontgate ACME: AcmeChallengeMiddleware + AcmeCertQueue + AcmeChallengeStore + FgErrorCodes. NEW dep Certes.
+- Namorix.Core 0.53.0: ApiResponse thêm `Params` field (additive) cho i18n params.
+- @namorix/core 0.54.0: Beacon API routes, ApiResponse/ApiError `params` field, `formatCustomError` giờ inject `{ field, ...meta }` vào `t()` (interpolate `{{field}}`).
+- @namorix/ui 0.36.0 + @namorix/styles 0.46.0: NEW NmxLogList, NmxAlign; NmxRail footer prop; NmxDataTable rowCellSpacing; beacon/log-list/align SCSS; icomoon + theme rebuild.
+- frontend 0.69.0: Beacon addon 3 tab (hostnames NmxDataTable + add/edit dialog + provider grid + custom toggle + Test connection; activity NmxLogList; settings). Error handling Beacon-local: `formatBeaconError` (configInvalid + configFields map), `missingField` pre-check, `fieldLabel` (TDZ fix — khai báo trước handleConfirm), authOptions bỏ `query`. en.json +186.
+- Frontend cache: các addon khác đổi `NmxDataTableFallback` → `NmxFallback`.
 
 ### 2026-07-28 — Frontgate Phase 2: Certificate domain table, createdAt column, Issues tab, rowCellSpacing, UTC parse fix
 

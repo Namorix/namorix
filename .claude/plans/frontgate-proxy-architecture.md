@@ -202,12 +202,21 @@ Thư viện ACME: **Certes** (`Certes` NuGet) — giao tiếp với Let's Encryp
 
 #### 🔨 Let's Encrypt via HTTP (HTTP-01)
 
-- [ ] **ACME challenge middleware**: serve `.well-known/acme-challenge/{token}` trên proxy port, đặt trước ForceSslMiddleware (tránh redirect HTTPS)
-- [ ] **Domain validation**: DNS lookup confirm domain trỏ đúng IP Frontgate trước khi gọi Certes, cảnh báo nếu chưa đúng
-- [ ] **Wildcard reject**: validate input, reject `*.` domain ở flow này
-- [ ] **Dry-run test**: nút "Test" ở UI = dry-run challenge trước khi Save, tránh burn Let's Encrypt rate-limit
+**Cơ chế async task (đã chọn — Option A):** POST `/certificates/letsencrypt-http` chỉ validate + tạo cert `Pending` + enqueue ACME task → return ngay (không block UI). Background worker chạy toàn bộ flow Certes (order → nhận token → lưu challenge → chờ LE verify → finalize → set `Active`/`Error` + lưu PEM). Frontend nhận SignalR status push để refresh — giống pattern `AddonTaskQueue`/`AddonTaskExecutor` sẵn có. Lý do: HTTP-01 mất 5-30s (chờ LE callback), block request dễ timeout và UX tệ khi thất bại. `FgCertPendingResetWorker` hiện có (Pending → Error khi restart) là safety net.
+
+- [x] **ACME challenge middleware**: `AcmeChallengeMiddleware` serve `.well-known/acme-challenge/{token}` trên proxy port, đặt trước `ForceSslMiddleware` (tránh redirect HTTPS). Serve token từ store, 404 nếu không tồn tại. Đăng ký đầu pipeline proxy trong `Program.cs`.
+- [x] **Challenge token storage**: `AcmeChallengeStore` — singleton in-memory `ConcurrentDictionary<string, string>` (token → keyAuthorization), Add/TryGet/Remove. Worker Add **trước** `Validate()`, Remove sau khi LE verify xong.
+- [x] **ACME worker**: `AcmeCertQueue` — `BackgroundService` theo pattern `AddonTaskQueue`: `Channel<string>` (bounded 50) + `SemaphoreSlim(2, 2)`, nhận certId → scope → Certes HTTP-01 flow (NewOrder → Authorizations → `auth.Http()` → store.Add(token, `KeyAuthz`) → Validate + poll 60s → store.Remove → `order.Generate(csr, certKey)` → `chain.ToPem(certKey)` + `certKey.ToPem()` → `WriteFile` `certs/{primary}/privkey.pem` + `fullchain.pem` → `ExecuteUpdateAsync` set Active + ExpiresAt + Issuer). Fail → set Error. Account key persist `pki/acme-account.key`. Dùng chung cho HTTP-01/DNS-01/auto-renew.
+- [x] **Certes integration**: `Directory.Packages.props` thêm `<PackageVersion Include="Certes" Version="3.0.4" />`, csproj thêm `PackageReference`. DI: `AddSingleton<AcmeCertQueue>` + `AddHostedService`. (API verify từ chính XML doc 3.0.4: `KeyAuthz` property, `order.Generate(csrInfo, key)`, `chain.ToPem(key)`.)
+- [x] **Controller wiring**: inject `AcmeCertQueue`, `CreateLetsEncryptCert` gọi `certQueue.EnqueueAsync(cert.Id)` sau SaveChanges (id do server sinh mỗi POST — không có đường FE gửi trùng id; worker guard `Status == Pending` chống enqueue trùng idempotent).
+- [x] **Dedup + validation**: `CERT_ALREADY_EXISTS` (chặn Pending/Active cùng primary domain) + `FrontgateCertSchema` (`[Validate]`): domain non-empty / format regex / wildcard reject (`WILDCARD_NOT_ALLOWED`), keyType chỉ `rsa`/`ecdsa`. Guard `CERT_DOMAINS_REQUIRED` chặn `.First()` 500 khi domains rỗng. FE: 2 error code mới (`CERT_DOMAINS_REQUIRED`, `WILDCARD_NOT_ALLOWED`) + i18n en.json. Schema chỉ áp dụng HTTP-01 (DNS-01 sẽ cần schema riêng cho phép wildcard).
+- [ ] **Domain validation — DNS lookup**: `DnsLookupChecker` — resolve A record (IPv4) từng domain, so với public IP server → **warning (không chặn)** nếu lệch, báo sớm trước khi tạo cert để khỏi đợi worker fail. Public IP: `AppConfig.FrontgatePublicIp` (optional override, ưu tiên nếu set) → rỗng mới auto-detect qua `api.ipify.org` (timeout 5s); ipify fail → **bỏ qua im lặng** (không warning, giữ nguyên behavior — server sau egress proxy/firewall vẫn dùng được nhờ override). Warning 2 loại: mismatch `DnsWarning(Domain, ResolvedIps[], ServerIp)` — có thể là CDN/reverse-proxy nên wording phải note CDN ("đảm bảo `.well-known/acme-challenge` được proxy về server"), không nói "IP không khớp" trần; no A record (`ResolvedIps` rỗng). DI: `AddSingleton<DnsLookupChecker>` (dùng `IOptions<AppConfig>` + ILogger). Gắn vào `CreateLetsEncryptCert` (trả `{ cert, warnings }`) lẫn dry-run.
+- [ ] **Dry-run test**: nút "Test" ở UI = `POST /certificates/letsencrypt-http/dry-run` (`CreateLetsEncryptDryRunRequest(Domains, KeyType)`, validate bằng `FrontgateCertSchema`) — `AcmeDryRunService` chạy **staging flow**: account key riêng `pki/acme-staging-account.key` (không trộn prod), NewOrder qua `LetsEncryptStagingV2` → `auth.Http()` → `challengeStore.Add(token, KeyAuthz)` → `challenge.Validate()` → **dừng ở challenge, không finalize/Generate** (không phát hành cert thật, tránh burn rate-limit LE prod). Sau mỗi lần validate (cả success lẫn fail) gọi `challengeStore.Remove(token)` — method **đã có sẵn** (worker prod cũng dùng), không cần thêm mới; nếu không dọn thì token in-memory sống tới khi restart server. Timeout 60s → `passed: false`. Response shape: `{ passed, message?, warnings[] }` — `warnings` là mảng **cấu trúc** (`{ domain, resolvedIps, serverIp }`) chứ không phải `string[]` thuần, để FE i18n hoá; `message` chỉ có khi `passed: false`. DI: `AddSingleton<AcmeDryRunService>` (dùng `AcmeChallengeStore` + `DataDirectory` — cả 2 singleton). FE: nối `onExtraAction` của nút Test (hiện đang dead), disable khi đang chạy.
+- [ ] **SignalR cert status push**: notify khi cert status đổi (Pending → Active/Error) để frontend tự refresh list
 
 #### 🔨 Let's Encrypt via DNS (DNS-01)
+
+**Cơ chế async task:** giống HTTP-01 — POST tạo `Pending` + enqueue, dùng chung **ACME worker** (chỉ khác challenge: tạo TXT record → chờ propagation → verify → cleanup).
 
 - [ ] **`IDnsProvider` interface**: `CreateTxtRecordAsync(domain, token)` / `DeleteTxtRecordAsync(domain, token)`
 - [ ] **`CloudflareDnsProvider`**: implement đầu tiên (dùng API token, không dùng Global API Key)
@@ -231,7 +240,7 @@ Thư viện ACME: **Certes** (`Certes` NuGet) — giao tiếp với Let's Encryp
 
 #### 🔨 Auto-renew Worker & SNI
 
-- [ ] **Renew worker**: `IHostedService` chạy daily, check cert `AutoRenew = true` và `ExpiresAt < now + 30 days`. Gọi lại đúng flow (HTTP-01/DNS-01) theo `Source` gốc
+- [ ] **Renew worker**: `IHostedService` chạy daily, check cert `AutoRenew = true` và `ExpiresAt < now + 30 days`. Enqueue vào **ACME worker** chung — gọi lại đúng flow (HTTP-01/DNS-01) theo `Source` gốc
 - [ ] **Kestrel SNI binding**: `ServerOptionsSelectionCallback` (async) — query DB theo SNI hostname, fallback self-signed cert nếu không match
 - [x] **Certificate tab UI**: list cert (Domain, Issuer, Type, Status gộp InUse, ExpiresAt), action menu (Renew/Download/Delete), click row show detail dialog. `NmxMenuButton` với `getReferenceProps` compose pattern fix row click leak. i18n keys cho status values, inUse values, actions.
 

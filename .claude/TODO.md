@@ -1,22 +1,5 @@
 # TODO
 
-## NmxMenuButton — Divider by index, loading state
-
-**Context**: Hiện tại divider gắn trên option (`divider: true`), khi filter ẩn option thì divider bị lệch. Cần chuyển sang cơ chế `dividerIndexes` (số âm từ dưới lên). Ngoài ra thiếu loading state trên NmxMenuButton.
-
-**Approach**:
-- Thay `divider?: boolean` trong `NmxMenuButtonOption` bằng `dividerIndexes?: number[]` trên props
-- Số dương = index trong filtered list từ trên xuống
-- Số âm = đếm từ dưới lên (vd -1 = trước item cuối)
-- Thêm `loading?: boolean` prop, khi loading disabled button + ẩn dropdown
-- `filterItem` edge case: khi không còn option nào → ẩn luôn cả trigger button
-
-**Files**:
-- `frontend/packages/ui/src/Primitives/NmxMenuButton.tsx`
-- `frontend/src/addons/Frontgate/FrontgateCertificate.tsx`
-
----
-
 ## NmxOAuth2Client — Block infinite retry on invalid_client
 
 **Context**: Khi DB backend bị reset (migration, xoá bảng), `AddonInstallations` mất record OAuth → `IssueClientCredentialsTokenAsync` trả về `400 invalid_client`. Addon retry vô hạn mỗi 5 giây vì `_cached` không bao giờ được set → spam DB query + log.
