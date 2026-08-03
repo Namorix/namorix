@@ -1,6 +1,12 @@
 import React from "react"
 import type { NmxButtonVariant, NmxSemanticColor } from "./primitives"
 
+export interface NmxFallback {
+  condition: boolean | undefined | null | unknown
+  state?: "loading" | "error" | "empty"
+  content?: React.ReactNode
+}
+
 export interface WithBaseProps {
   className?: string
   children?: React.ReactNode

@@ -173,10 +173,10 @@ export const NmxDataTable = <T extends object>({
                         {
                           "nmx-data-table--ellipsis-disabled":
                             col.disableEllipsisCell === true,
-                        },
-                        {
                           "nmx-data-table--user-select":
                             col.enableUserSelectCell === true,
+                          "nmx-data-table--btn-icon": col.btnIsIcon === true,
+                          "nmx-data-table--btn-menu": col.btnIsMenu === true,
                         },
                       )}
                     >

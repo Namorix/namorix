@@ -1,5 +1,5 @@
 import React from "react"
-import type { NmxSpacing, WithBaseProps } from "../../types"
+import type { NmxFallback, NmxSpacing, WithBaseProps } from "../../types"
 
 export type NmxDataTableAlignType = "start" | "center" | "end"
 
@@ -15,18 +15,14 @@ export interface NmxDataTableColumn<T = unknown> {
   disableEllipsisHeader?: boolean
   disableEllipsisCell?: boolean
   enableUserSelectCell?: boolean
-}
-
-export interface NmxDataTableFallback {
-  condition: boolean | undefined | null | unknown
-  state?: "loading" | "error" | "empty"
-  content?: React.ReactNode
+  btnIsIcon?: boolean
+  btnIsMenu?: boolean
 }
 
 export interface NmxDataTableProps<T = unknown> extends WithBaseProps {
   columns: ReadonlyArray<NmxDataTableColumn<T>>
   rows: readonly T[]
-  fallbackConditions?: NmxDataTableFallback[]
+  fallbackConditions?: NmxFallback[]
   clickableRows?: boolean
   disableAutoCellSize?: boolean
   getRowClass?: (row: T, rowIndex: number) => string | undefined

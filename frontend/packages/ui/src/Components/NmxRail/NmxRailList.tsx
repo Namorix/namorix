@@ -11,6 +11,7 @@ export const NmxRailList: React.FC<NmxRailListProps> = ({
   title,
   items,
   t,
+  footer,
   showToggle,
   shouldRender = true,
   className,
@@ -52,6 +53,7 @@ export const NmxRailList: React.FC<NmxRailListProps> = ({
           />
         ))}
       </div>
+      {footer && <div className="nmx-rail__footer">{footer}</div>}
     </div>
   )
 }

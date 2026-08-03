@@ -58,7 +58,7 @@ export const NmxMenuButton = <T extends string = string>({
   dividerIndexes,
   onSelect,
   variant = "filled",
-  semantic = "primary",
+  semantic = "trace",
   disabled = false,
   arrowDisabled = false,
   className,

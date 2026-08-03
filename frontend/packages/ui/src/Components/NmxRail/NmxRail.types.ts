@@ -7,6 +7,7 @@ export interface NmxRailListProps extends WithBaseProps {
   items?: NmxRailItemData[]
   showToggle?: boolean
   t?: TFunction
+  footer?: React.ReactNode
 }
 
 export interface NmxRailItemData<T = string> {
