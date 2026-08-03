@@ -18,6 +18,7 @@ using Namorix.Server.Infrastructure;
 using Namorix.Server.Middleware;
 using Namorix.Server.Persistence;
 using Namorix.Server.Services;
+using Namorix.Server.Services.BcnProviders;
 using Namorix.Server.Services.Grpc;
 using Namorix.Server.Workers;
 using Yarp.ReverseProxy.Configuration;
@@ -69,6 +70,15 @@ builder.Services.AddSingleton<DockerService>();
 builder.Services.AddScoped<AddonService>();
 builder.Services.AddScoped<OAuthService>();
 builder.Services.AddSingleton<FrontgateProxyConfigProvider>();
+builder.Services.AddBcnProviders();
+
+builder.Services.AddSingleton<IPublicIpDetector, PublicIpService>();
+builder.Services.AddHttpClient("PublicIp", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(10);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("Namorix/1.0");
+});
+
 builder.Services.AddReverseProxy()
     .Services.AddSingleton<IProxyConfigProvider>(
         sp => sp.GetRequiredService<FrontgateProxyConfigProvider>());
@@ -95,12 +105,17 @@ builder.Services.AddHostedService<SystemMonitorStatsWorker>();
 builder.Services.AddHostedService<DockerMonitorWorker>();
 builder.Services.AddHostedService<CatalogSyncWorker>();
 builder.Services.AddHostedService<FgCertPendingResetWorker>();
+builder.Services.AddHostedService<BcnCheckWorker>();
+builder.Services.AddHostedService<BcnActivityCleanupWorker>();
 
 builder.Services.AddSingleton<AddonTaskQueue>();
+builder.Services.AddSingleton<AcmeCertQueue>();
+builder.Services.AddHostedService<AcmeCertQueue>(sp => sp.GetRequiredService<AcmeCertQueue>());
 builder.Services.AddHostedService<AddonTaskQueue>(sp => sp.GetRequiredService<AddonTaskQueue>());
 builder.Services.AddScoped<AddonTaskExecutor>();
 builder.Services.AddGrpc();
 builder.Services.AddSingleton<AddonChannelManager>();
+builder.Services.AddSingleton<AcmeChallengeStore>();
 
 if (builder.Environment.IsDevelopment())
     builder.Services.AddGrpcReflection();
@@ -167,6 +182,7 @@ if (proxyPorts.Length > 0)
     {
         var pathPublic = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "frontend", "public");
         
+        proxy.UseMiddleware<AcmeChallengeMiddleware>(); // LE HTTP call → serve token before redirect
         proxy.UseMiddleware<ForceSslMiddleware>();
         proxy.UseStaticFiles(new StaticFileOptions
         {

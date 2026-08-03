@@ -7,6 +7,7 @@ using Namorix.Core.IO;
 using Namorix.Core.Middleware;
 using Namorix.Core.Responses;
 using Namorix.Core.Validation;
+using Namorix.Server.Constants;
 using Namorix.Server.Models;
 using Namorix.Server.Persistence;
 using Namorix.Server.Services;
@@ -17,16 +18,8 @@ namespace Namorix.Server.Controllers;
 [ApiController]
 [RequireAdmin]
 [Route("api/frontgate")]
-public class FrontgateController(AppDbContext db, DataDirectory dataDir) : ControllerBase
+public class FrontgateController(AppDbContext db, DataDirectory dataDir, AcmeCertQueue certQueue) : ControllerBase
 {
-    private const string RuleNotFound = "RULE_NOT_FOUND";
-    private const string CertificateNotFound = "CERTIFICATE_NOT_FOUND";
-    private const string CertificateKeyToLarge = "CERTIFICATE_KEY_TOO_LARGE";
-    private const string CertificateTooLarge = "CERTIFICATE_TOO_LARGE";
-    private const string CertificateIntermediateTooLarge = "CERTIFICATE_INTERMEDIATE_TOO_LARGE";
-    private const string DuplicateSourceError = "DUPLICATE_SOURCE";
-    private const string InvalidCertificate = "INVALID_CERTIFICATE";
-    
     [HttpGet("reverse-proxy")]
     public async Task<IActionResult> ListRules([FromQuery] int page = 1, [FromQuery] int size = 20)
     {
@@ -68,7 +61,7 @@ public class FrontgateController(AppDbContext db, DataDirectory dataDir) : Contr
     {
         var existing = await db.FgReverseProxyRules.AnyAsync(r => r.Source == request.Source);
         if (existing)
-            return Conflict(ApiResponse.Fail(DuplicateSourceError));
+            return Conflict(ApiResponse.Fail(FgErrorCodes.DuplicateSourceError));
 
         var rule = new FgReverseProxyRule
         {
@@ -124,13 +117,13 @@ public class FrontgateController(AppDbContext db, DataDirectory dataDir) : Contr
             .Include(r => r.Locations)
             .FirstOrDefaultAsync(r => r.Id == id);
         if (rule == null)
-            return NotFound(ApiResponse.Fail(RuleNotFound));
+            return NotFound(ApiResponse.Fail(FgErrorCodes.RuleNotFound));
 
         if (request.Source != rule.Source)
         {
             var existing = await db.FgReverseProxyRules.AnyAsync(r => r.Source == request.Source);
             if (existing)
-                return Conflict(ApiResponse.Fail(DuplicateSourceError));
+                return Conflict(ApiResponse.Fail(FgErrorCodes.DuplicateSourceError));
         }
 
         rule.Source = request.Source;
@@ -172,7 +165,7 @@ public class FrontgateController(AppDbContext db, DataDirectory dataDir) : Contr
     {
         var rule = await db.FgReverseProxyRules.FindAsync(id);
         if (rule == null)
-            return NotFound(ApiResponse.Fail(RuleNotFound));
+            return NotFound(ApiResponse.Fail(FgErrorCodes.RuleNotFound));
         
         db.FgReverseProxyRules.Remove(rule);
         await db.SaveChangesAsync();
@@ -232,7 +225,7 @@ public class FrontgateController(AppDbContext db, DataDirectory dataDir) : Contr
     {
         var cert = await db.FgCertificates.FindAsync(id);
         if (cert == null)
-            return NotFound(ApiResponse.Fail(CertificateNotFound));
+            return NotFound(ApiResponse.Fail(FgErrorCodes.CertificateNotFound));
     
         db.FgCertificates.Remove(cert);  // FK SetNull → rules apply, certId is cleared instead of deleting the related records
         await db.SaveChangesAsync();
@@ -240,10 +233,20 @@ public class FrontgateController(AppDbContext db, DataDirectory dataDir) : Contr
     }
     
     [HttpPost("certificates/letsencrypt-http")]
+    [Validate(typeof(FrontgateCertSchema))]
     public async Task<IActionResult> CreateLetsEncryptCert(
         [FromBody] CreateLetsEncryptCertRequest request)
     {
-        // TODO: ACME HTTP-01 challenge via Certes
+        if (request.Domains.Count == 0)
+            return BadRequest(ApiResponse.Fail(FgErrorCodes.CertificateDomainsRequired));
+
+        var primary = request.Domains.First();
+        var exists = await db.FgCertificates
+            .Where(c => c.Status == FgCertificateStatus.Pending || c.Status == FgCertificateStatus.Active)
+            .AnyAsync(c => c.CertificateDomains.Any(d => d.Domain == primary));
+        if (exists)
+            return BadRequest(ApiResponse.Fail(FgErrorCodes.CertificateAlreadyExists));
+        
         var cert = new FgCertificate
         {
             CertificateDomains =
@@ -261,6 +264,7 @@ public class FrontgateController(AppDbContext db, DataDirectory dataDir) : Contr
         
         db.FgCertificates.Add(cert);
         await db.SaveChangesAsync();
+        await certQueue.EnqueueAsync(cert.Id);
         return Ok(ApiResponse.Ok(cert));
     }
 
@@ -297,13 +301,13 @@ public class FrontgateController(AppDbContext db, DataDirectory dataDir) : Contr
         
         // Size limit (DoS protection)
         if (request.CertificateKey.Length > maxSize)
-            return BadRequest(ApiResponse.Fail(CertificateKeyToLarge));
+            return BadRequest(ApiResponse.Fail(FgErrorCodes.CertificateKeyToLarge));
         
         if (request.Certificate.Length > maxSize)
-            return BadRequest(ApiResponse.Fail(CertificateTooLarge));
+            return BadRequest(ApiResponse.Fail(FgErrorCodes.CertificateTooLarge));
         
         if (request.Intermediate?.Length > maxSize)
-            return BadRequest(ApiResponse.Fail(CertificateIntermediateTooLarge));
+            return BadRequest(ApiResponse.Fail(FgErrorCodes.CertificateIntermediateTooLarge));
 
         // Parse + validate PEM: keypair match, passphrase, format
         X509Certificate2 parsedCert;
@@ -313,7 +317,7 @@ public class FrontgateController(AppDbContext db, DataDirectory dataDir) : Contr
         }
         catch (CryptographicException)
         {
-            return BadRequest(ApiResponse.Fail(InvalidCertificate));
+            return BadRequest(ApiResponse.Fail(FgErrorCodes.InvalidCertificate));
         }
         
         var name = request.Name;

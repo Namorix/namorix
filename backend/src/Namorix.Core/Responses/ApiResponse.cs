@@ -11,19 +11,23 @@ public class ApiResponse<T>
     public string? Field { get; init; }
     public ValidationMeta? Meta { get; init; }
 
+    public Dictionary<string, object?>? Params { get; init; }
+    
     public static ApiResponse<T> Ok(T data) => new() { Success = true, Data = data };
     
-    public static ApiResponse<T> Fail(string code, string? error = null, string? field = null, ValidationMeta? meta = null) =>
-        new() { Success = false, Code = code, Error = error, Field = field, Meta = meta};
+    public static ApiResponse<T> Fail(string code, string? error = null, string? field = null,
+        ValidationMeta? meta = null, Dictionary<string, object?>? @params = null) =>
+        new() { Success = false, Code = code, Error = error, Field = field, Meta = meta, Params = @params };
 }
 
 public class ApiResponse : ApiResponse<object>
 {
     public new static ApiResponse Ok(object? data = null) => new() { Success = true, Data = data };
     
-    public new static ApiResponse Fail(string code, string? error = null, string? field = null, ValidationMeta? meta = null) => new()
+    public new static ApiResponse Fail(string code, string? error = null, string? field = null,
+        ValidationMeta? meta = null, Dictionary<string, object?>? @params = null) => new()
     {
-        Success = false, Code = code, Error = error, Field = field, Meta = meta
+        Success = false, Code = code, Error = error, Field = field, Meta = meta, Params = @params
     };
 }
 

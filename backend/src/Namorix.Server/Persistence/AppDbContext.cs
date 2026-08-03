@@ -29,6 +29,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<FgAccessPolicy> FgAccessPolicies { get; set; }
     public DbSet<FgReverseProxyLocation> FgReverseProxyLocations { get; set; }
 
+    public DbSet<BcnHostname> BcnHostnames { get; set; }
+    public DbSet<BcnSettings> BcnSettings { get; set; }
+    public DbSet<BcnActivityLog> BcnActivityLogs { get; set; }
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<User>()
@@ -129,5 +133,28 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .WithMany(r => r.Locations)
             .HasForeignKey(l => l.RuleId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<BcnHostname>()
+            .Property(h => h.Kind)
+            .HasConversion<string>().HasMaxLength(20);
+        
+        modelBuilder.Entity<BcnHostname>()
+            .Property(h => h.Status)
+            .HasConversion<string>()
+            .HasMaxLength(20);
+        
+        modelBuilder.Entity<BcnActivityLog>()
+            .Property(l => l.Level)
+            .HasConversion<string>()
+            .HasMaxLength(20);
+        
+        modelBuilder.Entity<BcnActivityLog>()
+            .HasIndex(l => l.Timestamp);          // Time-based query pruning
+        
+        modelBuilder.Entity<BcnActivityLog>()
+            .HasOne(l => l.Hostname)
+            .WithMany()
+            .HasForeignKey(l => l.HostnameId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }
