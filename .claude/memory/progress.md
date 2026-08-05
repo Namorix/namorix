@@ -1,5 +1,15 @@
 # Version History — August 2026
 
+## 2026-08-05 — Beacon polish: markup feedback, secret placeholders, error params, JSON enum consistency
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.54.0 → 0.55.0 | MODIFIED: `apiRoutes.ts` — `hostnameCheck` route (`POST /api/beacon/hostnames/{id}/check`). |
+| @namorix/styles | 0.46.0 → 0.47.0 | MODIFIED: `base/abstract/palette.scss` + `themes/dark/tokens.scss` (new tokens), `components/log-list.scss`, `components/settings.scss`, `components/toast.scss`. Theme CSS rebuild (default + dark). |
+| @namorix/ui | 0.36.0 → 0.37.0 | MODIFIED: `NmxToastProvider.tsx` + `NmxLogList.tsx` — render message qua `markupToHtml` (dangerouslySetInnerHTML) → toast/log hiển thị `**bold**`/`[color:...]`. |
+| frontend | 0.69.0 → 0.70.0 | MODIFIED: `addons/Beacon/` — add dialog gọn (provider placeholder + descriptions natural language, secret/credential placeholders, resetForm sạch), feedback `**{{hostname}}**` markup, `bcnErrorDetail` normalize `httpStatus`/`reason` → `detail`, `handleCheck`/activity render detail, BeaconSettings IPv6 hint + bỏ ifconfig.co, `beacon.controller.checkHostname`. `i18n/locales/en.json` (feedback markup, providers.descriptions, credentialPlaceholders) + `notification/en.json` (beacon hostnameError/hostnameRecovered). |
+| Namorix.Server | 0.60.0 → 0.61.0 | NEW: `Services/BcnHostnameService.cs` (update logic single source — worker + controller check), `Services/BcnProviders/BcnSecretProtector.cs` (DataProtection mã hóa secret trong ConfigJson). MODIFIED: `Controllers/BcnController.cs` (+`POST /hostnames/{id}/check`, `@params = result.Params`, shared SerializerOptions), `Workers/BcnCheckWorker.cs` (slim → orchestrator delegate), `Models/BcnProviderConfig.cs` (shared SerializerOptions + JsonStringEnumConverter — fix `JsonException` kind khi edit token), `Validation/BcnHostnameSchema.cs` (regex relax cho subdomain DuckDNS), `Services/BcnProviders/` (DuckDNS `Classify` trả reason param, IPv6 params, `BcnTemplate` `{ip}` = ipv4 ?? ipv6), `Infrastructure/SelfSignedCertificateProvider.cs` (IsValidCertificate check), `Program.cs` (DI). |
+
 ## 2026-08-03 — Beacon DDNS full addon: config validation 2 lớp, error i18n, ACME middleware
 
 | Package | Version | Changes |

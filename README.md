@@ -19,7 +19,12 @@ Browser-based desktop shell, self-hosted.
 ## Screenshots
 
 ![Namorix Desktop](images/screenshot-1.png)
-![Namorix Desktop with apps](images/screenshot-2.png)
+<table>
+  <tr>
+    <td width="50%"><img src="images/screenshot-2.png" alt="Namorix Desktop with apps" /></td>
+    <td width="50%"><img src="images/screenshot-3.png" alt="Namorix Beacon addon" /></td>
+  </tr>
+</table>
 
 ## Tech Stack
 

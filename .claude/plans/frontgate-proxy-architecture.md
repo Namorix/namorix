@@ -222,6 +222,7 @@ Thư viện ACME: **Certes** (`Certes` NuGet) — giao tiếp với Let's Encryp
 - [ ] **`CloudflareDnsProvider`**: implement đầu tiên (dùng API token, không dùng Global API Key)
 - [ ] **Certes DNS-01 flow**: tạo challenge → gọi `CreateTxtRecordAsync` → chờ propagation → verify → cleanup
 - [ ] **Wildcard allowed**: chỉ flow này cho phép `*.domain.com` — validate input cho phép wildcard
+- [ ] **Credential encryption**: API token/key DNS provider (apiToken/apiKey/apiSecret...) **không lưu plaintext** — mã hóa bằng DataProtection (`Protect`/`Unprotect`) trước khi persist, dùng chung key ring với Beacon (`SetApplicationName` + `PersistKeysToFileSystem("/data/keys")` Docker volume mount thật, không dùng ephemeral filesystem — mất key = mất data vĩnh viễn)
 
 #### 🔨 Custom Certificate (Upload)
 

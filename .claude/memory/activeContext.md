@@ -27,6 +27,13 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-08-2026.md](versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-08-05 — Beacon polish: markup feedback, secret placeholders, error params, JSON enum consistency
+
+- Backend (Namorix.Server 0.60.0 → 0.61.0): NEW `BcnHostnameService` (update logic single source — worker + controller `/check` delegate) + `BcnSecretProtector` (DataProtection mã hóa 5 field secret). `BcnController` thêm `POST /hostnames/{id}/check` (trả `@params = result.Params` — passthrough reason/httpStatus), dùng shared `BcnProviderConfig.SerializerOptions` (JsonStringEnumConverter — fix `JsonException BcnProviderKind` khi edit token). `BcnCheckWorker` slim còn ~60 dòng (orchestrator). Regex hostname relax cho subdomain (DuckDNS `home`). DuckDNS `Classify` trả `params.reason`. `SelfSignedCertificateProvider` thêm IsValidCertificate check.
+- @namorix/core 0.54.0 → 0.55.0: `hostnameCheck` route.
+- @namorix/ui 0.36.0 → 0.37.0 + @namorix/styles 0.46.0 → 0.47.0: NmxToastProvider + NmxLogList render markup (`markupToHtml`); new palette/dark tokens; log-list/settings/toast SCSS; theme rebuild.
+- frontend 0.69.0 → 0.70.0: add dialog gọn (provider placeholder + natural-language descriptions, secret/credential placeholders, resetForm sạch), feedback `**{{hostname}}**` markup, `bcnErrorDetail` normalize `httpStatus`/`reason` → `detail`, `handleCheck`/activity render detail, BeaconSettings IPv6 hint + bỏ ifconfig.co. en.json + notification/en.json (beacon hostnameError/hostnameRecovered).
+
 ### 2026-08-03 — Beacon DDNS addon đầy đủ + config validation + error i18n
 
 - Backend (Namorix.Server 0.60.0): Beacon full — BcnController (hostnames CRUD/toggle/test/activity/providers/settings/status), BcnProviderRegistry + 6 provider + custom SimpleGet/RestJson, BcnCheckWorker (update loop, backoff, status active/disabled/error), BcnActivityCleanupWorker (pruning 7d), IPublicIpDetector/PublicIpService, migrations. **Config validation 2 lớp**: runtime guard trong provider + save-time `BcnController.ValidateConfig` (built-in qua registry CredentialFields, custom theo Kind) → `BCN_CONFIG_INVALID` + `ApiResponse.Fail(..., field)`. Frontgate ACME: AcmeChallengeMiddleware + AcmeCertQueue + AcmeChallengeStore + FgErrorCodes. NEW dep Certes.

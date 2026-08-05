@@ -821,17 +821,18 @@ BcnProviderResolver — built-in → registry, custom → theo Kind
 - `BcnProviderConfig` = JSON blob (`ConfigJson` trên hostname), deserialize theo kind. Get: UrlTemplate/AuthType/User/Password/SuccessMatch. Rest: ApiToken/key+secret/Zone/Method/BodyTemplate/SuccessPath/RecordId.
 - Provider built-in chỉ là template (URL + success-match + credential field layout) — credential nhập mỗi hostname. REST lookup record_id 1 lần rồi cache.
 
-**Update loop (`BcnCheckWorker` BackgroundService, interval = `BcnSettings.CheckIntervalMinutes` default 15):**
+**Update loop (`BcnCheckWorker` BackgroundService — orchestrator, delegate logic sang `BcnHostnameService.UpdateHostAsync(host, ipv4, ipv6, force, ct)`; interval = `BcnSettings.CheckIntervalMinutes` default 15):**
 ```
-1. Detect public IP (IPublicIpDetector / PublicIpService — auto/ifconfig.co/ipify.org)
+1. Detect public IP (IPublicIpDetector / PublicIpService — auto/ipify.org)
 2. Skip hostname Disabled / đang backoff
-3. IP không đổi → skip
-4. resolver.Resolve(...).UpdateAsync(hostname, config, ipv4, ipv6, ct)
+3. foreach host: updater.UpdateHostAsync(host, ip, ct) — service skip nếu IP không đổi (force=false)
+4. Trong service: unprotect config → resolver.Resolve(...).UpdateAsync(hostname, config, ipv4, ipv6, ct)
 5. Success → status Active + CurrentIp + Activity log (BCN_UPDATED)
 6. Rate-limit (429/Retry-After) → BackoffUntil (exponential cap 24h), KHÔNG đổi status
 7. Lỗi vĩnh viễn (401/403/404...) → status Error
 8. IP detection fail → skip cả vòng, không log spam
 ```
+`force=true` (controller `/check` manual) bypass bước 3 — Retry/Update luôn chạy kể cả IP không đổi. Logic update nằm duy nhất trong `BcnHostnameService` (1 nguồn, không drift giữa worker và controller).
 `BcnActivityCleanupWorker` — pruning log quá `RetentionDays` (7 ngày), pattern `NotificationCleanupWorker`.
 
 **Config validation 2 lớp (2026-08-03):**
@@ -847,6 +848,7 @@ BcnProviderResolver — built-in → registry, custom → theo Kind
 | PUT | `/api/beacon/hostnames/{id}` | cập nhật |
 | DELETE | `/api/beacon/hostnames/{id}` | xóa (activity.HostnameId SetNull) |
 | POST | `/api/beacon/hostnames/{id}/toggle` | flip active↔disabled |
+| POST | `/api/beacon/hostnames/{id}/check` | **Retry/Update** manual — `UpdateHostAsync(force: true)` → `{success, code, params}` (passthrough `result.Params`) |
 | POST | `/api/beacon/hostnames/test` | test config form (chưa save) bằng public IP hiện tại; dùng hostname từ form |
 | GET | `/api/beacon/activity?page&size` | activity log (Code + ParamsJson + hostname text) |
 | GET | `/api/beacon/providers` | catalog (registry.Infos) |
@@ -855,19 +857,20 @@ BcnProviderResolver — built-in → registry, custom → theo Kind
 
 Hostname status: `active | disabled | error` (toggle manual, rate-limit không đổi status).
 
-**Frontend (`frontend/src/addons/Beacon/`):** `Beacon.tsx` — `NmxRail` 3 tab. `BeaconHostnames.tsx` — `NmxDataTable` (status badge, mono hostname + createdAt, provider badge, current IP, `NmxMenuButton` enable/disable/delete) + add/edit `NmxAlertDialog` (provider grid, credential fields động, custom toggle Simple GET / REST-JSON, Test connection). `BeaconActivity.tsx` — `NmxLogList`. `BeaconSettings.tsx` — interval/IP service/IPv6. Error: `BeaconErrorCodes` + `BCN_CONFIG_INVALID` → `formatBeaconError` (Beacon-local, `configFields` map inject field label), `missingField` pre-check trước submit, `fieldLabel` lookup `credentialFields.*`.
+**Frontend (`frontend/src/addons/Beacon/`):** `Beacon.tsx` — `NmxRail` 3 tab. `BeaconHostnames.tsx` — `NmxDataTable` (status badge, mono hostname + createdAt, provider badge, current IP, `NmxMenuButton` check/retry + enable/disable/delete, disable khi busy) + add/edit `NmxAlertDialog` (provider select placeholder + descriptions natural language, credential fields động + secret placeholder, custom toggle Simple GET / REST-JSON, Test connection). `BeaconActivity.tsx` — `NmxLogList`. `BeaconSettings.tsx` — interval/IP service/IPv6 (hint). Feedback dùng markup `**{{hostname}}**` — render qua `markupToHtml` (toast + log list). Error: `BeaconErrorCodes` + `BCN_CONFIG_INVALID` → `formatBeaconError` (Beacon-local, `configFields` map inject field label), `bcnErrorDetail` normalize `httpStatus`/`reason` → `detail`, `missingField` pre-check trước submit, `fieldLabel` lookup `credentialFields.*`.
 
 ### Key files (Beacon)
 
 | File | Role |
 |------|------|
-| `backend/src/Namorix.Server/Controllers/BcnController.cs` | REST API + `ValidateConfig` 2 lớp |
+| `backend/src/Namorix.Server/Controllers/BcnController.cs` | REST API + `ValidateConfig` 2 lớp + `/check` manual |
 | `backend/src/Namorix.Server/Constants/BcnErrorCodes.cs` | `BCN_*` codes (incl. `BCN_CONFIG_INVALID`) |
 | `backend/src/Namorix.Server/Infrastructure/IBcnProviderClient.cs` | Provider contract + `BcnUpdateResult`/`BcnTestResult` |
 | `backend/src/Namorix.Server/Infrastructure/IPublicIpDetector.cs` | Public IP detection abstraction (reuse cho Frontgate sau) |
-| `backend/src/Namorix.Server/Services/BcnProviders/` | 6 built-in + custom SimpleGet/RestJson + registry + resolver |
-| `backend/src/Namorix.Server/Services/PublicIpService.cs` | auto/ifconfig.co/ipify.org |
-| `backend/src/Namorix.Server/Workers/BcnCheckWorker.cs` | Update loop + backoff + status |
+| `backend/src/Namorix.Server/Services/BcnProviders/` | 6 built-in + custom SimpleGet/RestJson + registry + resolver + `BcnSecretProtector` |
+| `backend/src/Namorix.Server/Services/PublicIpService.cs` | auto/ipify.org |
+| `backend/src/Namorix.Server/Services/BcnHostnameService.cs` | Update logic single source (worker + controller `/check`) |
+| `backend/src/Namorix.Server/Workers/BcnCheckWorker.cs` | Orchestrator — resolve service từ scope, delegate |
 | `backend/src/Namorix.Server/Workers/BcnActivityCleanupWorker.cs` | Activity log pruning |
 | `backend/src/Namorix.Server/Models/Bcn*.cs` | BcnHostname/Settings/ActivityLog/ProviderConfig/ProviderInfo |
 | `frontend/src/addons/Beacon/` | BeaconHostnames/BeaconActivity/BeaconSettings + beacon.controller |
