@@ -35,6 +35,8 @@
 - [x] Activity log structured `Code`+`ParamsJson` (bỏ `Message`) — `BcnActivityCodes.Updated` (`BCN_UPDATED`), provider/error codes từ `BcnErrorCodes`, params JSON cho FE i18n; migration `20260803034107_AddBcnActivityLogCodeParams`
 - [x] Pruning worker `BcnActivityCleanupWorker` (`PeriodicTimer` 6h, `ExecuteDeleteAsync` xóa log quá `RetentionDays = 7` ngày, đăng ký `Program.cs:109`)
 - [x] `BcnController` (`api/beacon`, `[RequireAdmin]`) — hostnames CRUD + **toggle** (flip active↔disabled) + test + activity + providers + settings + status (`healthy` đếm `Active`); validation schemas `BcnHostnameSchema`/`BcnHostnameTestSchema`/`BcnSettingsSchema`
+- [x] **Out-of-band drift detection + heartbeat (2026-08-05)** — verify record thật qua **authoritative DNS** (`AuthoritativeDnsResolver` + DnsClient.NET 1.8.0) provider-agnostic, **thay hẳn `GetCurrentAsync` REST per-provider**; provider chỉ khai `GetDomain` (FQDN query); DNS fail → stored fallback + heartbeat force-push theo `HeartbeatIntervalHours`; chi tiết Phase 6
+- [x] **Refresh/probe + Clear activity (2026-08-05)** — `POST /api/beacon/refresh` + `BcnProbeQueue` probe IP từ provider → persist `CurrentIpv4/6` → worker self-heal cycle sau; `DELETE /api/beacon/activity` clear log; `BCN_PROBED` i18n; chi tiết Phase 7
 
 ### UI mock
 - Mock `beacon-ddns-mock.jsx` (React + Tailwind + lucide-react) style Synology DSM: sidebar Hostnames/Activity/Settings, bảng hostname với status dot ping + provider badge monogram, modal Add hostname với lưới provider card + form động, custom provider toggle Simple GET / REST-JSON, Settings (interval, IP detection, IPv6 toggle).
@@ -48,6 +50,7 @@
 public interface IBcnProviderClient
 {
     BcnProviderInfo Info { get; }
+    string GetDomain(string hostname, BcnProviderConfig config);
     Task<BcnUpdateResult> UpdateAsync(
         string hostname, BcnProviderConfig config,
         IPAddress? ipv4, IPAddress? ipv6, CancellationToken ct);
@@ -62,7 +65,15 @@ public record BcnUpdateResult(bool Success, string? Code = null,
     bool RateLimited = false, DateTimeOffset? RetryAfter = null);
 public record BcnTestResult(bool Success, string? Code = null,
     Dictionary<string, object?>? Params = null);
+
+public record BcnCurrentRecord(string? Ipv4 = null, string? Ipv6 = null)
+{
+    public bool HasAny => Ipv4 is not null || Ipv6 is not null;
+    public bool Matches(string? ipv4, string? ipv6) => Ipv4 == ipv4 && Ipv6 == ipv6;
+}
 ```
+
+**Out-of-band drift detection (2026-08-05, chốt authoritative DNS):** provider khai `GetDomain(hostname, config)` → FQDN cần query (DuckDNS override `{sub}.duckdns.org`; base `=> hostname`). Service query **trực tiếp authoritative nameserver** qua `AuthoritativeDnsResolver.ResolveAsync(domain, ct)` (DnsClient.NET 1.8.0): bootstrap NS lookup `NameServer.GooglePublicDns`, strip label dần tìm NS authoritative (hỗ trợ `.co.uk`), query A + AAAA thẳng tới IP NS với `UseCache = false`. `null` = không resolve được. **Provider-agnostic, không cần credential read API — thay hẳn `GetCurrentAsync` REST per-provider.**
 
 **Lỗi contract — chỉ code + params, không có message string:**
 - `Code` = error code UPPER_SNAKE từ `BcnErrorCodes` (BCN_NO_IP, BCN_INVALID_CREDENTIALS, BCN_HOSTNAME_NOT_FOUND, BCN_ZONE_NOT_FOUND, BCN_ACCOUNT_BLOCKED, BCN_UNAVAILABLE, BCN_RATE_LIMITED, BCN_PROVIDER_ERROR) — frontend map sang i18n key qua `formatCustomError`.
@@ -91,7 +102,7 @@ public record BcnTestResult(bool Success, string? Code = null,
 
 Provider built-in là **class riêng** (Strategy + Registry), mỗi provider 1 class — không phải static catalog kiểu `DnsProviders.cs` như Frontgate. Class GET-style kế thừa `BcnGetProviderBase` (abstract, xử lý chung request/reponse + classify), class REST (Cloudflare/GoDaddy) implement trực tiếp `IBcnProviderClient`. `BcnProviderRegistry` resolve theo `Info.Id` từ `IEnumerable<IBcnProviderClient>` DI.
 
-`BcnProviderInfo`: `id`, `name`, `initials` (monogram), `accent` (màu badge), `kind` (`BcnProviderKind`), `credentialFields` (list `BcnCredentialField` kiểu `DnsCredentialField`).
+`BcnProviderInfo`: `id`, `name`, `initials` (monogram), `accent` (màu badge), `kind` (`BcnProviderKind`), `credentialFields` (list `BcnCredentialField` kiểu `DnsCredentialField`), `tested` (bool — provider đã test thật, DuckDNS = `true`).
 
 **`Kind` trả từ API (2026-08-03)** — `BcnProviderInfo` thêm field `kind`, FE bỏ map `PROVIDER_KIND` hardcode; `handleProviderChange` đọc `kind` từ `providers.find((p) => p.id === id)?.kind`. `BcnProviderKind.Custom` là enum member chết (validation chỉ nhận `get`/`rest`; custom = providerId `custom` + kind get/rest). Credential **label → locale** (`fieldLabel` helper + `credentialFields.*`), `CRED_FIELD_TO_CONFIG` giữ cho storage mapping (`username→user` là mapping non-identity duy nhất).
 
@@ -107,12 +118,16 @@ Provider built-in là **class riêng** (Strategy + Registry), mỗi provider 1 c
 
 Provider **built-in chỉ là template** (URL + success-match + field layout) — credential nhập mỗi hostname. RestJsonProvider lookup record_id một lần rồi cache (mock: "looks up the record ID once"), update lại khi IP đổi; nếu update trả về "not found" → lookup lại.
 
+**Drift read — authoritative DNS (2026-08-05, thay read API per-provider):** mọi provider verify record thật bằng DNS query tới authoritative NS (`GetDomain` + `AuthoritativeDnsResolver`), không cần credential phụ. Query fail (`null`) → fallback stored + heartbeat force-push. `GetCurrentAsync` đã xóa khỏi interface + DuckDNS/Cloudflare/GoDaddy.
+
 ### Update loop (worker)
 
 Logic per-hostname (skip IP unchanged, backoff, notification, activity log) nằm **duy nhất** trong `BcnHostnameService.UpdateHostAsync(host, ipv4, ipv6, force, ct)` (scoped, shared giữa worker + controller check manual). `BcnCheckWorker : BackgroundService` (pattern `SystemMonitorStatsWorker`, timer `Task.Delay`) chỉ còn là orchestrator — resolve service từ scope rồi delegate, mỗi `CheckInterval`:
 1. Detect public IPv4 (+ IPv6 nếu bật) — Auto (mặc định ipify.org) / ipify.org.
 2. Bỏ qua hostname `Disabled` (filter `.Where(h => h.Status != Disabled)`).
-3. `force=false` → service skip host khi IP không đổi (tiết kiệm API call, tránh rate-limit).
+3. `force=false` → service **verify record thật qua authoritative DNS** trước khi skip (2026-08-05):
+   - `TryGetCurrentAsync` = `GetDomain` + `AuthoritativeDnsResolver.ResolveAsync` → `current.Matches(ipDetected)`? in-sync → skip; lệch → push (bắt out-of-band change).
+   - Resolve fail (`null`) → so stored IP; in-sync mà quá `HeartbeatIntervalHours` chưa push → **force-push** (heartbeat) — tự sửa record bị đổi ngoài luồng.
 4. Mỗi hostname: build client theo kind → `UpdateAsync`.
 5. Thành công → status `Active`, cập nhật `CurrentIp`, `LastUpdatedAt`, log Activity.
 6. Rate-limited (429 / "rate limited" trong response) → **không đổi status** (giữ `Active`), chỉ set `BackoffUntil` (exponential, ưu tiên `Retry-After`).
@@ -155,10 +170,11 @@ BcnHostname
   CreatedAt     DateTime
 
 BcnSettings (singleton row)
-  Id                 int (luôn = 1)
-  CheckIntervalMinutes int   — 5/15/60
-  IpDetectionService string  — "auto" | "ipify.org"
-  UpdateIpv6         bool
+  Id                    int (luôn = 1)
+  CheckIntervalMinutes  int   — 1/5/15/30/45/60/90
+  HeartbeatIntervalHours int  — 1/3/6/12/24 (2026-08-05)
+  IpDetectionService    string — "auto" | "ipify.org"
+  UpdateIpv6            bool
 
 BcnActivityLog
   Id          int (auto-increment)
@@ -185,6 +201,8 @@ BcnActivityLog
 | POST | `/api/beacon/hostnames/{id}/check` | **Retry/Update** manual — detect IP theo `settings.UpdateIpv6` → `UpdateHostAsync(force: true)` → `{success, code, params}` (params passthrough `result.Params` — reason/httpStatus; NoIp nếu detect fail) |
 | POST | `/api/beacon/hostnames/test` | **Test connection** — test config form (chưa save) bằng public IP hiện tại; `TestProviderRequest` kèm `Hostname`, test dùng hostname từ form (fallback `test.example.com` nếu trống) |
 | GET | `/api/beacon/activity?page&size` | activity log paginated |
+| DELETE | `/api/beacon/activity` | clear toàn bộ activity log (bulk `ExecuteDeleteAsync`, trả `{deleted}`) |
+| POST | `/api/beacon/refresh` | probe tất cả hostname từ provider (authoritative DNS) → persist IP, worker tự sửa |
 | GET | `/api/beacon/providers` | built-in catalog (kiểu `/api/frontgate/dns-providers`) |
 | GET | `/api/beacon/settings` | đọc settings |
 | PUT | `/api/beacon/settings` | cập nhật settings |
@@ -202,7 +220,7 @@ Convert mock Tailwind → Nmx. Cấu trúc:
   - get: Hostname, token/password, note "single signed GET, no record lookup"
   - rest: Hostname, API token, Zone, note "record ID lookup once, then REST update"
   - custom: Hostname, Provider label, toggle **Simple GET / REST-JSON**, field tương ứng, nút **Test connection** → POST test → hiện success/error inline
-- **`BeaconActivity.tsx`**: `NmxLogList` (composite mới, SCSS `log-list.scss`) — mỗi entry: time (mono, muted) + message color semantic (info→default, warn→warning, error→error); `fallbackConditions` (loading/error/empty, dùng type chung `NmxFallback`) + toolbar refresh (NmxAlign + NmxButton + icon REFRESH). **Cột level đã bỏ hẳn** → hết bug header `[object Object]`, không cần key `activity.level`.
+- **`BeaconActivity.tsx`**: `NmxLogList` (composite mới, SCSS `log-list.scss`) — mỗi entry: time (mono, muted) + message color semantic (info→default, warn→warning, error→error); `fallbackConditions` (loading/error/empty, dùng type chung `NmxFallback`) + toolbar **Clear** (NmxAlertDialog confirm + `clearActivity()`) + **Refresh**. **Cột level đã bỏ hẳn** → hết bug header `[object Object]`, không cần key `activity.level`. Realtime: `useServerSignalREvent(BeaconActivityCreated)` refetch khi có log mới. Refresh-on-open đã fix bằng `useActiveTab()` gate (`activeTab !== "activity"` → return; refetch mỗi khi tab active) + subscribe cả 2 beacon events. Warning `No client method ... beacon:activity-created` đã fix (BeaconActivity tự register handler khi mount).
 - **`BeaconSettings.tsx`**: Check interval (NmxSelect), IP detection service (NmxSelect), IPv6 toggle (NmxToggle).
 - **`beacon.controller.ts`** + `ApiBeaconRoutes` (core/apiRoutes.ts).
 
@@ -275,6 +293,29 @@ Convert mock Tailwind → Nmx. Cấu trúc:
   - **Error params end-to-end** (fix activity "KO" vs toast "()" lệch + không interpolate): (a) `DuckDnsProvider.Classify` fail trả `params.reason` (body thật); (b) FE `bcnErrorDetail(params)` normalize `httpStatus`/`reason` → 1 param `detail`; (c) `BcnController.CheckHostname` trả `@params = result.Params` (trước hardcode `{hostname}`); (d) `providerError` = "Provider returned an error **({{detail}})**". `BeaconActivity.renderMessage` + `handleCheck` đều truyền `detail: bcnErrorDetail(params)`.
   - **JsonStringEnumConverter mismatch** (fix `JsonException BcnProviderKind at $.kind` khi edit token): write options có converter → DB lưu `"kind":"get"`, read options + `BcnHostnameService` default options không có → đọc fail. Fix: **shared `BcnProviderConfig.SerializerOptions`** (CamelCase + case-insensitive + JsonStringEnumConverter) dùng chung `BcnController.DeserializeConfig`/serialize + `BcnHostnameService:28`. Legacy `"kind":0` int vẫn parse được.
   - **DuckDNS hostname regex**: `BcnHostnameSchema` trước đòi FQDN (`label.label.tld`) nhưng DuckDNS chỉ cần subdomain (`home`) → relax còn optional-label + tld.
+  - **Update-on-save + status `Pending`** (không block UI): save hostname (create/edit) giờ push update ngay nhưng **không await trong request** — `BcnHostnameService` thêm `UpdateHostWithDetectedIpAsync(host, force, ct)` (đọc settings → detect IP → NoIp → status Error + `BCN_NO_IP`; còn lại delegate `UpdateHostAsync`); `BcnController` Create/Update set `Status = Pending` + `queue.EnqueueAsync(host.Id)` rồi trả về ngay. **NEW `Services/BcnUpdateQueue.cs`** (BackgroundService + `Channel<string>` + `SemaphoreSlim(2,2)` + `IServiceScopeFactory`, pattern y hệt `AddonTaskQueue`) chạy update ngầm → success → Active, error → Error, rate-limit → còn Pending nên fallback Active + `BackoffUntil`; throw bất ngờ → `SetErrorStatusAsync` (Error + `BCN_PROVIDER_ERROR` — khỏi kẹt Pending vĩnh viễn). Enum `BcnHostnameStatus` thêm `Pending` (DB string → không migration). `BcnCheckWorker` **skip host Pending** (tránh race double-update). DI: `AddSingleton<BcnUpdateQueue>()` + `AddHostedService<BcnUpdateQueue>(factory)`. FE: type `BcnHostnameStatus` thêm `"pending"`, badge pending → semantic `warning`, i18n `status.pending = "Pending"`. Verify: `dotnet build` 0 errors 0 warnings + `pnpm tsc --noEmit` pass.
+
+### Phase 6 — Out-of-band drift detection + heartbeat (2026-08-05) ✅ (build 0/0, tsc pass)
+- [x] **Authoritative DNS read thay read API per-provider** — `AuthoritativeDnsResolver` (`Services/BcnProviders/`, DnsClient.NET 1.8.0 trong `Directory.Packages.props` + csproj): bootstrap NS query `NameServer.GooglePublicDns` → strip label dần tìm NS authoritative (`NsRecords()`), query A + AAAA thẳng tới IP NS (`UseCache=false`); record `BcnCurrentRecord(Ipv4, Ipv6)` (`Matches()`, `HasAny`)
+- [x] `IBcnProviderClient` thêm `GetDomain(hostname, config)` — provider khai FQDN cần query (base `=> hostname`; DuckDNS override `{sub}.duckdns.org`); **xóa hẳn `GetCurrentAsync`** khỏi interface + REST read trong DuckDNS/Cloudflare/GoDaddy
+- [x] `BcnHostnameService.UpdateHostAsync` — skip guard: `TryGetCurrentAsync` (`GetDomain` + `ResolveAsync`) → `current.Matches(ipDetected)`? skip : push; resolve fail (`null`) → stored + heartbeat. `Unprotect` lên trước skip, capture `provider` 1 lần
+- [x] Heartbeat force-push — DNS fail + in-sync + `LastUpdatedAt` quá `HeartbeatIntervalHours` → push bất kể so sánh; tự sửa out-of-band change trong vòng 1 heartbeat. Tái dùng `LastUpdatedAt` (không field mới / migration)
+- [x] Setting `HeartbeatIntervalHours` (1/3/6/12/24, default 1h): `BcnSettings` + schema (int range như `CheckIntervalMinutes`) + controller map + `UpdateSettingsRequest` + migration `20260805082851_AddBcnHeartbeatInterval` + `IsHeartbeatDueAsync` đọc lazy (chỉ khi no-read + in-sync)
+- [x] Frontend: `BeaconSettings` state + select 1-24h + load/save + dep array; `BcnSettingsDto`/`UpdateSettingsPayload` thêm `heartbeatIntervalHours`; en.json `heartbeatInterval`/`Hint`/`heartbeat{1,3,6,12,24}h`
+- [x] Fix `defaultValue: 0` → `setHeartbeat(String(s.heartbeatIntervalHours || 1))` (BeaconSettings.tsx:28) — row settings cũ = 0 không còn select trống
+
+### Phase 7 — Refresh/probe + Clear activity + activity realtime (2026-08-05) ✅ (build 0/0, tsc pass)
+- [x] **`BcnProbeQueue`** (`Services/BcnProbeQueue.cs`, `BackgroundService` + `Channel<int>` + `IServiceScopeFactory`): `EnqueueAsync()` 0 tham số; batch probe host không disabled qua `RefreshHostFromProviderAsync` → đếm host OK → `NotifyHostnamesRefreshed(updated)`. DI `AddSingleton` + `AddHostedService`
+- [x] **`RefreshHostFromProviderAsync`** (`BcnHostnameService`): `GetDomain` + `AuthoritativeDnsResolver.ResolveAsync` → persist `CurrentIpv4/6` + `LastCheckedAt`; IP đổi → log `BCN_PROBED` → worker self-heal ở cycle sau (probe chỉ đọc, không update DNS). Record `BcnProbeResult(Supported, Ipv4, Ipv6, Error)`
+- [x] `POST /api/beacon/refresh` (`BcnController`, inject `BcnProbeQueue`) — enqueue probe, trả `ApiResponse.Ok()` ngay
+- [x] **Clear activity** — `DELETE /api/beacon/activity` (bulk `ExecuteDeleteAsync`, trả `{deleted}`) + FE `clearActivity()` + Clear button + `NmxAlertDialog` confirm + i18n `clearConfirm/clearSuccess/clearError`
+- [x] `BCN_PROBED` i18n — `BcnActivityCodes.Probed` (backend) + `BeaconActivityCodes.BCN_PROBED` → `addon.beacon.activity.probed` = "Current record: {{ip}}" (en.json:802)
+- [x] `LogAndNotifyAsync` thêm `await db.SaveChangesAsync()` trước `NotifyActivityCreated` — DB committed trước khi FE refetch (tránh fire-before-commit race)
+- [x] SignalR Beacon events: `NotifyActivityCreated` (`beacon:activity-created`), `NotifyHostnameStatusChanged`, `NotifyHostnamesRefreshed` (`SignalRBeaconNotifier`); FE constants đồng bộ
+- [x] FE: `BeaconHostnames.handleRefresh` → `refreshHostnames()` + `refreshing` state; đăng ký `BeaconHostnamesRefreshed` (refetch + `setRefreshing(false)`) + `BeaconHostnameStatusChanged`
+- [x] **Pending — activity tab auto-refresh khi mở** (đã fix): `NmxRail` giữ tab mount sẵn (`display:none`) → `BeaconActivity` chỉ fetch lúc mount đầu. Fix: `useActiveTab()` (`@namorix/ui`) gate refetch khi tab trở lại active — `BeaconActivity.tsx:47,63-70` `if (activeTab !== "activity") return` + subscribe cả `beacon:activity-created`/`beacon:hostnames-refreshed`
+- [x] **Pending — warning `No client method ... beacon:activity-created`** (đã fix): warning benign do client library log khi nhận event không có handler. `BeaconActivity` tự register handler `beacon:activity-created` khi mount, NmxRail giữ mounted sau lần mở đầu → không còn warning.
+- [x] **Pending — minor** (đã fix): DuckDNS dead field `_httpFactory` đã bỏ (constructor param truyền thẳng xuống `BcnGetProviderBase`); `BcnProbeQueue` logger đã dùng (`LogInformation` line 40)
 
 ## Open Decisions
 
@@ -282,8 +323,10 @@ Convert mock Tailwind → Nmx. Cấu trúc:
 2. ~~**Public IP detection reuse**~~ ✅ Chốt 2026-08-03: **dựng shared service mới** `IPublicIpDetector`/`PublicIpService` (namespace `Namorix.Server.Services`, không gắn Bcn). Lưu ý: plan cũ ghi Frontgate "đã có DnsLookupChecker + ipify" là **sai** — backend chưa từng có code public IP. Nhưng **Frontgate cần public IP thật** cho HTTP-01 challenge check (so DNS resolve ↔ public IP, port 80 mở trước khi LE validate). Beacon dùng trước (worker + `/test`), Frontgate inject `IPublicIpDetector` reuse sau.
 3. ~~**Secrets**~~ ✅ Chốt 2026-08-05: mã hóa bằng **ASP.NET Core DataProtection** (Encrypt-then-MAC, key ring xoay vòng 90 ngày, `purpose` `"Bcn.ConfigJson"`): `Protect()` trước khi persist, `Unprotect()` khi đọc — chỉ 5 field secret. Key ring persist `{dataBasePath}/keys` (Docker volume `/data/keys`, không dùng ephemeral filesystem — mất key = mất data vĩnh viễn). **Không** decrypt trả về frontend (secret một chiều: "để trống = giữ nguyên", FE giữ blob qua `keptSecrets`; backend chỉ Unprotect ở `BcnCheckWorker` + `/test`). Frontgate DNS-01 credentials dùng **chung cơ chế này** (đã ghi trong frontgate plan).
 4. **Custom provider reuse**: lưu inline per-hostname (chốt ở Phase 0) — tách bảng `BcnCustomProvider` nếu cần tái dùng sau.
-5. ~~**Hostname status model**~~ ✅ Chốt 2026-08-03: `active | disabled | error` (bỏ `warn`), toggle manual `POST /hostnames/{id}/toggle`, rate-limit không đổi status.
+5. ~~**Hostname status model**~~ ✅ Chốt 2026-08-03: `active | disabled | error` (bỏ `warn`), toggle manual `POST /hostnames/{id}/toggle`, rate-limit không đổi status. **Bổ sung 2026-08-05:** thêm `pending` — update-on-save đang chạy ngầm (`BcnUpdateQueue`), transition → Active/Error; rate-limit fallback Active + `BackoffUntil`.
 6. ~~**Config field label coverage**~~ ✅ Chốt 2026-08-05: **thêm key `configFields.user`** (`"user": "Username"` trong en.json) — basic auth custom trả field `user` không còn fallback raw. Giữ cả `username` (credential field key) — 2 map song song, không đổi schema.
 7. **Field key naming**: backend trả `user` (custom basic) nhưng frontend credential field key là `username` — nên thống nhất về một phía (map `GetConfigValue`/`configFields` đã che được, không đổi schema).
 8. ~~**IPv6 scope**~~ ✅ Chốt 2026-08-05: toggle **global `UpdateIpv6`** (default OFF — ISP không hỗ trợ v6 là thuộc tính mạng, không per-hostname). `{ip}` đổi sang **v4-preferred** (`ipv4 ?? ipv6`) để template custom không bị gửi v6 sai record A; AAAA dùng placeholder `{ipv6}` tường minh. Per-hostname override (`bool? UpdateIpv6` trong ConfigJson) là extension tùy chọn — không làm. Cloudflare không auto-create AAAA — user tạo record trước.
 9. ~~**Notification channel**~~ ✅ Chốt 2026-08-05: hostname Error dùng **notification bell** (`NotificationService` + `Source="beacon"`), fire trên **transition** (không spam mỗi cycle) kèm recovery. Không dùng `IAddonNotifier` — đó là kênh widget trạng thái addon, không phải bell.
+10. ~~**Drift detection nguồn**~~ ✅ Chốt 2026-08-05 (cập nhật): verify record thật bằng **authoritative DNS query** (`GetDomain` + `AuthoritativeDnsResolver`) — provider-agnostic, không cần credential read API, **bỏ hẳn `GetCurrentAsync` REST per-provider**. Query thẳng NS authoritative với `UseCache=false` (tránh cache lệch của system resolver). Query fail → `null` + heartbeat force-push.
+11. ~~**Heartbeat timer**~~ ✅ Chốt 2026-08-05: tái dùng `LastUpdatedAt` (push thành công reset) — không thêm `LastForcePushAt`. Interval `HeartbeatIntervalHours` configurable 1-24h (default 1h).

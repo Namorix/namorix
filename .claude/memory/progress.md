@@ -1,5 +1,15 @@
 # Version History — August 2026
 
+## 2026-08-05 — Beacon authoritative DNS, probe/refresh queue, realtime events, clear activity
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.55.0 → 0.56.0 | MODIFIED: `apiRoutes.ts` — `refresh` route (`POST /api/beacon/refresh`). |
+| @namorix/styles | 0.47.0 → 0.48.0 | MODIFIED: `base/components/log-list.scss` (thêm container query ≤400px — item chuyển column, time xuống dưới message; used by Beacon/LogViewer/NetworkTraffic), `meta-list.scss`, `reset.scss`, `shell/addon/beacon.scss`, `shell/components/desktop.scss`, `public/icons/background.svg`, theme CSS rebuild (default + dark). |
+| @namorix/ui | 0.37.0 → 0.38.0 | MODIFIED: `NmxMetaItem.tsx` — new `useSelectEnabled?: boolean` prop (default false) → `--use-select` modifier class (meta-list item selectable). |
+| frontend | 0.70.0 → 0.71.0 | MODIFIED: `addons/Beacon/` — refresh button + `beacon.controller.refreshHostnames`, `clearActivity` confirm flow, `checkHostname` retry UI, realtime via `beacon:hostnames-refreshed`/`beacon:activity-created`/`beacon:hostname-status-changed`. Beacon addon UI + styles polish. |
+| Namorix.Server | 0.61.0 → 0.62.0 | NEW: `Services/BcnProbeQueue.cs` (Channel queue — refresh toàn bộ hostnames → `NotifyHostnamesRefreshed`), `Services/BcnUpdateQueue.cs` (Channel queue 1-host/event, concurrency 2, startup requeue pending), `Services/BcnProviders/AuthoritativeDnsResolver.cs` (DnsClient.NET — query NS + A/AAAA authoritative), `Hubs/SignalRBeaconNotifier.cs` + `IBeaconNotifier` (3 beacon events). MODIFIED: `Controllers/BcnController.cs` (+`POST /refresh`, +`DELETE /activity`), `BcnHostnameService` (authoritative DNS compare, `RefreshHostFromProviderAsync`), `Program.cs` (DI queue + notifier). NEW dep `DnsClient` (Directory.Packages.props + csproj). |
+
 ## 2026-08-05 — Beacon polish: markup feedback, secret placeholders, error params, JSON enum consistency
 
 | Package | Version | Changes |

@@ -27,6 +27,15 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-08-2026.md](versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-08-05 — Beacon authoritative DNS, probe/refresh queue, realtime events, clear activity
+
+- Backend (Namorix.Server 0.61.0 → 0.62.0): **Authoritative DNS read** — `AuthoritativeDnsResolver` (DnsClient.NET) bootstrap NS qua `GooglePublicDns`, label-strip tìm zone, query `A`/`AAAA` trực tiếp authoritative server (`UseCache=false`) → so IP hiện tại thay vì provider GET. NEW `BcnProbeQueue` (Channel queue — `POST /refresh` batch probe non-disabled hosts → `NotifyHostnamesRefreshed(updated)`) + `BcnUpdateQueue` (Channel queue 1-host/event cho create/update, concurrency 2, `RequeuePendingAsync` on startup, fail → status Error + notify). NEW `IBeaconNotifier`/`SignalRBeaconNotifier` — 3 events: `beacon:activity-created`, `beacon:hostname-status-changed`, `beacon:hostnames-refreshed`. Controller thêm `POST /api/beacon/refresh` + `DELETE /api/beacon/activity`. NEW dep DnsClient.
+- @namorix/core 0.55.0 → 0.56.0: `refresh` route.
+- @namorix/styles 0.47.0 → 0.48.0: log-list/meta-list/reset/beacon/desktop SCSS + background.svg + theme rebuild. `log-list.scss` thêm container query ≤400px (item column, time xuống dưới message).
+- @namorix/ui 0.37.0 → 0.38.0: `NmxMetaItem` `useSelectEnabled` prop.
+- frontend 0.70.0 → 0.71.0: refresh button + `refreshHostnames`, clearActivity confirm flow, realtime events.
+- **Đã fix:** Activity tab refresh-on-open — `BeaconActivity.tsx` gate `useActiveTab() !== "activity"` (refetch mỗi khi tab active) + subscribe cả 2 beacon events; DuckDNS dead `_httpFactory` đã bỏ; `BcnProbeQueue` logger đã dùng; warning `No client method ... beacon:activity-created` đã fix (BeaconActivity tự register handler khi mount).
+
 ### 2026-08-05 — Beacon polish: markup feedback, secret placeholders, error params, JSON enum consistency
 
 - Backend (Namorix.Server 0.60.0 → 0.61.0): NEW `BcnHostnameService` (update logic single source — worker + controller `/check` delegate) + `BcnSecretProtector` (DataProtection mã hóa 5 field secret). `BcnController` thêm `POST /hostnames/{id}/check` (trả `@params = result.Params` — passthrough reason/httpStatus), dùng shared `BcnProviderConfig.SerializerOptions` (JsonStringEnumConverter — fix `JsonException BcnProviderKind` khi edit token). `BcnCheckWorker` slim còn ~60 dòng (orchestrator). Regex hostname relax cho subdomain (DuckDNS `home`). DuckDNS `Classify` trả `params.reason`. `SelfSignedCertificateProvider` thêm IsValidCertificate check.

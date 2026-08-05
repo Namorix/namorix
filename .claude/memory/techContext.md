@@ -17,6 +17,7 @@
 - **Auth:** JWT (System.IdentityModel.Tokens.Jwt), BCrypt (BCrypt.Net-Next)
 - **Caching:** IMemoryCache
 - **Docker:** Docker.DotNet.Enhanced (fork từ Docker.DotNet, maintain bởi Testcontainers team)
+- **DNS:** DnsClient.NET (`AuthoritativeDnsResolver` — query NS + A/AAAA trực tiếp authoritative server cho Beacon DDNS)
 
 ### Packages
 | Package | Purpose | Dependencies |
