@@ -70,6 +70,8 @@ public sealed class BcnRestJsonProvider(IHttpClientFactory httpFactory) : IBcnPr
         return new BcnUpdateResult(false, BcnErrorCodes.ProviderError);
     }
 
+    public string GetDomain(string hostname, BcnProviderConfig config) => hostname;
+    
     private static async Task<string?> LookupRecordIdAsync(HttpClient client, string hostname,
         BcnProviderConfig config, CancellationToken ct)
     {

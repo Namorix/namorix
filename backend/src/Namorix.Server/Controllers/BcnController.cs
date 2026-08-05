@@ -18,7 +18,8 @@ namespace Namorix.Server.Controllers;
 [ApiController]
 [RequireAdmin]
 [Route("api/beacon")]
-public class BcnController(AppDbContext db, BcnProviderRegistry registry, BcnSecretProtector protector) : ControllerBase
+public class BcnController(AppDbContext db, BcnProviderRegistry registry, BcnSecretProtector protector,
+    BcnUpdateQueue queue) : ControllerBase
 {
     private static readonly JsonSerializerOptions ConfigWriteOptions =
         new()
@@ -49,16 +50,18 @@ public class BcnController(AppDbContext db, BcnProviderRegistry registry, BcnSec
         var invalidField = ValidateConfig(request.ProviderId, config);
         if (invalidField is not null)
             return BadRequest(ApiResponse.Fail(BcnErrorCodes.ConfigInvalid, null, invalidField));
-        
+
         var host = new BcnHostname
         {
             Hostname = request.Hostname,
             ProviderId = request.ProviderId,
             Kind = config.Kind,
+            Status = BcnHostnameStatus.Pending,
             ConfigJson = JsonSerializer.Serialize(protector.Protect(config), BcnProviderConfig.SerializerOptions),
         };
         db.BcnHostnames.Add(host);
         await db.SaveChangesAsync();
+        await queue.EnqueueAsync(host.Id);
         return Ok(ApiResponse.Ok(host));
     }
     
@@ -89,13 +92,15 @@ public class BcnController(AppDbContext db, BcnProviderRegistry registry, BcnSec
         var invalidField = ValidateConfig(request.ProviderId, config);
         if (invalidField is not null)
             return BadRequest(ApiResponse.Fail(BcnErrorCodes.ConfigInvalid, null, invalidField));
-        
+
         host.Hostname = request.Hostname;
         host.ProviderId = request.ProviderId;
         host.Kind = config.Kind;
         host.ConfigJson = JsonSerializer.Serialize(protector.Protect(config), ConfigWriteOptions);
-        
+        host.Status = BcnHostnameStatus.Pending;
+
         await db.SaveChangesAsync();
+        await queue.EnqueueAsync(host.Id);
         return Ok(ApiResponse.Ok(host));
     }
 
@@ -181,10 +186,17 @@ public class BcnController(AppDbContext db, BcnProviderRegistry registry, BcnSec
         var items = await query.Skip((page - 1) * size).Take(size).ToListAsync();
         return Ok(ApiResponse.Ok(new { items, total }));
     }
+    
+    [HttpDelete("activity")]
+    public async Task<IActionResult> ClearActivity()
+    {
+        var deleted = await db.BcnActivityLogs.ExecuteDeleteAsync();
+        return Ok(ApiResponse.Ok(new { deleted }));
+    }
 
     [HttpGet("providers")]
-    public IActionResult ListProviders([FromServices] BcnProviderRegistry registry)
-        => Ok(ApiResponse.Ok(registry.Infos));
+    public IActionResult ListProviders([FromServices] BcnProviderRegistry providerRegistry)
+        => Ok(ApiResponse.Ok(providerRegistry.Infos));
 
     [HttpGet("settings")]
     public async Task<IActionResult> GetSettings()
@@ -204,6 +216,7 @@ public class BcnController(AppDbContext db, BcnProviderRegistry registry, BcnSec
             db.BcnSettings.Add(settings);
         }
         settings.CheckIntervalMinutes = request.CheckIntervalMinutes;
+        settings.HeartbeatIntervalHours = request.HeartbeatIntervalHours;
         settings.IpDetectionService = request.IpDetectionService;
         settings.UpdateIpv6 = request.UpdateIpv6;
         
@@ -232,6 +245,13 @@ public class BcnController(AppDbContext db, BcnProviderRegistry registry, BcnSec
             : BcnHostnameStatus.Disabled;
         await db.SaveChangesAsync();
         return Ok(ApiResponse.Ok(host));
+    }
+    
+    [HttpPost("refresh")]
+    public async Task<IActionResult> RefreshHostnames([FromServices] BcnProbeQueue probeQueue)
+    {
+        await probeQueue.EnqueueAsync();
+        return Ok(ApiResponse.Ok());
     }
     
     private static BcnProviderConfig DeserializeConfig(string? json) =>
@@ -291,6 +311,7 @@ public record TestProviderRequest(
 
 public record UpdateSettingsRequest(
     int CheckIntervalMinutes,
+    int HeartbeatIntervalHours,
     string IpDetectionService,
     bool UpdateIpv6
 );

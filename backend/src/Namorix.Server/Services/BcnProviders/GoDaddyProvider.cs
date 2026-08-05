@@ -53,6 +53,9 @@ public sealed class GoDaddyProvider(IHttpClientFactory httpFactory) : IBcnProvid
         return new BcnUpdateResult(true);
     }
 
+    
+    public string GetDomain(string hostname, BcnProviderConfig config) => hostname;
+
     public Task<BcnTestResult> TestAsync(string hostname, BcnProviderConfig config, IPAddress? ipv4, IPAddress? ipv6, CancellationToken ct) =>
         UpdateAsync(hostname, config, ipv4, ipv6, ct)
             .ContinueWith(t => new BcnTestResult(t.Result.Success, t.Result.Code, t.Result.Params), ct);

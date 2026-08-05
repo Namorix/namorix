@@ -47,8 +47,10 @@ public sealed class BcnCheckWorker(IServiceScopeFactory scopeFactory,
                         && (h.BackoffUntil == null || h.BackoffUntil <= DateTime.UtcNow))
             .ToListAsync(ct);
 
-        foreach (var host in hosts)
+        foreach (var host in hosts.Where(h => h.Status != BcnHostnameStatus.Pending))
+        {
             await updater.UpdateHostAsync(host, ip.IPv4, ip.IPv6, ct: ct);
+        }
 
         await db.SaveChangesAsync(ct);
     }
@@ -72,12 +74,12 @@ public sealed class BcnCheckWorker(IServiceScopeFactory scopeFactory,
     private static async Task<BcnSettings> GetSettingsAsync(AppDbContext db, CancellationToken ct)
     {
         var settings = await db.BcnSettings.FirstOrDefaultAsync(ct);
-        if (settings is null)
-        {
-            settings = new BcnSettings();
-            db.BcnSettings.Add(settings);
-            await db.SaveChangesAsync(ct);
-        }
+        if (settings is not null)
+            return settings;
+        
+        settings = new BcnSettings();
+        db.BcnSettings.Add(settings);
+        await db.SaveChangesAsync(ct);
         return settings;
     }
 }

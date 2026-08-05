@@ -93,6 +93,7 @@ builder.Services.AddReverseProxy()
 builder.Services.AddScoped<INotificationNotifier, SignalRNotificationNotifier<MainHub>>();
 builder.Services.AddScoped<ISystemMonitorNotifier, SignalRSystemMonitorNotifier>();
 builder.Services.AddScoped<IAddonNotifier, SignalRAddonNotifier>();
+builder.Services.AddScoped<IBeaconNotifier, SignalRBeaconNotifier>();
 
 builder.Services.AddHttpClient<CatalogService>(client =>
 {
@@ -123,6 +124,10 @@ builder.Services.AddScoped<AddonTaskExecutor>();
 builder.Services.AddGrpc();
 builder.Services.AddSingleton<AddonChannelManager>();
 builder.Services.AddSingleton<AcmeChallengeStore>();
+builder.Services.AddSingleton<BcnUpdateQueue>();
+builder.Services.AddHostedService<BcnUpdateQueue>(sp => sp.GetRequiredService<BcnUpdateQueue>());
+builder.Services.AddSingleton<BcnProbeQueue>();
+builder.Services.AddHostedService<BcnProbeQueue>(sp => sp.GetRequiredService<BcnProbeQueue>());
 
 if (builder.Environment.IsDevelopment())
     builder.Services.AddGrpcReflection();

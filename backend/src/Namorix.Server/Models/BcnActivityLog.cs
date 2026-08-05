@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Namorix.Server.Models;
 
-public enum BcnLogLevel { Info, Warn, Error }
+public enum BcnLogLevel { Info, Success, Warn, Error }
 
 public class BcnActivityLog
 {

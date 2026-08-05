@@ -46,6 +46,8 @@ public sealed class BcnSimpleGetProvider(IHttpClientFactory httpFactory) : IBcnP
         return MatchSuccess(body, config);
     }
 
+    public string GetDomain(string hostname, BcnProviderConfig config) => hostname;
+    
     private static BcnUpdateResult MatchSuccess(string body, BcnProviderConfig config)
     {
         var ok = config.SuccessMatch switch

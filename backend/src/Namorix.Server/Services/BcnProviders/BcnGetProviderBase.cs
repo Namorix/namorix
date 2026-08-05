@@ -15,6 +15,8 @@ public abstract class BcnGetProviderBase(IHttpClientFactory httpFactory) : IBcnP
         IPAddress? ipv4, IPAddress? ipv6);
     protected abstract BcnUpdateResult Classify(string body);
 
+    public virtual string GetDomain(string hostname, BcnProviderConfig config) => hostname;
+    
     public async Task<BcnUpdateResult> UpdateAsync(string hostname, BcnProviderConfig config,
         IPAddress? ipv4, IPAddress? ipv6, CancellationToken ct)
     {

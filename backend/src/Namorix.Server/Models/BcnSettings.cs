@@ -8,6 +8,8 @@ public class BcnSettings
 
     public int CheckIntervalMinutes { get; set; } = 15;
 
+    public int HeartbeatIntervalHours { get; set; } = 1;
+
     [MaxLength(20)] public string IpDetectionService { get; set; } = "auto";
 
     public bool UpdateIpv6 { get; set; }

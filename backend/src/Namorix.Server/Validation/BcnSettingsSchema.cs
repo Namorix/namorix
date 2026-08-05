@@ -10,6 +10,13 @@ public class BcnSettingsSchema : IValidationSchema
         Min = 1,
         Max = 1440,
     };
+    
+    public StringValidationRule HeartbeatIntervalHours => new()
+    {
+        IsRequired = true,
+        Min = 1,
+        Max = 24,
+    };
 
     public AllowedValuesValidationRule IpDetectionService => new()
     {

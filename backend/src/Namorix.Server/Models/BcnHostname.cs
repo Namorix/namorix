@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Namorix.Server.Models;
 
 public enum BcnProviderKind { Get, Rest, Custom }
-public enum BcnHostnameStatus { Active, Disabled, Error }
+public enum BcnHostnameStatus { Pending, Active, Disabled, Error }
 
 public class BcnHostname
 {

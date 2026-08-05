@@ -4,6 +4,7 @@ public static class ServerSignalRGroups
 {
     public const string SystemMonitor = "system-monitor";
     public const string Addon = "addon";
+    public const string Beacon = "beacon";
 }
 
 public static class ServerSignalREvent
@@ -13,4 +14,7 @@ public static class ServerSignalREvent
     public const string AddonPendingTaskChanged = $"{ServerSignalRGroups.Addon}:pending-task-changed";
     public const string AddonUninstalled = $"{ServerSignalRGroups.Addon}:uninstalled";
     public const string AddonWidgetEvent = $"{ServerSignalRGroups.Addon}:widget-event";
+    public const string BeaconHostnameStatusChanged = $"{ServerSignalRGroups.Beacon}:hostname-status-changed";
+    public const string BeaconActivityCreated = $"{ServerSignalRGroups.Beacon}:activity-created";
+    public const string BeaconHostnamesRefreshed = $"{ServerSignalRGroups.Beacon}:hostnames-refreshed";
 }

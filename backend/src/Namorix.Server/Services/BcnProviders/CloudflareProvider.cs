@@ -59,14 +59,19 @@ public sealed class CloudflareProvider(IHttpClientFactory httpFactory) : IBcnPro
 
         return new BcnUpdateResult(true);
     }
+    
+    public string GetDomain(string hostname, BcnProviderConfig config) => hostname;
 
     private static async Task<string?> FindZoneIdAsync(HttpClient client, string zone, CancellationToken ct)
     {
         using var resp = await client.GetAsync($"https://api.cloudflare.com/client/v4/zones?name={Uri.EscapeDataString(zone)}", ct);
-        if (!resp.IsSuccessStatusCode) return null;
+        if (!resp.IsSuccessStatusCode)
+            return null;
+        
         using var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync(ct));
         foreach (var item in doc.RootElement.GetProperty("result").EnumerateArray())
             if (item.TryGetProperty("id", out var id)) return id.GetString();
+
         return null;
     }
 

@@ -17,4 +17,5 @@ public static class BcnErrorCodes
 public static class BcnActivityCodes
 {
     public const string Updated = "BCN_UPDATED";
+    public const string Probed = "BCN_PROBED";
 }
