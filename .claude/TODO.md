@@ -218,4 +218,47 @@
 
 **Files**: `Program.cs` — proxy branch `PhysicalFileProvider` + `MapFallbackToFile` paths.
 
+---
+
+## Beacon — Provider error `()` rỗng (2026-08-05) — DuckDNS + Namecheap ✅, NoIp ⏳ cần test thêm
+
+**Context**: activity log + toast hiển thị `Provider returned an error ()` — `BcnUpdateResult.Params` không mang detail lỗi qua mọi error path.
+
+**Đã fix**:
+- **DuckDNS** ✅ — `Classify` trả `reason = body.Trim()` (đã pass).
+- **Namecheap** ✅ — `Classify` trích `<Err1>` bằng regex + `WebUtility.HtmlDecode`, fallback `body.Trim()` (`NamecheapProvider.cs:18-36`).
+- **NoIp** ⏳ — `Classify` đã thêm `reason = text` vào mọi nhánh error (`badauth/nohost/abuse/911/_`); `abuse`/`911` giữ `RateLimited: true` (`NoIpProvider.cs:20-37`) — **code xong nhưng chưa test thật, tạm gác.**
+- **`bcnErrorDetail`** ✅ (`Beacon.types.ts:88-102`) — thứ tự ưu tiên `detail` → `httpStatus > 0` → `reason` (fix path exception hiện "HTTP 0" thay vì `ex.Message`).
+
+**Files**: `Services/BcnProviders/NamecheapProvider.cs`, `Services/BcnProviders/NoIpProvider.cs`, `frontend/src/addons/Beacon/Beacon.types.ts`
+
+---
+
+## Beacon — Toggle Enable không chạy update ✅ Resolved (2026-08-05)
+
+**Context**: Enable hostname đang `Disabled` → set thẳng `Active` mà không chạy update → record lệch (IP đổi lúc disable) vẫn báo active.
+
+**Đã fix**: `BcnController.ToggleHostname` (BcnController.cs:182-201) — Enable → `Status = Updating` + `queue.EnqueueAsync(host.Id)` (đi qua `BcnUpdateQueue` như Create/Update): success → `Active`, fail → `Error`, rate-limit → fallback `Active` + `BackoffUntil`. Disable → set `Disabled` như cũ.
+
+**Files**: `Controllers/BcnController.cs`
+
+---
+
+## Beacon — Kind lưu trùng (DB column vs ConfigJson)
+
+**Context**: `BcnHostname.Kind` (DB column) và `BcnProviderConfig.Kind` (trong `ConfigJson` blob) cùng chứa giá trị `get`/`rest`.
+
+**Approach** — denormalize có chủ đích, không phải bug:
+- `config.Kind` (trong ConfigJson) là nguồn dùng lúc chạy — `BcnProviderResolver.cs:12` dựa vào nó để chọn `BcnRestJsonProvider` (rest) vs `BcnSimpleGetProvider` (get) cho custom provider. Blob phải tự mô tả được kind, đặc biệt luồng `TestProvider` không có host row.
+- `host.Kind` (column) là bản sao plaintext — vì `ConfigJson` được `protector.Protect()` (secret mã hoá), FE không đọc được kind từ blob → API trả `host.kind` để FE `setFormKind(host.kind)` (BeaconHostnames.tsx:246).
+- Cả 2 ghi đồng bộ từ cùng `request.Kind` (BcnController.cs:52, 63, 107) → không lệch nhau.
+
+**Files** (nếu muốn bỏ 1 nơi — không khuyến khích):
+- `backend/src/Namorix.Server/Models/BcnHostname.cs` — bỏ `Kind` column
+- `backend/src/Namorix.Server/Models/BcnProviderConfig.cs` — bỏ `Kind` property
+- `backend/src/Namorix.Server/Services/BcnProviders/BcnProviderResolver.cs` — đổi signature nhận kind riêng
+- `frontend/src/addons/Beacon/BeaconHostnames.tsx` — thay vì đọc `host.kind`, parse từ `configJson`
+
+**Note**: Giữ nguyên 2 nơi là hợp lý hiện tại. Ghi lại để khỏi thắc mắc lại.
+
 	

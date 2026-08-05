@@ -830,9 +830,9 @@ BcnProviderResolver — built-in → registry, custom → theo Kind
 **Update loop (`BcnCheckWorker` BackgroundService — orchestrator, delegate logic sang `BcnHostnameService.UpdateHostAsync(host, ipv4, ipv6, force, ct)`; interval = `BcnSettings.CheckIntervalMinutes` default 15):**
 ```
 1. Detect public IP (IPublicIpDetector / PublicIpService — auto/ipify.org)
-2. Skip hostname Disabled / đang backoff
+2. Skip hostname Disabled / Updating / đang backoff
 3. foreach host: updater.UpdateHostAsync(host, ip, ct) — service skip nếu IP không đổi (force=false)
-4. Trong service: unprotect config → resolver.Resolve(...).UpdateAsync(hostname, config, ipv4, ipv6, ct)
+4. Trong service: split `Host` (multi-tag `@,www,home`) → foreach tag: resolver.Resolve(...).UpdateAsync(tag, host.Domain, config, ipv4, ipv6, ct)
 5. Success → status Active + CurrentIp + Activity log (BCN_UPDATED)
 6. Rate-limit (429/Retry-After) → BackoffUntil (exponential cap 24h), KHÔNG đổi status
 7. Lỗi vĩnh viễn (401/403/404...) → status Error
@@ -841,10 +841,13 @@ BcnProviderResolver — built-in → registry, custom → theo Kind
 `force=true` (controller `/check` manual) bypass bước 3 — Retry/Update luôn chạy kể cả IP không đổi. Logic update nằm duy nhất trong `BcnHostnameService` (1 nguồn, không drift giữa worker và controller).
 `BcnActivityCleanupWorker` — pruning log quá `RetentionDays` (7 ngày), pattern `NotificationCleanupWorker`.
 
+**Host/domain model (2026-08-05):** `BcnHostname` — `Host` = multi-tag comma (`@,www,home`), `Domain` = FQDN chuẩn dùng thẳng authoritative DNS. Provider `HostIsDomain` (No-IP) — controller derive `hostValue = domain` (lưu `Host = Domain`), FE ẩn host field + collapse label (`host === domain ? domain : host · domain`).
+**Provider error detail + notification (2026-08-05):** error param `reason`/`httpStatus`/`detail` → FE `bcnErrorDetail` priority `detail → httpStatus>0 → reason`; backend `DescribeDetail` mirror. Namecheap extract `<Err1>` (GeneratedRegex + HtmlDecode), NoIp `reason` mọi error branch. Notification renderer (`Beacon.addon.tsx`) translate provider/hostname/detail + `return t(...)`. Toggle enable → `Updating` + `queue.EnqueueAsync` (chạy update qua queue như create/edit).
+
 **Authoritative DNS read (2026-08-05):** `BcnHostnameService` so IP hiện tại với record thật của provider bằng `AuthoritativeDnsResolver.ResolveAsync` (DnsClient.NET) thay vì call provider GET: bootstrap NS qua `NameServer.GooglePublicDns` (Zone query `NS` → resolve NS IP), label-strip dần từ full hostname tới zone, query `A` + `AAAA` trực tiếp authoritative server (`UseCache=false`) → `BcnCurrentRecord(ipv4, ipv6)`. Provider-agnostic, không phụ thuộc provider GET /current.
 
 **Queues (Channel-based BackgroundService):**
-- `BcnUpdateQueue` — 1 hostname/event (create/update → `EnqueueAsync(host.Id)`): `SemaphoreSlim` max 2 concurrent, `RequeuePendingAsync` on startup (hostname Pending bị orphan sau restart → requeue), fail → status Error + `NotifyHostnameStatusChanged`.
+- `BcnUpdateQueue` — 1 hostname/event (create/update → `EnqueueAsync(host.Id)`): `SemaphoreSlim` max 2 concurrent, `RequeueUpdatingAsync` on startup (hostname Updating bị orphan sau restart → requeue), fail → status Error + `NotifyHostnameStatusChanged`.
 - `BcnProbeQueue` — refresh toàn bộ (controller `POST /refresh` → `EnqueueAsync()`): batch probe hostname non-disabled qua `RefreshHostFromProviderAsync` (so sánh authoritative DNS + provider update), xong `NotifyHostnamesRefreshed(updated)`.
 
 **SignalR realtime (2026-08-05):** `IBeaconNotifier` + `SignalRBeaconNotifier` (IHubContext<MainHub>, group `beacon`): `beacon:activity-created` (mỗi log BCN_PROBED/BCN_UPDATED), `beacon:hostname-status-changed`, `beacon:hostnames-refreshed` (sau probe). Note: JS SignalR client log warning `No client method with the name 'beacon:activity-created'` khi tab Activity chưa mount (không có handler) — event name đúng, warning benign. NmxRail giữ tab mounted (display:none) — `BeaconActivity` đã fix refresh-on-open bằng `useActiveTab()` gate (refetch mỗi khi tab active) + subscribe cả 2 beacon events. Warning `No client method` đã fix (BeaconActivity tự register handler khi mount).
@@ -861,7 +864,7 @@ BcnProviderResolver — built-in → registry, custom → theo Kind
 | POST | `/api/beacon/hostnames` | tạo (validate schema + config) |
 | PUT | `/api/beacon/hostnames/{id}` | cập nhật |
 | DELETE | `/api/beacon/hostnames/{id}` | xóa (activity.HostnameId SetNull) |
-| POST | `/api/beacon/hostnames/{id}/toggle` | flip active↔disabled |
+| POST | `/api/beacon/hostnames/{id}/toggle` | disable → `Disabled`; enable → `Updating` + enqueue update |
 | POST | `/api/beacon/hostnames/{id}/check` | **Retry/Update** manual — `UpdateHostAsync(force: true)` → `{success, code, params}` (passthrough `result.Params`) |
 | POST | `/api/beacon/hostnames/test` | test config form (chưa save) bằng public IP hiện tại; dùng hostname từ form |
 | GET | `/api/beacon/activity?page&size` | activity log (Code + ParamsJson + hostname text) |
@@ -871,9 +874,9 @@ BcnProviderResolver — built-in → registry, custom → theo Kind
 | GET | `/api/beacon/status` | total + healthy + lastCheck |
 | POST | `/api/beacon/refresh` | refresh toàn bộ hostnames — enqueue `BcnProbeQueue` → `NotifyHostnamesRefreshed(updated)` |
 
-Hostname status: `active | disabled | error` (toggle manual, rate-limit không đổi status).
+Hostname status: `updating | active | disabled | error` (create/edit-save + toggle enable → Updating rồi chạy update ngầm qua `BcnUpdateQueue`; toggle disable → `Disabled`; rate-limit không đổi status).
 
-**Frontend (`frontend/src/addons/Beacon/`):** `Beacon.tsx` — `NmxRail` 3 tab. `BeaconHostnames.tsx` — `NmxDataTable` (status badge, mono hostname + createdAt, provider badge, current IP, `NmxMenuButton` check/retry + enable/disable/delete, disable khi busy) + add/edit `NmxAlertDialog` (provider select placeholder + descriptions natural language, credential fields động + secret placeholder, custom toggle Simple GET / REST-JSON, Test connection). `BeaconActivity.tsx` — `NmxLogList`. `BeaconSettings.tsx` — interval/IP service/IPv6 (hint). Feedback dùng markup `**{{hostname}}**` — render qua `markupToHtml` (toast + log list). Error: `BeaconErrorCodes` + `BCN_CONFIG_INVALID` → `formatBeaconError` (Beacon-local, `configFields` map inject field label), `bcnErrorDetail` normalize `httpStatus`/`reason` → `detail`, `missingField` pre-check trước submit, `fieldLabel` lookup `credentialFields.*`.
+**Frontend (`frontend/src/addons/Beacon/`):** `Beacon.tsx` — `NmxRail` 3 tab. `BeaconHostnames.tsx` — `NmxDataTable` (status badge, host·domain + current IP, provider badge, `NmxMenuButton` check/retry + enable/disable/delete, disable khi busy) + add/edit `NmxAlertDialog` (provider select placeholder + descriptions natural language, credential fields động + secret placeholder, host `NmxTagInput` multi + FQDN domain, hostIsDomain ẩn host field, custom toggle Simple GET / REST-JSON, Test connection). `BeaconActivity.tsx` — `NmxLogList` (label collapse host===domain). `BeaconSettings.tsx` — interval/IP service/IPv6 (hint). Feedback dùng markup `**{{hostname}}**` — render qua `markupToHtml` (toast + log list). Error: `BeaconErrorCodes` + `BCN_CONFIG_INVALID` → `formatBeaconError` (Beacon-local, `configFields` map inject field label), `bcnErrorDetail` normalize `detail`/`httpStatus`/`reason` → `detail`, `missingField` pre-check trước submit, `fieldLabel` lookup `credentialFields.*`. `Beacon.addon.tsx` — `registerNotificationDescriptionRenderer("beacon")`: translate error code qua `BeaconErrorCodes` + provider/hostname/detail, `return t('notification:'+key, params)`.
 
 ### Key files (Beacon)
 
@@ -886,7 +889,7 @@ Hostname status: `active | disabled | error` (toggle manual, rate-limit không �
 | `backend/src/Namorix.Server/Services/BcnProviders/` | 6 built-in + custom SimpleGet/RestJson + registry + resolver + `BcnSecretProtector` + `AuthoritativeDnsResolver` |
 | `backend/src/Namorix.Server/Services/PublicIpService.cs` | auto/ipify.org |
 | `backend/src/Namorix.Server/Services/BcnHostnameService.cs` | Update logic single source (worker + controller `/check` + queue) — authoritative DNS compare |
-| `backend/src/Namorix.Server/Services/BcnUpdateQueue.cs` | Channel queue — 1 hostname/event (create/update), concurrency 2, startup requeue pending |
+| `backend/src/Namorix.Server/Services/BcnUpdateQueue.cs` | Channel queue — 1 hostname/event (create/update), concurrency 2, startup requeue updating |
 | `backend/src/Namorix.Server/Services/BcnProbeQueue.cs` | Channel queue — refresh toàn bộ hostnames (`/refresh`) → `NotifyHostnamesRefreshed` |
 | `backend/src/Namorix.Server/Hubs/SignalRBeaconNotifier.cs` | `IBeaconNotifier` SignalR impl (activity-created / hostname-status-changed / hostnames-refreshed) |
 | `backend/src/Namorix.Server/Workers/BcnCheckWorker.cs` | Orchestrator — resolve service từ scope, delegate |

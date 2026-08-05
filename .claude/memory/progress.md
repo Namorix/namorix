@@ -1,5 +1,13 @@
 # Version History — August 2026
 
+## 2026-08-05 — Beacon host/domain split, HostIsDomain, provider error detail, notification/activity interpolation, toggle enable
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/styles | 0.48.0 → 0.48.1 | MODIFIED: `base/shell/addon/beacon.scss` — class `__created` → `__ip` (IP cell hiển thị). |
+| frontend | 0.71.0 → 0.72.0 | MODIFIED: `addons/Beacon/` — host/domain model (form `NmxTagInput` multi-tag + FQDN domain), hostIsDomain (ẩn host field + collapse label table/toast/activity), `bcnErrorDetail` priority `detail → httpStatus → reason`, notification renderer (`Beacon.addon.tsx` — translate provider/hostname/detail + `return t(...)`, bỏ `console.log`), activity label collapse. `i18n/locales/en.json` (fields.host/domain, providerError) + `notification/en.json` (`hostnameError` bỏ `**{{error}}**` bold → plain). |
+| Namorix.Server | 0.62.0 → 0.63.0 | **BREAKING (Beacon API)**: `BcnHostname` `Hostname` → `Host` (multi-tag comma) + `Domain` (FQDN) + migration `20260805115204_AddBcnDomainAndHost`; `IBcnProviderClient` signature `host`+`domain` (bỏ `GetDomain`); controller request DTO `Host`+`Domain`, dup check theo cặp. NEW `BcnProviderInfo.HostIsDomain` (No-IP) — controller derive `hostValue = domain`. Toggle enable → `Updating` + enqueue. MODIFIED: `BcnHostnameService` (multi-tag update loop, authoritative DNS dùng `host.Domain`, `DescribeDetail` 3-tier mirror `bcnErrorDetail`, `WithTag`/`WithProvider` + `firstFailure` enrich hostname+provider, `NotifyHostnameAsync` +provider param, `DisplayName` collapse), `BcnHostnameSchema` (host/domain regex + cho phép dấu chấm), `BcnUpdateQueue` (ParamsJson provider), Namecheap (`<Err1>` extract + HtmlDecode), NoIp (`reason` mọi error branch), `BcnCheckWorker` (skip `Updating`). |
+
 ## 2026-08-05 — Beacon authoritative DNS, probe/refresh queue, realtime events, clear activity
 
 | Package | Version | Changes |
@@ -8,7 +16,7 @@
 | @namorix/styles | 0.47.0 → 0.48.0 | MODIFIED: `base/components/log-list.scss` (thêm container query ≤400px — item chuyển column, time xuống dưới message; used by Beacon/LogViewer/NetworkTraffic), `meta-list.scss`, `reset.scss`, `shell/addon/beacon.scss`, `shell/components/desktop.scss`, `public/icons/background.svg`, theme CSS rebuild (default + dark). |
 | @namorix/ui | 0.37.0 → 0.38.0 | MODIFIED: `NmxMetaItem.tsx` — new `useSelectEnabled?: boolean` prop (default false) → `--use-select` modifier class (meta-list item selectable). |
 | frontend | 0.70.0 → 0.71.0 | MODIFIED: `addons/Beacon/` — refresh button + `beacon.controller.refreshHostnames`, `clearActivity` confirm flow, `checkHostname` retry UI, realtime via `beacon:hostnames-refreshed`/`beacon:activity-created`/`beacon:hostname-status-changed`. Beacon addon UI + styles polish. |
-| Namorix.Server | 0.61.0 → 0.62.0 | NEW: `Services/BcnProbeQueue.cs` (Channel queue — refresh toàn bộ hostnames → `NotifyHostnamesRefreshed`), `Services/BcnUpdateQueue.cs` (Channel queue 1-host/event, concurrency 2, startup requeue pending), `Services/BcnProviders/AuthoritativeDnsResolver.cs` (DnsClient.NET — query NS + A/AAAA authoritative), `Hubs/SignalRBeaconNotifier.cs` + `IBeaconNotifier` (3 beacon events). MODIFIED: `Controllers/BcnController.cs` (+`POST /refresh`, +`DELETE /activity`), `BcnHostnameService` (authoritative DNS compare, `RefreshHostFromProviderAsync`), `Program.cs` (DI queue + notifier). NEW dep `DnsClient` (Directory.Packages.props + csproj). |
+| Namorix.Server | 0.61.0 → 0.62.0 | NEW: `Services/BcnProbeQueue.cs` (Channel queue — refresh toàn bộ hostnames → `NotifyHostnamesRefreshed`), `Services/BcnUpdateQueue.cs` (Channel queue 1-host/event, concurrency 2, startup requeue updating), `Services/BcnProviders/AuthoritativeDnsResolver.cs` (DnsClient.NET — query NS + A/AAAA authoritative), `Hubs/SignalRBeaconNotifier.cs` + `IBeaconNotifier` (3 beacon events). MODIFIED: `Controllers/BcnController.cs` (+`POST /refresh`, +`DELETE /activity`), `BcnHostnameService` (authoritative DNS compare, `RefreshHostFromProviderAsync`), `Program.cs` (DI queue + notifier). NEW dep `DnsClient` (Directory.Packages.props + csproj). |
 
 ## 2026-08-05 — Beacon polish: markup feedback, secret placeholders, error params, JSON enum consistency
 
