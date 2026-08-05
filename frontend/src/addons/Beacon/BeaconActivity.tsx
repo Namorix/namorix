@@ -97,8 +97,16 @@ export const BeaconActivity: React.FC = () => {
     if (typeof params.retryAt === "string")
       params.retryAt = dateTime(params.retryAt)
 
+    const providerLabel = params.provider
+      ? t(`addon.beacon.providers.${params.provider}`, {
+          defaultValue: String(params.provider),
+        })
+      : undefined
+
+    console.log(params)
     return t(ACTIVITY_CODES[row.code] ?? row.code, {
       ...params,
+      provider: providerLabel,
       detail: bcnErrorDetail(params),
     })
   }
@@ -109,24 +117,33 @@ export const BeaconActivity: React.FC = () => {
       .clearActivity()
       .then((res) => {
         nmxToast.success(
-          t("addon.beacon.activity.clearSuccess", { count: res.deleted }),
+          t("addon.beacon.activity.feedback.clearSuccess", {
+            count: res.deleted,
+          }),
         )
         setConfirmClear(false)
         return fetchActivity(1, pageSize)
       })
-      .catch(() => nmxToast.error(t("addon.beacon.activity.clearError")))
+      .catch(() =>
+        nmxToast.error(t("addon.beacon.activity.feedback.clearError")),
+      )
       .finally(() => setClearing(false))
   }, [fetchActivity, pageSize, t])
 
-  const entries: NmxLogEntry[] = items.map((row) => ({
-    id: row.id,
-    time: dateTime(row.timestamp),
-    message: row.hostname
-      ? `${renderMessage(row)} · ${row.hostname}`
-      : renderMessage(row),
-    semantic: LEVEL_SEMANTIC[row.level],
-    markupToHtmlEnabled: true,
-  }))
+  const entries: NmxLogEntry[] = items.map((row) => {
+    const label =
+      row.host && row.host === row.domain
+        ? row.domain
+        : [row.host, row.domain].filter(Boolean).join(" · ")
+
+    return {
+      id: row.id,
+      time: dateTime(row.timestamp),
+      message: label ? `${renderMessage(row)} · ${label}` : renderMessage(row),
+      semantic: LEVEL_SEMANTIC[row.level],
+      markupToHtmlEnabled: true,
+    }
+  })
 
   const fallbackConditions: NmxFallback[] = [
     {
@@ -154,12 +171,12 @@ export const BeaconActivity: React.FC = () => {
         {entries.length > 0 && (
           <NmxButton semantic="error" onClick={() => setConfirmClear(true)}>
             <NmxIconFont symbol={NmxIconFontSymbol.DELETE} />
-            <span>{t("addon.beacon.activity.clear")}</span>
+            <span>{t("addon.beacon.activity.actions.clear")}</span>
           </NmxButton>
         )}
         <NmxButton onClick={() => fetchActivity(page, pageSize)}>
           <NmxIconFont symbol={NmxIconFontSymbol.REFRESH} />
-          <span>{t("addon.beacon.activity.refresh")}</span>
+          <span>{t("addon.beacon.activity.actions.refresh")}</span>
         </NmxButton>
       </NmxAlign>
 
@@ -194,14 +211,14 @@ export const BeaconActivity: React.FC = () => {
 
       <NmxAlertDialog
         open={confirmClear}
-        title={t("addon.beacon.activity.clear")}
-        confirmLabel={t("addon.beacon.activity.clear")}
+        title={t("addon.beacon.activity.actions.clear")}
+        confirmLabel={t("addon.beacon.activity.actions.clear")}
         confirmSemantic="error"
         onClose={() => setConfirmClear(false)}
         onConfirm={handleClearConfirm}
         loading={clearing}
       >
-        <p>{t("addon.beacon.activity.clearConfirm")}</p>
+        <p>{t("addon.beacon.activity.feedback.clearConfirm")}</p>
       </NmxAlertDialog>
     </>
   )

@@ -15,7 +15,8 @@ import type {
 import type { BcnProviderKind } from "./Beacon.types"
 
 export interface CreateHostnamePayload {
-  hostname: string
+  host: string
+  domain: string
   providerId: string
   kind: BcnProviderKind
   configJson?: string

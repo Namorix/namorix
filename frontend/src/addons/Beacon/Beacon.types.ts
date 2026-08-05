@@ -18,12 +18,13 @@ export const BeaconErrorCodes: Record<string, string> = {
 } as const
 
 export type BcnProviderKind = "get" | "rest"
-export type BcnHostnameStatus = "pending" | "active" | "disabled" | "error"
+export type BcnHostnameStatus = "updating" | "active" | "disabled" | "error"
 export type BcnLogLevel = "info" | "warn" | "error"
 
 export interface BcnHostnameDto {
   id: string
-  hostname: string
+  host: string
+  domain: string
   providerId: string
   kind: BcnProviderKind
   configJson: string
@@ -48,7 +49,8 @@ export interface BcnActivityLogDto {
   level: BcnLogLevel
   code?: string
   paramsJson?: string
-  hostname?: string
+  host?: string
+  domain?: string
 }
 
 export interface BcnActivityPage {
@@ -67,6 +69,7 @@ export interface BcnProviderInfo {
   kind: BcnProviderKind
   credentialFields: BcnProviderCredentialField[]
   tested: boolean
+  hostIsDomain: boolean
 }
 
 export interface BcnSettingsDto {
@@ -84,6 +87,8 @@ export interface BcnStatusDto {
 
 export function bcnErrorDetail(params?: Record<string, unknown>): string {
   if (!params) return ""
-  if (params.httpStatus !== undefined) return `HTTP ${params.httpStatus}`
+  if (typeof params.detail === "string" && params.detail) return params.detail
+  if (typeof params.httpStatus === "number" && params.httpStatus > 0)
+    return `HTTP ${params.httpStatus}`
   return (params.reason as string) ?? ""
 }

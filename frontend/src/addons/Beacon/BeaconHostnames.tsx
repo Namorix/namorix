@@ -17,12 +17,12 @@ import {
   NmxPagination,
   NmxSelect,
   type NmxSelectData,
+  NmxTagInput,
 } from "@namorix/ui"
 import {
   ApiError,
   formatCustomError,
   nmxToast,
-  useDateTimeFormat,
   usePageSize,
 } from "@namorix/core"
 import { beaconController } from "./beacon.controller"
@@ -33,10 +33,12 @@ import {
   bcnErrorDetail,
 } from "./Beacon.types"
 import { ServerSignalREvent, useServerSignalREvent } from "../../signalr"
+import type { TFunction } from "i18next"
 
 const CUSTOM_ID = "custom"
 const SECRET_PREFIX = "CfDJ8"
 const CONFIG_INVALID = "BCN_CONFIG_INVALID"
+const PROVIDER_ERROR = "BCN_PROVIDER_ERROR"
 
 // credential field key → BcnProviderConfig JSON key
 const CRED_FIELD_TO_CONFIG: Record<string, string> = {
@@ -51,9 +53,28 @@ const CRED_FIELD_TO_CONFIG: Record<string, string> = {
 
 const initialConfig: Record<string, string> = {}
 
+function renderBeaconCodeMessage(
+  t: TFunction,
+  code: string | undefined,
+  params?: Record<string, unknown>,
+): string | null {
+  const key = code ? BeaconErrorCodes[code] : undefined
+  if (!key) {
+    return null
+  }
+
+  const p = { ...(params ?? {}) }
+  if (p.provider) {
+    p.provider = t(`addon.beacon.providers.${p.provider}`, {
+      defaultValue: String(p.provider),
+    })
+  }
+
+  return t(key, { ...p, detail: bcnErrorDetail(p) })
+}
+
 export const BeaconHostnames: React.FC = () => {
   const { t } = useTranslation()
-  const { dateTime } = useDateTimeFormat()
   const { pageSize, setPageSize, options: pageSizeOptions } = usePageSize()
 
   const [hosts, setHosts] = useState<BcnHostnameDto[]>([])
@@ -66,7 +87,8 @@ export const BeaconHostnames: React.FC = () => {
   const [showDialog, setShowDialog] = useState(false)
   const [editing, setEditing] = useState<BcnHostnameDto | null>(null)
   const [formSubmitting, setFormSubmitting] = useState(false)
-  const [formHostname, setFormHostname] = useState("")
+  const [formHost, setFormHost] = useState<string[]>([])
+  const [formDomain, setFormDomain] = useState("")
   const [formProviderId, setFormProviderId] = useState(CUSTOM_ID)
   const [formKind, setFormKind] = useState<"get" | "rest">("get")
   const [formConfig, setFormConfig] =
@@ -116,6 +138,13 @@ export const BeaconHostnames: React.FC = () => {
     useCallback(() => {
       fetchHosts(page, pageSize).catch(nmxToast.error)
       setRefreshing(false)
+    }, [fetchHosts, page, pageSize]),
+  )
+
+  useServerSignalREvent(
+    ServerSignalREvent.BeaconActivityCreated,
+    useCallback(() => {
+      fetchHosts(page, pageSize).catch(nmxToast.error)
     }, [fetchHosts, page, pageSize]),
   )
 
@@ -179,9 +208,13 @@ export const BeaconHostnames: React.FC = () => {
           defaultValue: "",
         })
 
+  const hostnameLabel = (host: string, domain: string, isDomain: boolean) =>
+    isDomain ? domain : `${host} · ${domain}`
+
   const resetForm = useCallback(() => {
     setEditing(null)
-    setFormHostname("")
+    setFormHost([])
+    setFormDomain("")
     setFormProviderId("")
     setFormKind("get")
     setFormConfig({})
@@ -191,6 +224,7 @@ export const BeaconHostnames: React.FC = () => {
   const formatBeaconError = useCallback(
     (err: unknown): string | ApiError => {
       const e = err as ApiError
+
       if (e?.code === CONFIG_INVALID) {
         const raw = e.field ?? ""
         return t("addon.beacon.errors.configInvalid", {
@@ -199,6 +233,11 @@ export const BeaconHostnames: React.FC = () => {
           }),
         })
       }
+
+      if (e?.code === PROVIDER_ERROR) {
+        return renderBeaconCodeMessage(t, e.code, e.meta) ?? e
+      }
+
       return formatCustomError(t, e, BeaconErrorCodes)
     },
     [t],
@@ -229,7 +268,8 @@ export const BeaconHostnames: React.FC = () => {
 
   const handleEdit = useCallback((host: BcnHostnameDto) => {
     setEditing(host)
-    setFormHostname(host.hostname)
+    setFormHost(host.host.split(",").filter(Boolean))
+    setFormDomain(host.domain)
     setFormProviderId(host.providerId)
     setFormKind(host.kind)
 
@@ -257,16 +297,32 @@ export const BeaconHostnames: React.FC = () => {
     const config = { ...keptSecrets, ...formConfig }
     if (formProviderId === CUSTOM_ID && formKind === "get")
       config.successMatch = config.successMatch ?? "contains"
+
     return {
-      hostname: formHostname.trim(),
+      host: selectedProvider?.hostIsDomain
+        ? formDomain.trim()
+        : formHost.join(","),
+      domain: formDomain.trim(),
       providerId: formProviderId,
       kind: formKind,
       configJson: JSON.stringify(config),
     }
-  }, [keptSecrets, formConfig, formProviderId, formKind, formHostname])
+  }, [
+    keptSecrets,
+    formConfig,
+    formProviderId,
+    formKind,
+    selectedProvider?.hostIsDomain,
+    formDomain,
+    formHost,
+  ])
 
   const handleTest = useCallback(() => {
-    if (!formHostname.trim()) return
+    if (
+      (!selectedProvider?.hostIsDomain && !formHost.length) ||
+      !formDomain.trim()
+    )
+      return
     setTesting(true)
 
     beaconController
@@ -285,13 +341,26 @@ export const BeaconHostnames: React.FC = () => {
       })
       .catch(() => nmxToast.error(t("addon.beacon.addDialog.testError")))
       .finally(() => setTesting(false))
-  }, [buildPayload, formHostname, t])
+  }, [
+    buildPayload,
+    formDomain,
+    formHost.length,
+    selectedProvider?.hostIsDomain,
+    t,
+  ])
 
   const handleConfirm = useCallback(() => {
-    if (!formHostname.trim()) {
+    if (
+      (!selectedProvider?.hostIsDomain && !formHost.length) ||
+      !formDomain.trim()
+    ) {
       nmxToast.error(
         t("core:common.validation.required", {
-          field: t("addon.beacon.hostnames.fields.hostname"),
+          field: t(
+            !selectedProvider?.hostIsDomain && !formHost.length
+              ? "addon.beacon.hostnames.fields.host"
+              : "addon.beacon.hostnames.fields.domain",
+          ),
         }),
       )
       return
@@ -326,7 +395,13 @@ export const BeaconHostnames: React.FC = () => {
             editing
               ? "addon.beacon.hostnames.feedback.updateSuccess"
               : "addon.beacon.hostnames.feedback.createSuccess",
-            { hostname: formHostname.trim() },
+            {
+              hostname: hostnameLabel(
+                formHost.join(","),
+                formDomain.trim(),
+                !!selectedProvider?.hostIsDomain,
+              ),
+            },
           ),
         )
         resetForm()
@@ -340,15 +415,17 @@ export const BeaconHostnames: React.FC = () => {
             editing
               ? "addon.beacon.hostnames.feedback.updateError"
               : "addon.beacon.hostnames.feedback.createError",
-            { hostname: formHostname.trim() },
+            { hostname: formDomain.trim() },
           ),
         ),
       )
       .finally(() => setFormSubmitting(false))
   }, [
-    formHostname,
-    isCustom,
+    selectedProvider?.hostIsDomain,
     selectedProvider?.credentialFields,
+    formHost,
+    formDomain,
+    isCustom,
     editing,
     buildPayload,
     t,
@@ -375,7 +452,7 @@ export const BeaconHostnames: React.FC = () => {
       .then(() => {
         nmxToast.success(
           t("addon.beacon.hostnames.feedback.deleteSuccess", {
-            hostname: deleting.hostname,
+            hostname: deleting.domain,
           }),
         )
         setDeleting(null)
@@ -385,7 +462,7 @@ export const BeaconHostnames: React.FC = () => {
         nmxToast.error(
           formatCustomError(t, err, BeaconErrorCodes),
           t("addon.beacon.hostnames.feedback.deleteError", {
-            hostname: deleting.hostname,
+            hostname: deleting.domain,
           }),
         ),
       )
@@ -403,7 +480,7 @@ export const BeaconHostnames: React.FC = () => {
               host.status === "disabled"
                 ? "addon.beacon.hostnames.feedback.enableSuccess"
                 : "addon.beacon.hostnames.feedback.disableSuccess",
-              { hostname: host.hostname },
+              { hostname: host.domain },
             ),
           )
           return fetchHosts(page, pageSize)
@@ -412,7 +489,7 @@ export const BeaconHostnames: React.FC = () => {
           nmxToast.error(
             formatCustomError(t, err, BeaconErrorCodes),
             t("addon.beacon.hostnames.feedback.toggleError", {
-              hostname: host.hostname,
+              hostname: host.domain,
             }),
           ),
         )
@@ -429,29 +506,25 @@ export const BeaconHostnames: React.FC = () => {
           host.status === "error"
             ? "addon.beacon.hostnames.feedback.retrying"
             : "addon.beacon.hostnames.feedback.checking",
-          { hostname: host.hostname },
+          { hostname: host.domain },
         ),
         "info",
       )
       beaconController
         .checkHostname(host.id)
         .then((result) => {
-          if (result.success)
+          if (result.success) {
             nmxToast.success(
               t("addon.beacon.hostnames.feedback.checkSuccess", {
-                hostname: host.hostname,
+                hostname: host.domain,
               }),
             )
-          else {
-            const key = result.code ? BeaconErrorCodes[result.code] : undefined
-            const msg = key
-              ? t(key, {
-                  ...(result.params ?? {}),
-                  detail: bcnErrorDetail(result.params),
-                })
-              : t("addon.beacon.hostnames.feedback.checkError", {
-                  hostname: host.hostname,
-                })
+          } else {
+            const msg =
+              renderBeaconCodeMessage(t, result.code, result.params) ??
+              t("addon.beacon.hostnames.feedback.checkError", {
+                hostname: host.domain,
+              })
             nmxToast.error(msg, t("addon.beacon.hostnames.feedback.checkError"))
           }
           return fetchHosts(page, pageSize)
@@ -459,7 +532,7 @@ export const BeaconHostnames: React.FC = () => {
         .catch(() =>
           nmxToast.error(
             t("addon.beacon.hostnames.feedback.checkError", {
-              hostname: host.hostname,
+              hostname: host.domain,
             }),
           ),
         )
@@ -487,7 +560,7 @@ export const BeaconHostnames: React.FC = () => {
               ? "success"
               : row.status === "error"
                 ? "error"
-                : row.status === "pending"
+                : row.status === "updating"
                   ? "warning"
                   : "trace"
           }
@@ -502,17 +575,24 @@ export const BeaconHostnames: React.FC = () => {
       disableEllipsisCell: true,
     },
     {
-      header: t("addon.beacon.hostnames.fields.hostname"),
-      renderCell: (row) => (
-        <div className="nmx-addon-beacon__domain-wrap">
-          <span className="nmx-addon-beacon__domain">{row.hostname}</span>
-          <span className="nmx-addon-beacon__created">
-            {t("addon.frontgate.pages.reverseProxy.fields.createdAt", {
-              time: dateTime(row.createdAt),
-            })}
-          </span>
-        </div>
-      ),
+      header: t("addon.beacon.hostnames.fields.host"),
+      renderCell: (row) => {
+        const isHostDomain = providers.find(
+          (p) => p.id === row.providerId,
+        )?.hostIsDomain
+
+        return (
+          <div className="nmx-addon-beacon__domain-wrap">
+            <span className="nmx-addon-beacon__domain">
+              {hostnameLabel(row.host, row.domain, isHostDomain ?? false)}
+            </span>
+            <span className="nmx-addon-beacon__ip">
+              {row.currentIpv4 ?? "—"}
+              {row.currentIpv6 ? ` · ${row.currentIpv6}` : null}
+            </span>
+          </div>
+        )
+      },
       grow: 3,
       enableUserSelectCell: true,
     },
@@ -524,20 +604,8 @@ export const BeaconHostnames: React.FC = () => {
         </NmxBadge>
       ),
       grow: 1,
-      hideBelow: "md",
-      disableEllipsisCell: true,
-    },
-    {
-      header: t("addon.beacon.hostnames.fields.currentIp"),
-      renderCell: (row) => (
-        <>
-          <span>{row.currentIpv4 ?? "—"}</span>
-          {row.currentIpv6 ? <span> · {row.currentIpv6}</span> : null}
-        </>
-      ),
-      grow: 1,
-      enableUserSelectCell: true,
       hideBelow: "sm",
+      disableEllipsisCell: true,
     },
     {
       header: "",
@@ -580,6 +648,9 @@ export const BeaconHostnames: React.FC = () => {
               icon: NmxIconFontSymbol.DELETE,
             },
           ]}
+          filterItem={(opt) =>
+            !(row.status === "disabled" && opt.value === "check")
+          }
           onSelect={(action) => {
             if (action === "delete") handleDelete(row)
             else if (action === "check") handleCheck(row)
@@ -649,7 +720,7 @@ export const BeaconHostnames: React.FC = () => {
         </NmxButton>
         <NmxButton onClick={handleRefresh} disabled={refreshing}>
           <NmxIconFont symbol={NmxIconFontSymbol.REFRESH} />
-          <span>{t("addon.frontgate.pages.reverseProxy.actions.refresh")}</span>
+          <span>{t("addon.beacon.hostnames.actions.refresh")}</span>
         </NmxButton>
       </NmxAlign>
 
@@ -697,15 +768,31 @@ export const BeaconHostnames: React.FC = () => {
         loading={formSubmitting}
         confirmLabel={t("addon.beacon.addDialog.save")}
         extraActionLabel={t("addon.beacon.addDialog.test")}
-        extraActionDisabled={!formHostname.trim() || !formProviderId || testing}
+        extraActionDisabled={
+          (!selectedProvider?.hostIsDomain && !formHost.length) ||
+          !formDomain.trim() ||
+          !formProviderId ||
+          testing
+        }
         onExtraAction={handleTest}
       >
         <NmxForm className="nmx-addon-beacon__form">
-          <NmxFormField label={t("addon.beacon.addDialog.hostname")} required>
+          <NmxFormField label={t("addon.beacon.addDialog.domain")} required>
             <NmxFormInput
-              value={formHostname ?? ""}
-              onValueChange={setFormHostname}
-              placeholder={t("addon.beacon.addDialog.hostnamePlaceholder")}
+              value={formDomain}
+              onValueChange={setFormDomain}
+              placeholder={t("addon.beacon.addDialog.domainPlaceholder")}
+            />
+          </NmxFormField>
+          <NmxFormField
+            label={t("addon.beacon.addDialog.host")}
+            required
+            shouldRender={!selectedProvider?.hostIsDomain}
+          >
+            <NmxTagInput
+              value={formHost}
+              onChange={setFormHost}
+              placeholder={t("addon.beacon.addDialog.hostPlaceholder")}
             />
           </NmxFormField>
           <NmxFormField label={t("addon.beacon.addDialog.provider")} required>
@@ -716,7 +803,6 @@ export const BeaconHostnames: React.FC = () => {
               placeholder={t("addon.beacon.addDialog.providerPlaceholder")}
             />
           </NmxFormField>
-
           {isCustom && (
             <NmxFormField
               label={t("addon.beacon.addDialog.updateStyle")}
@@ -732,7 +818,6 @@ export const BeaconHostnames: React.FC = () => {
               />
             </NmxFormField>
           )}
-
           {!isCustom &&
             selectedProvider?.credentialFields.map((field) => {
               const cfgKey = CRED_FIELD_TO_CONFIG[field.key] ?? field.key
@@ -751,7 +836,6 @@ export const BeaconHostnames: React.FC = () => {
                 </NmxFormField>
               )
             })}
-
           {isCustom && formKind === "get" && (
             <>
               <NmxFormField
@@ -808,7 +892,6 @@ export const BeaconHostnames: React.FC = () => {
               )}
             </>
           )}
-
           {isCustom && formKind === "rest" && (
             <>
               <NmxFormField
@@ -847,9 +930,9 @@ export const BeaconHostnames: React.FC = () => {
                 <NmxFormInput
                   value={formConfig.bodyTemplate ?? ""}
                   onValueChange={setCfg("bodyTemplate")}
-                  placeholder={
-                    '{"type":"A","name":"{hostname}","content":"{ip}"}'
-                  }
+                  placeholder={t(
+                    "addon.beacon.addDialog.bodyTemplatePlaceholder",
+                  )}
                 />
               </NmxFormField>
               <NmxFormField
@@ -878,7 +961,7 @@ export const BeaconHostnames: React.FC = () => {
       >
         <p>
           {t("addon.beacon.hostnames.feedback.deleteConfirm", {
-            hostname: deleting?.hostname,
+            hostname: deleting?.domain,
           })}
         </p>
       </NmxAlertDialog>

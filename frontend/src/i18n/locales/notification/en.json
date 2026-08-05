@@ -7,7 +7,7 @@
     "untrustedProxy": "Untrusted proxy **{{remoteIp}}** blocked"
   },
   "beacon": {
-    "hostnameError": "Hostname **{{hostname}}** failed to update: [color:error]**{{error}}**[/color]",
+    "hostnameError": "Hostname **{{hostname}}** failed to update: [color:error]{{error}}[/color]",
     "hostnameRecovered": "Hostname **{{hostname}}** is back online"
   }
 }

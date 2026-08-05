@@ -643,15 +643,37 @@
         "healthy": "{{healthy}}/{{total}} healthy",
         "lastCheck": "Last check {{time}} ago"
       },
+
+      "providers": {
+        "cloudflare": "Cloudflare",
+        "namecheap": "Namecheap",
+        "noip": "No-IP",
+        "duckdns": "DuckDNS",
+        "dynu": "Dynu",
+        "godaddy": "GoDaddy",
+        "custom": "Custom provider",
+        "tested": "Tested",
+
+        "descriptions": {
+          "cloudflare": "Global CDN and DNS service — manage your zone's records through their API",
+          "godaddy": "Popular domain registrar with DNS management",
+          "noip": "Free dynamic DNS service that keeps a hostname pointed at your IP",
+          "namecheap": "Domain registrar with built-in dynamic DNS support",
+          "duckdns": "Free dynamic DNS — subdomains managed with a simple token",
+          "dynu": "Dynamic DNS provider with free and paid plans",
+          "custom": "Bring any other provider by defining your own endpoint"
+        }
+      },
+
       "errors": {
         "noIp": "No public IP is available to push",
         "invalidCredentials": "Provider rejected the credentials — check your token or API key",
-        "hostnameNotFound": "Hostname '{{hostname}}' was not found with this provider",
+        "hostnameNotFound": "Hostname **{{hostname}}** was not found with this provider",
         "zoneNotFound": "Zone '{{zone}}' was not found with this provider",
         "accountBlocked": "Provider blocked this account — contact support if you believe this is a mistake",
         "unavailable": "Provider service is temporarily unavailable — will retry on the next check",
         "rateLimited": "Provider rate limited the request — will retry on the next check",
-        "providerError": "Provider returned an error **({{detail}})**",
+        "providerError": "Provider **{{provider}}** returned an error **({{detail}})**",
         "recordNotFound": "Hostname not found",
         "duplicateHostname": "This hostname is already tracked",
 
@@ -673,9 +695,9 @@
       "hostnames": {
         "add": "Add hostname",
         "fields": {
-          "hostname": "Hostname",
+          "host": "Host",
+          "domain": "Domain",
           "provider": "Provider",
-          "currentIp": "Current IP",
           "status": "Status"
         },
         "actions": {
@@ -683,7 +705,8 @@
           "disable": "Disable",
           "enable": "Enable",
           "retry": "Retry",
-          "update": "Update"
+          "update": "Update",
+          "refresh": "Refresh"
         },
 
         "fallbacks": {
@@ -693,7 +716,7 @@
         },
 
         "status": {
-          "pending": "Pending",
+          "updating": "Updating",
           "active": "Active",
           "disabled": "Disabled",
           "error": "Error"
@@ -716,33 +739,15 @@
           "retrying": "Retrying **{{hostname}}**…"
         }
       },
-      "providers": {
-        "cloudflare": "Cloudflare",
-        "namecheap": "Namecheap",
-        "noip": "No-IP",
-        "duckdns": "DuckDNS",
-        "dynu": "Dynu",
-        "godaddy": "GoDaddy",
-        "custom": "Custom provider",
-        "tested": "Tested",
-
-        "descriptions": {
-          "cloudflare": "Global CDN and DNS service — manage your zone's records through their API",
-          "godaddy": "Popular domain registrar with DNS management",
-          "noip": "Free dynamic DNS service that keeps a hostname pointed at your IP",
-          "namecheap": "Domain registrar with built-in dynamic DNS support",
-          "duckdns": "Free dynamic DNS — subdomains managed with a simple token",
-          "dynu": "Dynamic DNS provider with free and paid plans",
-          "custom": "Bring any other provider by defining your own endpoint"
-        }
-      },
       "addDialog": {
         "title": "Add hostname",
         "editTitle": "Edit hostname",
         "provider": "Provider",
         "providerPlaceholder": "Select a provider…",
-        "hostname": "Hostname",
-        "hostnamePlaceholder": "e.g. home.izerocs.space",
+        "host": "Host",
+        "hostPlaceholder": "e.g. www, @, home",
+        "domain": "Domain",
+        "domainPlaceholder": "e.g. example.com",
         "token": "Update token / password",
         "tokenHint": "Not your account password — a DDNS-specific key from the provider's dashboard.",
         "apiToken": "API token",
@@ -751,8 +756,8 @@
         "simpleGet": "Simple GET",
         "restJson": "REST / JSON",
         "urlTemplate": "Update URL template",
-        "urlTemplateHint": "Available placeholders: {hostname} {ip} {ipv6} {token} {user} {password}",
-        "urlTemplatePlaceholder": "https://ddns.example.com/update?host={hostname}&ip={ip}&token={token}",
+        "urlTemplateHint": "Available placeholders: {host} {domain} {ip} {ipv6} {token} {user} {password}",
+        "urlTemplatePlaceholder": "https://ddns.example.com/update?host={host}&ip={ip}&token={token}",
         "auth": "Auth",
         "authNone": "None (token in URL)",
         "authBasic": "HTTP Basic",
@@ -766,6 +771,7 @@
         "methodPut": "PUT",
         "methodPost": "POST",
         "bodyTemplate": "Request body template",
+        "bodyTemplatePlaceholder": "{\"type\":\"A\",\"name\":\"{host}\",\"content\":\"{ip}\"}",
         "bodyTemplateHint": "JSON — placeholders same as above",
         "successPath": "Success path",
         "successPathHint": "e.g. \"success\" — checked for a truthy value in the JSON response",
@@ -797,19 +803,25 @@
       },
       "activity": {
         "title": "Activity log",
-        "updated": "Updated to {{ip}}",
+        "updated": "Updated to **{{ip}}**",
         "rateLimited": "Rate limited, retry {{retryAt}}",
-        "probed": "Current record: {{ip}}",
-        "refresh": "Refresh",
-        "clear": "Clear",
-        "clearConfirm": "Clear all activity log entries? This cannot be undone.",
-        "clearSuccess": "Cleared {{count}} entries",
-        "clearError": "Failed to clear activity log",
+        "probed": "Current record: **{{ip}}**",
+
+        "actions": {
+          "refresh": "Refresh",
+          "clear": "Clear"
+        },
 
         "fallbacks": {
           "loading": "Loading activity…",
           "error": "Failed to load activity",
           "empty": "No activity yet."
+        },
+
+        "feedback": {
+          "clearConfirm": "Clear all activity log entries? This cannot be undone.",
+          "clearSuccess": "Cleared {{count}} entries",
+          "clearError": "Failed to clear activity log"
         }
       },
       "settings": {

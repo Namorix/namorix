@@ -21,10 +21,17 @@ registerNotificationDescriptionRenderer("beacon", (t, notif, params) => {
   if (notif.key !== "beacon:hostnameError" || !params?.error) {
     return undefined
   }
-
   const errorKey = BeaconErrorCodes[params.error]
-  params.error = errorKey
-    ? t(errorKey, { detail: params.detail ?? "" })
-    : params.error
+  if (errorKey) {
+    params.error = t(errorKey, {
+      hostname: params.hostname,
+      provider: params.provider
+        ? t(`addon.beacon.providers.${params.provider}`, {
+            defaultValue: params.provider,
+          })
+        : undefined,
+      detail: params.detail ?? "",
+    })
+  }
   return t(`notification:${notif.key}`, params)
 })
