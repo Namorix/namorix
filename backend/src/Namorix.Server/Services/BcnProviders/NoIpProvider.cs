@@ -14,7 +14,8 @@ public sealed class NoIpProvider(IHttpClientFactory httpFactory) : BcnGetProvide
 
     protected override string BuildUrl(string hostname, BcnProviderConfig config,
         IPAddress? ipv4, IPAddress? ipv6) =>
-        $"https://dynupdate.no-ip.com/nic/update?hostname={hostname}&myip={ipv4}";
+        $"https://dynupdate.no-ip.com/nic/update?hostname={hostname}&myip={ipv4}" +
+        (ipv6 is null ? "" : $"&myipv6={ipv6}");
 
     protected override BcnUpdateResult Classify(string body) => body switch
     {

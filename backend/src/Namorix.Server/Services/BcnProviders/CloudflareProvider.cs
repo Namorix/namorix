@@ -19,17 +19,17 @@ public sealed class CloudflareProvider(IHttpClientFactory httpFactory) : IBcnPro
     public async Task<BcnUpdateResult> UpdateAsync(string hostname, BcnProviderConfig config,
         IPAddress? ipv4, IPAddress? ipv6, CancellationToken ct)
     {
-        var ip = ipv6 ?? ipv4;
-        if (ip is null)
+        var targets = new List<(string Type, IPAddress Ip)>();
+        if (ipv4 is not null) targets.Add(("A", ipv4));
+        if (ipv6 is not null) targets.Add(("AAAA", ipv6));
+        if (targets.Count == 0)
             return new BcnUpdateResult(false, BcnErrorCodes.NoIp);
-        
+
         if (string.IsNullOrEmpty(config.Zone))
             return new BcnUpdateResult(false, BcnErrorCodes.ZoneNotFound);
 
-
         using var client = httpFactory.CreateClient("BcnRest");
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", config.ApiToken);
-        var type = ipv6 is not null ? "AAAA" : "A";
 
         var zoneId = await FindZoneIdAsync(client, config.Zone, ct);
         if (zoneId is null)
@@ -38,21 +38,26 @@ public sealed class CloudflareProvider(IHttpClientFactory httpFactory) : IBcnPro
                 new Dictionary<string, object?> { ["zone"] = config.Zone });
         }
 
-        var recordId = await FindRecordIdAsync(client, zoneId, hostname, type, ct);
-        if (recordId is null)
+        foreach (var (type, ip) in targets)
         {
-            return new BcnUpdateResult(false, BcnErrorCodes.HostnameNotFound,
-                new Dictionary<string, object?> { ["hostname"] = hostname });
+            var recordId = await FindRecordIdAsync(client, zoneId, hostname, type, ct);
+            if (recordId is null)
+            {
+                return new BcnUpdateResult(false, BcnErrorCodes.HostnameNotFound,
+                    new Dictionary<string, object?> { ["hostname"] = hostname, ["type"] = type });
+            }
+
+            var payload = JsonSerializer.Serialize(new { type, name = hostname, content = ip.ToString(), ttl = 1, proxied = false });
+            using var req = new HttpRequestMessage(HttpMethod.Patch,
+                $"https://api.cloudflare.com/client/v4/zones/{zoneId}/dns_records/{recordId}");
+            req.Content = new StringContent(payload, Encoding.UTF8, "application/json");
+
+            using var resp = await client.SendAsync(req, ct);
+            var result = await ClassifyAsync(resp);
+            if (!result.Success) return result;
         }
 
-
-        var payload = JsonSerializer.Serialize(new { type, name = hostname, content = ip.ToString(), ttl = 1, proxied = false });
-        using var req = new HttpRequestMessage(HttpMethod.Patch,
-            $"https://api.cloudflare.com/client/v4/zones/{zoneId}/dns_records/{recordId}");
-        req.Content = new StringContent(payload, Encoding.UTF8, "application/json");
-
-        using var resp = await client.SendAsync(req, ct);
-        return await ClassifyAsync(resp);
+        return new BcnUpdateResult(true);
     }
 
     private static async Task<string?> FindZoneIdAsync(HttpClient client, string zone, CancellationToken ct)
@@ -94,7 +99,6 @@ public sealed class CloudflareProvider(IHttpClientFactory httpFactory) : IBcnPro
         return doc.RootElement.GetProperty("success").GetBoolean()
             ? new BcnUpdateResult(true)
             : new BcnUpdateResult(false, BcnErrorCodes.ProviderError);
-        
     }
 
     public Task<BcnTestResult> TestAsync(string hostname, BcnProviderConfig config, IPAddress? ipv4, IPAddress? ipv6, CancellationToken ct) =>

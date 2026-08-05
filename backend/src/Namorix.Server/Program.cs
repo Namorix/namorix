@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Namorix.Core.Config;
 using Namorix.Core.Constants;
@@ -69,9 +70,15 @@ builder.Services.AddScoped<NotificationService>();
 builder.Services.AddSingleton<DockerService>();
 builder.Services.AddScoped<AddonService>();
 builder.Services.AddScoped<OAuthService>();
+builder.Services.AddScoped<BcnHostnameService>();
 builder.Services.AddSingleton<FrontgateProxyConfigProvider>();
 builder.Services.AddBcnProviders();
 
+builder.Services.AddDataProtection()
+    .SetApplicationName("Namorix")
+    .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(dataBasePath, "keys")));
+
+builder.Services.AddSingleton<BcnSecretProtector>();
 builder.Services.AddSingleton<IPublicIpDetector, PublicIpService>();
 builder.Services.AddHttpClient("PublicIp", client =>
 {

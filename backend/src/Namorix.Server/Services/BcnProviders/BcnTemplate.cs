@@ -8,7 +8,7 @@ public static class BcnTemplate
     public static string Replace(string template, string hostname,
         IPAddress? ipv4, IPAddress? ipv6, BcnProviderConfig config)
     {
-        var ip = ipv6 ?? ipv4;
+        var ip = ipv4 ?? ipv6;
         return template
             .Replace("{hostname}", hostname)
             .Replace("{ip}", ip?.ToString() ?? string.Empty)

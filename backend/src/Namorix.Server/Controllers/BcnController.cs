@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Namorix.Core.Middleware;
@@ -17,13 +18,14 @@ namespace Namorix.Server.Controllers;
 [ApiController]
 [RequireAdmin]
 [Route("api/beacon")]
-public class BcnController(AppDbContext db, BcnProviderRegistry registry) : ControllerBase
+public class BcnController(AppDbContext db, BcnProviderRegistry registry, BcnSecretProtector protector) : ControllerBase
 {
-    private static readonly JsonSerializerOptions ConfigJsonOptions =
-        new() { PropertyNameCaseInsensitive = true };
-    
     private static readonly JsonSerializerOptions ConfigWriteOptions =
-        new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+        new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            Converters = { new JsonStringEnumConverter() }, 
+        };
     
     [HttpGet("hostnames")]
     public async Task<IActionResult> ListHostnames([FromQuery] int page = 1, [FromQuery] int size = 20)
@@ -53,7 +55,7 @@ public class BcnController(AppDbContext db, BcnProviderRegistry registry) : Cont
             Hostname = request.Hostname,
             ProviderId = request.ProviderId,
             Kind = config.Kind,
-            ConfigJson = JsonSerializer.Serialize(config, ConfigWriteOptions),
+            ConfigJson = JsonSerializer.Serialize(protector.Protect(config), BcnProviderConfig.SerializerOptions),
         };
         db.BcnHostnames.Add(host);
         await db.SaveChangesAsync();
@@ -91,7 +93,7 @@ public class BcnController(AppDbContext db, BcnProviderRegistry registry) : Cont
         host.Hostname = request.Hostname;
         host.ProviderId = request.ProviderId;
         host.Kind = config.Kind;
-        host.ConfigJson = JsonSerializer.Serialize(config, ConfigWriteOptions);
+        host.ConfigJson = JsonSerializer.Serialize(protector.Protect(config), ConfigWriteOptions);
         
         await db.SaveChangesAsync();
         return Ok(ApiResponse.Ok(host));
@@ -119,8 +121,14 @@ public class BcnController(AppDbContext db, BcnProviderRegistry registry) : Cont
     {
         var config = DeserializeConfig(request.ConfigJson);
         config.Kind = Enum.Parse<BcnProviderKind>(request.Kind, ignoreCase: true);
+        protector.Unprotect(config);   // Encrypted blob (edit form keeping secret) -> decrypt; plaintext (new form) -> keep as-is
 
-        var ip = await ipDetector.DetectAsync(PublicIpServices.Auto, includeIpv6: false, ct);
+
+        var settings = await db.BcnSettings.FirstOrDefaultAsync(cancellationToken: ct);
+        var ip = await ipDetector.DetectAsync(
+            settings?.IpDetectionService ?? PublicIpServices.Auto,
+            settings?.UpdateIpv6 ?? false, ct);
+        
         if (!ip.HasAny)
             return Ok(ApiResponse.Ok(new { success = false, code = BcnErrorCodes.NoIp }));
 
@@ -130,6 +138,30 @@ public class BcnController(AppDbContext db, BcnProviderRegistry registry) : Cont
         return Ok(ApiResponse.Ok(new { success = result.Success, code = result.Code, @params = result.Params }));
     }
 
+    [HttpPost("hostnames/{id}/check")]
+    public async Task<IActionResult> CheckHostname(string id,
+        CancellationToken ct,
+        [FromServices] IPublicIpDetector ipDetector,
+        [FromServices] BcnHostnameService updater)
+    {
+        var host = await db.BcnHostnames.FindAsync([id], ct);
+        if (host == null)
+            return NotFound(ApiResponse.Fail(BcnErrorCodes.HostnameNotFound));
+
+        var settings = await db.BcnSettings.FirstOrDefaultAsync(cancellationToken: ct);
+        var ip = await ipDetector.DetectAsync(
+            settings?.IpDetectionService ?? PublicIpServices.Auto,
+            settings?.UpdateIpv6 ?? false, ct);
+        if (!ip.HasAny)
+            return Ok(ApiResponse.Ok(new { success = false, code = BcnErrorCodes.NoIp }));
+
+        var result = await updater.UpdateHostAsync(host, ip.IPv4, ip.IPv6, force: true, ct);
+        await db.SaveChangesAsync(ct);
+        return Ok(ApiResponse.Ok(new { success = result.Success,
+            code = result.Success ? null : result.Code,
+            @params = result.Params }));
+    }
+    
     [HttpGet("activity")]
     public async Task<IActionResult> ListActivity([FromQuery] int page = 1, [FromQuery] int size = 20)
     {
@@ -205,27 +237,29 @@ public class BcnController(AppDbContext db, BcnProviderRegistry registry) : Cont
     private static BcnProviderConfig DeserializeConfig(string? json) =>
         string.IsNullOrWhiteSpace(json)
             ? new BcnProviderConfig()
-            : JsonSerializer.Deserialize<BcnProviderConfig>(json, ConfigJsonOptions) ?? new BcnProviderConfig();
+            : JsonSerializer.Deserialize<BcnProviderConfig>(json, BcnProviderConfig.SerializerOptions) ?? new BcnProviderConfig();
     
     private string? ValidateConfig(string providerId, BcnProviderConfig config)
     {
-        if (registry.Contains(providerId))
+        if (!registry.Contains(providerId))
         {
-            foreach (var field in registry.Get(providerId).Info.CredentialFields)
-                if (field.Required && string.IsNullOrWhiteSpace(GetConfigValue(config, field.Key)))
-                    return field.Key;
-            return null;
+            return config.Kind switch
+            {
+                BcnProviderKind.Get when string.IsNullOrWhiteSpace(config.UrlTemplate) => "urlTemplate",
+                BcnProviderKind.Get when config.AuthType == "basic" &&
+                                         (string.IsNullOrWhiteSpace(config.User) ||
+                                          string.IsNullOrWhiteSpace(config.Password)) => "user",
+                BcnProviderKind.Rest when string.IsNullOrWhiteSpace(config.EndpointTemplate) => "endpointTemplate",
+                BcnProviderKind.Rest when config.EndpointTemplate?.Contains("{recordId}") == true &&
+                                          string.IsNullOrWhiteSpace(config.RecordLookupTemplate) =>
+                    "recordLookupTemplate",
+                _ => null,
+            };
         }
-        return config.Kind switch
-        {
-            BcnProviderKind.Get when string.IsNullOrWhiteSpace(config.UrlTemplate) => "urlTemplate",
-            BcnProviderKind.Get when config.AuthType == "basic" &&
-                                     (string.IsNullOrWhiteSpace(config.User) || string.IsNullOrWhiteSpace(config.Password)) => "user",
-            BcnProviderKind.Rest when string.IsNullOrWhiteSpace(config.EndpointTemplate) => "endpointTemplate",
-            BcnProviderKind.Rest when config.EndpointTemplate?.Contains("{recordId}") == true &&
-                                      string.IsNullOrWhiteSpace(config.RecordLookupTemplate) => "recordLookupTemplate",
-            _ => null,
-        };
+
+        return (from field in registry.Get(providerId).Info.CredentialFields
+            where field.Required && string.IsNullOrWhiteSpace(GetConfigValue(config, field.Key))
+            select field.Key).FirstOrDefault();
     }
 
     private static string? GetConfigValue(BcnProviderConfig config, string key) => key switch

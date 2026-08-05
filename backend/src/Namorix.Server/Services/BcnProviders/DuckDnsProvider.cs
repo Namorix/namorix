@@ -12,10 +12,12 @@ public sealed class DuckDnsProvider(IHttpClientFactory httpFactory) : BcnGetProv
 
     protected override string BuildUrl(string hostname, BcnProviderConfig config,
         IPAddress? ipv4, IPAddress? ipv6) =>
-        $"https://www.duckdns.org/update?domains={hostname.Split('.')[0]}&token={config.Token}&ip={ipv4}";
+        $"https://www.duckdns.org/update?domains={hostname.Split('.')[0]}&token={config.Token}&ip={ipv4}" +
+        (ipv6 is null ? "" : $"&ipv6={ipv6}");
 
     protected override BcnUpdateResult Classify(string body) =>
         body.Trim().Equals("OK", StringComparison.OrdinalIgnoreCase)
             ? new BcnUpdateResult(true)
-            : new BcnUpdateResult(false, BcnErrorCodes.ProviderError);
+            : new BcnUpdateResult(false, BcnErrorCodes.ProviderError,
+                new Dictionary<string, object?> { ["reason"] = body.Trim() });
 }

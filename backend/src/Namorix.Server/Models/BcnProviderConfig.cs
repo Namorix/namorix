@@ -1,7 +1,17 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 namespace Namorix.Server.Models;
 
 public sealed class BcnProviderConfig
 {
+    public static readonly JsonSerializerOptions SerializerOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        Converters = { new JsonStringEnumConverter() },
+    };
+    
     public BcnProviderKind Kind { get; set; }
 
     // GET-based configuration
