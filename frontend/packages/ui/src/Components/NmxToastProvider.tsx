@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { nmxToast, type NmxToastEvent, type NmxToastType } from "@namorix/core"
+import {
+  markupToHtml,
+  nmxToast,
+  type NmxToastEvent,
+  type NmxToastType,
+} from "@namorix/core"
 import { cx } from "../utils"
 import { NmxIconFont, NmxIconFontSymbol } from "../Primitives"
 import { createPortal } from "react-dom"
@@ -64,7 +69,12 @@ export const NmxToastProvider = () => {
             symbol={TOAST_ICONS[t.type]}
             className="nmx-toast__icon"
           />
-          <span className="nmx-toast__msg">{String(t.message)}</span>
+          <span
+            className="nmx-toast__msg"
+            dangerouslySetInnerHTML={{
+              __html: markupToHtml(String(t.message)),
+            }}
+          />{" "}
         </button>
       ))}
     </div>,

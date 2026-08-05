@@ -1,12 +1,14 @@
 import React from "react"
 import type { NmxFallback, NmxSemanticColor, WithBaseProps } from "../types"
 import { cx, cxSemantic } from "../utils"
+import { markupToHtml } from "@namorix/core"
 
 export interface NmxLogEntry {
   id: string | number
   time: string
   message: string
   semantic?: NmxSemanticColor
+  markupToHtmlEnabled?: boolean
 }
 
 interface NmxLogListProps extends WithBaseProps {
@@ -52,14 +54,24 @@ export const NmxLogList: React.FC<NmxLogListProps> = ({
             {showTime && (
               <span className="nmx-log-list__item-time">{item.time}</span>
             )}
-            <span
-              className={cx(
-                "nmx-log-list__item-message",
-                cxSemantic("nmx-log-list__item-message", item.semantic),
-              )}
-            >
-              {item.message}
-            </span>
+            {item.markupToHtmlEnabled ? (
+              <span
+                className={cx(
+                  "nmx-log-list__item-message",
+                  cxSemantic("nmx-log-list__item-message", item.semantic),
+                )}
+                dangerouslySetInnerHTML={{ __html: markupToHtml(item.message) }}
+              />
+            ) : (
+              <span
+                className={cx(
+                  "nmx-log-list__item-message",
+                  cxSemantic("nmx-log-list__item-message", item.semantic),
+                )}
+              >
+                {item.message}
+              </span>
+            )}
           </div>
         ))
       )}
