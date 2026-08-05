@@ -189,7 +189,9 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
       >
         {selectedLog && (
           <NmxMetaList>
-            <NmxMetaItem label={t("addon.networkTraffic.logs.statusCode")}>
+            <NmxMetaItem
+              label={t("addon.networkTraffic.logs.fields.statusCode")}
+            >
               <NmxBadge
                 semantic={statusToSemantic(selectedLog.statusCode)}
                 bgEnabled={false}
@@ -198,7 +200,7 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
                 {selectedLog.statusCode}
               </NmxBadge>
             </NmxMetaItem>
-            <NmxMetaItem label={t("addon.networkTraffic.logs.method")}>
+            <NmxMetaItem label={t("addon.networkTraffic.logs.fields.method")}>
               <NmxBadge
                 semantic={methodToSemantic(selectedLog.method)}
                 size="sm"
@@ -207,20 +209,22 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
               </NmxBadge>
             </NmxMetaItem>
             <NmxMetaItem
-              label={t("addon.networkTraffic.logs.path")}
+              label={t("addon.networkTraffic.logs.fields.path")}
               value={selectedLog.path}
+              useSelectEnabled={true}
             />
             <NmxMetaItem
-              label={t("addon.networkTraffic.logs.duration")}
+              label={t("addon.networkTraffic.logs.fields.duration")}
               value={formatDuration(selectedLog.durationMs)}
             />
             <NmxMetaItem
-              label={t("addon.networkTraffic.logs.size")}
+              label={t("addon.networkTraffic.logs.fields.size")}
               value={formatSize(selectedLog.responseSizeBytes)}
             />
             <NmxMetaItem
-              label={t("addon.networkTraffic.logs.ip")}
+              label={t("addon.networkTraffic.logs.fields.ip")}
               value={selectedLog.ip ?? "-"}
+              useSelectEnabled={true}
             />
           </NmxMetaList>
         )}

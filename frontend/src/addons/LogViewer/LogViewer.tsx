@@ -272,7 +272,7 @@ export const LogViewer: React.FC = () => {
       >
         {selectedLog && (
           <NmxMetaList>
-            <NmxMetaItem label={t("addon.logViewer.level")}>
+            <NmxMetaItem label={t("addon.logViewer.fields.level")}>
               <NmxBadge
                 semantic={LEVEL_TYPES[selectedLog.level]?.semantic ?? "info"}
                 size="sm"
@@ -282,7 +282,7 @@ export const LogViewer: React.FC = () => {
                 ).toUpperCase()}
               </NmxBadge>
             </NmxMetaItem>
-            <NmxMetaItem label={t("addon.logViewer.group")}>
+            <NmxMetaItem label={t("addon.logViewer.fields.group")}>
               <NmxBadge
                 semantic={GROUP_TYPES[selectedLog.group]?.semantic ?? "info"}
                 size="sm"
@@ -291,13 +291,15 @@ export const LogViewer: React.FC = () => {
               </NmxBadge>
             </NmxMetaItem>
             <NmxMetaItem
-              label={t("addon.logViewer.source")}
+              label={t("addon.logViewer.fields.source")}
               value={selectedLog.source}
+              useSelectEnabled={true}
             />
             <NmxMetaItem
-              label={t("addon.logViewer.message")}
+              label={t("addon.logViewer.fields.message")}
               value={selectedLog.message}
-              isBlockMessage
+              isBlockMessage={true}
+              useSelectEnabled={true}
             />
           </NmxMetaList>
         )}

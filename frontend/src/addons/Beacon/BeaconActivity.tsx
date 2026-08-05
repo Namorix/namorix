@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
+  NmxAlertDialog,
   NmxAlign,
   NmxButton,
   type NmxFallback,
@@ -9,8 +10,10 @@ import {
   type NmxLogEntry,
   NmxLogList,
   NmxPagination,
+  type NmxSemanticColor,
+  useActiveTab,
 } from "@namorix/ui"
-import { useDateTimeFormat, usePageSize } from "@namorix/core"
+import { nmxToast, useDateTimeFormat, usePageSize } from "@namorix/core"
 import { beaconController } from "./beacon.controller"
 import {
   BeaconActivityCodes,
@@ -18,11 +21,14 @@ import {
   type BcnActivityLogDto,
   bcnErrorDetail,
 } from "./Beacon.types"
+import { ServerSignalREvent, useServerSignalREvent } from "../../signalr"
+import type { BeaconTab } from "./Beacon"
 
 const ACTIVITY_CODES = { ...BeaconActivityCodes, ...BeaconErrorCodes }
 
-const LEVEL_SEMANTIC = {
+const LEVEL_SEMANTIC: Record<string, NmxSemanticColor> = {
   info: "info",
+  success: "success",
   warn: "warning",
   error: "error",
 } as const
@@ -36,6 +42,9 @@ export const BeaconActivity: React.FC = () => {
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<unknown>()
+  const [confirmClear, setConfirmClear] = useState(false)
+  const [clearing, setClearing] = useState(false)
+  const activeTab = useActiveTab<BeaconTab>()
 
   const fetchActivity = useCallback(async (pg: number, size: number) => {
     setLoading(true)
@@ -52,11 +61,27 @@ export const BeaconActivity: React.FC = () => {
   }, [])
 
   useEffect(() => {
+    if (activeTab !== "activity") return
+
     const timeout = setTimeout(() => {
       fetchActivity(page, pageSize).catch(setError)
     }, 0)
     return () => clearTimeout(timeout)
-  }, [page, pageSize, fetchActivity])
+  }, [page, pageSize, fetchActivity, activeTab])
+
+  useServerSignalREvent(
+    ServerSignalREvent.BeaconActivityCreated,
+    useCallback(() => {
+      fetchActivity(page, pageSize).catch(nmxToast.error)
+    }, [fetchActivity, page, pageSize]),
+  )
+
+  useServerSignalREvent(
+    ServerSignalREvent.BeaconHostnamesRefreshed,
+    useCallback(() => {
+      fetchActivity(page, pageSize).catch(nmxToast.error)
+    }, [fetchActivity, page, pageSize]),
+  )
 
   const renderMessage = (row: BcnActivityLogDto): string => {
     if (!row.code) return "—"
@@ -77,6 +102,21 @@ export const BeaconActivity: React.FC = () => {
       detail: bcnErrorDetail(params),
     })
   }
+
+  const handleClearConfirm = useCallback(() => {
+    setClearing(true)
+    beaconController
+      .clearActivity()
+      .then((res) => {
+        nmxToast.success(
+          t("addon.beacon.activity.clearSuccess", { count: res.deleted }),
+        )
+        setConfirmClear(false)
+        return fetchActivity(1, pageSize)
+      })
+      .catch(() => nmxToast.error(t("addon.beacon.activity.clearError")))
+      .finally(() => setClearing(false))
+  }, [fetchActivity, pageSize, t])
 
   const entries: NmxLogEntry[] = items.map((row) => ({
     id: row.id,
@@ -111,6 +151,12 @@ export const BeaconActivity: React.FC = () => {
   return (
     <>
       <NmxAlign direction="row" justify="end">
+        {entries.length > 0 && (
+          <NmxButton semantic="error" onClick={() => setConfirmClear(true)}>
+            <NmxIconFont symbol={NmxIconFontSymbol.DELETE} />
+            <span>{t("addon.beacon.activity.clear")}</span>
+          </NmxButton>
+        )}
         <NmxButton onClick={() => fetchActivity(page, pageSize)}>
           <NmxIconFont symbol={NmxIconFontSymbol.REFRESH} />
           <span>{t("addon.beacon.activity.refresh")}</span>
@@ -145,6 +191,18 @@ export const BeaconActivity: React.FC = () => {
           />
         )}
       </div>
+
+      <NmxAlertDialog
+        open={confirmClear}
+        title={t("addon.beacon.activity.clear")}
+        confirmLabel={t("addon.beacon.activity.clear")}
+        confirmSemantic="error"
+        onClose={() => setConfirmClear(false)}
+        onConfirm={handleClearConfirm}
+        loading={clearing}
+      >
+        <p>{t("addon.beacon.activity.clearConfirm")}</p>
+      </NmxAlertDialog>
     </>
   )
 }

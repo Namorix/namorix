@@ -1,6 +1,7 @@
 export const ServerSignalRGroups = {
   SystemMonitor: "system-monitor",
   Addon: "addon",
+  Beacon: "beacon",
 } as const
 
 export const ServerSignalREvent = {
@@ -8,6 +9,10 @@ export const ServerSignalREvent = {
   AddonStatusChanged: ServerSignalRGroups.Addon + ":status-changed",
   AddonPendingTaskChanged: ServerSignalRGroups.Addon + ":pending-task-changed",
   AddonUninstalled: ServerSignalRGroups.Addon + ":uninstalled",
+  BeaconHostnameStatusChanged:
+    ServerSignalRGroups.Beacon + ":hostname-status-changed",
+  BeaconActivityCreated: ServerSignalRGroups.Beacon + ":activity-created",
+  BeaconHostnamesRefreshed: ServerSignalRGroups.Beacon + ":hostnames-refreshed",
 }
 
 export type ServerSignalRGroupsType =

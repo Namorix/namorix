@@ -693,6 +693,7 @@
         },
 
         "status": {
+          "pending": "Pending",
           "active": "Active",
           "disabled": "Disabled",
           "error": "Error"
@@ -723,6 +724,7 @@
         "dynu": "Dynu",
         "godaddy": "GoDaddy",
         "custom": "Custom provider",
+        "tested": "Tested",
 
         "descriptions": {
           "cloudflare": "Global CDN and DNS service — manage your zone's records through their API",
@@ -768,7 +770,7 @@
         "successPath": "Success path",
         "successPathHint": "e.g. \"success\" — checked for a truthy value in the JSON response",
         "secretPlaceholder": "Leave blank to keep the saved value",
-        "test": "Test connection",
+        "test": "Test",
         "testSuccess": "Reached endpoint and parsed a valid response",
         "testError": "Request failed — check the URL, auth, and success-match settings",
         "save": "Save hostname",
@@ -797,7 +799,12 @@
         "title": "Activity log",
         "updated": "Updated to {{ip}}",
         "rateLimited": "Rate limited, retry {{retryAt}}",
+        "probed": "Current record: {{ip}}",
         "refresh": "Refresh",
+        "clear": "Clear",
+        "clearConfirm": "Clear all activity log entries? This cannot be undone.",
+        "clearSuccess": "Cleared {{count}} entries",
+        "clearError": "Failed to clear activity log",
 
         "fallbacks": {
           "loading": "Loading activity…",
@@ -810,7 +817,17 @@
         "checkIntervalHint": "How often Beacon checks whether your public IP has changed.",
         "interval5m": "Every 5 minutes",
         "interval15m": "Every 15 minutes",
-        "interval1h": "Every hour",
+        "interval30m": "Every 30 minutes",
+        "interval45m": "Every 45 minutes",
+        "interval60m": "Every 60 minutes",
+        "interval90m": "Every 90 minutes",
+        "heartbeatInterval": "Force update interval",
+        "heartbeatIntervalHint": "Providers without a read API get a forced update this often to recover out-of-band changes.",
+        "heartbeat1h": "Every 1 hour",
+        "heartbeat3h": "Every 3 hours",
+        "heartbeat6h": "Every 6 hours",
+        "heartbeat12h": "Every 12 hours",
+        "heartbeat24h": "Every 24 hours",
         "ipDetection": "IP detection service",
         "ipDetectionHint": "Used to discover this network's current public IP.",
         "ipAuto": "Auto (try multiple, use first response)",

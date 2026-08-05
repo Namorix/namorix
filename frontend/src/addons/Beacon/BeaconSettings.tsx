@@ -15,6 +15,7 @@ import { beaconController } from "./beacon.controller"
 export const BeaconSettings: React.FC = () => {
   const { t } = useTranslation()
   const [interval, setInterval] = useState("15")
+  const [heartbeat, setHeartbeat] = useState("1")
   const [ipService, setIpService] = useState("auto")
   const [ipv6, setIpv6] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -23,11 +24,14 @@ export const BeaconSettings: React.FC = () => {
     beaconController
       .getSettings()
       .then((s) => {
-        setInterval(String(s.checkIntervalMinutes))
+        setInterval(String(s.checkIntervalMinutes || 15))
+        setHeartbeat(String(s.heartbeatIntervalHours || 1))
         setIpService(s.ipDetectionService)
         setIpv6(s.updateIpv6)
       })
-      .catch(() => nmxToast.error(t("addon.beacon.settings.saveError")))
+      .catch(() =>
+        nmxToast.error(t("addon.beacon.settings.feedback.saveError")),
+      )
   }, [t])
 
   const handleSave = useCallback(
@@ -37,25 +41,37 @@ export const BeaconSettings: React.FC = () => {
       try {
         await beaconController.updateSettings({
           checkIntervalMinutes: parseInt(interval, 10),
+          heartbeatIntervalHours: parseInt(heartbeat, 10),
           ipDetectionService: ipService,
           updateIpv6: ipv6,
         })
-        nmxToast.success(t("addon.beacon.settings.saveSuccess"))
+        nmxToast.success(t("addon.beacon.settings.feedback.saveSuccess"))
       } catch {
-        nmxToast.error(t("addon.beacon.settings.saveError"))
+        nmxToast.error(t("addon.beacon.settings.feedback.saveError"))
       }
       setBusy(false)
     },
-    [interval, ipService, ipv6, t],
+    [heartbeat, interval, ipService, ipv6, t],
   )
 
-  const intervalOptions: NmxSelectData<string>[] = [
+  const intervalOptions: NmxSelectData[] = [
     { value: "5", label: t("addon.beacon.settings.interval5m") },
     { value: "15", label: t("addon.beacon.settings.interval15m") },
-    { value: "60", label: t("addon.beacon.settings.interval1h") },
+    { value: "30", label: t("addon.beacon.settings.interval30m") },
+    { value: "45", label: t("addon.beacon.settings.interval45m") },
+    { value: "60", label: t("addon.beacon.settings.interval60m") },
+    { value: "90", label: t("addon.beacon.settings.interval90m") },
   ]
 
-  const ipOptions: NmxSelectData<string>[] = [
+  const heartbeatOptions: NmxSelectData[] = [
+    { value: "1", label: t("addon.beacon.settings.heartbeat1h") },
+    { value: "3", label: t("addon.beacon.settings.heartbeat3h") },
+    { value: "6", label: t("addon.beacon.settings.heartbeat6h") },
+    { value: "12", label: t("addon.beacon.settings.heartbeat12h") },
+    { value: "24", label: t("addon.beacon.settings.heartbeat24h") },
+  ]
+
+  const ipOptions: NmxSelectData[] = [
     { value: "auto", label: t("addon.beacon.settings.ipAuto") },
     { value: "ipify.org", label: t("addon.beacon.settings.ipIpify") },
   ]
@@ -72,6 +88,16 @@ export const BeaconSettings: React.FC = () => {
               value={interval}
               options={intervalOptions}
               onChange={setInterval}
+            />
+          </NmxSettingsRow>
+          <NmxSettingsRow
+            label={t("addon.beacon.settings.heartbeatInterval")}
+            description={t("addon.beacon.settings.heartbeatIntervalHint")}
+          >
+            <NmxSelect
+              value={heartbeat}
+              options={heartbeatOptions}
+              onChange={setHeartbeat}
             />
           </NmxSettingsRow>
           <NmxSettingsRow

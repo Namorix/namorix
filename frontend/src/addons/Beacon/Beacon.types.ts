@@ -1,5 +1,6 @@
 export const BeaconActivityCodes: Record<string, string> = {
   BCN_UPDATED: "addon.beacon.activity.updated",
+  BCN_PROBED: "addon.beacon.activity.probed",
 }
 
 export const BeaconErrorCodes: Record<string, string> = {
@@ -17,7 +18,7 @@ export const BeaconErrorCodes: Record<string, string> = {
 } as const
 
 export type BcnProviderKind = "get" | "rest"
-export type BcnHostnameStatus = "active" | "disabled" | "error"
+export type BcnHostnameStatus = "pending" | "active" | "disabled" | "error"
 export type BcnLogLevel = "info" | "warn" | "error"
 
 export interface BcnHostnameDto {
@@ -65,10 +66,12 @@ export interface BcnProviderInfo {
   id: string
   kind: BcnProviderKind
   credentialFields: BcnProviderCredentialField[]
+  tested: boolean
 }
 
 export interface BcnSettingsDto {
   checkIntervalMinutes: number
+  heartbeatIntervalHours: number
   ipDetectionService: string
   updateIpv6: boolean
 }

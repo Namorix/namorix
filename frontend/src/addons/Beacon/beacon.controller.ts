@@ -23,6 +23,7 @@ export interface CreateHostnamePayload {
 
 export interface UpdateSettingsPayload {
   checkIntervalMinutes: number
+  heartbeatIntervalHours: number
   ipDetectionService: string
   updateIpv6: boolean
 }
@@ -107,6 +108,15 @@ async function listActivity(
   return data.data
 }
 
+async function clearActivity(): Promise<{ deleted: number }> {
+  const data = await nmxHttp
+    .url(getApiBaseUrl() + ApiBeaconRoutes.activity)
+    .delete()
+    .json<{ deleted: number }>()
+  if (!data.success) throw ApiError.fromResponse(data)
+  return data.data
+}
+
 async function listProviders(): Promise<BcnProviderInfo[]> {
   const data = await nmxHttp
     .url(getApiBaseUrl() + ApiBeaconRoutes.providers)
@@ -163,6 +173,14 @@ async function checkHostname(id: string): Promise<CheckHostnameResult> {
   return data.data
 }
 
+async function refreshHostnames(): Promise<void> {
+  const data = await nmxHttp
+    .url(getApiBaseUrl() + ApiBeaconRoutes.refresh)
+    .post()
+    .json()
+  if (!data.success) throw ApiError.fromResponse(data)
+}
+
 export const beaconController = {
   listHostnames,
   createHostname,
@@ -170,10 +188,12 @@ export const beaconController = {
   deleteHostname,
   testProvider,
   listActivity,
+  clearActivity,
   listProviders,
   getSettings,
   updateSettings,
   getStatus,
   toggleHostname,
   checkHostname,
+  refreshHostnames,
 }

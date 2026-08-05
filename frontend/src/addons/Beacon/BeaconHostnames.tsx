@@ -32,6 +32,7 @@ import {
   type BcnProviderInfo,
   bcnErrorDetail,
 } from "./Beacon.types"
+import { ServerSignalREvent, useServerSignalREvent } from "../../signalr"
 
 const CUSTOM_ID = "custom"
 const SECRET_PREFIX = "CfDJ8"
@@ -75,8 +76,8 @@ export const BeaconHostnames: React.FC = () => {
 
   const [deleting, setDeleting] = useState<BcnHostnameDto | null>(null)
   const [deleteSubmitting, setDeleteSubmitting] = useState(false)
-
   const [busyRowId, setBusyRowId] = useState<string | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
 
   const fetchHosts = useCallback(async (pg: number, size: number) => {
     setLoading(true)
@@ -103,11 +104,35 @@ export const BeaconHostnames: React.FC = () => {
     return () => clearTimeout(timeout)
   }, [page, pageSize, fetchHosts])
 
+  useServerSignalREvent(
+    ServerSignalREvent.BeaconHostnameStatusChanged,
+    useCallback(() => {
+      fetchHosts(page, pageSize).catch(nmxToast.error)
+    }, [fetchHosts, page, pageSize]),
+  )
+
+  useServerSignalREvent(
+    ServerSignalREvent.BeaconHostnamesRefreshed,
+    useCallback(() => {
+      fetchHosts(page, pageSize).catch(nmxToast.error)
+      setRefreshing(false)
+    }, [fetchHosts, page, pageSize]),
+  )
+
   const providerOptions = useMemo(() => {
     const opts: NmxSelectData[] = [
       ...providers.map((p) => ({
         value: p.id,
-        label: t(`addon.beacon.providers.${p.id}`),
+        label: (
+          <span className="nmx-addon-beacon__provider-label">
+            <span>{t(`addon.beacon.providers.${p.id}`)}</span>
+            {p.tested && (
+              <NmxBadge semantic="success" size="sm">
+                {t("addon.beacon.providers.tested")}
+              </NmxBadge>
+            )}
+          </span>
+        ),
         description: t(`addon.beacon.providers.descriptions.${p.id}`),
       })),
       {
@@ -443,6 +468,15 @@ export const BeaconHostnames: React.FC = () => {
     [fetchHosts, t, page, pageSize],
   )
 
+  const handleRefresh = useCallback(() => {
+    setRefreshing(true)
+    beaconController
+      .refreshHostnames()
+      .catch((err) =>
+        nmxToast.error(formatCustomError(t, err, BeaconErrorCodes)),
+      )
+  }, [t])
+
   const columns: NmxDataTableColumn<BcnHostnameDto>[] = [
     {
       header: t("addon.beacon.hostnames.fields.status"),
@@ -453,7 +487,9 @@ export const BeaconHostnames: React.FC = () => {
               ? "success"
               : row.status === "error"
                 ? "error"
-                : "trace"
+                : row.status === "pending"
+                  ? "warning"
+                  : "trace"
           }
           size="sm"
         >
@@ -611,7 +647,7 @@ export const BeaconHostnames: React.FC = () => {
           <NmxIconFont symbol={NmxIconFontSymbol.ADD} />
           <span>{t("addon.beacon.hostnames.add")}</span>
         </NmxButton>
-        <NmxButton onClick={() => fetchHosts(page, pageSize)}>
+        <NmxButton onClick={handleRefresh} disabled={refreshing}>
           <NmxIconFont symbol={NmxIconFontSymbol.REFRESH} />
           <span>{t("addon.frontgate.pages.reverseProxy.actions.refresh")}</span>
         </NmxButton>
