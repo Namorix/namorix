@@ -30,9 +30,11 @@ import {
   BeaconErrorCodes,
   type BcnHostnameDto,
   type BcnProviderInfo,
+  bcnErrorDetail,
 } from "./Beacon.types"
 
 const CUSTOM_ID = "custom"
+const SECRET_PREFIX = "CfDJ8"
 const CONFIG_INVALID = "BCN_CONFIG_INVALID"
 
 // credential field key → BcnProviderConfig JSON key
@@ -69,11 +71,12 @@ export const BeaconHostnames: React.FC = () => {
   const [formConfig, setFormConfig] =
     useState<Record<string, string>>(initialConfig)
   const [testing, setTesting] = useState(false)
+  const [keptSecrets, setKeptSecrets] = useState<Record<string, string>>({})
 
   const [deleting, setDeleting] = useState<BcnHostnameDto | null>(null)
   const [deleteSubmitting, setDeleteSubmitting] = useState(false)
 
-  const [togglingId, setTogglingId] = useState<string | null>(null)
+  const [busyRowId, setBusyRowId] = useState<string | null>(null)
 
   const fetchHosts = useCallback(async (pg: number, size: number) => {
     setLoading(true)
@@ -101,15 +104,16 @@ export const BeaconHostnames: React.FC = () => {
   }, [page, pageSize, fetchHosts])
 
   const providerOptions = useMemo(() => {
-    const opts: NmxSelectData<string>[] = [
+    const opts: NmxSelectData[] = [
       ...providers.map((p) => ({
         value: p.id,
         label: t(`addon.beacon.providers.${p.id}`),
-        description: p.credentialFields.map((f) => f.key).join(", "),
+        description: t(`addon.beacon.providers.descriptions.${p.id}`),
       })),
       {
         value: CUSTOM_ID,
         label: t("addon.beacon.providers.custom"),
+        description: t("addon.beacon.providers.descriptions.custom"),
       },
     ]
     return opts
@@ -143,17 +147,20 @@ export const BeaconHostnames: React.FC = () => {
     [t],
   )
 
+  const fieldPlaceholder = (fieldKey: string, cfgKey: string) =>
+    keptSecrets[cfgKey]
+      ? t("addon.beacon.addDialog.secretPlaceholder")
+      : t(`addon.beacon.addDialog.credentialPlaceholders.${fieldKey}`, {
+          defaultValue: "",
+        })
+
   const resetForm = useCallback(() => {
     setEditing(null)
-    setFormHostname("izerocs.duckdns.org")
-    setFormProviderId(CUSTOM_ID)
+    setFormHostname("")
+    setFormProviderId("")
     setFormKind("get")
-    setFormConfig({
-      urlTemplate:
-        "https://www.duckdns.org/update?domains={hostname}&token={token}&ip={ip}",
-      token: "30141a2c-c9f9-498d-85ec-c92e50061156",
-      successContains: "OK",
-    })
+    setFormConfig({})
+    setKeptSecrets({})
   }, [])
 
   const formatBeaconError = useCallback(
@@ -161,7 +168,6 @@ export const BeaconHostnames: React.FC = () => {
       const e = err as ApiError
       if (e?.code === CONFIG_INVALID) {
         const raw = e.field ?? ""
-        console.log(raw)
         return t("addon.beacon.errors.configInvalid", {
           field: t(`addon.beacon.errors.configFields.${raw}`, {
             defaultValue: raw,
@@ -187,6 +193,7 @@ export const BeaconHostnames: React.FC = () => {
     (id: string) => {
       setFormProviderId(id)
       setFormConfig({})
+      setKeptSecrets({})
       if (id !== CUSTOM_ID) {
         const kind = providers.find((p) => p.id === id)?.kind
         if (kind) setFormKind(kind)
@@ -200,18 +207,29 @@ export const BeaconHostnames: React.FC = () => {
     setFormHostname(host.hostname)
     setFormProviderId(host.providerId)
     setFormKind(host.kind)
+
     let parsed: Record<string, string>
+    const kept: Record<string, string> = {}
+
     try {
       parsed = JSON.parse(host.configJson) as Record<string, string>
+      for (const [k, v] of Object.entries(parsed)) {
+        if (typeof v === "string" && v.startsWith(SECRET_PREFIX)) {
+          kept[k] = v
+          delete parsed[k]
+        }
+      }
     } catch {
       parsed = {}
     }
+
+    setKeptSecrets(kept)
     setFormConfig(parsed)
     setShowDialog(true)
   }, [])
 
   const buildPayload = useCallback(() => {
-    const config = { ...formConfig }
+    const config = { ...keptSecrets, ...formConfig }
     if (formProviderId === CUSTOM_ID && formKind === "get")
       config.successMatch = config.successMatch ?? "contains"
     return {
@@ -220,7 +238,7 @@ export const BeaconHostnames: React.FC = () => {
       kind: formKind,
       configJson: JSON.stringify(config),
     }
-  }, [formHostname, formProviderId, formKind, formConfig])
+  }, [keptSecrets, formConfig, formProviderId, formKind, formHostname])
 
   const handleTest = useCallback(() => {
     if (!formHostname.trim()) return
@@ -257,7 +275,10 @@ export const BeaconHostnames: React.FC = () => {
     const missingField =
       !isCustom &&
       selectedProvider?.credentialFields.find(
-        (f) => f.required && !formConfig[CRED_FIELD_TO_CONFIG[f.key] ?? f.key],
+        (f) =>
+          f.required &&
+          !formConfig[CRED_FIELD_TO_CONFIG[f.key] ?? f.key] &&
+          !keptSecrets[CRED_FIELD_TO_CONFIG[f.key] ?? f.key],
       )
 
     if (missingField) {
@@ -280,6 +301,7 @@ export const BeaconHostnames: React.FC = () => {
             editing
               ? "addon.beacon.hostnames.feedback.updateSuccess"
               : "addon.beacon.hostnames.feedback.createSuccess",
+            { hostname: formHostname.trim() },
           ),
         )
         resetForm()
@@ -293,6 +315,7 @@ export const BeaconHostnames: React.FC = () => {
             editing
               ? "addon.beacon.hostnames.feedback.updateError"
               : "addon.beacon.hostnames.feedback.createError",
+            { hostname: formHostname.trim() },
           ),
         ),
       )
@@ -305,6 +328,7 @@ export const BeaconHostnames: React.FC = () => {
     buildPayload,
     t,
     formConfig,
+    keptSecrets,
     fieldLabel,
     resetForm,
     fetchHosts,
@@ -324,14 +348,20 @@ export const BeaconHostnames: React.FC = () => {
     beaconController
       .deleteHostname(deleting.id)
       .then(() => {
-        nmxToast.success(t("addon.beacon.hostnames.feedback.deleteSuccess"))
+        nmxToast.success(
+          t("addon.beacon.hostnames.feedback.deleteSuccess", {
+            hostname: deleting.hostname,
+          }),
+        )
         setDeleting(null)
         return fetchHosts(page, pageSize)
       })
       .catch((err) =>
         nmxToast.error(
           formatCustomError(t, err, BeaconErrorCodes),
-          t("addon.beacon.hostnames.feedback.deleteError"),
+          t("addon.beacon.hostnames.feedback.deleteError", {
+            hostname: deleting.hostname,
+          }),
         ),
       )
       .finally(() => setDeleteSubmitting(false))
@@ -339,7 +369,7 @@ export const BeaconHostnames: React.FC = () => {
 
   const handleToggle = useCallback(
     (host: BcnHostnameDto) => {
-      setTogglingId(host.id)
+      setBusyRowId(host.id)
       beaconController
         .toggleHostname(host.id)
         .then(() => {
@@ -348,6 +378,7 @@ export const BeaconHostnames: React.FC = () => {
               host.status === "disabled"
                 ? "addon.beacon.hostnames.feedback.enableSuccess"
                 : "addon.beacon.hostnames.feedback.disableSuccess",
+              { hostname: host.hostname },
             ),
           )
           return fetchHosts(page, pageSize)
@@ -355,10 +386,59 @@ export const BeaconHostnames: React.FC = () => {
         .catch((err) =>
           nmxToast.error(
             formatCustomError(t, err, BeaconErrorCodes),
-            t("addon.beacon.hostnames.feedback.toggleError"),
+            t("addon.beacon.hostnames.feedback.toggleError", {
+              hostname: host.hostname,
+            }),
           ),
         )
-        .finally(() => setTogglingId(null))
+        .finally(() => setBusyRowId(null))
+    },
+    [fetchHosts, t, page, pageSize],
+  )
+
+  const handleCheck = useCallback(
+    (host: BcnHostnameDto) => {
+      setBusyRowId(host.id)
+      nmxToast.long(
+        t(
+          host.status === "error"
+            ? "addon.beacon.hostnames.feedback.retrying"
+            : "addon.beacon.hostnames.feedback.checking",
+          { hostname: host.hostname },
+        ),
+        "info",
+      )
+      beaconController
+        .checkHostname(host.id)
+        .then((result) => {
+          if (result.success)
+            nmxToast.success(
+              t("addon.beacon.hostnames.feedback.checkSuccess", {
+                hostname: host.hostname,
+              }),
+            )
+          else {
+            const key = result.code ? BeaconErrorCodes[result.code] : undefined
+            const msg = key
+              ? t(key, {
+                  ...(result.params ?? {}),
+                  detail: bcnErrorDetail(result.params),
+                })
+              : t("addon.beacon.hostnames.feedback.checkError", {
+                  hostname: host.hostname,
+                })
+            nmxToast.error(msg, t("addon.beacon.hostnames.feedback.checkError"))
+          }
+          return fetchHosts(page, pageSize)
+        })
+        .catch(() =>
+          nmxToast.error(
+            t("addon.beacon.hostnames.feedback.checkError", {
+              hostname: host.hostname,
+            }),
+          ),
+        )
+        .finally(() => setBusyRowId(null))
     },
     [fetchHosts, t, page, pageSize],
   )
@@ -413,7 +493,12 @@ export const BeaconHostnames: React.FC = () => {
     },
     {
       header: t("addon.beacon.hostnames.fields.currentIp"),
-      renderCell: (row) => row.currentIpv4 ?? "—",
+      renderCell: (row) => (
+        <>
+          <span>{row.currentIpv4 ?? "—"}</span>
+          {row.currentIpv6 ? <span> · {row.currentIpv6}</span> : null}
+        </>
+      ),
       grow: 1,
       enableUserSelectCell: true,
       hideBelow: "sm",
@@ -424,8 +509,21 @@ export const BeaconHostnames: React.FC = () => {
         <NmxMenuButton
           variant="ghost"
           arrowDisabled
-          disabled={togglingId === row.id}
+          disabled={busyRowId === row.id}
           options={[
+            {
+              value: "check",
+              label: t(
+                row.status === "error"
+                  ? "addon.beacon.hostnames.actions.retry"
+                  : "addon.beacon.hostnames.actions.update",
+              ),
+              semantic: row.status === "error" ? "warning" : "success",
+              icon:
+                row.status === "error"
+                  ? NmxIconFontSymbol.REFRESH
+                  : NmxIconFontSymbol.UPDATE,
+            },
             {
               value: row.status === "disabled" ? "enable" : "disable",
               label: t(
@@ -448,6 +546,7 @@ export const BeaconHostnames: React.FC = () => {
           ]}
           onSelect={(action) => {
             if (action === "delete") handleDelete(row)
+            else if (action === "check") handleCheck(row)
             else handleToggle(row)
           }}
           dividerIndexes={[{ value: "delete", position: "top" }]}
@@ -562,7 +661,7 @@ export const BeaconHostnames: React.FC = () => {
         loading={formSubmitting}
         confirmLabel={t("addon.beacon.addDialog.save")}
         extraActionLabel={t("addon.beacon.addDialog.test")}
-        extraActionDisabled={!formHostname.trim() || testing}
+        extraActionDisabled={!formHostname.trim() || !formProviderId || testing}
         onExtraAction={handleTest}
       >
         <NmxForm className="nmx-addon-beacon__form">
@@ -578,6 +677,7 @@ export const BeaconHostnames: React.FC = () => {
               value={formProviderId}
               options={providerOptions}
               onChange={handleProviderChange}
+              placeholder={t("addon.beacon.addDialog.providerPlaceholder")}
             />
           </NmxFormField>
 
@@ -610,6 +710,7 @@ export const BeaconHostnames: React.FC = () => {
                     value={formConfig[cfgKey] ?? ""}
                     onValueChange={setCfg(cfgKey)}
                     type={field.type === "secret" ? "password" : "text"}
+                    placeholder={fieldPlaceholder(field.key, cfgKey)}
                   />
                 </NmxFormField>
               )
@@ -646,6 +747,7 @@ export const BeaconHostnames: React.FC = () => {
                     value={formConfig.token ?? ""}
                     onValueChange={setCfg("token")}
                     type="password"
+                    placeholder={fieldPlaceholder("token", "token")}
                   />
                 </NmxFormField>
               )}
@@ -690,13 +792,12 @@ export const BeaconHostnames: React.FC = () => {
                   onChange={setCfg("method")}
                 />
               </NmxFormField>
-              <NmxFormField label={t("addon.beacon.addDialog.apiToken")}>
-                <NmxFormInput
-                  value={formConfig.apiToken ?? ""}
-                  onValueChange={setCfg("apiToken")}
-                  type="password"
-                />
-              </NmxFormField>
+              <NmxFormInput
+                value={formConfig.apiToken ?? ""}
+                onValueChange={setCfg("apiToken")}
+                type="password"
+                placeholder={fieldPlaceholder("apiToken", "apiToken")}
+              />
               <NmxFormField label={t("addon.beacon.addDialog.zone")}>
                 <NmxFormInput
                   value={formConfig.zone ?? ""}

@@ -16,6 +16,7 @@ import {
   BeaconActivityCodes,
   BeaconErrorCodes,
   type BcnActivityLogDto,
+  bcnErrorDetail,
 } from "./Beacon.types"
 
 const ACTIVITY_CODES = { ...BeaconActivityCodes, ...BeaconErrorCodes }
@@ -67,9 +68,14 @@ export const BeaconActivity: React.FC = () => {
         params = {}
       }
     }
+
     if (typeof params.retryAt === "string")
       params.retryAt = dateTime(params.retryAt)
-    return t(ACTIVITY_CODES[row.code] ?? row.code, params)
+
+    return t(ACTIVITY_CODES[row.code] ?? row.code, {
+      ...params,
+      detail: bcnErrorDetail(params),
+    })
   }
 
   const entries: NmxLogEntry[] = items.map((row) => ({
@@ -79,6 +85,7 @@ export const BeaconActivity: React.FC = () => {
       ? `${renderMessage(row)} · ${row.hostname}`
       : renderMessage(row),
     semantic: LEVEL_SEMANTIC[row.level],
+    markupToHtmlEnabled: true,
   }))
 
   const fallbackConditions: NmxFallback[] = [

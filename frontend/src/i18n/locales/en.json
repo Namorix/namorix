@@ -651,7 +651,7 @@
         "accountBlocked": "Provider blocked this account — contact support if you believe this is a mistake",
         "unavailable": "Provider service is temporarily unavailable — will retry on the next check",
         "rateLimited": "Provider rate limited the request — will retry on the next check",
-        "providerError": "Provider returned an error (HTTP {{httpStatus}})",
+        "providerError": "Provider returned an error **({{detail}})**",
         "recordNotFound": "Hostname not found",
         "duplicateHostname": "This hostname is already tracked",
 
@@ -661,6 +661,7 @@
           "endpointTemplate": "Endpoint URL",
           "recordLookupTemplate": "Record lookup URL",
           "token": "Token",
+          "user": "Username",
           "username": "Username",
           "password": "Password",
           "apiToken": "API Token",
@@ -680,7 +681,9 @@
         "actions": {
           "delete": "Delete",
           "disable": "Disable",
-          "enable": "Enable"
+          "enable": "Enable",
+          "retry": "Retry",
+          "update": "Update"
         },
 
         "fallbacks": {
@@ -696,16 +699,20 @@
         },
 
         "feedback": {
-          "createSuccess": "Hostname added",
-          "createError": "Failed to add hostname",
-          "updateSuccess": "Hostname updated",
-          "updateError": "Failed to update hostname",
-          "deleteSuccess": "Hostname removed",
-          "deleteError": "Failed to remove hostname",
-          "deleteConfirm": "Remove [color:warning]{{hostname}}[/color] permanently? This cannot be undone",
-          "enableSuccess": "Hostname enabled",
-          "disableSuccess": "Hostname disabled",
-          "toggleError": "Failed to update hostname status"
+          "createSuccess": "**{{hostname}}** added",
+          "createError": "Failed to add **{{hostname}}**",
+          "updateSuccess": "**{{hostname}}** updated",
+          "updateError": "Failed to update **{{hostname}}**",
+          "deleteSuccess": "**{{hostname}}** removed",
+          "deleteError": "Failed to remove **{{hostname}}**",
+          "deleteConfirm": "Remove [color:warning]**{{hostname}}**[/color] permanently? This cannot be undone",
+          "enableSuccess": "**{{hostname}}** enabled",
+          "disableSuccess": "**{{hostname}}** disabled",
+          "toggleError": "Failed to update **{{hostname}}**",
+          "checking": "Updating **{{hostname}}**…",
+          "checkSuccess": "Update completed for **{{hostname}}**",
+          "checkError": "Update failed for **{{hostname}}**",
+          "retrying": "Retrying **{{hostname}}**…"
         }
       },
       "providers": {
@@ -715,29 +722,32 @@
         "duckdns": "DuckDNS",
         "dynu": "Dynu",
         "godaddy": "GoDaddy",
-        "custom": "Custom provider"
+        "custom": "Custom provider",
+
+        "descriptions": {
+          "cloudflare": "Global CDN and DNS service — manage your zone's records through their API",
+          "godaddy": "Popular domain registrar with DNS management",
+          "noip": "Free dynamic DNS service that keeps a hostname pointed at your IP",
+          "namecheap": "Domain registrar with built-in dynamic DNS support",
+          "duckdns": "Free dynamic DNS — subdomains managed with a simple token",
+          "dynu": "Dynamic DNS provider with free and paid plans",
+          "custom": "Bring any other provider by defining your own endpoint"
+        }
       },
       "addDialog": {
         "title": "Add hostname",
         "editTitle": "Edit hostname",
         "provider": "Provider",
-        "empty": "Choose a provider to continue",
+        "providerPlaceholder": "Select a provider…",
         "hostname": "Hostname",
         "hostnamePlaceholder": "e.g. home.izerocs.space",
         "token": "Update token / password",
         "tokenHint": "Not your account password — a DDNS-specific key from the provider's dashboard.",
-        "getMethod": "single signed GET request on each check — no record ID lookup needed.",
         "apiToken": "API token",
         "zone": "Zone / domain",
-        "restMethod": "Beacon looks up the record ID once, then sends a REST update whenever the IP changes.",
-        "providerLabel": "Provider label",
-        "providerLabelHint": "Just for display in your hostname list.",
-        "providerLabelPlaceholder": "e.g. Self-hosted PowerDNS",
         "updateStyle": "Update style",
         "simpleGet": "Simple GET",
-        "simpleGetDesc": "One URL, plain-text response",
         "restJson": "REST / JSON",
-        "restJsonDesc": "Method + body, JSON response",
         "urlTemplate": "Update URL template",
         "urlTemplateHint": "Available placeholders: {hostname} {ip} {ipv6} {token} {user} {password}",
         "urlTemplatePlaceholder": "https://ddns.example.com/update?host={hostname}&ip={ip}&token={token}",
@@ -753,18 +763,14 @@
         "methodPatch": "PATCH",
         "methodPut": "PUT",
         "methodPost": "POST",
-        "authType": "Auth type",
-        "authBearer": "Bearer token",
-        "authCustomHeader": "Custom header",
-        "credential": "Credential",
         "bodyTemplate": "Request body template",
         "bodyTemplateHint": "JSON — placeholders same as above",
         "successPath": "Success path",
         "successPathHint": "e.g. \"success\" — checked for a truthy value in the JSON response",
+        "secretPlaceholder": "Leave blank to keep the saved value",
         "test": "Test connection",
-        "testSuccess": "Reached endpoint and parsed a valid response.",
-        "testError": "Request failed — check the URL, auth, and success-match settings.",
-        "cancel": "Cancel",
+        "testSuccess": "Reached endpoint and parsed a valid response",
+        "testError": "Request failed — check the URL, auth, and success-match settings",
         "save": "Save hostname",
 
         "credentialFields": {
@@ -775,6 +781,16 @@
           "apiKey": "API Key",
           "apiSecret": "API Secret",
           "zone": "Zone"
+        },
+
+        "credentialPlaceholders": {
+          "username": "Your provider username",
+          "password": "Your provider password",
+          "token": "Your DDNS update token",
+          "apiToken": "Your API token",
+          "apiKey": "Your API key",
+          "apiSecret": "Your API secret",
+          "zone": "e.g. example.com"
         }
       },
       "activity": {
@@ -798,9 +814,9 @@
         "ipDetection": "IP detection service",
         "ipDetectionHint": "Used to discover this network's current public IP.",
         "ipAuto": "Auto (try multiple, use first response)",
-        "ipIfconfig": "ifconfig.co",
         "ipIpify": "ipify.org",
-        "updateIpv6": "Also update IPv6 (AAAA) records when supported by the provider",
+        "updateIpv6": "Also update IPv6 (AAAA)",
+        "updateIpv6Hint": "Enable only if your ISP provides IPv6; otherwise leave off and updates will use IPv4.",
         "save": "Save",
 
         "feedback": {

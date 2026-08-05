@@ -33,6 +33,12 @@ export interface TestProviderResult {
   params?: Record<string, unknown>
 }
 
+export interface CheckHostnameResult {
+  success: boolean
+  code?: string
+  params?: Record<string, unknown>
+}
+
 async function listHostnames(
   page: number,
   size: number,
@@ -148,6 +154,15 @@ async function toggleHostname(id: string): Promise<BcnHostnameDto> {
   return data.data
 }
 
+async function checkHostname(id: string): Promise<CheckHostnameResult> {
+  const data = await nmxHttp
+    .url(getApiBaseUrl() + ApiBeaconRoutes.hostnameCheck(id))
+    .post()
+    .json<CheckHostnameResult>()
+  if (!data.success) throw ApiError.fromResponse(data)
+  return data.data
+}
+
 export const beaconController = {
   listHostnames,
   createHostname,
@@ -160,4 +175,5 @@ export const beaconController = {
   updateSettings,
   getStatus,
   toggleHostname,
+  checkHostname,
 }

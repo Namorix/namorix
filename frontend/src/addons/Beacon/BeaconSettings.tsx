@@ -57,7 +57,6 @@ export const BeaconSettings: React.FC = () => {
 
   const ipOptions: NmxSelectData<string>[] = [
     { value: "auto", label: t("addon.beacon.settings.ipAuto") },
-    { value: "ifconfig.co", label: t("addon.beacon.settings.ipIfconfig") },
     { value: "ipify.org", label: t("addon.beacon.settings.ipIpify") },
   ]
 
@@ -81,22 +80,27 @@ export const BeaconSettings: React.FC = () => {
           >
             <NmxSelect
               value={ipService}
-              options={ipOptions}
               onChange={setIpService}
+              options={ipOptions}
             />
           </NmxSettingsRow>
-          <NmxSettingsRow label={t("addon.beacon.settings.updateIpv6")}>
+          <NmxSettingsRow
+            label={t("addon.beacon.settings.updateIpv6")}
+            description={t("addon.beacon.settings.updateIpv6Hint")}
+          >
             <NmxToggle checked={ipv6} onCheckedChanged={setIpv6} />
-          </NmxSettingsRow>
+          </NmxSettingsRow>{" "}
         </NmxSettingsCard>
       </NmxSettingsSection>
-      <NmxButton
-        onClick={handleSave}
-        disabled={busy}
-        label={t("addon.beacon.settings.save")}
-        uppercase
-        fullWidth
-      />
+      <NmxSettingsSection>
+        <NmxButton
+          onClick={handleSave}
+          disabled={busy}
+          label={t("addon.beacon.settings.save")}
+          uppercase
+          fullWidth
+        />
+      </NmxSettingsSection>
     </>
   )
 }

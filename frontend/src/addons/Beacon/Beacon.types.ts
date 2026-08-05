@@ -78,3 +78,9 @@ export interface BcnStatusDto {
   healthy: number
   lastCheck?: string
 }
+
+export function bcnErrorDetail(params?: Record<string, unknown>): string {
+  if (!params) return ""
+  if (params.httpStatus !== undefined) return `HTTP ${params.httpStatus}`
+  return (params.reason as string) ?? ""
+}
