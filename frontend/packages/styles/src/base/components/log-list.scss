@@ -21,6 +21,8 @@
     gap: var(--nmx-spacing-md);
     padding: var(--nmx-spacing-md);
 
+    @include user-select;
+
     &:nth-child(even) {
       background: color-mix(
         in oklab,

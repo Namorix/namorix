@@ -218,18 +218,31 @@
   content: "\e901";
 }
 :root {
+  --nmx-color-amber-300: #fcd34d;
+  --nmx-color-amber-400: #fbbf24;
   --nmx-color-amber-500: #f59e0b;
   --nmx-color-amber-600: #d97706;
+  --nmx-color-red-300: #fca5a5;
+  --nmx-color-red-400: #f87171;
   --nmx-color-red-500: #ef4444;
   --nmx-color-red-600: #dc2626;
+  --nmx-color-green-300: #86efac;
+  --nmx-color-green-400: #4ade80;
   --nmx-color-green-500: #22c55e;
   --nmx-color-green-600: #16a34a;
-  --nmx-color-blue-500: #2563eb;
-  --nmx-color-blue-600: #1d4ed8;
+  --nmx-color-blue-300: #93c5fd;
+  --nmx-color-blue-400: #60a5fa;
+  --nmx-color-blue-500: #3b82f6;
+  --nmx-color-blue-600: #2563eb;
+  --nmx-color-slate-300: #cbd5e1;
   --nmx-color-slate-400: #94a3b8;
   --nmx-color-slate-500: #64748b;
+  --nmx-color-violet-300: #c4b5fd;
+  --nmx-color-violet-400: #a78bfa;
   --nmx-color-violet-500: #8b5cf6;
   --nmx-color-violet-600: #7c3aed;
+  --nmx-color-rose-300: #fda4af;
+  --nmx-color-rose-400: #fb7185;
   --nmx-color-rose-600: #e11d48;
   --nmx-color-rose-700: #be123c;
 }
@@ -1972,6 +1985,7 @@ input[type=number] {
 }
 .nmx-settings-section {
   margin: 0 auto var(--nmx-spacing-3xl) auto;
+  width: 100%;
 }
 .nmx-settings-section__title {
   display: inline-block;
@@ -2576,10 +2590,10 @@ input[type=number] {
   display: flex;
   align-items: center;
   gap: var(--nmx-spacing-sm);
-  background: color-mix(in oklab, var(--nmx-toast-color) 15%, var(--nmx-color-surface));
+  background: color-mix(in oklab, var(--nmx-toast-color) 35%, var(--nmx-color-surface));
   padding: var(--nmx-spacing-md) var(--nmx-spacing-lg);
   border-radius: var(--nmx-radius-md);
-  color: var(--nmx-toast-color);
+  color: oklch(from var(--nmx-toast-color) 0.8 c h);
   border: 0;
   cursor: pointer;
   white-space: normal;
@@ -3194,6 +3208,8 @@ input[type=number] {
   align-items: baseline;
   gap: var(--nmx-spacing-md);
   padding: var(--nmx-spacing-md);
+  -webkit-user-select: text;
+  user-select: text;
 }
 .nmx-log-list__item:nth-child(even) {
   background: color-mix(in oklab, var(--nmx-color-surface-mid) 40%, transparent);
@@ -3433,14 +3449,14 @@ input[type=number] {
   --nmx-color-surface-highest: #404040; /*Strong emphasis (active chip, focused tile, key CTA container) */
   --nmx-color-on-surface: #e2e8f0;
   --nmx-color-on-surface-variant: #6c747c;
-  --nmx-color-primary: var(--nmx-color-blue-500);
+  --nmx-color-primary: var(--nmx-color-blue-600);
   --nmx-color-on-primary: #ffffff;
   --nmx-color-scrim: rgba(0, 0, 0, 0.65);
   /* Semantic */
   --nmx-color-default: var(--nmx-color-surface-mid);
   --nmx-color-trace: var(--nmx-color-slate-400);
   --nmx-color-debug: var(--nmx-color-violet-500);
-  --nmx-color-info: var(--nmx-color-blue-500);
+  --nmx-color-info: var(--nmx-color-blue-600);
   --nmx-color-success: var(--nmx-color-green-600);
   --nmx-color-warning: var(--nmx-color-amber-500);
   --nmx-color-error: var(--nmx-color-red-500);

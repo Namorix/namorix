@@ -20,12 +20,12 @@
   gap: var(--nmx-spacing-sm);
   background: color-mix(
     in oklab,
-    var(--nmx-toast-color) 15%,
+    var(--nmx-toast-color) 35%,
     var(--nmx-color-surface)
   );
   padding: var(--nmx-spacing-md) var(--nmx-spacing-lg);
   border-radius: var(--nmx-radius-md);
-  color: var(--nmx-toast-color);
+  color: oklch(from var(--nmx-toast-color) 0.8 c h);
   border: 0;
 
   cursor: pointer;
