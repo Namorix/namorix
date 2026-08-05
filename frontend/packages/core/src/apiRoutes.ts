@@ -102,4 +102,5 @@ export const ApiBeaconRoutes = {
   settings: API_BEACON_BASE + "/settings",
   status: API_BEACON_BASE + "/status",
   hostnameToggle: (id: string) => `${API_BEACON_BASE}/hostnames/${id}/toggle`,
+  hostnameCheck: (id: string) => `${API_BEACON_BASE}/hostnames/${id}/check`,
 }
