@@ -37,6 +37,10 @@
         text-align: end;
       }
 
+      &--use-select {
+        @include user-select;
+      }
+
       @include semantic-variants("nmx-meta", false, true);
     }
   }

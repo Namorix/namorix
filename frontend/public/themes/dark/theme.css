@@ -270,7 +270,7 @@ body {
   font-family: var(--nmx-font-sans), serif;
   background-color: var(--nmx-color-bg);
   background-image: var(--nmx-wallpaper);
-  background-position: center;
+  background-position: center center;
   background-repeat: no-repeat;
   background-size: cover;
   overflow: hidden;
@@ -1163,6 +1163,10 @@ input[type=number] {
 }
 .nmx-meta-list__item-value--end {
   text-align: end;
+}
+.nmx-meta-list__item-value--use-select {
+  -webkit-user-select: text;
+  user-select: text;
 }
 .nmx-meta-list__item-value--default {
   --nmx-meta-text: var(--nmx-color-default);
@@ -3177,6 +3181,7 @@ input[type=number] {
   gap: var(--nmx-spacing-xs);
   min-height: 0;
   overflow-y: auto;
+  container-type: inline-size;
 }
 .nmx-log-list::-webkit-scrollbar {
   width: 4px;
@@ -3213,6 +3218,20 @@ input[type=number] {
 }
 .nmx-log-list__item:nth-child(even) {
   background: color-mix(in oklab, var(--nmx-color-surface-mid) 40%, transparent);
+}
+@container (max-width: 480px) {
+  .nmx-log-list__item {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: var(--nmx-spacing-sm);
+    gap: var(--nmx-spacing-xs);
+  }
+  .nmx-log-list__item-time {
+    order: 2;
+  }
+  .nmx-log-list__item-message {
+    order: 1;
+  }
 }
 .nmx-log-list__item-time {
   flex-shrink: 0;
