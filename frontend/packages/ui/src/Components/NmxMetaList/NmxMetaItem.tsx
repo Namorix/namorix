@@ -6,6 +6,7 @@ interface NmxMetaItemProps extends WithBaseProps, WithSemanticColor, WithMuted {
   label?: string
   value?: string
   isBlockMessage?: boolean
+  useSelectEnabled?: boolean
   alignValue?: "start" | "end"
   classValue?: string
 }
@@ -14,6 +15,7 @@ export const NmxMetaItem: React.FC<NmxMetaItemProps> = ({
   label,
   value,
   isBlockMessage = false,
+  useSelectEnabled = false,
   alignValue = "start",
   semantic,
   muted,
@@ -41,7 +43,10 @@ export const NmxMetaItem: React.FC<NmxMetaItemProps> = ({
         <span
           className={cx(
             "nmx-meta-list__item-value",
-            { "nmx-meta-list__item-value--end": alignValue === "end" },
+            {
+              "nmx-meta-list__item-value--use-select": useSelectEnabled,
+              "nmx-meta-list__item-value--end": alignValue === "end",
+            },
             cxSemantic(
               "nmx-meta-list__item-value",
               !muted ? semantic : undefined,
