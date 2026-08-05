@@ -47,7 +47,7 @@ public sealed class BcnCheckWorker(IServiceScopeFactory scopeFactory,
                         && (h.BackoffUntil == null || h.BackoffUntil <= DateTime.UtcNow))
             .ToListAsync(ct);
 
-        foreach (var host in hosts.Where(h => h.Status != BcnHostnameStatus.Pending))
+        foreach (var host in hosts.Where(h => h.Status != BcnHostnameStatus.Updating))
         {
             await updater.UpdateHostAsync(host, ip.IPv4, ip.IPv6, ct: ct);
         }

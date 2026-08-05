@@ -17,11 +17,11 @@ public sealed class GoDaddyProvider(IHttpClientFactory httpFactory) : IBcnProvid
         new BcnCredentialField("zone", BcnCredentialFieldType.Text)
     ]);
 
-    public async Task<BcnUpdateResult> UpdateAsync(string hostname, BcnProviderConfig config,
+    public async Task<BcnUpdateResult> UpdateAsync(string host, string domain, BcnProviderConfig config,
         IPAddress? ipv4, IPAddress? ipv6, CancellationToken ct)
     {
         var zone = config.Zone ?? "";
-        var name = hostname.Length > zone.Length ? hostname[..^(zone.Length + 1)] : "@";
+        var name = host;   // host is already tag/@, no longer splitting by zone
 
         var targets = new List<(string Type, IPAddress Ip)>();
         if (ipv4 is not null) targets.Add(("A", ipv4));
@@ -37,26 +37,23 @@ public sealed class GoDaddyProvider(IHttpClientFactory httpFactory) : IBcnProvid
             var payload = JsonSerializer.Serialize(new[] { new { data = ip.ToString() } });
             using var req = new HttpRequestMessage(HttpMethod.Put,
                 $"https://api.godaddy.com/v1/domains/{Uri.EscapeDataString(zone)}/records/{type}/{Uri.EscapeDataString(name)}");
-            
+
             req.Content = new StringContent(payload, Encoding.UTF8, "application/json");
             using var resp = await client.SendAsync(req, ct);
 
             if ((int)resp.StatusCode == StatusCodes.Status429TooManyRequests)
                 return new BcnUpdateResult(false, BcnErrorCodes.RateLimited,
                     new Dictionary<string, object?> { ["httpStatus"] = 429 }, RateLimited: true);
-            
+
             if (!resp.IsSuccessStatusCode)
                 return new BcnUpdateResult(false, BcnHttpStatus.ToErrorCode(resp.StatusCode),
                     new Dictionary<string, object?> { ["httpStatus"] = (int)resp.StatusCode });
         }
-        
+
         return new BcnUpdateResult(true);
     }
 
-    
-    public string GetDomain(string hostname, BcnProviderConfig config) => hostname;
-
-    public Task<BcnTestResult> TestAsync(string hostname, BcnProviderConfig config, IPAddress? ipv4, IPAddress? ipv6, CancellationToken ct) =>
-        UpdateAsync(hostname, config, ipv4, ipv6, ct)
-            .ContinueWith(t => new BcnTestResult(t.Result.Success, t.Result.Code, t.Result.Params), ct);
-}
+    public Task<BcnTestResult> TestAsync(string host, string domain, BcnProviderConfig config,
+        IPAddress? ipv4, IPAddress? ipv6, CancellationToken ct) =>
+        UpdateAsync(host, domain, config, ipv4, ipv6, ct)
+            .ContinueWith(t => new BcnTestResult(t.Result.Success, t.Result.Code, t.Result.Params), ct);}

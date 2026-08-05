@@ -41,7 +41,11 @@ public class BcnController(AppDbContext db, BcnProviderRegistry registry, BcnSec
     [Validate(typeof(BcnHostnameSchema))]
     public async Task<IActionResult> CreateHostname([FromBody] CreateHostnameRequest request)
     {
-        if (await db.BcnHostnames.AnyAsync(h => h.Hostname == request.Hostname))
+        var hostValue = registry.Contains(request.ProviderId) && registry.Get(request.ProviderId).Info.HostIsDomain
+            ? request.Domain
+            : request.Host;
+        
+        if (await db.BcnHostnames.AnyAsync(h => h.Host == hostValue && h.Domain == request.Domain))
             return Conflict(ApiResponse.Fail(BcnErrorCodes.DuplicateHostname));
 
         var config = DeserializeConfig(request.ConfigJson);
@@ -53,10 +57,11 @@ public class BcnController(AppDbContext db, BcnProviderRegistry registry, BcnSec
 
         var host = new BcnHostname
         {
-            Hostname = request.Hostname,
+            Host = hostValue,
+            Domain = request.Domain,
             ProviderId = request.ProviderId,
             Kind = config.Kind,
-            Status = BcnHostnameStatus.Pending,
+            Status = BcnHostnameStatus.Updating,
             ConfigJson = JsonSerializer.Serialize(protector.Protect(config), BcnProviderConfig.SerializerOptions),
         };
         db.BcnHostnames.Add(host);
@@ -82,10 +87,13 @@ public class BcnController(AppDbContext db, BcnProviderRegistry registry, BcnSec
         var host = await db.BcnHostnames.FindAsync(id);
         if (host == null) return NotFound(ApiResponse.Fail(BcnErrorCodes.HostnameNotFound));
 
-        if (request.Hostname != host.Hostname &&
-            await db.BcnHostnames.AnyAsync(h => h.Hostname == request.Hostname))
+        var hostValue = registry.Contains(request.ProviderId) && registry.Get(request.ProviderId).Info.HostIsDomain
+            ? request.Domain
+            : request.Host;
+        if ((hostValue != host.Host || request.Domain != host.Domain) &&
+            await db.BcnHostnames.AnyAsync(h => h.Host == hostValue && h.Domain == request.Domain))
             return Conflict(ApiResponse.Fail(BcnErrorCodes.DuplicateHostname));
-
+        
         var config = DeserializeConfig(request.ConfigJson);
         config.Kind = Enum.Parse<BcnProviderKind>(request.Kind, ignoreCase: true);
 
@@ -93,11 +101,14 @@ public class BcnController(AppDbContext db, BcnProviderRegistry registry, BcnSec
         if (invalidField is not null)
             return BadRequest(ApiResponse.Fail(BcnErrorCodes.ConfigInvalid, null, invalidField));
 
-        host.Hostname = request.Hostname;
+        host.Host = hostValue;
+        host.Domain = request.Domain;
         host.ProviderId = request.ProviderId;
         host.Kind = config.Kind;
         host.ConfigJson = JsonSerializer.Serialize(protector.Protect(config), ConfigWriteOptions);
-        host.Status = BcnHostnameStatus.Pending;
+        host.Status = BcnHostnameStatus.Updating;
+        host.CurrentIpv4 = null;
+        host.CurrentIpv6 = null;
 
         await db.SaveChangesAsync();
         await queue.EnqueueAsync(host.Id);
@@ -138,7 +149,7 @@ public class BcnController(AppDbContext db, BcnProviderRegistry registry, BcnSec
             return Ok(ApiResponse.Ok(new { success = false, code = BcnErrorCodes.NoIp }));
 
         var result = await resolver.Resolve(request.ProviderId, config)
-            .TestAsync(request.Hostname ?? "test.example.com", config, ip.IPv4, ip.IPv6, ct);
+            .TestAsync(request.Host ?? "@", request.Domain ?? "example.com", config, ip.IPv4, ip.IPv6, ct);
         
         return Ok(ApiResponse.Ok(new { success = result.Success, code = result.Code, @params = result.Params }));
     }
@@ -167,6 +178,28 @@ public class BcnController(AppDbContext db, BcnProviderRegistry registry, BcnSec
             @params = result.Params }));
     }
     
+    [HttpPost("hostnames/{id}/toggle")]
+    public async Task<IActionResult> ToggleHostname(string id)
+    {
+        var host = await db.BcnHostnames.FindAsync(id);
+        if (host == null)
+            return NotFound(ApiResponse.Fail(BcnErrorCodes.HostnameNotFound));
+        
+        if (host.Status == BcnHostnameStatus.Disabled)
+        {
+            host.Status = BcnHostnameStatus.Updating;
+            await db.SaveChangesAsync();
+            await queue.EnqueueAsync(host.Id);
+        }
+        else
+        {
+            host.Status = BcnHostnameStatus.Disabled;
+            await db.SaveChangesAsync();
+        }
+
+        return Ok(ApiResponse.Ok(host));
+    }
+    
     [HttpGet("activity")]
     public async Task<IActionResult> ListActivity([FromQuery] int page = 1, [FromQuery] int size = 20)
     {
@@ -179,7 +212,8 @@ public class BcnController(AppDbContext db, BcnProviderRegistry registry, BcnSec
                 l.Level,
                 l.Code,
                 l.ParamsJson,
-                hostname = l.Hostname != null ? l.Hostname.Hostname : null,
+                host = l.Hostname != null ? l.Hostname.Host : null,
+                domain = l.Hostname != null ? l.Hostname.Domain : null,
             });
 
         var total = await query.CountAsync();
@@ -232,20 +266,6 @@ public class BcnController(AppDbContext db, BcnProviderRegistry registry, BcnSec
         var lastCheck = await db.BcnHostnames.MaxAsync(h => h.LastCheckedAt);
         return Ok(ApiResponse.Ok(new { total, healthy, lastCheck }));
     }
-
-    [HttpPost("hostnames/{id}/toggle")]
-    public async Task<IActionResult> ToggleHostname(string id)
-    {
-        var host = await db.BcnHostnames.FindAsync(id);
-        if (host == null)
-            return NotFound(ApiResponse.Fail(BcnErrorCodes.HostnameNotFound));
-        
-        host.Status = host.Status == BcnHostnameStatus.Disabled
-            ? BcnHostnameStatus.Active
-            : BcnHostnameStatus.Disabled;
-        await db.SaveChangesAsync();
-        return Ok(ApiResponse.Ok(host));
-    }
     
     [HttpPost("refresh")]
     public async Task<IActionResult> RefreshHostnames([FromServices] BcnProbeQueue probeQueue)
@@ -296,14 +316,16 @@ public class BcnController(AppDbContext db, BcnProviderRegistry registry, BcnSec
 }
 
 public record CreateHostnameRequest(
-    string Hostname,
+    string Host,
+    string Domain,
     string ProviderId,
     string Kind,
     string? ConfigJson
 );
 
 public record TestProviderRequest(
-    string Hostname,
+    string Host,
+    string Domain,
     string ProviderId,
     string Kind,
     string? ConfigJson

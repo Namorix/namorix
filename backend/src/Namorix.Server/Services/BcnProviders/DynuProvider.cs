@@ -13,9 +13,9 @@ public sealed class DynuProvider(IHttpClientFactory httpFactory) : BcnGetProvide
         new BcnCredentialField("password", BcnCredentialFieldType.Secret)
     ]);
 
-    protected override string BuildUrl(string hostname, BcnProviderConfig config,
+    protected override string BuildUrl(string host, string domain, BcnProviderConfig config,
         IPAddress? ipv4, IPAddress? ipv6) =>
-        $"https://api.dynu.com/nic/update?hostname={hostname}&myip={ipv4}" +
+        $"https://api.dynu.com/nic/update?hostname={domain}&myip={ipv4}" +
         (ipv6 is null ? "" : $"&myipv6={ipv6}");
 
     protected override BcnUpdateResult Classify(string body) => body switch

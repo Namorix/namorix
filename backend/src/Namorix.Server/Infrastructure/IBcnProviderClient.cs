@@ -6,13 +6,10 @@ namespace Namorix.Server.Infrastructure;
 public interface IBcnProviderClient
 {
     BcnProviderInfo Info { get; }
-    Task<BcnUpdateResult> UpdateAsync(string hostname, BcnProviderConfig config,
+    Task<BcnUpdateResult> UpdateAsync(string host, string domain, BcnProviderConfig config,
         IPAddress? ipv4, IPAddress? ipv6, CancellationToken ct);
-    
-    Task<BcnTestResult> TestAsync(string hostname, BcnProviderConfig config,
+    Task<BcnTestResult> TestAsync(string host, string domain, BcnProviderConfig config,
         IPAddress? ipv4, IPAddress? ipv6, CancellationToken ct);
-
-    string GetDomain(string hostname, BcnProviderConfig config);
 }
 
 public record BcnUpdateResult(bool Success, string? Code = null,

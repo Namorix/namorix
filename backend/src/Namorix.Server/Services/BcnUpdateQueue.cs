@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Threading.Channels;
 using Microsoft.EntityFrameworkCore;
 using Namorix.Server.Constants;
@@ -25,7 +26,7 @@ public sealed class BcnUpdateQueue(IServiceScopeFactory scopeFactory, ILogger<Bc
 
     protected override async Task ExecuteAsync(CancellationToken ct)
     {
-        await RequeuePendingAsync(ct);
+        await RequeueUpdatingAsync(ct);
         await foreach (var hostnameId in _channel.Reader.ReadAllAsync(ct))
         {
             await _concurrency.WaitAsync(ct);
@@ -33,25 +34,26 @@ public sealed class BcnUpdateQueue(IServiceScopeFactory scopeFactory, ILogger<Bc
         }
     }
 
-    private async Task RequeuePendingAsync(CancellationToken ct)
+    private async Task RequeueUpdatingAsync(CancellationToken ct)
     {
         try
         {
             using var scope = scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var pendingIds = await db.BcnHostnames
-                .Where(h => h.Status == BcnHostnameStatus.Pending)
+            var updatingIds = await db.BcnHostnames
+                .Where(h => h.Status == BcnHostnameStatus.Updating)
                 .Select(h => h.Id)
                 .ToListAsync(ct);
-            foreach (var id in pendingIds)
+            
+            foreach (var id in updatingIds)
             {
                 _channel.Writer.TryWrite(id);
-                logger.LogInformation("Requeued orphaned pending beacon hostname {Id}", id);
+                logger.LogInformation("Requeued orphaned updating beacon hostname {Id}", id);
             }
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to requeue pending beacon hostnames on startup");
+            logger.LogError(ex, "Failed to requeue updating beacon hostnames on startup");
         }
     }
 
@@ -97,8 +99,19 @@ public sealed class BcnUpdateQueue(IServiceScopeFactory scopeFactory, ILogger<Bc
                 .Where(h => h.Id == hostnameId)
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(h => h.Status, BcnHostnameStatus.Error)
-                    .SetProperty(h => h.LastError, BcnErrorCodes.ProviderError));
-            await notifier.NotifyHostnameStatusChanged(hostnameId, host.Hostname, "error");
+                    .SetProperty(h => h.LastError, BcnErrorCodes.ProviderError)
+                    .SetProperty(h => h.CurrentIpv4, (string?)null)
+                    .SetProperty(h => h.CurrentIpv6, (string?)null));
+            
+            db.BcnActivityLogs.Add(new BcnActivityLog
+            {
+                Level = BcnLogLevel.Error,
+                Code = BcnErrorCodes.ProviderError,
+                HostnameId = hostnameId,
+                ParamsJson = JsonSerializer.Serialize(new { provider = host.ProviderId }),
+            });
+            await db.SaveChangesAsync();
+            await notifier.NotifyHostnameStatusChanged(hostnameId, host.DisplayName, "error");
         }
         catch (Exception ex)
         {

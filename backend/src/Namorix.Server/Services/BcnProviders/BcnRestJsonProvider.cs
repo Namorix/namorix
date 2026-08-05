@@ -15,18 +15,18 @@ public sealed class BcnRestJsonProvider(IHttpClientFactory httpFactory) : IBcnPr
 
     public BcnProviderInfo Info => new("custom", BcnProviderKind.Rest, []);
 
-    public async Task<BcnUpdateResult> UpdateAsync(string hostname, BcnProviderConfig config,
+    public async Task<BcnUpdateResult> UpdateAsync(string host, string domain, BcnProviderConfig config,
         IPAddress? ipv4, IPAddress? ipv6, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(config.EndpointTemplate))
             return new BcnUpdateResult(false, BcnErrorCodes.ConfigInvalid,
                 new Dictionary<string, object?> { ["field"] = "endpointTemplate" });
-        
+
         if (config.EndpointTemplate.Contains("{recordId}") &&
             string.IsNullOrWhiteSpace(config.RecordLookupTemplate))
             return new BcnUpdateResult(false, BcnErrorCodes.ConfigInvalid,
                 new Dictionary<string, object?> { ["field"] = "recordLookupTemplate" });
-        
+
         var ip = ipv6 ?? ipv4;
         if (ip is null)
             return new BcnUpdateResult(false, BcnErrorCodes.NoIp);
@@ -39,18 +39,18 @@ public sealed class BcnRestJsonProvider(IHttpClientFactory httpFactory) : IBcnPr
 
         for (var attempt = 0; attempt < 2; attempt++)
         {
-            if (!_recordIds.TryGetValue(hostname, out var recordId))
+            if (!_recordIds.TryGetValue(domain, out var recordId))
             {
-                recordId = await LookupRecordIdAsync(client, hostname, config, ct);
+                recordId = await LookupRecordIdAsync(client, host, domain, config, ct);
                 if (recordId is null)
                     return new BcnUpdateResult(false, BcnErrorCodes.HostnameNotFound,
-                        new Dictionary<string, object?> { ["hostname"] = hostname });
-                _recordIds[hostname] = recordId;
+                        new Dictionary<string, object?> { ["hostname"] = domain });
+                _recordIds[domain] = recordId;
             }
 
-            var endpoint = BcnTemplate.Replace(config.EndpointTemplate ?? string.Empty, hostname, ipv4, ipv6, config)
+            var endpoint = BcnTemplate.Replace(config.EndpointTemplate ?? string.Empty, host, domain, ipv4, ipv6, config)
                 .Replace("{recordId}", recordId);
-            var body = BcnTemplate.Replace(config.BodyTemplate ?? string.Empty, hostname, ipv4, ipv6, config);
+            var body = BcnTemplate.Replace(config.BodyTemplate ?? string.Empty, host, domain, ipv4, ipv6, config);
 
             using var request = new HttpRequestMessage(new HttpMethod(config.Method ?? "PUT"), endpoint);
             if (!string.IsNullOrEmpty(body))
@@ -58,11 +58,12 @@ public sealed class BcnRestJsonProvider(IHttpClientFactory httpFactory) : IBcnPr
 
             using var response = await client.SendAsync(request, ct);
 
-            if ((int)response.StatusCode == StatusCodes.Status404NotFound)
-            {
-                _recordIds.TryRemove(hostname, out _);   // recordId stale → re-lookup once
-                if (attempt == 0) continue;
-            }
+            if ((int)response.StatusCode != StatusCodes.Status404NotFound)
+                return await ClassifyAsync(response, config);
+            
+            _recordIds.TryRemove(domain, out _);   // recordId stale → re-lookup once
+            if (attempt == 0)
+                continue;
 
             return await ClassifyAsync(response, config);
         }
@@ -70,15 +71,17 @@ public sealed class BcnRestJsonProvider(IHttpClientFactory httpFactory) : IBcnPr
         return new BcnUpdateResult(false, BcnErrorCodes.ProviderError);
     }
 
-    public string GetDomain(string hostname, BcnProviderConfig config) => hostname;
-    
-    private static async Task<string?> LookupRecordIdAsync(HttpClient client, string hostname,
+    private static async Task<string?> LookupRecordIdAsync(HttpClient client, string host, string domain,
         BcnProviderConfig config, CancellationToken ct)
     {
-        if (string.IsNullOrEmpty(config.RecordLookupTemplate)) return null;
-        var url = BcnTemplate.Replace(config.RecordLookupTemplate, hostname, null, null, config);
+        if (string.IsNullOrEmpty(config.RecordLookupTemplate))
+            return null;
+        
+        var url = BcnTemplate.Replace(config.RecordLookupTemplate, host, domain, null, null, config);
         using var resp = await client.GetAsync(url, ct);
-        if (!resp.IsSuccessStatusCode) return null;
+        if (!resp.IsSuccessStatusCode)
+            return null;
+        
         using var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync(ct));
         return JsonPointer(doc.RootElement, config.RecordIdPath)?.GetString();
     }
@@ -127,7 +130,8 @@ public sealed class BcnRestJsonProvider(IHttpClientFactory httpFactory) : IBcnPr
         _ => false,
     };
 
-    public Task<BcnTestResult> TestAsync(string hostname, BcnProviderConfig config, IPAddress? ipv4, IPAddress? ipv6, CancellationToken ct) =>
-        UpdateAsync(hostname, config, ipv4, ipv6, ct)
+    public Task<BcnTestResult> TestAsync(string host, string domain, BcnProviderConfig config,
+        IPAddress? ipv4, IPAddress? ipv6, CancellationToken ct) =>
+        UpdateAsync(host, domain, config, ipv4, ipv6, ct)
             .ContinueWith(t => new BcnTestResult(t.Result.Success, t.Result.Code, t.Result.Params), ct);
 }
