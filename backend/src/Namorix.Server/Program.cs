@@ -20,6 +20,7 @@ using Namorix.Server.Middleware;
 using Namorix.Server.Persistence;
 using Namorix.Server.Services;
 using Namorix.Server.Services.BcnProviders;
+using Namorix.Server.Services.Frontgate;
 using Namorix.Server.Services.Grpc;
 using Namorix.Server.Workers;
 using Yarp.ReverseProxy.Configuration;
@@ -118,12 +119,16 @@ builder.Services.AddHostedService<BcnActivityCleanupWorker>();
 
 builder.Services.AddSingleton<AddonTaskQueue>();
 builder.Services.AddSingleton<AcmeCertQueue>();
-builder.Services.AddHostedService<AcmeCertQueue>(sp => sp.GetRequiredService<AcmeCertQueue>());
 builder.Services.AddHostedService<AddonTaskQueue>(sp => sp.GetRequiredService<AddonTaskQueue>());
+builder.Services.AddHostedService<AcmeCertQueue>(sp => sp.GetRequiredService<AcmeCertQueue>());
 builder.Services.AddScoped<AddonTaskExecutor>();
 builder.Services.AddGrpc();
 builder.Services.AddSingleton<AddonChannelManager>();
+
 builder.Services.AddSingleton<AcmeChallengeStore>();
+builder.Services.AddSingleton<DnsLookupChecker>();
+builder.Services.AddSingleton<AcmeDryRunService>();
+
 builder.Services.AddSingleton<BcnUpdateQueue>();
 builder.Services.AddHostedService<BcnUpdateQueue>(sp => sp.GetRequiredService<BcnUpdateQueue>());
 builder.Services.AddSingleton<BcnProbeQueue>();

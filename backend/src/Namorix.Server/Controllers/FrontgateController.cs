@@ -11,6 +11,7 @@ using Namorix.Server.Constants;
 using Namorix.Server.Models;
 using Namorix.Server.Persistence;
 using Namorix.Server.Services;
+using Namorix.Server.Services.Frontgate;
 using Namorix.Server.Validation;
 
 namespace Namorix.Server.Controllers;
@@ -18,7 +19,8 @@ namespace Namorix.Server.Controllers;
 [ApiController]
 [RequireAdmin]
 [Route("api/frontgate")]
-public class FrontgateController(AppDbContext db, DataDirectory dataDir, AcmeCertQueue certQueue) : ControllerBase
+public class FrontgateController(AppDbContext db, DataDirectory dataDir, AcmeCertQueue certQueue,
+    DnsLookupChecker dnsLookupChecker, AcmeDryRunService acmeDryRunService) : ControllerBase
 {
     [HttpGet("reverse-proxy")]
     public async Task<IActionResult> ListRules([FromQuery] int page = 1, [FromQuery] int size = 20)
@@ -267,7 +269,23 @@ public class FrontgateController(AppDbContext db, DataDirectory dataDir, AcmeCer
         await certQueue.EnqueueAsync(cert.Id);
         return Ok(ApiResponse.Ok(cert));
     }
-
+    
+    [HttpPost("certificates/letsencrypt-http/dry-run")]
+    [Validate(typeof(FrontgateCertSchema))]
+    public async Task<IActionResult> TestLetsEncryptHttp(
+        [FromBody] CreateLetsEncryptDryRunRequest request,
+        CancellationToken ct)
+    {
+        var warnings = await dnsLookupChecker.CheckAsync(request.Domains, ct);
+        var result = await acmeDryRunService.RunAsync(request.Domains, ct);
+        return Ok(ApiResponse.Ok(new
+        {
+            passed = result.Passed,
+            message = result.Message,
+            warnings
+        }));
+    }
+    
     [HttpPost("certificates/letsencrypt-dns")]
     public async Task<IActionResult> CreateLetsEncryptDnsCert(
         [FromBody] CreateLetsEncryptDnsCertRequest request)
@@ -398,4 +416,8 @@ public record CreateCustomCertRequest(
     string CertificateKey,
     string Certificate,
     string? Intermediate
+);
+
+public record CreateLetsEncryptDryRunRequest(
+    List<string> Domains
 );
