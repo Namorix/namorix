@@ -203,16 +203,21 @@ namorix/
                     #   OAuth (client credentials, addon self-registration),
                     #   Protos (gRPC addon channel definition)
         └── Namorix.Server/    # Persistence (AppDbContext, SQLite migrations),
-                                # Services (Auth, Permission, Settings, Theme, User, Notification,
-                                #   Docker, Addon, OAuth, AddonChannelManager,
-                                #   gRPC: AddonChannelService),
+                                # Models (grouped theo addon domain: Addon/, Beacon/, Frontgate/),
+                                # Services (Auth, Permission, Settings, User, Notification, Docker, OAuth,
+                                #   AddonChannelManager, gRPC: AddonChannelService,
+                                #   Beacon/ — DDNS (hostname service, update/probe queue, Providers/),
+                                #   Frontgate/ — reverse proxy + ACME cert (worker, challenge, dry-run)),
                                 # Controllers (Auth, Health, Permission, Settings, Theme, User,
-                                #   Notification, Addon, OAuth, UserPermission),
-                                # Middleware (Auth, TrustedProxy, RequirePermission, OAuth2),
+                                #   Notification, Addon, OAuth, Frontgate, Beacon),
+                                # Middleware (Auth, TrustedProxy, RequirePermission, OAuth2,
+                                #   ForceSsl, AcmeChallenge),
                                 # Workers (TokenCleanup, NotificationCleanup, SystemMonitorStats,
-                                #   DockerMonitor, CatalogSync),
-                                # Hubs (MainHub, SignalRAddonNotifier, SignalRSystemMonitorNotifier),
-                                # Infrastructure (IAddonNotifier, ISystemMonitorNotifier),
+                                #   DockerMonitor, CatalogSync, BcnCheck, BcnActivityCleanup, FgCertPendingReset),
+                                # Hubs (MainHub, SignalRAddonNotifier, SignalRSystemMonitorNotifier,
+                                #   SignalRBeaconNotifier, SignalRNotificationNotifier),
+                                # Infrastructure (IAddonNotifier, ISystemMonitorNotifier, IBeaconNotifier,
+                                #   IBcnProviderClient, IPublicIpDetector),
                                 # Extensions, Program.cs
 ```
 
@@ -271,7 +276,7 @@ public class AuthController(AuthService authService) : ControllerBase
 
 ### Internal Addons (M3 — Built-in)
 
-System addons (About, NetworkTraffic, Log Viewer, Settings, SystemMonitor, File Manager, Terminal, Package Center, Frontgate) sử dụng chung addon contract với external addons:
+System addons (About, NetworkTraffic, Log Viewer, Settings, SystemMonitor, File Manager, Terminal, Package Center, Frontgate, Beacon) sử dụng chung addon contract với external addons:
 - **AddonEntry**: `mount(container, context)` / `unmount()` lifecycle
 - **NmxAddonManifest**: id, name, description?, icon?, defaultWidth?, defaultHeight?, instanceMode?
 - **AddonContext**: addonId, nmxStore?, store?, isExternal?, sendCommand?
@@ -333,5 +338,5 @@ Addon có 2 mode tích hợp:
 2. **M2** — Full auth backend (login/register/logout/refresh/session, decorators, i18n, validation) ✅
 3. **M3** — System Addons (Built-in): addon contract + registry, About, Log Viewer, NetworkTraffic (SignalR + flat file storage), SystemMonitor, Settings (Appearance/System/Account), theme system (hot swap CSS, server-driven), File Manager, Terminal, Package Center
 4. **M4** — External addon system: Docker lifecycle, OAuth2 (client_credentials + private_key_jwt + authorization_code + PKCE), gRPC bidirectional streaming, addon catalog sync, standalone mode, web UI ✅
-    - **Frontgate addon**: YARP reverse proxy with runtime config reload, CRUD API and management UI (Phase 1 ✅), certificate management (🔜 Phase 2), access control (🔜 Phase 3)
+    - **Frontgate addon**: YARP reverse proxy with runtime config reload, CRUD API and management UI (Phase 1 ✅), certificate management (Phase 2 ✅ — LE HTTP-01 + dry-run test, custom cert upload; DNS-01 dropped), access control (🔜 Phase 3)
 5. **M5** — @namorix/core publish npm + addon integration guide

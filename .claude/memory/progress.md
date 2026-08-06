@@ -1,5 +1,13 @@
 # Version History — August 2026
 
+## 2026-08-06 — Drop DNS-01 + backend reorganization
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.57.0 → 0.57.1 | MODIFIED: `apiRoutes.ts` — bỏ `certificatesLetsEncryptDns` route (drop DNS-01). |
+| frontend | 0.74.0 → 0.75.0 | MODIFIED: `addons/Frontgate/` — **bỏ DNS-01 UI**: dialog `letsEncryptDns`, `frontgate.controller` (`createLetsEncryptDnsCert`/`listDnsProviders`/`testLetsEncryptDns`), `apiRoutes` DNS route, i18n DNS keys; FE type union `letsEncryptDns` bỏ. |
+| Namorix.Server | 0.65.0 → 0.66.0 | **DROP DNS-01**: xoá `IDnsProvider`/`CloudflareDnsProvider`/`DnsProviderResolver`/`DnsProviderServiceCollectionExtensions`, `AcmeDryRunService.RunDnsAsync` + `WaitForTxtRecordAsync`, `POST /certificates/letsencrypt-dns/dry-run`, `CreateLetsEncryptDnsCert`, catalog `Models/Frontgate/DnsProviders.cs`, enum `FgCertificateSource.LetsEncryptDns` (giữ column `DnsProviderId` — drop khi migration tổng thể). `AcmeDryRunResult.cs` → `AcmeDryRunService.cs`. MODIFIED: Models/Services reorganization namespace (Addon/Beacon/Frontgate/Providers subfolders). |
+
 ## 2026-08-06 — Frontgate LE dry-run + notification fix + addon version catalog
 
 | Package | Version | Changes |

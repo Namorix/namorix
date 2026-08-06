@@ -165,11 +165,11 @@ Thư viện ACME: **Certes** (`Certes` NuGet) — giao tiếp với Let's Encryp
 - [x] **Certificate endpoint split**: tách `ListCertificates` thành 2 endpoint riêng — `GET /certificates` (paginated, page ≥ 1) và `GET /certificates/all` (flat list), cập nhật `ApiFrontgateRoutes.certificatesAll` + frontend controller
 - [x] **NmxLoadingOverlay createPortal**: fix z-index stacking context với `#root { contain: strict }` — dùng `createPortal` render ra `document.body`, cùng level với FloatingPortal dialogs/menus
 - [x] **NmxFileInput component**: primitive file input với styled drop zone, icon thay đổi UPLOAD ↔ FILE_LINK, click anywhere mở file picker
-- [x] **Certificate add dialogs UI**: 3 NmxAlertDialog (letsEncryptHttp, letsEncryptDns, custom) với form fields (domain, key type, dns provider, name, cert PEM upload), i18n keys, state management
-- [x] **DnsProviders model**: class tĩnh với danh sách ~80 DNS provider, credential fields, `Implemented` flag, bỏ label (dùng i18n frontend)
-- [x] **DNS providers API**: `GET /api/frontgate/dns-providers` trả về mảng id + `ApiFrontgateRoutes.dnsProviders` + `listDnsProviders()` controller + `en.json` labels cho từng provider
-- [x] **`FgCertificateSource` enum**: `LetsEncryptHttp`, `LetsEncryptDns`, `Custom` — không lẫn với `CertificateType` (Rsa/Ecdsa là key algorithm)
-- [x] **3 POST certificate endpoints**: `POST /certificates/letsencrypt-http`, `POST /certificates/letsencrypt-dns`, `POST /certificates/custom` + request records + frontend routes + controller functions
+- [x] **Certificate add dialogs UI**: 3 NmxAlertDialog (letsEncryptHttp, letsEncryptDns, custom) — **giờ còn 2** (letsEncryptDns đã bỏ khi drop DNS-01)
+- [x] **DnsProviders model**: class tĩnh ~80 provider + `Implemented` flag — **ĐÃ XOÁ** (drop DNS-01), thay bằng `IDnsProvider`/`DnsProviderInfo` (giờ cũng đã bỏ)
+- [x] **DNS providers API**: `GET /api/frontgate/dns-providers` + `listDnsProviders()` — **ĐÃ XOÁ** (drop DNS-01)
+- [x] **`FgCertificateSource` enum**: `LetsEncryptHttp`, `LetsEncryptDns`, `Custom` — **giờ còn 2** (`LetsEncryptDns` đã bỏ khi drop DNS-01)
+- [x] **3 POST certificate endpoints**: letsencrypt-http, letsencrypt-dns, custom — **giờ còn 2** (letsencrypt-dns đã bỏ)
 - [x] **Certificate file storage**: bỏ `PrivateKeyEncrypted`/`CertificateChain` khỏi DB — PEM files lưu disk qua `DataDirectory.WriteFile()`, không lưu path trong DB (tự suy từ domain đầu tiên: `certs/{primaryDomain}/privkey.pem`, `certs/{primaryDomain}/fullchain.pem`)
 - [x] **en.json dnsProviders**: ~80 DNS provider labels
 - [x] **en.json dialogs**: title, confirm, info, placeholder keys cho 3 cert dialogs
@@ -214,15 +214,26 @@ Thư viện ACME: **Certes** (`Certes` NuGet) — giao tiếp với Let's Encryp
 - [x] **Dry-run test** ✅ 2026-08-06: nút "Test" ở UI = `POST /certificates/letsencrypt-http/dry-run` — `AcmeDryRunService` chạy **staging flow**: account key riêng `pki/acme-staging-account.key` (không trộn prod, `NewAccount(null, true)` khi key mới), NewOrder qua `LetsEncryptStagingV2` → `auth.Http()` → `challengeStore.Add(token, KeyAuthz)` → `challenge.Validate()` → **dừng ở challenge, không finalize/Generate**. Sau mỗi lần validate (cả success lẫn fail) `challengeStore.Remove(token)` (trong `finally`). Timeout 60s → `passed: false`. Response: `{ passed, message?, warnings[] }` (warnings từ `DnsLookupChecker`). `CreateLetsEncryptDryRunRequest(Domains)` — **bỏ `KeyType`** (dry-run không Generate nên keyType thừa). FE: `frontgate.controller.testLetsEncryptHttp` + `onExtraAction={handleTestLetsEncrypt}` (disable khi chạy) + i18n `testSuccess`/`testError`/`testWarning`.
 - [ ] **SignalR cert status push**: notify khi cert status đổi (Pending → Active/Error) để frontend tự refresh list
 
-#### 🔨 Let's Encrypt via DNS (DNS-01)
+#### ❌ Let's Encrypt via DNS (DNS-01) — DROPPED (2026-08-06)
 
-**Cơ chế async task:** giống HTTP-01 — POST tạo `Pending` + enqueue, dùng chung **ACME worker** (chỉ khác challenge: tạo TXT record → chờ propagation → verify → cleanup).
+Quyết định bỏ — DNS-01 hiếm dùng, cần credential/zone per provider, chi phí maintain cao so với lợi ích. Đã gỡ: `IDnsProvider`/`CloudflareDnsProvider`/`DnsProviderResolver`/`DnsProviderServiceCollectionExtensions`, `AcmeDryRunService.RunDnsAsync` + `WaitForTxtRecordAsync`, `POST /certificates/letsencrypt-dns/dry-run`, dialog FE `letsEncryptDns`, `createLetsEncryptDnsCert`, `listDnsProviders`, enum `FgCertificateSource.LetsEncryptDns`, FE type union `letsEncryptDns`, catalog static `DnsProviders` (danh sách dưới đây giữ làm reference).
 
-- [ ] **`IDnsProvider` interface**: `CreateTxtRecordAsync(domain, token)` / `DeleteTxtRecordAsync(domain, token)`
-- [ ] **`CloudflareDnsProvider`**: implement đầu tiên (dùng API token, không dùng Global API Key)
-- [ ] **Certes DNS-01 flow**: tạo challenge → gọi `CreateTxtRecordAsync` → chờ propagation → verify → cleanup
-- [ ] **Wildcard allowed**: chỉ flow này cho phép `*.domain.com` — validate input cho phép wildcard
-- [ ] **Credential encryption**: API token/key DNS provider (apiToken/apiKey/apiSecret...) **không lưu plaintext** — mã hóa bằng DataProtection (`Protect`/`Unprotect`) trước khi persist, dùng chung key ring với Beacon (`SetApplicationName` + `PersistKeysToFileSystem("/data/keys")` Docker volume mount thật, không dùng ephemeral filesystem — mất key = mất data vĩnh viễn)
+**Giữ lại (chưa gỡ):** column `FgCertificate.DnsProviderId` — harmless, drop khi làm migration tổng thể sau này.
+
+**Provider list (reference nếu sau này đổi ý):**
+
+| Provider | Credential fields |
+|----------|-------------------|
+| cloudflare | apiToken (secret) |
+| route53 | accessKeyId, secretAccessKey, region?, hostedZoneId? |
+| digitalocean | authToken (secret) |
+| godaddy | apiKey, apiSecret |
+| azuredns | tenantId, clientId, clientSecret, subscriptionId?, resourceGroup? |
+| gcloud | project, serviceAccountFile |
+| namecheap | apiUser, apiKey |
+| acme-dns | apiBase |
+
+Backlog (chưa có schema): active24, akamai-edgedns, aliyun, arvancloud, baidu, beget, bunny, cdmon, cloudns, cloudxns, constellix, corenetworks, cpanel, ddnss, desec, directadmin, dnsmadeeasy, dnsimple, dnsmulti, dnspod, dode, domeneshop, duckdns, dynu, easydns, eurodns, firstdomains, freedns, gandiv5, gcore, glesys, googledomains, hetzner, hetznercloud, hostingnl, hover, hurricane, hurricane-ddns, infomaniak, inwx, ionos, ispconfig, isset, joker, leaseweb, linode, loopia, luadns, mc-host24, netcup, nicru, njalla, ns1, oraclecloud, ovh, plesk, porkbun, pdns, regru, rfc2136, rockenstein, selectelv2, simply, spaceship, strato, tencentcloud, timewebcloud, transip, vultr, websupport, wedos, zoneedit
 
 #### 🔨 Custom Certificate (Upload)
 
@@ -231,7 +242,7 @@ Thư viện ACME: **Certes** (`Certes` NuGet) — giao tiếp với Let's Encryp
 - [x] **Cert validation via `X509Certificate2.CreateFromPem()`**: parse PEM, auto check key match, expiry, passphrase (throw `CryptographicException` nếu invalid). Gộp chung keypair validation + passphrase reject + expiry check.
 - [x] **File size limit**: max 64KB per field trước khi parse, chặn DoS/file giả dạng
 - [x] **Auto-generate filename**: dùng domain name, không dùng filename gốc từ upload (tránh path traversal)
-- [x] **Auto-renew toggle**: `NmxToggle` ở 2 dialog LE (http + dns), mặc định `true`. Custom cert không có auto-renew.
+- [x] **Auto-renew toggle**: `NmxToggle` ở dialog LE http (DNS-01 đã bỏ), mặc định `true`. Custom cert không có auto-renew.
 
 #### ✅ Remaining (Wire up)
 

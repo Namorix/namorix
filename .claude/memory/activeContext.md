@@ -27,6 +27,11 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-08-2026.md](versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-08-06 — Drop DNS-01
+
+- Quyết định **bỏ hẳn LE via DNS (DNS-01)** — hiếm dùng, cần credential/zone per provider, chi phí maintain cao. Đã gỡ: `IDnsProvider`/`CloudflareDnsProvider`/`DnsProviderResolver`/`DnsProviderServiceCollectionExtensions`, `RunDnsAsync`, `POST /certificates/letsencrypt-dns/dry-run`, FE dialog `letsEncryptDns`, `createLetsEncryptDnsCert`, `listDnsProviders`, catalog `DnsProviders.cs`, enum `LetsEncryptDns`. **Giữ column `FgCertificate.DnsProviderId`** (drop khi migration tổng thể). Provider list lưu trong frontgate plan làm reference.
+- Version: core 0.57.1 / frontend 0.75.0 / server 0.66.0 / frontgate 1.3.1.
+
 ### 2026-08-06 — Frontgate LE dry-run + notification panel fix + addon version catalog
 
 - Backend (Namorix.Server 0.64.0 → 0.65.0): **LE HTTP-01 dry-run test** — `AcmeDryRunService` (staging flow: account key riêng `pki/acme-staging-account.key`, `NewAccount(null,true)` khi key mới — fix `accountDoesNotExist`, `LetsEncryptStagingV2`, **dừng ở challenge không Generate**, `finally` Remove token, timeout 60s) + `DnsLookupChecker` (A record vs public IP qua `IPublicIpDetector` reuse → `DryRunWarning`). Endpoint `POST /certificates/letsencrypt-http/dry-run` → `{ passed, message, warnings }`; `CreateLetsEncryptDryRunRequest(Domains)` bỏ KeyType (dry-run không Generate). DI `AddSingleton` cả 2.

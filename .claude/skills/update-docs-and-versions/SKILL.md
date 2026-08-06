@@ -79,7 +79,10 @@ Read ONLY these files (skip if unchanged):
 - `.claude/FLOW.md` — always read (comprehensive flow docs, update if architecture/flows changed)
 - Package `.json` files — only for packages being bumped + their dependents
 - `packages/core/src/version.ts` — nếu có addon internal thay đổi (bump version addon)
-- `README.md` — always read (may contain version badges, tech stack table, quick start commands)
+- **Cả 3 README.md — LUÔN đọc hết, đừng bỏ sót:**
+  - `README.md` (root) — milestones, features, backend/frontend structure
+  - `frontend/README.md` — frontend structure, addon list, milestones
+  - `backend/README.md` — backend structure, API endpoints, models, SignalR events
 - `docs/` markdown files — only if related to changed code
 
 **Never read:**
@@ -166,7 +169,8 @@ If user rejects specific files, skip those and apply the rest.
 4. **Version notation:** `MAJOR.MINOR.PATCH`, no leading `v`
 5. **Ask before writing** — present the full plan, wait for approval; respect partial rejection
 6. **Follow existing format** in progress.md — match the table style exactly
-7. **Always update README.md** — khi version bump, kiểm tra và cập nhật:
+7. **Always update cả 3 README.md** — khi version bump, kiểm tra và cập nhật:
+   - `README.md` (root) + `frontend/README.md` + `backend/README.md` — **không chỉ root**
    - Tech stack table (nếu backend/frontend stack thay đổi)
    - Package versions table (nếu có)
    - Quick start commands (nếu dev workflow thay đổi)

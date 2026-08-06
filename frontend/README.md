@@ -50,6 +50,7 @@ frontend/
 │   │   └── Terminal/                # Terminal emulator scaffold
 │   │   │
 │   │   ├── Frontgate/               # Reverse proxy management (YARP integration, CRUD UI, routing rules)
+│   │   └── Beacon/                  # DDNS updater — updates DNS when IP changes (provider multi-host, activity, settings)
 │   │
 │   ├── components/
 │   │   ├── AuthView.tsx             # Two-column layout (hero + form panel)
@@ -81,6 +82,7 @@ frontend/
 │   │   ├── health.controller.ts     # Health check, untrusted proxy detection
 │   │   └── addon.controller.ts      # Addon install/start/stop/uninstall/list/catalog
 │   │   └── frontgate.controller.ts  # Frontgate reverse proxy CRUD (listRules, createRule, updateRule, deleteRule)
+│   │   └── beacon.controller.ts     # Beacon DDNS (hostnames, activity, settings, providers, dry-run check)
 │   │
 │   ├── hooks/
 │   │   ├── useTaskbarClock.ts       # Live clock for taskbar (uses appearance date/time format)
@@ -203,7 +205,7 @@ Built-in addons use the same contract as external addons (M4):
 - **NmxAddonManifest**: id, name, description?, localeKey?, icon?, defaultWidth?, defaultHeight?, preferFullSize?, role?, instanceMode?
 - **AddonContext**: addonId, nmxStore?, store?, isExternal?, sendCommand?
 
-Nine built-in addons: About, LogViewer, NetworkTraffic, SystemMonitor, Settings, FileManager (scaffold), Terminal (scaffold), PackageCenter, Frontgate.
+Ten built-in addons: About, LogViewer, NetworkTraffic, SystemMonitor, Settings, FileManager (scaffold), Terminal (scaffold), PackageCenter, Frontgate, Beacon.
 
 ### External Addons (Docker-based)
 
@@ -222,7 +224,7 @@ External addons integrate via two modes:
 
 - **M1** — Static shell UI + mock auth ✅
 - **M2** — Full auth backend ✅
-- **M3** — System Addons (Built-in): addon contract + registry, 8 built-in addons, theme system, SignalR realtime ✅
+- **M3** — System Addons (Built-in): addon contract + registry, 10 built-in addons, theme system, SignalR realtime ✅
 - **M4** — External addon system: Docker lifecycle, OAuth2 (PKCE + client_credentials), gRPC, addon catalog, standalone mode ✅
-    - **Frontgate addon**: YARP reverse proxy with runtime config reload, CRUD API and management UI (Phase 1 ✅)
+    - **Frontgate addon**: YARP reverse proxy with runtime config reload, CRUD API and management UI (Phase 1 ✅), certificate management (Phase 2 ✅ — LE HTTP-01 + dry-run, custom cert; DNS-01 dropped)
 - **M5** — `@namorix/core` publish npm + addon integration guide
