@@ -27,11 +27,20 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-08-2026.md](versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-08-06 — Frontgate LE dry-run + notification panel fix + addon version catalog
+
+- Backend (Namorix.Server 0.64.0 → 0.65.0): **LE HTTP-01 dry-run test** — `AcmeDryRunService` (staging flow: account key riêng `pki/acme-staging-account.key`, `NewAccount(null,true)` khi key mới — fix `accountDoesNotExist`, `LetsEncryptStagingV2`, **dừng ở challenge không Generate**, `finally` Remove token, timeout 60s) + `DnsLookupChecker` (A record vs public IP qua `IPublicIpDetector` reuse → `DryRunWarning`). Endpoint `POST /certificates/letsencrypt-http/dry-run` → `{ passed, message, warnings }`; `CreateLetsEncryptDryRunRequest(Domains)` bỏ KeyType (dry-run không Generate). DI `AddSingleton` cả 2.
+- @namorix/core 0.56.1 → 0.57.0: **NEW `version.ts`** (`NmxAddonVersions` — catalog version 10 addon internal; skill `update-docs-and-versions` đã thêm rule bump addon) + `apiRoutes` dry-run route.
+- @namorix/ui 0.38.0 → 0.39.0: `NmxToastProvider` — click toast → copy message + dismiss.
+- frontend 0.73.0 → 0.74.0: Frontgate dry-run Test button (`handleTestLetsEncrypt` + `onExtraAction` + i18n); **fix NotificationPanel bug** — `didInitialFetch` ref thay guard `items.length > 0` (SignalR `addNotification` pre-populate items → skip fetch lịch sử → panel chỉ hiện notif mới, scroll chết).
+- **Frontgate plan**: HTTP-01 còn 1 mục (SignalR cert status push); DNS-01 (5) + auto-renew/SNI (2) chưa làm.
+
 ### 2026-08-05 — Multi-host xuống provider + SignalR reconnect fix
 
 - Backend (Namorix.Server 0.63.0 → 0.64.0): **Multi-host chuyển xuống provider** — `BcnHostnameService` bỏ split/loop, truyền `host.Host` full comma string cho `provider.UpdateAsync` 1 lần (skip-check 1 lần, xoá `WithTag`). `Cloudflare`/`GoDaddy` split+loop tag × (A/AAAA) + `firstFailure ??=`; Cloudflare `recordName` switch (`@`→domain, `*`→`*.domain`, full-name→dùng thẳng, label→`tag.domain`) + **fix `FindZoneIdAsync`** `zones?name={zone}` (endpoint `zones/{zone}` cần zone ID — đang truyền name → 404) + `WithHostname`. **Namecheap split+loop per host** (docs chính thức mỗi request 1 giá trị `host=`, không nhận gộp) — cần `BcnGetProviderBase.UpdateAsync` thêm `virtual`; DuckDNS giữ batch. Schema Host relax `*.suffix` (`(\*\.)?`). NoIp/Dynu `Classify` token-match (`good <ip>`/`nochg <ip>` success; Dynu `notfqdn`/`servererror`). Constants: `BcnParam` mở rộng + `BcnCredentialParam`/`BcnHttpClientNames`/`BcnHeaderKey` — thay hết hardcode. `Tested: true` cho Cloudflare/Dynu/NoIp/Namecheap. **Test = real update** (TestAsync → UpdateAsync — bấm Test là sửa record thật).
 - @namorix/core 0.56.0 → 0.56.1: **SignalR reconnect fix** — `startConnection()` reuse connection (chỉ tạo mới khi `!connection`) → giữ `conn.on` handlers qua reconnect, hết warning "No client method" + drop event (fix Open Decision #14).
 - frontend 0.72.0 → 0.73.0: Beacon `hostHint`/`domainHint` (NmxFormField `helper` + i18n).
+- **NEW `@namorix/core` `version.ts`**: `NmxAddonVersions` — version catalog 10 addon internal (about 1.0.0, log-viewer 1.1.0, settings 1.1.0, system-monitor 1.2.0, network-traffic 1.2.0, package-center 1.2.0, frontgate 1.2.0, beacon 1.0.0, file-manager 0.1.0, terminal 0.1.0). Quy trình `update-docs-and-versions` (skill) sẽ bump version addon trong file này khi `frontend/src/addons/<name>/` thay đổi.
 - **Pending**: Namecheap override `UpdateAsync` (chưa apply — cần base `virtual`); Cloudflare `FindZoneIdAsync` `zones?name=` (chưa xác nhận apply); window.scss comment-out animation — có vẻ debug leftover cần kiểm tra trước commit.
 
 ### 2026-08-05 — Beacon host/domain split, HostIsDomain, provider error detail, notification/activity interpolation, toggle enable

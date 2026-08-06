@@ -35,6 +35,7 @@ Map each changed file to a package and determine impact:
 | `packages/ui/src/` | @namorix/ui | Check if new component, or fix |
 | `packages/styles/src/` | @namorix/styles | Check if new token, variable, or fix |
 | `frontend/src/` | frontend | Check if new page, route, or bug fix |
+| `frontend/src/addons/*/` | addon (internal) | Check if addon changed → bump addon version trong `packages/core/src/version.ts` (`NmxAddonVersions`) |
 | `backend/` | backend | Check if new endpoint, service, or bug fix (C#) |
 | Root config files | root (namorix) | Check if workspace scripts, tooling changed |
 
@@ -51,6 +52,14 @@ Use the bump triggers from CLAUDE.md Meta Rules and `progress.md`:
 | @namorix/ui | Bug fixes | New component | Removed component, breaking prop change |
 | @namorix/shared | Bug fixes | New type, new constant, new error code, new helper | Removed/renamed exported type or constant |
 | backend | Bug fixes | New API endpoint, auth feature, refactor to decorators | Breaking API contract change |
+
+**Addon internal — bump trong `packages/core/src/version.ts` (`NmxAddonVersions`):**
+
+| Addon change | Bump |
+|--------------|------|
+| Bug fix / tweak nhỏ | PATCH (vd `1.1.0` → `1.1.1`) |
+| Feature mới / phase mới | MINOR (vd `1.1.0` → `1.2.0`) |
+| Scaffold → hoàn thiện / breaking addon | MAJOR (vd `0.1.0` → `1.0.0`) |
 
 **Rule:** Only bump packages whose files actually changed. Don't bump unrelated packages.
 
@@ -69,6 +78,7 @@ Read ONLY these files (skip if unchanged):
 - `.claude/memory/projectbrief.md` — rarely changes
 - `.claude/FLOW.md` — always read (comprehensive flow docs, update if architecture/flows changed)
 - Package `.json` files — only for packages being bumped + their dependents
+- `packages/core/src/version.ts` — nếu có addon internal thay đổi (bump version addon)
 - `README.md` — always read (may contain version badges, tech stack table, quick start commands)
 - `docs/` markdown files — only if related to changed code
 
@@ -123,6 +133,9 @@ Update all occurrences found in:
 - `frontend/` — API URL or version constants in source code
 - Other `package.json` files that reference the bumped package as a dependency
 - Any `.env.example` or config files mentioning version-specific values
+
+**Addon internal:** nếu có file `frontend/src/addons/<name>/` thay đổi, bump version của addon đó trong
+`frontend/packages/core/src/version.ts` (`NmxAddonVersions`) — đừng bỏ sót (không nằm trong package.json).
 
 **Rule:** A version bump is not complete until all references across the project are
 updated. Incomplete updates cause confusion and integration bugs.

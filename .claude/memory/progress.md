@@ -1,5 +1,15 @@
 # Version History — August 2026
 
+## 2026-08-06 — Frontgate LE dry-run + notification fix + addon version catalog
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.56.1 → 0.57.0 | NEW: `src/version.ts` (`NmxAddonVersions` — catalog version 10 addon internal) + `index.ts` export. MODIFIED: `apiRoutes.ts` — `certificatesLetsEncryptHttpDryRun` route. |
+| @namorix/styles | 0.48.1 → 0.48.2 | MODIFIED: `base/components/form.scss` + `tag-input.scss` (1-line each) + theme CSS rebuild (default + dark). |
+| @namorix/ui | 0.38.0 → 0.39.0 | MODIFIED: `Components/NmxToastProvider.tsx` — click toast → copy message (`navigator.clipboard`) + dismiss (giữ UX cũ). |
+| frontend | 0.73.0 → 0.74.0 | MODIFIED: `addons/Frontgate/FrontgateCertificate.tsx` — LE HTTP dry-run Test button (`handleTestLetsEncrypt` + `onExtraAction`, disable khi chạy) + `frontgate.controller.ts` (`testLetsEncryptHttp` + `LetsEncryptDryRunResult`); `components/Taskbar/NotificationPanel.tsx` — **fix bug**: `didInitialFetch` ref thay guard `items.length > 0` (SignalR `addNotification` pre-populate items → skip fetch lịch sử → panel chỉ hiện notif mới, scroll chết). `i18n/locales/en.json` +3 keys (testSuccess/testError/testWarning). |
+| Namorix.Server | 0.64.0 → 0.65.0 | NEW: `Services/Frontgate/AcmeDryRunService.cs` (staging flow — account key riêng `pki/acme-staging-account.key`, `NewAccount(null,true)` khi key mới, `LetsEncryptStagingV2`, **không Generate**, `finally` Remove token, timeout 60s), `Services/Frontgate/DnsLookupChecker.cs` (A record vs public IP — reuse `IPublicIpDetector` → `DryRunWarning`). MODIFIED: `Controllers/FrontgateController.cs` (+`POST /certificates/letsencrypt-http/dry-run` → `{ passed, message, warnings }` + `CreateLetsEncryptDryRunRequest(Domains)` — bỏ KeyType), `Program.cs` (DI `AddSingleton<DnsLookupChecker>` + `AddSingleton<AcmeDryRunService>`). |
+
 ## 2026-08-05 — Multi-host xuống provider + SignalR reconnect fix
 
 | Package | Version | Changes |
