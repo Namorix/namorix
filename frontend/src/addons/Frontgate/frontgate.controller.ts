@@ -80,13 +80,6 @@ export interface CreateLetsEncryptCertPayload {
   autoRenew: boolean
 }
 
-export interface CreateLetsEncryptDnsCertPayload {
-  domains: string[]
-  keyType: FrontgateCertificateKeyType
-  dnsProviderId: string
-  autoRenew: boolean
-}
-
 export interface CreateCustomCertPayload {
   name: string
   certificateKey: string
@@ -217,17 +210,6 @@ async function createLetsEncryptCert(
   return data.data
 }
 
-async function createLetsEncryptDnsCert(
-  payload: CreateLetsEncryptDnsCertPayload,
-): Promise<CertificateItem> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiFrontgateRoutes.certificatesLetsEncryptDns)
-    .post(payload)
-    .json<CertificateItem>()
-  if (!data.success) throw ApiError.fromResponse(data)
-  return data.data
-}
-
 async function createCustomCert(
   payload: CreateCustomCertPayload,
 ): Promise<CertificateItem> {
@@ -235,15 +217,6 @@ async function createCustomCert(
     .url(getApiBaseUrl() + ApiFrontgateRoutes.certificatesCustom)
     .post(payload)
     .json<CertificateItem>()
-  if (!data.success) throw ApiError.fromResponse(data)
-  return data.data
-}
-
-async function listDnsProviders(): Promise<string[]> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiFrontgateRoutes.dnsProviders)
-    .get()
-    .json<string[]>()
   if (!data.success) throw ApiError.fromResponse(data)
   return data.data
 }
@@ -269,8 +242,6 @@ export const frontgateController = {
   listUnusedDomains,
   deleteCertificate,
   createLetsEncryptCert,
-  createLetsEncryptDnsCert,
   createCustomCert,
-  listDnsProviders,
   testLetsEncryptHttp,
 }

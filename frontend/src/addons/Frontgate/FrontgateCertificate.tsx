@@ -42,7 +42,7 @@ import {
   FrontgateErrorCodes,
 } from "./Frontgate.types"
 
-type FrontgateCertificateType = "letsEncryptHttp" | "letsEncryptDns" | "custom"
+type FrontgateCertificateType = "letsEncryptHttp" | "custom"
 type FrontgateActionMenuType = "renew" | "retry" | "download" | "delete"
 
 function getExpirySemantic(expiresAt: string): NmxSemanticColor {
@@ -135,8 +135,6 @@ export const FrontgateCertificate: React.FC = () => {
   const [certName, setCertName] = useState("")
   const [certDomains, setCertDomains] = useState<string[]>([])
   const [certType, setCertType] = useState<FrontgateCertificateKeyType>("ecdsa")
-  const [dnsProviders, setDnsProviders] = useState<string[]>([])
-  const [dnsProvider, setDnsProvider] = useState("")
   const [certAutoRenew, setCertAutoRenew] = useState(false)
   const [certKey, setCertKey] = useState("")
   const [certBody, setCertBody] = useState("")
@@ -162,13 +160,6 @@ export const FrontgateCertificate: React.FC = () => {
     const timeout = setTimeout(() => fetchCerts(page, pageSize), 0)
     return () => clearTimeout(timeout)
   }, [fetchCerts, page, pageSize])
-
-  useEffect(() => {
-    frontgateController
-      .listDnsProviders()
-      .then(setDnsProviders)
-      .catch(nmxToast.error)
-  }, [])
 
   useEffect(() => {
     frontgateController
@@ -237,7 +228,7 @@ export const FrontgateCertificate: React.FC = () => {
         nmxToast.error(formatCustomError(t, err, FrontgateErrorCodes)),
       )
       .finally(() => setTesting(false))
-  }, [certDomains, certType, t])
+  }, [certDomains, t])
 
   const actionOptions: NmxMenuButtonOption<FrontgateActionMenuType>[] = [
     {
@@ -359,11 +350,6 @@ export const FrontgateCertificate: React.FC = () => {
       icon: NmxIconFontSymbol.HTTP,
     },
     {
-      value: "letsEncryptDns",
-      label: t("addon.frontgate.pages.certificate.options.letsEncryptDns"),
-      icon: NmxIconFontSymbol.DNS,
-    },
-    {
       value: "custom",
       label: t("addon.frontgate.pages.certificate.options.custom"),
       icon: NmxIconFontSymbol.UPLOAD,
@@ -380,13 +366,6 @@ export const FrontgateCertificate: React.FC = () => {
       label: t("addon.frontgate.pages.certificate.fields.keyTypes.rsa"),
     },
   ]
-
-  const dnsProviderOptions: NmxSelectData<string>[] = dnsProviders.map(
-    (id) => ({
-      value: id,
-      label: t(`addon.frontgate.pages.certificate.dnsProviders.${id}`),
-    }),
-  )
 
   const fallbackConditions: NmxFallback[] = [
     { state: "loading", condition: loading },
@@ -405,7 +384,6 @@ export const FrontgateCertificate: React.FC = () => {
             setCertName("")
             setCertDomains([])
             setCertType("ecdsa")
-            setDnsProvider("")
             setCertAutoRenew(false)
             setCertKey("")
             setCertBody("")
@@ -618,110 +596,6 @@ export const FrontgateCertificate: React.FC = () => {
           <NmxFormField
             label={t(
               "addon.frontgate.pages.certificate.dialogs.letsEncryptHttp.autoRenew",
-            )}
-            inline
-          >
-            <NmxToggle
-              checked={certAutoRenew}
-              onCheckedChanged={setCertAutoRenew}
-            />
-          </NmxFormField>
-        </NmxForm>
-      </NmxAlertDialog>
-
-      <NmxAlertDialog
-        open={addDialogType === "letsEncryptDns"}
-        title={t(
-          "addon.frontgate.pages.certificate.dialogs.letsEncryptDns.title",
-        )}
-        confirmLabel={t(
-          "addon.frontgate.pages.certificate.dialogs.letsEncryptDns.confirm",
-        )}
-        extraActionLabel={t(
-          "addon.frontgate.pages.certificate.dialogs.letsEncryptDns.test",
-        )}
-        loading={addSubmitting}
-        confirmDisabled={certDomains.every((d) => !d.trim())}
-        extraActionDisabled={certDomains.every((d) => !d.trim())}
-        onClose={() => setAddDialogType(null)}
-        onConfirm={() => {
-          setAddSubmitting(true)
-          frontgateController
-            .createLetsEncryptDnsCert({
-              domains: certDomains.map((d) => d.trim()).filter(Boolean),
-              keyType: certType,
-              dnsProviderId: dnsProvider,
-              autoRenew: certAutoRenew,
-            })
-            .then(() => {
-              setAddDialogType(null)
-              fetchCerts(page, pageSize)
-              nmxToast.success(
-                t(
-                  "addon.frontgate.pages.certificate.dialogs.letsEncryptDns.success",
-                ),
-              )
-            })
-            .catch((err) => {
-              nmxToast.error(
-                formatCustomError(t, err, FrontgateErrorCodes),
-                t(
-                  "addon.frontgate.pages.certificate.dialogs.letsEncryptDns.error",
-                ),
-              )
-            })
-            .finally(() => setAddSubmitting(false))
-        }}
-        size="md"
-      >
-        <NmxForm>
-          <NmxInlineAlert
-            semantic="info"
-            message={t(
-              "addon.frontgate.pages.certificate.dialogs.letsEncryptDns.info",
-            )}
-          />
-          <NmxFormField
-            label={t("addon.frontgate.pages.certificate.fields.domains")}
-            required
-          >
-            <NmxTagInput
-              value={certDomains}
-              onChange={setCertDomains}
-              suggestions={domainSuggestions}
-              placeholder={t(
-                "addon.frontgate.pages.certificate.dialogs.letsEncryptDns.domainPlaceholder",
-              )}
-            />
-          </NmxFormField>
-          <NmxFormField
-            label={t("addon.frontgate.pages.certificate.fields.keyType")}
-            required
-          >
-            <NmxSelect
-              value={certType}
-              options={certTypeOptions}
-              onChange={setCertType}
-            />
-          </NmxFormField>
-          <NmxFormField
-            label={t(
-              "addon.frontgate.pages.certificate.dialogs.letsEncryptDns.dnsProvider",
-            )}
-            required
-          >
-            <NmxSelect
-              value={dnsProvider}
-              options={dnsProviderOptions}
-              onChange={setDnsProvider}
-              placeholder={t(
-                "addon.frontgate.pages.certificate.dialogs.letsEncryptDns.dnsProviderPlaceholder",
-              )}
-            />
-          </NmxFormField>
-          <NmxFormField
-            label={t(
-              "addon.frontgate.pages.certificate.dialogs.letsEncryptDns.autoRenew",
             )}
             inline
           >
