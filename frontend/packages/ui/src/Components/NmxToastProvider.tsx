@@ -38,6 +38,15 @@ export const NmxToastProvider = () => {
     }, EXIT_ANIM_MS)
   }, [])
 
+  const copyMessage = useCallback(
+    (t: ToastItem) => {
+      const text = String(t.message)
+      navigator.clipboard?.writeText(text).catch(() => {})
+      dismiss(t.id)
+    },
+    [dismiss],
+  )
+
   useEffect(() => {
     return nmxToast.subscribe((event) => {
       const id = event.id
@@ -55,26 +64,29 @@ export const NmxToastProvider = () => {
 
   return createPortal(
     <div className="nmx-toast-provider">
-      {toasts.map((t) => (
+      {toasts.map((item) => (
         <button
-          key={t.id}
+          key={item.id}
           className={cx(
             "nmx-toast",
-            `nmx-toast--${t.type}`,
-            `nmx-toast--${t.phase}`,
+            `nmx-toast--${item.type}`,
+            `nmx-toast--${item.phase}`,
           )}
-          onClick={() => dismiss(t.id)}
+          onClick={() => {
+            copyMessage(item)
+            dismiss(item.id)
+          }}
         >
           <NmxIconFont
-            symbol={TOAST_ICONS[t.type]}
+            symbol={TOAST_ICONS[item.type]}
             className="nmx-toast__icon"
           />
           <span
             className="nmx-toast__msg"
             dangerouslySetInnerHTML={{
-              __html: markupToHtml(String(t.message)),
+              __html: markupToHtml(String(item.message)),
             }}
-          />{" "}
+          />
         </button>
       ))}
     </div>,
