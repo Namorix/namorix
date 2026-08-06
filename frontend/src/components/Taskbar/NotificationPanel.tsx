@@ -53,6 +53,7 @@ export const NotificationPanel = memo(() => {
   const { t } = useTranslation()
   const panelRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
+  const didInitialFetch = useRef(false)
   const dispatch = useAppDispatch()
   const items = useAppSelector(selectorNotifications)
   const unreadCount = useAppSelector(selectorUnreadCount)
@@ -70,7 +71,8 @@ export const NotificationPanel = memo(() => {
   const readCount = useMemo(() => items.filter((n) => n.isRead).length, [items])
 
   useEffect(() => {
-    if (items.length > 0) return
+    if (didInitialFetch.current) return
+    didInitialFetch.current = true
 
     dispatch(setLoading(true))
     fetchNotifications(1, PAGE_SIZE)
@@ -81,7 +83,7 @@ export const NotificationPanel = memo(() => {
         dispatch(setLoading(false))
         nmxToast.error(err)
       })
-  }, [dispatch, items.length])
+  }, [dispatch])
 
   const handleScroll = useCallback(() => {
     const el = listRef.current
