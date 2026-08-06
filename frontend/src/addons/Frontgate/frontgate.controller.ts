@@ -111,6 +111,18 @@ export interface CertificateResponse {
   total: number
 }
 
+export interface DryRunWarning {
+  domain: string
+  resolvedIps: string[]
+  serverIp?: string
+}
+
+export interface LetsEncryptDryRunResult {
+  passed: boolean
+  message?: string
+  warnings: DryRunWarning[]
+}
+
 async function listRules(
   page: number,
   size: number,
@@ -236,6 +248,17 @@ async function listDnsProviders(): Promise<string[]> {
   return data.data
 }
 
+async function testLetsEncryptHttp(
+  domains: string[],
+): Promise<LetsEncryptDryRunResult> {
+  const data = await nmxHttp
+    .url(getApiBaseUrl() + ApiFrontgateRoutes.certificatesLetsEncryptHttpDryRun)
+    .post({ domains })
+    .json<LetsEncryptDryRunResult>()
+  if (!data.success) throw ApiError.fromResponse(data)
+  return data.data
+}
+
 export const frontgateController = {
   listRules,
   createRule,
@@ -249,4 +272,5 @@ export const frontgateController = {
   createLetsEncryptDnsCert,
   createCustomCert,
   listDnsProviders,
+  testLetsEncryptHttp,
 }

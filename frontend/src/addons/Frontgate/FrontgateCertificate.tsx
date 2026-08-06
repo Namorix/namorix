@@ -143,6 +143,8 @@ export const FrontgateCertificate: React.FC = () => {
   const [certIntermediate, setCertIntermediate] = useState("")
   const [addSubmitting, setAddSubmitting] = useState(false)
 
+  const [testing, setTesting] = useState(false)
+
   const fetchCerts = useCallback((pg: number, sz: number) => {
     setLoading(true)
     setError(undefined)
@@ -203,6 +205,39 @@ export const FrontgateCertificate: React.FC = () => {
       })
       .finally(() => setDeleteSubmitting(false))
   }, [deletingCert, fetchCerts, page, pageSize, t])
+
+  const handleTestLetsEncrypt = useCallback(() => {
+    setTesting(true)
+    frontgateController
+      .testLetsEncryptHttp(certDomains.map((d) => d.trim()).filter(Boolean))
+      .then((res) => {
+        if (res.passed) {
+          nmxToast.success(
+            t(
+              "addon.frontgate.pages.certificate.dialogs.letsEncryptHttp.testSuccess",
+            ),
+          )
+          if (res.warnings?.length) {
+            nmxToast.warning(
+              t(
+                "addon.frontgate.pages.certificate.dialogs.letsEncryptHttp.testWarning",
+              ),
+            )
+          }
+        } else {
+          nmxToast.error(
+            res.message ??
+              t(
+                "addon.frontgate.pages.certificate.dialogs.letsEncryptHttp.testError",
+              ),
+          )
+        }
+      })
+      .catch((err) =>
+        nmxToast.error(formatCustomError(t, err, FrontgateErrorCodes)),
+      )
+      .finally(() => setTesting(false))
+  }, [certDomains, certType, t])
 
   const actionOptions: NmxMenuButtonOption<FrontgateActionMenuType>[] = [
     {
@@ -515,9 +550,10 @@ export const FrontgateCertificate: React.FC = () => {
         extraActionLabel={t(
           "addon.frontgate.pages.certificate.dialogs.letsEncryptHttp.test",
         )}
-        loading={addSubmitting}
+        loading={addSubmitting || testing}
         confirmDisabled={certDomains.every((d) => !d.trim())}
-        extraActionDisabled={certDomains.every((d) => !d.trim())}
+        extraActionDisabled={testing || certDomains.every((d) => !d.trim())}
+        onExtraAction={handleTestLetsEncrypt}
         onClose={() => setAddDialogType(null)}
         onConfirm={() => {
           setAddSubmitting(true)
