@@ -1,5 +1,6 @@
 import { initStores } from "./store"
 
+export * from "./version"
 export * from "./config"
 export * from "./cache"
 export * from "./auth"
