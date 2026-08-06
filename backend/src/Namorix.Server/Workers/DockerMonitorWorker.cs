@@ -5,6 +5,7 @@ using Namorix.Core.Models;
 using Namorix.Server.Constants;
 using Namorix.Server.Infrastructure;
 using Namorix.Server.Models;
+using Namorix.Server.Models.Addon;
 using Namorix.Server.Persistence;
 using Namorix.Server.Services;
 

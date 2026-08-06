@@ -1,6 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Namorix.Core.Models;
 using Namorix.Server.Models;
+using Namorix.Server.Models.Addon;
+using Namorix.Server.Models.Beacon;
+using Namorix.Server.Models.Frontgate;
 
 namespace Namorix.Server.Persistence;
 

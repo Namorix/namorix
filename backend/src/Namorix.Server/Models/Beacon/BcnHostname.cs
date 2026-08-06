@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Namorix.Server.Models;
+namespace Namorix.Server.Models.Beacon;
 
 public enum BcnProviderKind { Get, Rest, Custom }
 public enum BcnHostnameStatus { Updating, Active, Disabled, Error }

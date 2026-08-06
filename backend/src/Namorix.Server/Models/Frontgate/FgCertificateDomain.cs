@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
-using Namorix.Server.Models;
+
+namespace Namorix.Server.Models.Frontgate;
 
 public class FgCertificateDomain
 {

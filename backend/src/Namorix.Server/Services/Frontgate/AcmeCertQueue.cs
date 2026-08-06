@@ -4,14 +4,13 @@ using System.Threading.Channels;
 using Certes;
 using Certes.Acme;
 using Certes.Acme.Resource;
-using Certes.Pkcs;
 using Microsoft.EntityFrameworkCore;
 using Namorix.Core.IO;
-using Namorix.Server.Models;
+using Namorix.Server.Models.Frontgate;
 using Namorix.Server.Persistence;
 using Directory = System.IO.Directory;
 
-namespace Namorix.Server.Services;
+namespace Namorix.Server.Services.Frontgate;
 
 public class AcmeCertQueue(IServiceScopeFactory scopeFactory, ILogger<AcmeCertQueue> logger)
     : BackgroundService

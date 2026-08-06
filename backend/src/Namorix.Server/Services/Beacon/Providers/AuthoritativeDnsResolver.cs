@@ -2,7 +2,7 @@ using System.Net;
 using DnsClient;
 using Namorix.Server.Infrastructure;
 
-namespace Namorix.Server.Services.BcnProviders;
+namespace Namorix.Server.Services.Beacon.Providers;
 
 public static class AuthoritativeDnsResolver
 {

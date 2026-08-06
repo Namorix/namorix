@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Namorix.Server.Models.Frontgate;
 
 namespace Namorix.Server.Models;
 

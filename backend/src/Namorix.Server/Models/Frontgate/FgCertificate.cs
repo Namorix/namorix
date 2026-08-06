@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Namorix.Server.Models;
+namespace Namorix.Server.Models.Frontgate;
 
 public enum CertificateType
 {
@@ -10,7 +9,7 @@ public enum CertificateType
 }
 
 public enum FgCertificateStatus { Active, Pending, Error }
-public enum FgCertificateSource { LetsEncryptHttp, LetsEncryptDns, Custom }
+public enum FgCertificateSource { LetsEncryptHttp, Custom }
 
 public class FgCertificate
 {

@@ -1,5 +1,6 @@
 using System.Net;
 using Namorix.Server.Models;
+using Namorix.Server.Models.Beacon;
 
 namespace Namorix.Server.Infrastructure;
 

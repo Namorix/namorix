@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Namorix.Core.Config;
 using Namorix.Server.Infrastructure;
 using Namorix.Server.Models;
+using Namorix.Server.Models.Addon;
 using Namorix.Server.Persistence;
 
 namespace Namorix.Server.Services;

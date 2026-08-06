@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Namorix.Server.Models;
+namespace Namorix.Server.Models.Beacon;
 
 public class BcnSettings
 {

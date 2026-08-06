@@ -1,4 +1,5 @@
 using Namorix.Server.Models;
+using Namorix.Server.Models.Beacon;
 
 namespace Namorix.Server.Infrastructure;
 

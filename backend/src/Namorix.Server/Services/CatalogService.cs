@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Namorix.Server.Models;
+using Namorix.Server.Models.Addon;
 using Namorix.Server.Models.Catalog;
 using Namorix.Server.Persistence;
 

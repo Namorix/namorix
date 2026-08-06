@@ -1,5 +1,6 @@
 using System.Net.Mime;
 using Namorix.Server.Services;
+using Namorix.Server.Services.Frontgate;
 
 namespace Namorix.Server.Middleware;
 

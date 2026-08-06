@@ -1,6 +1,6 @@
 using Namorix.Server.Services;
 
-namespace Namorix.Server.Models;
+namespace Namorix.Server.Models.Addon;
 
 public enum AddonTaskType
 {

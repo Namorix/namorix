@@ -3,10 +3,10 @@ using System.Threading.Channels;
 using Microsoft.EntityFrameworkCore;
 using Namorix.Server.Constants;
 using Namorix.Server.Infrastructure;
-using Namorix.Server.Models;
+using Namorix.Server.Models.Beacon;
 using Namorix.Server.Persistence;
 
-namespace Namorix.Server.Services;
+namespace Namorix.Server.Services.Beacon;
 
 public sealed class BcnUpdateQueue(IServiceScopeFactory scopeFactory, ILogger<BcnUpdateQueue> logger)
     : BackgroundService

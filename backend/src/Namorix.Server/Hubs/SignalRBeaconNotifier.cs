@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.SignalR;
 using Namorix.Server.Constants;
 using Namorix.Server.Infrastructure;
 using Namorix.Server.Models;
+using Namorix.Server.Models.Beacon;
 
 namespace Namorix.Server.Hubs;
 

@@ -1,4 +1,4 @@
-namespace Namorix.Server.Models;
+namespace Namorix.Server.Models.Beacon;
 
 public enum BcnCredentialFieldType { Text, Secret }
 

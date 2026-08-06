@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Namorix.Server.Models;
+namespace Namorix.Server.Models.Beacon;
 
 public enum BcnLogLevel { Info, Success, Warn, Error }
 

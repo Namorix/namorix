@@ -9,6 +9,7 @@ using Namorix.Core.Responses;
 using Namorix.Core.Validation;
 using Namorix.Server.Constants;
 using Namorix.Server.Models;
+using Namorix.Server.Models.Frontgate;
 using Namorix.Server.Persistence;
 using Namorix.Server.Services;
 using Namorix.Server.Services.Frontgate;
@@ -286,31 +287,6 @@ public class FrontgateController(AppDbContext db, DataDirectory dataDir, AcmeCer
         }));
     }
     
-    [HttpPost("certificates/letsencrypt-dns")]
-    public async Task<IActionResult> CreateLetsEncryptDnsCert(
-        [FromBody] CreateLetsEncryptDnsCertRequest request)
-    {
-        var cert = new FgCertificate
-        {
-            CertificateDomains =
-            [
-                .. request.Domains.Select(d => new FgCertificateDomain
-                {
-                    Domain = d,
-                })
-            ],
-            Type = Enum.Parse<CertificateType>(request.KeyType, ignoreCase: true),
-            Source = FgCertificateSource.LetsEncryptDns,
-            Status = FgCertificateStatus.Pending,
-            DnsProviderId = request.DnsProviderId,
-            AutoRenew = request.AutoRenew,
-        };
-        
-        db.FgCertificates.Add(cert);
-        await db.SaveChangesAsync();
-        return Ok(ApiResponse.Ok(cert));
-    }
-    
     [HttpPost("certificates/custom")]
     public async Task<IActionResult> CreateCustomCert(
         [FromBody] CreateCustomCertRequest request)
@@ -363,13 +339,6 @@ public class FrontgateController(AppDbContext db, DataDirectory dataDir, AcmeCer
         await db.SaveChangesAsync();
         return Ok(ApiResponse.Ok(cert));
     }
-
-    [HttpGet("dns-providers")]
-    public IActionResult ListDnsProviders()
-    {
-        var ids = DnsProviders.All.Select(p => p.Id).ToList();
-        return Ok(ApiResponse.Ok(ids));
-    }
 }
 
 public record CreateRuleRequest(
@@ -404,13 +373,7 @@ public record CreateLetsEncryptCertRequest(
     string KeyType,
     bool AutoRenew
 );
-public record CreateLetsEncryptDnsCertRequest(
-    List<string> Domains,
-    string KeyType,
-    string DnsProviderId,
-    bool AutoRenew
 
-);
 public record CreateCustomCertRequest(
     string Name,
     string CertificateKey,

@@ -1,7 +1,7 @@
 using System.Net;
 using Namorix.Server.Constants;
 
-namespace Namorix.Server.Services.BcnProviders;
+namespace Namorix.Server.Services.Beacon.Providers;
 
 public static class BcnHttpStatus
 {

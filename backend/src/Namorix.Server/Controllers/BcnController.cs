@@ -8,9 +8,11 @@ using Namorix.Core.Validation;
 using Namorix.Server.Constants;
 using Namorix.Server.Infrastructure;
 using Namorix.Server.Models;
+using Namorix.Server.Models.Beacon;
 using Namorix.Server.Persistence;
 using Namorix.Server.Services;
-using Namorix.Server.Services.BcnProviders;
+using Namorix.Server.Services.Beacon;
+using Namorix.Server.Services.Beacon.Providers;
 using Namorix.Server.Validation;
 
 namespace Namorix.Server.Controllers;

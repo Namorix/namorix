@@ -3,12 +3,12 @@ using System.Net;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Primitives;
-using Namorix.Server.Models;
+using Namorix.Server.Models.Frontgate;
 using Namorix.Server.Persistence;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Forwarder;
 
-namespace Namorix.Server.Services;
+namespace Namorix.Server.Services.Frontgate;
 
 public class FrontgateProxyConfigProvider(IServiceScopeFactory scopeFactory) : IProxyConfigProvider
 {

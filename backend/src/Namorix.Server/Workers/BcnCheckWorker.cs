@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Namorix.Server.Infrastructure;
 using Namorix.Server.Models;
+using Namorix.Server.Models.Beacon;
 using Namorix.Server.Persistence;
 using Namorix.Server.Services;
+using Namorix.Server.Services.Beacon;
 
 namespace Namorix.Server.Workers;
 

@@ -5,13 +5,13 @@ using Microsoft.EntityFrameworkCore;
 using Namorix.Core.Constants;
 using Namorix.Server.Constants;
 using Namorix.Server.Infrastructure;
-using Namorix.Server.Models;
+using Namorix.Server.Models.Beacon;
 using Namorix.Server.Persistence;
-using Namorix.Server.Services.BcnProviders;
+using Namorix.Server.Services.Beacon.Providers;
 using NotificationKeys = Namorix.Server.Constants.NotificationKeys;
 using NotificationSource = Namorix.Server.Constants.NotificationSource;
 
-namespace Namorix.Server.Services;
+namespace Namorix.Server.Services.Beacon;
 
 public sealed class BcnHostnameService(AppDbContext db, BcnProviderResolver resolver,
     BcnSecretProtector protector, IPublicIpDetector ipDetector, NotificationService notifications,

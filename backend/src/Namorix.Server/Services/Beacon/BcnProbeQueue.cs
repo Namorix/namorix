@@ -1,10 +1,10 @@
 using System.Threading.Channels;
 using Microsoft.EntityFrameworkCore;
 using Namorix.Server.Infrastructure;
-using Namorix.Server.Models;
+using Namorix.Server.Models.Beacon;
 using Namorix.Server.Persistence;
 
-namespace Namorix.Server.Services;
+namespace Namorix.Server.Services.Beacon;
 
 public sealed class BcnProbeQueue(IServiceScopeFactory scopeFactory, ILogger<BcnProbeQueue> logger)
     : BackgroundService

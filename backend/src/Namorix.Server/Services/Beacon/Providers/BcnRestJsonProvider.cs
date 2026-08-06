@@ -6,9 +6,9 @@ using System.Text;
 using System.Text.Json;
 using Namorix.Server.Constants;
 using Namorix.Server.Infrastructure;
-using Namorix.Server.Models;
+using Namorix.Server.Models.Beacon;
 
-namespace Namorix.Server.Services.BcnProviders;
+namespace Namorix.Server.Services.Beacon.Providers;
 
 public sealed class BcnRestJsonProvider(IHttpClientFactory httpFactory) : IBcnProviderClient
 {

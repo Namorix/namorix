@@ -2,9 +2,9 @@ using System.Net;
 using System.Text.RegularExpressions;
 using Namorix.Server.Constants;
 using Namorix.Server.Infrastructure;
-using Namorix.Server.Models;
+using Namorix.Server.Models.Beacon;
 
-namespace Namorix.Server.Services.BcnProviders;
+namespace Namorix.Server.Services.Beacon.Providers;
 
 public sealed partial class NamecheapProvider(IHttpClientFactory httpFactory) : BcnGetProviderBase(httpFactory)
 {

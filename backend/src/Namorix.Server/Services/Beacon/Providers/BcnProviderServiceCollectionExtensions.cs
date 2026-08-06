@@ -1,8 +1,7 @@
-using Microsoft.Extensions.DependencyInjection;
 using Namorix.Server.Constants;
 using Namorix.Server.Infrastructure;
 
-namespace Namorix.Server.Services.BcnProviders;
+namespace Namorix.Server.Services.Beacon.Providers;
 
 public static class BcnProviderServiceCollectionExtensions
 {

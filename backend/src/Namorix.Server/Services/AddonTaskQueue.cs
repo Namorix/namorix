@@ -6,6 +6,7 @@ using Namorix.Server.Config;
 using Namorix.Server.Constants;
 using Namorix.Server.Infrastructure;
 using Namorix.Server.Models;
+using Namorix.Server.Models.Addon;
 using Namorix.Server.Persistence;
 
 namespace Namorix.Server.Services;

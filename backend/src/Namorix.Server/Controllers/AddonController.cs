@@ -5,6 +5,7 @@ using Namorix.Core.Middleware;
 using Namorix.Core.Responses;
 using Namorix.Server.Constants;
 using Namorix.Server.Models;
+using Namorix.Server.Models.Addon;
 using Namorix.Server.Services;
 
 namespace Namorix.Server.Controllers;

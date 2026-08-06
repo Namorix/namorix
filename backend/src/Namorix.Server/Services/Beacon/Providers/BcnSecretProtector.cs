@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.DataProtection;
-using Namorix.Server.Models;
+using Namorix.Server.Models.Beacon;
 
-namespace Namorix.Server.Services.BcnProviders;
+namespace Namorix.Server.Services.Beacon.Providers;
 
 public sealed class BcnSecretProtector(IDataProtectionProvider provider)
 {

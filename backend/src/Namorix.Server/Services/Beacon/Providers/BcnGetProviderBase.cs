@@ -3,9 +3,9 @@ using System.Net.Http.Headers;
 using System.Text;
 using Namorix.Server.Constants;
 using Namorix.Server.Infrastructure;
-using Namorix.Server.Models;
+using Namorix.Server.Models.Beacon;
 
-namespace Namorix.Server.Services.BcnProviders;
+namespace Namorix.Server.Services.Beacon.Providers;
 
 public abstract class BcnGetProviderBase(IHttpClientFactory httpFactory) : IBcnProviderClient
 {

@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Namorix.Server.Models;
+namespace Namorix.Server.Models.Beacon;
 
 public sealed class BcnProviderConfig
 {

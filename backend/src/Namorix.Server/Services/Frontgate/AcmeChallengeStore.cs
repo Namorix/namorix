@@ -1,8 +1,7 @@
 using System.Collections.Concurrent;
 
-namespace Namorix.Server.Services;
+namespace Namorix.Server.Services.Frontgate;
 
-// Temporarily store HTTP-01 challenge: token → keyAuthorization (only exists while waiting for LE verification)
 public class AcmeChallengeStore
 {
     private readonly ConcurrentDictionary<string, string> _challenges = new();
