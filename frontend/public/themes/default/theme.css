@@ -824,7 +824,7 @@ input[type=number] {
   box-sizing: border-box;
   width: 100%;
   border-radius: var(--nmx-radius-md);
-  padding: var(--nmx-spacing-md) var(--nmx-spacing-2xl);
+  padding: var(--nmx-spacing-md);
   font-size: var(--nmx-font-size-sm);
   line-height: var(--nmx-line-height-normal);
   color: var(--nmx-color-on-surface-variant);
@@ -1714,7 +1714,7 @@ input[type=number] {
 }
 .nmx-tag-input {
   position: relative;
-  padding: var(--nmx-spacing-md) var(--nmx-spacing-2xl);
+  padding: var(--nmx-spacing-md);
   border-radius: var(--nmx-radius-md);
   background: var(--nmx-color-surface-lowest);
   line-height: var(--nmx-line-height-normal);
