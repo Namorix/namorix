@@ -832,7 +832,7 @@ BcnProviderResolver — built-in → registry, custom → theo Kind
 1. Detect public IP (IPublicIpDetector / PublicIpService — auto/ipify.org)
 2. Skip hostname Disabled / Updating / đang backoff
 3. foreach host: updater.UpdateHostAsync(host, ip, ct) — service skip nếu IP không đổi (force=false)
-4. Trong service: split `Host` (multi-tag `@,www,home`) → foreach tag: resolver.Resolve(...).UpdateAsync(tag, host.Domain, config, ipv4, ipv6, ct)
+4. Trong service: resolver.Resolve(...).UpdateAsync(host.Host, host.Domain, config, ipv4, ipv6, ct) — **provider tự split multi-host** (`@,www,home`): Cloudflare/GoDaddy/Namecheap loop từng tag (1 request/tag), DuckDNS batch (`domains=` nhận comma list)
 5. Success → status Active + CurrentIp + Activity log (BCN_UPDATED)
 6. Rate-limit (429/Retry-After) → BackoffUntil (exponential cap 24h), KHÔNG đổi status
 7. Lỗi vĩnh viễn (401/403/404...) → status Error

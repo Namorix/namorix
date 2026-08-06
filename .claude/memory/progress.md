@@ -1,5 +1,13 @@
 # Version History — August 2026
 
+## 2026-08-05 — Multi-host xuống provider + SignalR reconnect fix
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.56.0 → 0.56.1 | FIXED: `signalr/signalr.service.ts` — `startConnection()` **reuse connection** thay vì rebuild khi Disconnected (chỉ tạo mới khi `!connection`) → giữ `conn.on` handlers qua reconnect, hết warning "No client method with the name 'notification:received'/beacon/..." + drop event. |
+| frontend | 0.72.0 → 0.73.0 | MODIFIED: `addons/Beacon/BeaconHostnames.tsx` — `NmxFormField` host/domain thêm prop `helper` (`addDialog.hostHint`/`domainHint` — giải thích format tag `@`/`*`/`www`/`*.example.com`). `i18n/locales/en.json` +2 key. |
+| Namorix.Server | 0.63.0 → 0.64.0 | MODIFIED: **Multi-host chuyển xuống provider** — `BcnHostnameService` bỏ `Split`/loop tag, gọi `provider.UpdateAsync(host.Host, ...)` 1 lần (skip-check 1 lần, xoá `WithTag`); `CloudflareProvider`/`GoDaddyProvider` split+loop tag × (A/AAAA), Cloudflare `recordName` switch + fix `FindZoneIdAsync` (`zones?name=` thay `zones/{zone}` — endpoint sai) + `WithHostname`; `NamecheapProvider` split+loop per host (docs chính thức mỗi request 1 giá trị `host=`, không nhận `host=@,www` gộp) — cần `BcnGetProviderBase.UpdateAsync` `virtual`; `DuckDnsProvider` giữ batch (`domains=` nhận comma list). `Validation/BcnHostnameSchema.cs` — Host pattern thêm `(\*\.)?` (cho `*.suffix`). `NoIpProvider`/`DynuProvider` — `Classify` token-match (`Split(' ')[0]`, `good <ip>`/`nochg <ip>` success; Dynu `notfqdn`→HostnameNotFound + `servererror`→Unavailable). Constants mới: `BcnParam` mở rộng (`FieldConfig`/`FieldHost`/`FieldUrlTemplate`/`FieldUser`/`FieldEndpointTemplate`/`FieldRecordLookupTemplate`/`Zone`/`Type`), `BcnCredentialParam`, `BcnHttpClientNames`, `BcnHeaderKey` — thay hardcode toàn bộ provider + `BcnController.GetConfigValue`. `BcnProviderInfo` `Tested: true` (Cloudflare/Dynu/NoIp/Namecheap). `IBcnProviderClient` comment contract host. |
+
 ## 2026-08-05 — Beacon host/domain split, HostIsDomain, provider error detail, notification/activity interpolation, toggle enable
 
 | Package | Version | Changes |

@@ -16,6 +16,20 @@ Browser-based desktop shell, self-hosted.
 - **External Addons** — Docker-based addons with widget (Module Federation mount) and standalone (OAuth PKCE, own server) modes
 - **Centralized Auth** — Single auth server for shell and addons, OAuth2 authorization server (authorization_code + PKCE, client_credentials + private_key_jwt)
 
+## Beacon — DDNS Updater
+
+Updates DNS records to your current public IP (DDNS). Host hỗ trợ multi-tag (comma-separated: `@`, `www`, `*.example.com`); provider tự xử lý multi-host (Cloudflare/GoDaddy/Namecheap loop từng tag, DuckDNS batch 1 request).
+
+| Provider | Kind | Tested |
+|----------|------|--------|
+| DuckDNS | GET | ✅ |
+| Namecheap | GET | ✅ |
+| No-IP | GET | ✅ |
+| Dynu | GET | ✅ |
+| Cloudflare | REST | ✅ |
+| GoDaddy | REST | ⏳ |
+| Custom | GET / REST | — |
+
 ## Screenshots
 
 ![Namorix Desktop](images/screenshot-1.png)
