@@ -199,6 +199,9 @@
   &--opening {
     animation: window-open var(--nmx-window-open-animation-ms)
       cubic-bezier(1, -0.29, 0.13, 1.33) forwards;
+
+    //animation: window-open var(--nmx-window-open-animation-ms)
+    //linear forwards;
   }
 
   &--closing {
