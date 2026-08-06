@@ -89,10 +89,7 @@ export const ApiFrontgateRoutes = {
     API_FRONTGATE_BASE + "/certificates/letsencrypt-http",
   certificatesLetsEncryptHttpDryRun:
     API_FRONTGATE_BASE + "/certificates/letsencrypt-http/dry-run",
-  certificatesLetsEncryptDns:
-    API_FRONTGATE_BASE + "/certificates/letsencrypt-dns",
   certificatesCustom: API_FRONTGATE_BASE + "/certificates/custom",
-  dnsProviders: API_FRONTGATE_BASE + "/dns-providers",
 } as const
 
 export const ApiBeaconRoutes = {
