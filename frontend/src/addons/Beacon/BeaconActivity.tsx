@@ -46,19 +46,25 @@ export const BeaconActivity: React.FC = () => {
   const [clearing, setClearing] = useState(false)
   const activeTab = useActiveTab<BeaconTab>()
 
-  const fetchActivity = useCallback(async (pg: number, size: number) => {
-    setLoading(true)
-    setError(undefined)
-    setPage(pg)
+  const fetchActivity = useCallback(
+    async (pg: number, size: number) => {
+      setError(undefined)
+      setPage(pg)
 
-    beaconController
-      .listActivity(pg, size)
-      .then((res) => {
-        setItems(res.items)
-        setTotal(res.total)
-      })
-      .finally(() => setLoading(false))
-  }, [])
+      if (items.length === 0) {
+        setLoading(true)
+      }
+
+      beaconController
+        .listActivity(pg, size)
+        .then((res) => {
+          setItems(res.items)
+          setTotal(res.total)
+        })
+        .finally(() => setLoading(false))
+    },
+    [items.length],
+  )
 
   useEffect(() => {
     if (activeTab !== "activity") return
@@ -103,7 +109,6 @@ export const BeaconActivity: React.FC = () => {
         })
       : undefined
 
-    console.log(params)
     return t(ACTIVITY_CODES[row.code] ?? row.code, {
       ...params,
       provider: providerLabel,
@@ -201,7 +206,6 @@ export const BeaconActivity: React.FC = () => {
               setPage(1)
             }}
             onPageChange={(pg) => {
-              setLoading(true)
               setError(undefined)
               setPage(pg)
             }}

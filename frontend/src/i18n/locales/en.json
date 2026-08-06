@@ -1,7 +1,7 @@
 {
   "common": {
     "fields": {
-      "hostname": "Hostname"
+      "host": "Host"
     }
   },
   "blocked": {
@@ -669,13 +669,13 @@
         "noIp": "No public IP is available to push",
         "invalidCredentials": "Provider rejected the credentials — check your token or API key",
         "hostnameNotFound": "Hostname **{{hostname}}** was not found with this provider",
-        "zoneNotFound": "Zone '{{zone}}' was not found with this provider",
+        "zoneNotFound": "Zone **{{zone}}** was not found with this provider",
         "accountBlocked": "Provider blocked this account — contact support if you believe this is a mistake",
         "unavailable": "Provider service is temporarily unavailable — will retry on the next check",
         "rateLimited": "Provider rate limited the request — will retry on the next check",
         "providerError": "Provider **{{provider}}** returned an error **({{detail}})**",
         "recordNotFound": "Hostname not found",
-        "duplicateHostname": "This hostname is already tracked",
+        "duplicateHost": "This host is already tracked",
 
         "configInvalid": "Missing required config field: {{field}}",
         "configFields": {
@@ -689,7 +689,9 @@
           "apiToken": "API Token",
           "apiKey": "API Key",
           "apiSecret": "API Secret",
-          "zone": "Zone"
+          "zone": "Zone",
+          "config": "Configuration",
+          "host": "Host"
         }
       },
       "hostnames": {
@@ -745,8 +747,10 @@
         "provider": "Provider",
         "providerPlaceholder": "Select a provider…",
         "host": "Host",
+        "hostHint": "@ = apex, * = wildcard, or a name like www (→ www.example.com). Comma-separated, e.g. @,www,*.example.com",
         "hostPlaceholder": "e.g. www, @, home",
         "domain": "Domain",
+        "domainHint": "Full domain / FQDN, e.g. example.com or home.example.com",
         "domainPlaceholder": "e.g. example.com",
         "token": "Update token / password",
         "tokenHint": "Not your account password — a DDNS-specific key from the provider's dashboard.",

@@ -13,7 +13,7 @@ export const BeaconErrorCodes: Record<string, string> = {
   BCN_UNAVAILABLE: "addon.beacon.errors.unavailable",
   BCN_PROVIDER_ERROR: "addon.beacon.errors.providerError",
   BCN_RECORD_NOT_FOUND: "addon.beacon.errors.recordNotFound",
-  BCN_DUPLICATE_HOSTNAME: "addon.beacon.errors.duplicateHostname",
+  BCN_DUPLICATE_HOST: "addon.beacon.errors.duplicateHost",
   BCN_CONFIG_INVALID: "addon.beacon.errors.configInvalid",
 } as const
 

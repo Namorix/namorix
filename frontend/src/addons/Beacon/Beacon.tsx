@@ -11,6 +11,7 @@ import { BeaconHostnames } from "./BeaconHostnames"
 import { BeaconActivity } from "./BeaconActivity"
 import { BeaconSettings } from "./BeaconSettings"
 import { useTranslation } from "react-i18next"
+import { ServerSignalRGroups, useServerSignalRGroup } from "../../signalr"
 
 export type BeaconTab = "hostnames" | "activity" | "settings"
 const TABS: NmxRailItemData<BeaconTab>[] = [
@@ -33,6 +34,8 @@ const TABS: NmxRailItemData<BeaconTab>[] = [
 
 export const Beacon: React.FC = () => {
   const { t } = useTranslation()
+
+  useServerSignalRGroup(ServerSignalRGroups.Beacon, true)
 
   return (
     <NmxAddonRoot>

@@ -18,6 +18,7 @@ import {
   NmxSelect,
   type NmxSelectData,
   NmxTagInput,
+  useActiveTab,
 } from "@namorix/ui"
 import {
   ApiError,
@@ -34,6 +35,7 @@ import {
 } from "./Beacon.types"
 import { ServerSignalREvent, useServerSignalREvent } from "../../signalr"
 import type { TFunction } from "i18next"
+import type { BeaconTab } from "./Beacon"
 
 const CUSTOM_ID = "custom"
 const SECRET_PREFIX = "CfDJ8"
@@ -76,6 +78,7 @@ function renderBeaconCodeMessage(
 export const BeaconHostnames: React.FC = () => {
   const { t } = useTranslation()
   const { pageSize, setPageSize, options: pageSizeOptions } = usePageSize()
+  const activityTab = useActiveTab<BeaconTab>()
 
   const [hosts, setHosts] = useState<BcnHostnameDto[]>([])
   const [providers, setProviders] = useState<BcnProviderInfo[]>([])
@@ -101,36 +104,57 @@ export const BeaconHostnames: React.FC = () => {
   const [busyRowId, setBusyRowId] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
 
-  const fetchHosts = useCallback(async (pg: number, size: number) => {
-    setLoading(true)
-    setError(undefined)
-    setPage(pg)
+  const fetchHosts = useCallback(
+    async (pg: number, size: number) => {
+      setError(undefined)
+      setPage(pg)
 
-    beaconController
-      .listHostnames(pg, size)
-      .then((res) => {
-        setHosts(res.items)
-        setTotal(res.total)
-      })
-      .finally(() => setLoading(false))
-  }, [])
+      if (hosts.length === 0) {
+        setLoading(true)
+      }
+
+      beaconController
+        .listHostnames(pg, size)
+        .then((res) => {
+          setHosts(res.items)
+          setTotal(res.total)
+        })
+        .finally(() => setLoading(false))
+    },
+    [hosts.length],
+  )
 
   useEffect(() => {
     beaconController.listProviders().then(setProviders).catch(setError)
   }, [])
 
   useEffect(() => {
+    if (activityTab !== "hostnames") return
     const timeout = setTimeout(() => {
       fetchHosts(page, pageSize).catch(setError)
     }, 0)
     return () => clearTimeout(timeout)
-  }, [page, pageSize, fetchHosts])
+  }, [page, pageSize, fetchHosts, activityTab])
 
-  useServerSignalREvent(
+  useServerSignalREvent<{
+    hostnameId: string
+    hostname: string
+    status: string
+  }>(
     ServerSignalREvent.BeaconHostnameStatusChanged,
-    useCallback(() => {
-      fetchHosts(page, pageSize).catch(nmxToast.error)
-    }, [fetchHosts, page, pageSize]),
+    useCallback(
+      (payload) => {
+        fetchHosts(page, pageSize).catch(nmxToast.error)
+        if (payload?.status === "error") {
+          nmxToast.error(
+            t("addon.beacon.hostnames.feedback.updateError", {
+              hostname: payload.hostname,
+            }),
+          )
+        }
+      },
+      [fetchHosts, page, pageSize, t],
+    ),
   )
 
   useServerSignalREvent(
@@ -138,13 +162,6 @@ export const BeaconHostnames: React.FC = () => {
     useCallback(() => {
       fetchHosts(page, pageSize).catch(nmxToast.error)
       setRefreshing(false)
-    }, [fetchHosts, page, pageSize]),
-  )
-
-  useServerSignalREvent(
-    ServerSignalREvent.BeaconActivityCreated,
-    useCallback(() => {
-      fetchHosts(page, pageSize).catch(nmxToast.error)
     }, [fetchHosts, page, pageSize]),
   )
 
@@ -543,12 +560,14 @@ export const BeaconHostnames: React.FC = () => {
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true)
+    fetchHosts(page, pageSize).catch(nmxToast.error)
+
     beaconController
       .refreshHostnames()
       .catch((err) =>
         nmxToast.error(formatCustomError(t, err, BeaconErrorCodes)),
       )
-  }, [t])
+  }, [fetchHosts, t, page, pageSize])
 
   const columns: NmxDataTableColumn<BcnHostnameDto>[] = [
     {
@@ -747,7 +766,6 @@ export const BeaconHostnames: React.FC = () => {
               setPage(1)
             }}
             onPageChange={(pg) => {
-              setLoading(true)
               setError(undefined)
               setPage(pg)
             }}
@@ -777,7 +795,11 @@ export const BeaconHostnames: React.FC = () => {
         onExtraAction={handleTest}
       >
         <NmxForm className="nmx-addon-beacon__form">
-          <NmxFormField label={t("addon.beacon.addDialog.domain")} required>
+          <NmxFormField
+            label={t("addon.beacon.addDialog.domain")}
+            helper={t("addon.beacon.addDialog.domainHint")}
+            required
+          >
             <NmxFormInput
               value={formDomain}
               onValueChange={setFormDomain}
@@ -786,6 +808,7 @@ export const BeaconHostnames: React.FC = () => {
           </NmxFormField>
           <NmxFormField
             label={t("addon.beacon.addDialog.host")}
+            helper={t("addon.beacon.addDialog.hostHint")}
             required
             shouldRender={!selectedProvider?.hostIsDomain}
           >
