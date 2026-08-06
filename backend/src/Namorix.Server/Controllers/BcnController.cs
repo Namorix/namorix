@@ -46,7 +46,7 @@ public class BcnController(AppDbContext db, BcnProviderRegistry registry, BcnSec
             : request.Host;
         
         if (await db.BcnHostnames.AnyAsync(h => h.Host == hostValue && h.Domain == request.Domain))
-            return Conflict(ApiResponse.Fail(BcnErrorCodes.DuplicateHostname));
+            return Conflict(ApiResponse.Fail(BcnErrorCodes.DuplicateHost));
 
         var config = DeserializeConfig(request.ConfigJson);
         config.Kind = Enum.Parse<BcnProviderKind>(request.Kind, ignoreCase: true);
@@ -92,7 +92,7 @@ public class BcnController(AppDbContext db, BcnProviderRegistry registry, BcnSec
             : request.Host;
         if ((hostValue != host.Host || request.Domain != host.Domain) &&
             await db.BcnHostnames.AnyAsync(h => h.Host == hostValue && h.Domain == request.Domain))
-            return Conflict(ApiResponse.Fail(BcnErrorCodes.DuplicateHostname));
+            return Conflict(ApiResponse.Fail(BcnErrorCodes.DuplicateHost));
         
         var config = DeserializeConfig(request.ConfigJson);
         config.Kind = Enum.Parse<BcnProviderKind>(request.Kind, ignoreCase: true);
@@ -285,14 +285,14 @@ public class BcnController(AppDbContext db, BcnProviderRegistry registry, BcnSec
         {
             return config.Kind switch
             {
-                BcnProviderKind.Get when string.IsNullOrWhiteSpace(config.UrlTemplate) => "urlTemplate",
-                BcnProviderKind.Get when config.AuthType == "basic" &&
+                BcnProviderKind.Get when string.IsNullOrWhiteSpace(config.UrlTemplate) => BcnParam.FieldUrlTemplate,
+                BcnProviderKind.Get when config.AuthType == BcnAuthScheme.Basic &&
                                          (string.IsNullOrWhiteSpace(config.User) ||
-                                          string.IsNullOrWhiteSpace(config.Password)) => "user",
-                BcnProviderKind.Rest when string.IsNullOrWhiteSpace(config.EndpointTemplate) => "endpointTemplate",
+                                          string.IsNullOrWhiteSpace(config.Password)) => BcnParam.FieldUser,
+                BcnProviderKind.Rest when string.IsNullOrWhiteSpace(config.EndpointTemplate) => BcnParam.FieldEndpointTemplate,
                 BcnProviderKind.Rest when config.EndpointTemplate?.Contains("{recordId}") == true &&
                                           string.IsNullOrWhiteSpace(config.RecordLookupTemplate) =>
-                    "recordLookupTemplate",
+                    BcnParam.FieldRecordLookupTemplate,
                 _ => null,
             };
         }
@@ -304,15 +304,16 @@ public class BcnController(AppDbContext db, BcnProviderRegistry registry, BcnSec
 
     private static string? GetConfigValue(BcnProviderConfig config, string key) => key switch
     {
-        "token" => config.Token,
-        "username" => config.User,
-        "password" => config.Password,
-        "apiToken" => config.ApiToken,
-        "apiKey" => config.ApiKey,
-        "apiSecret" => config.ApiSecret,
-        "zone" => config.Zone,
+        BcnCredentialParam.Token => config.Token,
+        BcnCredentialParam.Username => config.User,
+        BcnCredentialParam.Password => config.Password,
+        BcnCredentialParam.ApiToken => config.ApiToken,
+        BcnCredentialParam.ApiKey => config.ApiKey,
+        BcnCredentialParam.ApiSecret => config.ApiSecret,
+        BcnCredentialParam.Zone => config.Zone,
         _ => null,
     };
+
 }
 
 public record CreateHostnameRequest(

@@ -10,7 +10,7 @@ public class BcnHostnameSchema : IValidationSchema
         MinLength = 1,
         MaxLength = 253,
         Trim = true,
-        Pattern = @"^(@|\*|[a-zA-Z0-9]([a-zA-Z0-9.-]{0,61}[a-zA-Z0-9])?)(,(@|\*|[a-zA-Z0-9]([a-zA-Z0-9.-]{0,61}[a-zA-Z0-9])?))*$",
+        Pattern = @"^(@|\*|(\*\.)?[a-zA-Z0-9]([a-zA-Z0-9.-]{0,61}[a-zA-Z0-9])?)(,(@|\*|(\*\.)?[a-zA-Z0-9]([a-zA-Z0-9.-]{0,61}[a-zA-Z0-9])?))*$",
     };
     
     public FormatValidationRule Domain => new()

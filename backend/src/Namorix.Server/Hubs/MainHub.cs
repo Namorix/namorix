@@ -21,4 +21,14 @@ public class MainHub(TrafficMonitorService monitorService, ILogger<MainHub> logg
     {
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, ServerSignalRGroups.SystemMonitor);
     }
+    
+    public async Task SubscribeBeacon()
+    {
+        await Groups.AddToGroupAsync(Context.ConnectionId, ServerSignalRGroups.Beacon);
+    }
+
+    public async Task UnsubscribeBeacon()
+    {
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, ServerSignalRGroups.Beacon);
+    }
 }

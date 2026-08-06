@@ -8,7 +8,7 @@ namespace Namorix.Server.Services.BcnProviders;
 public sealed class DuckDnsProvider(IHttpClientFactory httpFactory) : BcnGetProviderBase(httpFactory)
 {
     public override BcnProviderInfo Info => new("duckdns", BcnProviderKind.Get,
-        [new BcnCredentialField("token", BcnCredentialFieldType.Secret)], true);
+        [new BcnCredentialField(BcnCredentialParam.Token, BcnCredentialFieldType.Secret)], Tested: true);
 
     protected override string BuildUrl(string host, string domain, BcnProviderConfig config,
         IPAddress? ipv4, IPAddress? ipv6) =>
@@ -19,5 +19,5 @@ public sealed class DuckDnsProvider(IHttpClientFactory httpFactory) : BcnGetProv
         body.Trim().Equals("OK", StringComparison.OrdinalIgnoreCase)
             ? new BcnUpdateResult(true)
             : new BcnUpdateResult(false, BcnErrorCodes.ProviderError,
-                new Dictionary<string, object?> { ["reason"] = body.Trim() });
+                new Dictionary<string, object?> { [BcnParam.Reason] = body.Trim() });
 }

@@ -6,6 +6,8 @@ namespace Namorix.Server.Infrastructure;
 public interface IBcnProviderClient
 {
     BcnProviderInfo Info { get; }
+    // host = chuỗi tag đầy đủ (comma-separated: "@,www,*.example.com") — provider tự split xử lý multi-host.
+    // domain = FQDN/zone; mỗi provider dùng cái nó cần. Params trả về phải gắn hostname tag fail để i18n.
     Task<BcnUpdateResult> UpdateAsync(string host, string domain, BcnProviderConfig config,
         IPAddress? ipv4, IPAddress? ipv6, CancellationToken ct);
     Task<BcnTestResult> TestAsync(string host, string domain, BcnProviderConfig config,

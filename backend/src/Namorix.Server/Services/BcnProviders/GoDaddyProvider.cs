@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
+using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 using Namorix.Server.Constants;
@@ -12,48 +13,57 @@ public sealed class GoDaddyProvider(IHttpClientFactory httpFactory) : IBcnProvid
 {
     public BcnProviderInfo Info => new("godaddy", BcnProviderKind.Rest,
     [
-        new BcnCredentialField("apiKey", BcnCredentialFieldType.Secret),
-        new BcnCredentialField("apiSecret", BcnCredentialFieldType.Secret),
-        new BcnCredentialField("zone", BcnCredentialFieldType.Text)
+        new BcnCredentialField(BcnCredentialParam.ApiKey, BcnCredentialFieldType.Secret),
+        new BcnCredentialField(BcnCredentialParam.ApiSecret, BcnCredentialFieldType.Secret),
+        new BcnCredentialField(BcnCredentialParam.Zone, BcnCredentialFieldType.Text)
     ]);
 
     public async Task<BcnUpdateResult> UpdateAsync(string host, string domain, BcnProviderConfig config,
         IPAddress? ipv4, IPAddress? ipv6, CancellationToken ct)
     {
         var zone = config.Zone ?? "";
-        var name = host;   // host is already tag/@, no longer splitting by zone
 
         var targets = new List<(string Type, IPAddress Ip)>();
         if (ipv4 is not null) targets.Add(("A", ipv4));
         if (ipv6 is not null) targets.Add(("AAAA", ipv6));
         if (targets.Count == 0) return new BcnUpdateResult(false, BcnErrorCodes.NoIp);
 
-        using var client = httpFactory.CreateClient("BcnRest");
+        using var client = httpFactory.CreateClient(BcnHttpClientNames.Rest);
         client.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("sso-key", $"{config.ApiKey}:{config.ApiSecret}");
+            new AuthenticationHeaderValue(BcnHeaderKey.SsoKey, $"{config.ApiKey}:{config.ApiSecret}");
 
-        foreach (var (type, ip) in targets)
+        BcnUpdateResult? firstFailure = null;
+        foreach (var tag in host.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
-            var payload = JsonSerializer.Serialize(new[] { new { data = ip.ToString() } });
-            using var req = new HttpRequestMessage(HttpMethod.Put,
-                $"https://api.godaddy.com/v1/domains/{Uri.EscapeDataString(zone)}/records/{type}/{Uri.EscapeDataString(name)}");
+            foreach (var (type, ip) in targets)
+            {
+                var payload = JsonSerializer.Serialize(new[] { new { data = ip.ToString() } });
+                using var req = new HttpRequestMessage(HttpMethod.Put,
+                    $"https://api.godaddy.com/v1/domains/{Uri.EscapeDataString(zone)}/records/{type}/{Uri.EscapeDataString(tag)}");
 
-            req.Content = new StringContent(payload, Encoding.UTF8, "application/json");
-            using var resp = await client.SendAsync(req, ct);
+                req.Content = new StringContent(payload, Encoding.UTF8, MediaTypeNames.Application.Json);
+                using var resp = await client.SendAsync(req, ct);
 
-            if ((int)resp.StatusCode == StatusCodes.Status429TooManyRequests)
-                return new BcnUpdateResult(false, BcnErrorCodes.RateLimited,
-                    new Dictionary<string, object?> { ["httpStatus"] = 429 }, RateLimited: true);
+                if ((int)resp.StatusCode == StatusCodes.Status429TooManyRequests)
+                {
+                    firstFailure ??= new BcnUpdateResult(false, BcnErrorCodes.RateLimited,
+                        new Dictionary<string, object?> { [BcnParam.HttpStatus] = StatusCodes.Status429TooManyRequests }, RateLimited: true);
+                    continue;
+                }
 
-            if (!resp.IsSuccessStatusCode)
-                return new BcnUpdateResult(false, BcnHttpStatus.ToErrorCode(resp.StatusCode),
-                    new Dictionary<string, object?> { ["httpStatus"] = (int)resp.StatusCode });
+                if (!resp.IsSuccessStatusCode)
+                {
+                    firstFailure ??= new BcnUpdateResult(false, BcnHttpStatus.ToErrorCode(resp.StatusCode),
+                        new Dictionary<string, object?> { [BcnParam.HttpStatus] = (int)resp.StatusCode, [BcnParam.Hostname] = tag });
+                }
+            }
         }
 
-        return new BcnUpdateResult(true);
+        return firstFailure ?? new BcnUpdateResult(true);
     }
 
     public Task<BcnTestResult> TestAsync(string host, string domain, BcnProviderConfig config,
         IPAddress? ipv4, IPAddress? ipv6, CancellationToken ct) =>
         UpdateAsync(host, domain, config, ipv4, ipv6, ct)
-            .ContinueWith(t => new BcnTestResult(t.Result.Success, t.Result.Code, t.Result.Params), ct);}
+            .ContinueWith(t => new BcnTestResult(t.Result.Success, t.Result.Code, t.Result.Params), ct);
+}

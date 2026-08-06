@@ -17,19 +17,19 @@ public sealed class BcnSimpleGetProvider(IHttpClientFactory httpFactory) : IBcnP
     {
         if (string.IsNullOrWhiteSpace(config.UrlTemplate))
             return new BcnUpdateResult(false, BcnErrorCodes.ConfigInvalid,
-                new Dictionary<string, object?> { ["field"] = "urlTemplate" });
+                new Dictionary<string, object?> { [BcnParam.Field] = BcnParam.FieldUrlTemplate });
 
-        if (config.AuthType == "basic" &&
+        if (config.AuthType == BcnAuthScheme.Basic &&
             (string.IsNullOrWhiteSpace(config.User) || string.IsNullOrWhiteSpace(config.Password)))
             return new BcnUpdateResult(false, BcnErrorCodes.ConfigInvalid,
-                new Dictionary<string, object?> { ["field"] = "user" });
+                new Dictionary<string, object?> { [BcnParam.Field] = BcnParam.FieldUser });
 
         var url = BcnTemplate.Replace(config.UrlTemplate ?? string.Empty, host, domain, ipv4, ipv6, config);
-        using var client = httpFactory.CreateClient("BcnGet");
+        using var client = httpFactory.CreateClient(BcnHttpClientNames.Get);
         using var request = new HttpRequestMessage(HttpMethod.Get, url);
 
-        if (config.AuthType == "basic" && !string.IsNullOrEmpty(config.User))
-            request.Headers.Authorization = new AuthenticationHeaderValue("Basic",
+        if (config.AuthType == BcnAuthScheme.Basic && !string.IsNullOrEmpty(config.User))
+            request.Headers.Authorization = new AuthenticationHeaderValue(BcnHeaderKey.Basic,
                 Convert.ToBase64String(Encoding.UTF8.GetBytes($"{config.User}:{config.Password}")));
 
         using var response = await client.SendAsync(request, ct);
@@ -37,11 +37,11 @@ public sealed class BcnSimpleGetProvider(IHttpClientFactory httpFactory) : IBcnP
 
         if ((int)response.StatusCode == StatusCodes.Status429TooManyRequests)
             return new BcnUpdateResult(false, BcnErrorCodes.RateLimited,
-                new Dictionary<string, object?> { ["httpStatus"] = 429 }, RateLimited: true);
+                new Dictionary<string, object?> { [BcnParam.HttpStatus] = StatusCodes.Status429TooManyRequests }, RateLimited: true);
 
         if (!response.IsSuccessStatusCode)
             return new BcnUpdateResult(false, BcnHttpStatus.ToErrorCode(response.StatusCode),
-                new Dictionary<string, object?> { ["httpStatus"] = (int)response.StatusCode });
+                new Dictionary<string, object?> { [BcnParam.HttpStatus] = (int)response.StatusCode });
 
         return MatchSuccess(body, config);
     }

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Namorix.Server.Constants;
 using Namorix.Server.Infrastructure;
 
 namespace Namorix.Server.Services.BcnProviders;
@@ -17,8 +18,8 @@ public static class BcnProviderServiceCollectionExtensions
         services.AddSingleton<BcnSimpleGetProvider>();
         services.AddSingleton<BcnRestJsonProvider>();
         services.AddSingleton<BcnProviderResolver>();
-        services.AddHttpClient("BcnGet", c => c.Timeout = TimeSpan.FromSeconds(20));
-        services.AddHttpClient("BcnRest", c => c.Timeout = TimeSpan.FromSeconds(20));
+        services.AddHttpClient(BcnHttpClientNames.Get, c => c.Timeout = TimeSpan.FromSeconds(20));
+        services.AddHttpClient(BcnHttpClientNames.Rest, c => c.Timeout = TimeSpan.FromSeconds(20));
         return services;
     }
 }

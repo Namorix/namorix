@@ -2,11 +2,14 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Namorix.Core.Constants;
 using Namorix.Server.Constants;
 using Namorix.Server.Infrastructure;
 using Namorix.Server.Models;
 using Namorix.Server.Persistence;
 using Namorix.Server.Services.BcnProviders;
+using NotificationKeys = Namorix.Server.Constants.NotificationKeys;
+using NotificationSource = Namorix.Server.Constants.NotificationSource;
 
 namespace Namorix.Server.Services;
 
@@ -42,8 +45,10 @@ public sealed class BcnHostnameService(AppDbContext db, BcnProviderResolver reso
             host.CurrentIpv4 = null;
             host.CurrentIpv6 = null;
             
-            await LogAndNotifyAsync(BcnLogLevel.Error, BcnErrorCodes.ConfigInvalid,
-                new Dictionary<string, object?> { ["field"] = "config" }, host.Id, host.DisplayName);
+            await LogAndNotifyAsync(BcnLogLevel.Error, BcnErrorCodes.ConfigInvalid, new Dictionary<string, object?>
+            {
+                [BcnParam.Field] = BcnParam.FieldConfig
+            }, host.Id, host.DisplayName);
 
             if (prevStatus != BcnHostnameStatus.Error)
                 await NotifyHostnameAsync(host);
@@ -52,56 +57,44 @@ public sealed class BcnHostnameService(AppDbContext db, BcnProviderResolver reso
             return new BcnUpdateResult(false, BcnErrorCodes.ConfigInvalid);
         }
         
-        var tags = host.Host.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        if (tags.Length == 0)
-            return new BcnUpdateResult(false, BcnErrorCodes.ConfigInvalid,
-                new Dictionary<string, object?> { ["field"] = "host" });
-        
+        if (string.IsNullOrWhiteSpace(host.Host))
+        {
+            return new BcnUpdateResult(false, BcnErrorCodes.ConfigInvalid, new Dictionary<string, object?>
+            {
+                [BcnParam.Field] = BcnParam.FieldHost
+            });
+        }
+
         BcnCurrentRecord? current = null;
         if (!force)
             current = await TryGetCurrentAsync(host.Domain, ct);
 
-        BcnUpdateResult? firstFailure = null;
-        foreach (var tag in tags)
+        if (!force && host.Status != BcnHostnameStatus.Error)
         {
-            if (!force && host.Status != BcnHostnameStatus.Error)
-            {
-                var inSync = current?.Matches(newIpv4, newIpv6) ?? host.CurrentIpv4 == newIpv4 && host.CurrentIpv6 == newIpv6;
-                var heartbeatDue = await IsHeartbeatDueAsync(db, host, ct);
-                if (inSync && !heartbeatDue)
-                    continue;
-            }
-            
-            BcnUpdateResult result;
-            try
-            {
-                result = await provider.UpdateAsync(tag, host.Domain, config, ipv4, ipv6, ct);
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                result = new BcnUpdateResult(false, BcnErrorCodes.ProviderError,
-                    new Dictionary<string, object?> { ["httpStatus"] = 0, ["detail"] = ex.Message });
-            }
-
-            if (result.Success)
-                continue;
-            
-            firstFailure ??= result with
-            {
-                Params = WithProvider(WithTag(result.Params, tag), host.ProviderId)
-            };
-            
-            host.LastError = result.Code ?? BcnErrorCodes.ProviderError;
-            await LogAndNotifyAsync(BcnLogLevel.Error, result.Code,
-                WithProvider(WithTag(result.Params, tag), host.ProviderId), host.Id, $"{tag} · {host.Domain}");
+            var inSync = current?.Matches(newIpv4, newIpv6) ?? host.CurrentIpv4 == newIpv4 && host.CurrentIpv6 == newIpv6;
+            var heartbeatDue = await IsHeartbeatDueAsync(db, host, ct);
+            if (inSync && !heartbeatDue)
+                return new BcnUpdateResult(true);
         }
-        
+
+        BcnUpdateResult result;
+        try
+        {
+            // provider tự split multi-host (host = chuỗi comma đầy đủ, không split ở đây)
+            result = await provider.UpdateAsync(host.Host, host.Domain, config, ipv4, ipv6, ct);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            result = new BcnUpdateResult(false, BcnErrorCodes.ProviderError,
+                new Dictionary<string, object?> { [BcnParam.HttpStatus] = 0, [BcnParam.Detail] = ex.Message });
+        }
+
         host.LastCheckedAt = now;
-        if (firstFailure is null)
+        if (result.Success)
         {
             host.Status = BcnHostnameStatus.Active;
             host.CurrentIpv4 = newIpv4;
@@ -110,36 +103,36 @@ public sealed class BcnHostnameService(AppDbContext db, BcnProviderResolver reso
             host.LastError = null;
             host.BackoffUntil = null;
             await LogAndNotifyAsync(BcnLogLevel.Success, BcnActivityCodes.Updated,
-                new Dictionary<string, object?> { ["ip"] = newIpv4, ["ipv6"] = newIpv6 },
+                new Dictionary<string, object?> { [BcnParam.Ip] = newIpv4, [BcnParam.Ipv6] = newIpv6 },
                 host.Id, host.DisplayName);
             if (prevStatus == BcnHostnameStatus.Error)
                 await NotifyHostnameAsync(host, recovered: true);
         }
-        else if (firstFailure.RateLimited)
+        else if (result.RateLimited)
         {
-            host.BackoffUntil = firstFailure.RetryAfter?.UtcDateTime ?? now.AddMinutes(ComputeBackoff(host, now));
+            host.BackoffUntil = result.RetryAfter?.UtcDateTime ?? now.AddMinutes(ComputeBackoff(host, now));
             if (host.Status == BcnHostnameStatus.Updating)
                 host.Status = BcnHostnameStatus.Active;
             await LogAndNotifyAsync(BcnLogLevel.Warn, BcnErrorCodes.RateLimited,
-                new Dictionary<string, object?> { ["retryAt"] = host.BackoffUntil?.ToString("O") },
+                new Dictionary<string, object?> { [BcnParam.RetryAt] = host.BackoffUntil?.ToString("O") },
                 host.Id, host.DisplayName);
         }
         else
         {
             host.Status = BcnHostnameStatus.Error;
-            host.LastError = firstFailure.Code ?? BcnErrorCodes.ProviderError;
+            host.LastError = result.Code ?? BcnErrorCodes.ProviderError;
             host.CurrentIpv4 = null;
             host.CurrentIpv6 = null;
-            
-            await LogAndNotifyAsync(BcnLogLevel.Error, firstFailure.Code,
-                firstFailure.Params, host.Id, host.DisplayName);
-            
+
+            var logParams = result.Params is null ? null : WithProvider(result.Params, host.ProviderId);
+            await LogAndNotifyAsync(BcnLogLevel.Error, result.Code, logParams, host.Id, host.DisplayName);
+
             if (prevStatus != BcnHostnameStatus.Error)
-                await NotifyHostnameAsync(host, DescribeDetail(firstFailure));
+                await NotifyHostnameAsync(host, DescribeDetail(result));
         }
-        
+
         await NotifyStatusChangedAsync(host, prevStatus);
-        return firstFailure ?? new BcnUpdateResult(true);
+        return result;
     }
     
     public async Task<BcnUpdateResult> UpdateHostWithDetectedIpAsync(BcnHostname host,
@@ -170,7 +163,6 @@ public sealed class BcnHostnameService(AppDbContext db, BcnProviderResolver reso
     {
         var config = JsonSerializer.Deserialize<BcnProviderConfig>(host.ConfigJson,
             BcnProviderConfig.SerializerOptions) ?? new BcnProviderConfig();
-        var provider = resolver.Resolve(host.ProviderId, config);
 
         try
         {
@@ -196,8 +188,8 @@ public sealed class BcnHostnameService(AppDbContext db, BcnProviderResolver reso
             if (changed)
             {
                 await LogAndNotifyAsync(BcnLogLevel.Info, BcnActivityCodes.Probed,
-                    new Dictionary<string, object?> { ["ip"] = current.Ipv4, ["ipv6"] = current.Ipv6 }, host.Id,
-                    host.DisplayName);
+                    new Dictionary<string, object?> { [BcnParam.Ip] = current.Ipv4, [BcnParam.Ipv6] = current.Ipv6 },
+                    host.Id, host.DisplayName);
             }
             
             return new BcnProbeResult(true, current.Ipv4, current.Ipv6);
@@ -212,9 +204,9 @@ public sealed class BcnHostnameService(AppDbContext db, BcnProviderResolver reso
     {
         var p = result.Params;
         if (p is null) return null;
-        if (p.TryGetValue("detail", out var d) && d is not null) return d.ToString();
-        if (p.TryGetValue("httpStatus", out var s) && s is int st and > 0) return $"HTTP {st}";
-        if (p.TryGetValue("reason", out var r) && r is not null) return r.ToString();
+        if (p.TryGetValue(BcnParam.Detail, out var d) && d is not null) return d.ToString();
+        if (p.TryGetValue(BcnParam.HttpStatus, out var s) && s is int st and > 0) return $"HTTP {st}";
+        if (p.TryGetValue(BcnParam.Reason, out var r) && r is not null) return r.ToString();
         return null;
     }
 
@@ -225,7 +217,9 @@ public sealed class BcnHostnameService(AppDbContext db, BcnProviderResolver reso
             return DefaultIntervalMinutes;
 
         var prev = (until - lastChecked).TotalMinutes;
-        if (prev > 0) return (int)Math.Min(prev * 2, MaxBackoffMinutes);
+        if (prev > 0)
+            return (int)Math.Min(prev * 2, MaxBackoffMinutes);
+        
         return DefaultIntervalMinutes;
     }
     
@@ -265,10 +259,13 @@ public sealed class BcnHostnameService(AppDbContext db, BcnProviderResolver reso
 
     private Task NotifyHostnameAsync(BcnHostname host, string? detail = null, bool recovered = false) =>
         recovered
-            ? notifications.CreateForAdminsAsync("success", "beacon:hostnameRecovered", "beacon",
-                new { hostname = host.DisplayName })
-            : notifications.CreateForAdminsAsync("error", "beacon:hostnameError", "beacon",
-                new { hostname = host.DisplayName, provider = host.ProviderId, error = host.LastError, detail });
+            ? notifications.CreateForAdminsAsync(NotificationType.Success, NotificationKeys.Beacon.BeaconHostnameRecovered,
+                NotificationSource.Beacon, new { hostname = host.DisplayName })
+            : notifications.CreateForAdminsAsync(NotificationType.Error, NotificationKeys.Beacon.BeaconHostnameError,
+                NotificationSource.Beacon, new
+                {
+                    hostname = host.DisplayName, provider = host.ProviderId, error = host.LastError, detail
+                });
     
     private Task NotifyStatusChangedAsync(BcnHostname host, BcnHostnameStatus prevStatus) =>
         host.Status == prevStatus
@@ -286,17 +283,10 @@ public sealed class BcnHostnameService(AppDbContext db, BcnProviderResolver reso
         return log;
     }
     
-    private static Dictionary<string, object?>? WithTag(Dictionary<string, object?>? p, string tag)
-    {
-        var dict = new Dictionary<string, object?>(p ?? new Dictionary<string, object?>());
-        dict.TryAdd("hostname", tag);
-        return dict;
-    }
-    
     private static Dictionary<string, object?>? WithProvider(Dictionary<string, object?>? p, string providerId)
     {
         var dict = new Dictionary<string, object?>(p ?? new Dictionary<string, object?>());
-        dict.TryAdd("provider", providerId);
+        dict.TryAdd(BcnParam.Provider, providerId);
         return dict;
     }
 }
