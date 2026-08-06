@@ -33,35 +33,35 @@ export function getConnectionState(): HubConnectionState {
 }
 
 export async function startConnection(): Promise<void> {
-  if (connection && connection.state !== HubConnectionState.Disconnected) {
-    return
+  if (connection?.state === HubConnectionState.Connected) return
+  if (connection?.state === HubConnectionState.Connecting) return
+
+  if (!connection) {
+    connection = new HubConnectionBuilder()
+      .withUrl(getApiBaseUrl() + HUB_MAIN)
+      .configureLogging(LogLevel.Warning)
+      .build()
+
+    connection.onreconnecting((error) => {
+      console.warn("[signalr] reconnecting...", error?.message)
+      emitStatus("reconnecting")
+    })
+
+    connection.onreconnected(() => {
+      console.info("[signalr] reconnected")
+      reconnectDelay = 5000
+      emitStatus("connected")
+    })
+
+    connection.onclose((error) => {
+      console.warn("[signalr] disconnected", error?.message)
+      emitStatus("disconnected")
+      onCloseHandlers.forEach((handler) => handler(error ?? undefined))
+      if (!intentionalStop) {
+        scheduleReconnect()
+      }
+    })
   }
-
-  connection = new HubConnectionBuilder()
-    .withUrl(getApiBaseUrl() + HUB_MAIN)
-    .configureLogging(LogLevel.Warning)
-    .build()
-
-  connection.onreconnecting((error) => {
-    console.warn("[signalr] reconnecting...", error?.message)
-    emitStatus("reconnecting")
-  })
-
-  connection.onreconnected(() => {
-    console.info("[signalr] reconnected")
-    reconnectDelay = 5000
-    emitStatus("connected")
-  })
-
-  connection.onclose((error) => {
-    console.warn("[signalr] disconnected", error?.message)
-    emitStatus("disconnected")
-    onCloseHandlers.forEach((handler) => handler(error ?? undefined))
-
-    if (!intentionalStop) {
-      scheduleReconnect()
-    }
-  })
 
   await connection.start().then(() => {
     if (connection?.state === HubConnectionState.Connected)
