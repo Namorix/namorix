@@ -285,6 +285,22 @@ Backlog (chưa có schema): active24, akamai-edgedns, aliyun, arvancloud, baidu,
 - [x] **Frontend UI: Access tab** ✅ 2026-08-07 (implemented, **chờ test** ngày 08-08) — `FrontgateAccessPolicy.tsx`: DataTable + dialog add/edit theo 4 loại policy (ipAllowlist/ipDenylist/geoBlock = textarea lines → JSON array; basicAuth = username+password → JSON, edit để trống password giữ hash cũ nhờ `HashBasicAuthPassword` skip prefix `$2b$`). Nối C2 dry-run: toggle → `payload.dryRun`, column countdown (tick 1s, `formatDryRunRemaining`) + nút Apply/Cancel gọi `confirmDryRun`/`cancelDryRun`. i18n en.json: `pages.accessPolicy.*` + `reverseProxy.dryRun.*`, SCSS `__dryrun`.
   - ✅ **Fix stale closure** 2026-08-07: `formDryRun` đã thêm vào deps `handleConfirm` (FrontgateReverseProxy.tsx:463) — toggle giờ áp dụng đúng khi save.
 
+#### ✅ Phase 3b — Reverse Proxy UX hoàn thiện (2026-08-07)
+
+- [x] **NmxMenuButton action menu**: thay nút Delete cuối row bằng `NmxMenuButton` (MENU_VERTICAL trigger) — options Confirm dry-run / Cancel dry-run / Edit / Delete, `filterItem` chỉ hiện 2 mục dry-run khi `isDryRunActive`, `dividerIndexes` top-divider trước Edit + Delete.
+- [x] **Dry-run minute select**: form General tab thêm select 1P/5P/10P → `payload.dryRunMinutes`; backend `CreateRuleRequest.DryRunMinutes` (default 1) + `ResolveDryRunSeconds(minutes)` (1|5|10 → ×60, else 60) thay hằng `_dryRunSeconds`.
+- [x] **Info dialog on row click**: click row → `NmxAlertDialog` "Proxy info" hiện Source/Destination/Access/Status/Created at/dry-run countdown qua `NmxMetaList`, nút Apply chỉ hiện khi còn active (`confirmShouldRender`).
+- [x] **`isDryRunActive` + JS countdown fix**: helper `expiresAt != null && new Date(expiresAt) > now`, tick 1s — cột + dialog + menu cùng dùng, hết hạn hiển thị "—".
+- [x] **UTC timezone fix**: `UtcDateTimeJsonConverter` (JsonConverter<DateTime>, Unspecified→Utc) đăng ký global trong `AddJsonOptions` — hết serialized thiếu `Z` (SQLite mất `DateTimeKind`) → `new Date("...Z")` parse đúng UTC.
+
+#### ✅ Frontend Reverse Proxy tab UX (2026-08-07)
+
+- [x] **Row action menu** ✅ 2026-08-07 — cột action cuối chuyển thành `NmxMenuButton` (trigger `MENU_VERTICAL` + `arrowDisabled`): Confirm dry-run (CHECK/success), Rollback dry-run (UNDO/warning), Edit (EDIT), Delete (DELETE/error). Dùng `filterItem` để ẩn/hiện 2 mục dry-run theo `isDryRunActive(row.dryRunExpiresAt, now)`; `dividerIndexes` top-trước Edit + Delete.
+- [x] **Info dialog on row click** ✅ 2026-08-07 — click row → `NmxAlertDialog` "Proxy info" hiện Source / Destination / Access / Status / Created at (`createdTime`) / dry-run countdown qua `NmxMetaList`; nút Apply dry-run chỉ render khi dry-run còn active (`confirmShouldRender`).
+- [x] **Dry-run duration select** ✅ 2026-08-07 — General tab chọn 1P/5P/10P → `payload.dryRunMinutes`; backend `CreateRuleRequest.DryRunMinutes = 1` + `ResolveDryRunSeconds(minutes)` (1|5|10 → *60, else 60) thay hằng `_dryRunSeconds` ở Create + Update.
+- [x] **Countdown expiry fix** ✅ 2026-08-07 — `isDryRunActive(expiresAt, now)` (expiresAt != null && > now) dùng chung badge/menu/info dialog — hết đếm ngược "00:00" ngay sau khi hết hạn; cột dry-run hiển thị "—" khi inactive.
+- [x] **UTC serialization fix** ✅ 2026-08-07 — `Namorix.Core/Helpers/UtcDateTimeJsonConverter.cs` (`JsonConverter<DateTime>`: Unspecified → treat as UTC, Write → `DateTime.SpecifyKind` Utc) đăng ký global trong `AddJsonOptions` (`options.JsonSerializerOptions.Converters.Add`). SQLite + EF Core mất `DateTimeKind` (Unspecified) → serializer trước đây xuất thiếu `Z` (`2026-08-07T14:12:35.775856`) → `new Date()` parse nhầm local (+7h). Giờ xuất `...Z` → countdown chạy đúng.
+
 ### 🔜 Phase 4 — Advanced Features
 - [ ] TCP/UDP Stream forwarding (non-HTTP addon)
 - [ ] Redirection Hosts (301/302)

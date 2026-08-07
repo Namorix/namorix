@@ -27,6 +27,16 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-08-2026.md](versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-08-07 — Frontgate Reverse Proxy UX hoàn thiện (menu actions, info dialog, dry-run minutes, UTC fix)
+
+- **Row action menu**: nút Delete cuối row → `NmxMenuButton` (MENU_VERTICAL trigger, `arrowDisabled`) — Confirm dry-run / Cancel dry-run / Edit / Delete. `filterItem` chỉ hiện 2 mục dry-run khi `isDryRunActive`; `dividerIndexes` top-divider trước Edit + Delete.
+- **Info dialog on row click**: click row → `NmxAlertDialog` "Proxy info" (`infoRule` state) hiện Source/Destination/Access/Status/Created at (`createdTime`)/dry-run countdown qua `NmxMetaList`; nút Apply dry-run chỉ render khi còn active (`confirmShouldRender`).
+- **Dry-run minute select**: General tab select 1P/5P/10P → `payload.dryRunMinutes`; backend `CreateRuleRequest.DryRunMinutes = 1` + `ResolveDryRunSeconds(minutes)` (1|5|10 → ×60, else 60) thay hằng `_dryRunSeconds`.
+- **`isDryRunActive` + JS countdown**: helper `expiresAt != null && new Date(expiresAt) > now`, `now` state tick 1s — cột/badge/menu/dialog cùng dùng, hết hạn hiển thị "—".
+- **UTC timezone fix**: `UtcDateTimeJsonConverter` (`Namorix.Core/Helpers`, JsonConverter<DateTime> — Unspecified→Utc) đăng ký global trong `AddJsonOptions` — SQLite mất `DateTimeKind` → trước đây serialized thiếu `Z` (`...T14:12:35.775856`) → FE `new Date()` parse nhầm local +7h → countdown 00:00. Giờ xuất `Z` → đúng.
+- **@namorix/ui 0.41.0**: NmxIconFont `size`/`semantic` props (+cxSize, NmxSize), EDIT/UNDO icons, NmxAlertDialog `confirmShouldRender`. **@namorix/styles 0.50.0**: icomoon rebuild + icon-font/frontgate SCSS + theme rebuild. **Namorix.Core 0.53.2**, **Namorix.Server 0.68.0**, frontend 0.77.0, frontgate 1.5.0.
+- **Pending**: test runtime Phase 3 FE (dry-run toggle, countdown, access policy CRUD, action menu, info dialog).
+
 ### 2026-08-07 — Frontgate Phase 3: Access Control + dry-run + Warden scaffold
 
 - **Phase 3 Access Control (FE + BE)**: `FrontgateAccessPolicy.tsx` (Access Policy tab — CRUD, type switch ipAllowlist/geoBlock/basicAuth/ipDenylist, rules textarea ↔ JSON, username/password cho basicAuth), `AccessPolicyController` + `FrontgateAccessService` + `AccessControlMiddleware` + `GeoIpService` (MaxMind.GeoIP2). **BasicAuth hash fix**: `HashBasicAuthPassword` skip re-hash nếu password bắt đầu `$2a`/`$2b`/`$2y` → edit giữ nguyên hash cũ khi để trống password.

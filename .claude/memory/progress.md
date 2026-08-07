@@ -1,5 +1,16 @@
 # Version History — August 2026
 
+## 2026-08-07 — Frontgate Reverse Proxy UX hoàn thiện (menu actions, info dialog, dry-run minutes, UTC fix)
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/ui | 0.40.0 → 0.41.0 | MODIFIED: `Primitives/NmxIcon/NmxIconFont.tsx` — thêm `size?: NmxSpacing` (`cxSize`) + `semantic?: NmxSemanticColor` (`cxSemantic`) props; `NmxIconFont.types.ts` — +`EDIT`/`UNDO` icon symbol; `Components/NmxAlertDialog.tsx` — +`confirmShouldRender = true` prop (`shouldRender={!!onConfirm && confirmShouldRender}`); `types/primitives.ts` — +`NmxSize` type; `utils/cx.ts` — +`cxSize(prefix, size)`. |
+| @namorix/styles | 0.49.0 → 0.50.0 | MODIFIED: icomoon rebuild (thêm `$ic-edit`/`$ic-undo` — `_font-face.scss`/`fonts.scss`/`selection.json`/`variables.scss`), `base/components/icon/icon-font.scss` (+size/semantic/color modifiers), `base/abstract/mixins.scss`, `base/shell/addon/frontgate.scss` (dry-run/action column), theme CSS rebuild (default + dark). |
+| frontend | 0.76.0 → 0.77.0 | MODIFIED: `addons/Frontgate/FrontgateReverseProxy.tsx` — **menu actions** (NmxMenuButton Confirm dry-run/Cancel dry-run/Edit/Delete, `filterItem` theo `isDryRunActive`, `dividerIndexes`), **info dialog on row click** (`infoRule` + NmxAlertDialog "Proxy info" + NmxMetaList + `confirmShouldRender` cho nút Apply), **dry-run minute select** 1P/5P/10P (`formDryRunMinutes` + `dryRunMinuteOptions`), **`isDryRunActive` helper** (expiresAt > now) + JS countdown tick 1s — cột/badge/menu/dialog cùng dùng, hết hạn hiển thị "—"; `frontgate.controller.ts` — `CreateReverseProxyRulePayload` +`dryRunMinutes?`; `i18n/locales/en.json` (+proxyInfo/createdTime/dryRunMinutes/dryRunMinuteOptions, dryRun.confirm "Apply dry-run"/cancel "Rollback dry-run"). |
+| Namorix.Core | 0.53.1 → 0.53.2 | NEW: `Helpers/UtcDateTimeJsonConverter.cs` (`JsonConverter<DateTime>` — Unspecified→Utc, write `Z`). MODIFIED: `Extensions/ServiceCollectionExtensions.cs` — `AddJsonOptions` + `.Converters.Add(new UtcDateTimeJsonConverter())` (fix SQLite mất `DateTimeKind` → serialized thiếu `Z` → FE `new Date()` parse nhầm local +7h, countdown chết). |
+| Namorix.Server | 0.67.0 → 0.68.0 | MODIFIED: `Controllers/Frontgate/ReverseProxyController.cs` — `CreateRuleRequest` +`DryRunMinutes = 1` (1|5|10), `ResolveDryRunSeconds(minutes)` (×60, else 60) thay hằng `_dryRunSeconds` cho Create + Update. |
+| frontgate addon | 1.4.0 → 1.5.0 | `version.ts` `NmxAddonVersions` — MINOR bump (Phase 3b UX: menu actions, info dialog, dry-run minutes). |
+
 ## 2026-08-07 — Frontgate Phase 3: Access Control + dry-run + Warden scaffold
 
 | Package | Version | Changes |

@@ -345,7 +345,7 @@ backend/
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | GET | `/api/frontgate/reverse-proxy` | Admin | List reverse proxy rules (paginated: `page`, `pageSize`) |
-| POST | `/api/frontgate/reverse-proxy` | Admin | Create rule (source, destination, features, access) |
+| POST | `/api/frontgate/reverse-proxy` | Admin | Create rule (source, destination, features, access; dry-run với `DryRun` + `DryRunMinutes` 1/5/10) |
 | PUT | `/api/frontgate/reverse-proxy/{id}` | Admin | Update rule, triggers YARP runtime reload |
 | DELETE | `/api/frontgate/reverse-proxy/{id}` | Admin | Delete rule, triggers YARP runtime reload |
 | POST | `/api/frontgate/reverse-proxy/{id}/dry-run/confirm` | Admin | Xác nhận dry-run rule (giữ nguyên Active) |
