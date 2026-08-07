@@ -1,4 +1,6 @@
 using System.Net.Http.Headers;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Namorix.Core.Config;
@@ -17,6 +19,7 @@ using Namorix.Server.Extensions;
 using Namorix.Server.Hubs;
 using Namorix.Server.Infrastructure;
 using Namorix.Server.Middleware;
+using Namorix.Server.Middleware.Frontgate;
 using Namorix.Server.Persistence;
 using Namorix.Server.Services;
 using Namorix.Server.Services.Beacon;
@@ -24,6 +27,8 @@ using Namorix.Server.Services.Beacon.Providers;
 using Namorix.Server.Services.Frontgate;
 using Namorix.Server.Services.Grpc;
 using Namorix.Server.Workers;
+using Namorix.Server.Workers.Beacon;
+using Namorix.Server.Workers.Frontgate;
 using Yarp.ReverseProxy.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,10 +36,10 @@ var backendConfig = builder.Configuration.GetSection("Backend").Get<BackendConfi
 var dataBasePath = builder.Configuration.GetValue<string>("DataBasePath") ?? "data";
 var dbPath = Path.Combine(dataBasePath, "namorix.db");
 
-if (backendConfig.HttpsPort > 0 && string.IsNullOrEmpty(backendConfig.SslCertPath))
-{
-    SelfSignedCertificateProvider.Ensure(ref backendConfig, new DataDirectory(dataBasePath));
-}
+// if (backendConfig.HttpsPort > 0 && string.IsNullOrEmpty(backendConfig.SslCertPath))
+// {
+//     SelfSignedCertificateProvider.Ensure(ref backendConfig, new DataDirectory(dataBasePath));
+// }
 
 builder.Services.Configure<AppConfig>(builder.Configuration);
 builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("Jwt"));
@@ -42,23 +47,61 @@ builder.Services.Configure<AddonCatalogConfig>(builder.Configuration.GetSection(
 builder.Services.Configure<BackendConfig>(builder.Configuration.GetSection("Backend"));
 builder.Services.Configure<FrontendConfig>(builder.Configuration.GetSection("Frontend"));
 
+using var loggerFactory = LoggerFactory.Create(b => b.AddConsole());
+var sniLogger = loggerFactory.CreateLogger("SniCert");
+List<SslApplicationProtocol> AppProtocols =
+    [SslApplicationProtocol.Http2, SslApplicationProtocol.Http11];
+
 builder.WebHost.ConfigureKestrel(options =>
 {
     options.ListenAnyIP(backendConfig.Port, o => o.Protocols = HttpProtocols.Http1);
     options.ListenAnyIP(backendConfig.GrpcPort, o => o.Protocols = HttpProtocols.Http2);
-    
+        
     if (backendConfig.HttpPort > 0)
         options.ListenAnyIP(backendConfig.HttpPort, o => o.Protocols = HttpProtocols.Http1);
 
-    if (backendConfig.HttpsPort > 0 && !string.IsNullOrEmpty(backendConfig.SslCertPath))
+    if (backendConfig.HttpsPort <= 0)
+        return;
+
+    if (string.IsNullOrEmpty(backendConfig.SslCertPath))
+        SelfSignedCertificateProvider.Ensure(ref backendConfig, new DataDirectory(dataBasePath));
+
+    var fallbackCert = X509CertificateLoader.LoadPkcs12FromFile(backendConfig.SslCertPath!, 
+        backendConfig.SslCertPassword);
+    var certDir = Path.Combine(dataBasePath, DataDirectory.CertDir);
+
+    options.ListenAnyIP(backendConfig.HttpsPort, o =>
     {
-        options.ListenAnyIP(backendConfig.HttpsPort, o =>
+        o.Protocols = HttpProtocols.Http1AndHttp2;
+        o.UseHttps((_, clientHelloInfo, _, _) =>
         {
-            o.Protocols = HttpProtocols.Http1;
-            o.UseHttps(backendConfig.SslCertPath, backendConfig.SslCertPassword);
-        });
-    }
+            var sni = clientHelloInfo.ServerName;
+            if (string.IsNullOrEmpty(sni))
+                return ValueTask.FromResult(new SslServerAuthenticationOptions { ServerCertificate = fallbackCert, ApplicationProtocols = AppProtocols});
+
+            var name = sni.Replace('*', '_');
+            var fullchainPath = Path.Combine(certDir, name, DataDirectory.FullChainFile);
+            var privatekeyPath = Path.Combine(certDir, name, DataDirectory.PrivateKeyFile);
+
+            if (!File.Exists(fullchainPath) || !File.Exists(privatekeyPath))
+                return ValueTask.FromResult(new SslServerAuthenticationOptions { ServerCertificate = fallbackCert, ApplicationProtocols = AppProtocols });
+
+            try
+            {
+                var cert = X509Certificate2.CreateFromPemFile(fullchainPath, privatekeyPath);
+                return ValueTask.FromResult(new SslServerAuthenticationOptions { ServerCertificate = cert, ApplicationProtocols = AppProtocols });
+            }
+            catch (Exception ex)
+            {
+                sniLogger.LogWarning(ex, "Failed to load SNI cert for {Sni}", sni);
+            }
+
+            return ValueTask.FromResult(new SslServerAuthenticationOptions { ServerCertificate = fallbackCert, ApplicationProtocols = AppProtocols });
+        }, null!);
+    });
+
 });
+
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite($"Data Source={dbPath}"));
@@ -96,6 +139,7 @@ builder.Services.AddScoped<INotificationNotifier, SignalRNotificationNotifier<Ma
 builder.Services.AddScoped<ISystemMonitorNotifier, SignalRSystemMonitorNotifier>();
 builder.Services.AddScoped<IAddonNotifier, SignalRAddonNotifier>();
 builder.Services.AddScoped<IBeaconNotifier, SignalRBeaconNotifier>();
+builder.Services.AddScoped<IFrontgateNotifier, SignalRFrontgateNotifier>();
 
 builder.Services.AddHttpClient<CatalogService>(client =>
 {
@@ -115,6 +159,8 @@ builder.Services.AddHostedService<SystemMonitorStatsWorker>();
 builder.Services.AddHostedService<DockerMonitorWorker>();
 builder.Services.AddHostedService<CatalogSyncWorker>();
 builder.Services.AddHostedService<FgCertPendingResetWorker>();
+builder.Services.AddHostedService<FgCertRenewWorker>();
+builder.Services.AddHostedService<FgDryRunRollbackWorker>();
 builder.Services.AddHostedService<BcnCheckWorker>();
 builder.Services.AddHostedService<BcnActivityCleanupWorker>();
 
@@ -129,6 +175,8 @@ builder.Services.AddSingleton<AddonChannelManager>();
 builder.Services.AddSingleton<AcmeChallengeStore>();
 builder.Services.AddSingleton<DnsLookupChecker>();
 builder.Services.AddSingleton<AcmeDryRunService>();
+builder.Services.AddSingleton<FrontgateAccessService>();
+builder.Services.AddSingleton<GeoIpService>();
 
 builder.Services.AddSingleton<BcnUpdateQueue>();
 builder.Services.AddHostedService<BcnUpdateQueue>(sp => sp.GetRequiredService<BcnUpdateQueue>());
@@ -144,13 +192,13 @@ var appConfig = app.Services.GetRequiredService<IOptions<AppConfig>>().Value;
 var configOrigins = appConfig.AllowedOrigins
     .Split(",", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
-// Common middleware cho ALL ports
-app.UseApiErrorHandling();
-app.UseSecurityHeaders();
+await app.Services.GetRequiredService<FrontgateProxyConfigProvider>().UpdateAsync();
 
 // API port (backendConfig.Port = 5001): full pipeline
 app.UseWhen(ctx => ctx.Connection.LocalPort == backendConfig.Port, api =>
 {
+    api.UseApiErrorHandling();
+    api.UseSecurityHeaders();
     api.UseCors(policy =>
     {
         policy.SetIsOriginAllowed(origin =>
@@ -200,8 +248,15 @@ if (proxyPorts.Length > 0)
     {
         var pathPublic = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "frontend", "public");
         
+        proxy.UseMiddleware<ProxyTrafficMiddleware>();
         proxy.UseMiddleware<AcmeChallengeMiddleware>(); // LE HTTP call → serve token before redirect
+        proxy.UseMiddleware<AccessControlMiddleware>();
+        proxy.UseMiddleware<BlockWebSocketMiddleware>();
+        proxy.UseMiddleware<RewriteRedirectLocationMiddleware>();
+        proxy.UseMiddleware<BlockCommonExploitsMiddleware>();
         proxy.UseMiddleware<ForceSslMiddleware>();
+        proxy.UseMiddleware<HstsMiddleware>();
+        
         proxy.UseStaticFiles(new StaticFileOptions
         {
             FileProvider = new PhysicalFileProvider(pathPublic)

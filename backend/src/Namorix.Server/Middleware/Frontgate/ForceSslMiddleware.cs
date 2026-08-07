@@ -1,7 +1,6 @@
-using Namorix.Server.Services;
 using Namorix.Server.Services.Frontgate;
 
-namespace Namorix.Server.Middleware;
+namespace Namorix.Server.Middleware.Frontgate;
 
 public class ForceSslMiddleware(RequestDelegate next, FrontgateProxyConfigProvider proxyConfig)
 {

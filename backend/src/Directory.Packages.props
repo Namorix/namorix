@@ -15,6 +15,7 @@
     <PackageVersion Include="Yarp.ReverseProxy" Version="2.3.0" />
     <PackageVersion Include="Certes" Version="3.0.4" />
     <PackageVersion Include="DnsClient" Version="1.8.0" />
+    <PackageVersion Include="MaxMind.GeoIP2" Version="6.1.0" />
   </ItemGroup>
   <ItemGroup>
     <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-2m69-gcr7-jv3q" />

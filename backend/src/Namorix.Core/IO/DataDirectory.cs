@@ -11,7 +11,10 @@ public class DataDirectory(string basePath)
     public string LogsPath => Path.Combine(basePath, "logs");
     public string PkiPath => Path.Combine(basePath, "pki");
 
-
+    public const string CertDir = "certs";
+    public const string PrivateKeyFile = "privatekey.pem";
+    public const string FullChainFile = "fullchain.pem";
+    
     public void EnsureInitialized()
     {
         foreach (var cat in KnownCategories)
@@ -109,6 +112,15 @@ public class DataDirectory(string basePath)
         File.WriteAllBytes(fullPath, data);
         return fullPath;
     }
+    
+    public void DeleteFile(string subPath)
+    {
+        var fullPath = Path.Combine(basePath, subPath);
+        if (File.Exists(fullPath))
+            File.Delete(fullPath);
+    }
+    
+    public string CertPath(string certName) => Path.Combine(basePath, CertDir, certName);
     
     private static string LogPattern => "*.log";
     

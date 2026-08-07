@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Namorix.Server.Persistence;
 
-namespace Namorix.Server.Workers;
+namespace Namorix.Server.Workers.Beacon;
 
 public class BcnActivityCleanupWorker(IServiceProvider serviceProvider,
     ILogger<BcnActivityCleanupWorker> logger) : BackgroundService

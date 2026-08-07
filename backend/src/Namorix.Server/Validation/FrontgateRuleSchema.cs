@@ -37,6 +37,7 @@ public class FrontgateRuleSchema : IValidationSchema
 
     public AllowedValuesValidationRule Access => new()
     {
+        IsRequired = true,
         AllowedValues = ["public", "private", "restricted", "basicAuth"],
     };
     

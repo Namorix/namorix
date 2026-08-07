@@ -5,7 +5,9 @@ using Certes;
 using Certes.Acme;
 using Certes.Acme.Resource;
 using Microsoft.EntityFrameworkCore;
+using Namorix.Core.Constants;
 using Namorix.Core.IO;
+using Namorix.Server.Infrastructure;
 using Namorix.Server.Models.Frontgate;
 using Namorix.Server.Persistence;
 using Directory = System.IO.Directory;
@@ -57,7 +59,20 @@ public class AcmeCertQueue(IServiceScopeFactory scopeFactory, ILogger<AcmeCertQu
             var accountKey = await GetOrCreateAccountKeyAsync(dataDir, ct);
             var acme = new AcmeContext(WellKnownServers.LetsEncryptV2, accountKey);
 
+            var adminEmail = await db.Users
+                .Where(u => u.Role == UserRole.Admin)
+                .Select(u => u.Email)
+                .FirstOrDefaultAsync(ct);
+
+            if (string.IsNullOrEmpty(adminEmail))
+                throw new InvalidOperationException("Admin email not found for ACME account registration");
+
+            await acme.NewAccount(
+                contact: [$"mailto:{adminEmail}"],
+                termsOfServiceAgreed: true);
+
             var order = await acme.NewOrder(domains);
+
             var authorizations = await order.Authorizations();
 
             foreach (var auth in authorizations)
@@ -87,8 +102,9 @@ public class AcmeCertQueue(IServiceScopeFactory scopeFactory, ILogger<AcmeCertQu
             var privateKeyPem = certKey.ToPem();
 
             var name = domains[0].Replace('*', '_');
-            dataDir.WriteFile($"certs/{name}/privkey.pem", Encoding.UTF8.GetBytes(privateKeyPem));
-            dataDir.WriteFile($"certs/{name}/fullchain.pem", Encoding.UTF8.GetBytes(fullchainPem));
+            var certDir = Path.Combine(DataDirectory.CertDir, name);
+            dataDir.WriteFile(Path.Combine(certDir, DataDirectory.PrivateKeyFile), Encoding.UTF8.GetBytes(privateKeyPem));
+            dataDir.WriteFile(Path.Combine(certDir, DataDirectory.FullChainFile), Encoding.UTF8.GetBytes(fullchainPem));
 
             var x509 = X509Certificate2.CreateFromPem(fullchainPem);
             var expiresAt = x509.NotAfter.ToUniversalTime();
@@ -102,6 +118,9 @@ public class AcmeCertQueue(IServiceScopeFactory scopeFactory, ILogger<AcmeCertQu
 
             logger.LogInformation("Issued ACME cert for {Domain} (expires {ExpiresAt:O})",
                 domains[0], expiresAt);
+            
+            var notifier = scope.ServiceProvider.GetRequiredService<IFrontgateNotifier>();
+            await notifier.NotifyCertStatusChanged(certId, "active", x509.Issuer, expiresAt);
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
@@ -125,6 +144,9 @@ public class AcmeCertQueue(IServiceScopeFactory scopeFactory, ILogger<AcmeCertQu
                 .Where(c => c.Id == certId)
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(c => c.Status, FgCertificateStatus.Error));
+            
+            var notifier = scope.ServiceProvider.GetRequiredService<IFrontgateNotifier>();
+            await notifier.NotifyCertStatusChanged(certId, "error", null, null);
         }
         catch (Exception ex)
         {

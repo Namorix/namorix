@@ -1,12 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Namorix.Server.Infrastructure;
-using Namorix.Server.Models;
 using Namorix.Server.Models.Beacon;
 using Namorix.Server.Persistence;
-using Namorix.Server.Services;
 using Namorix.Server.Services.Beacon;
 
-namespace Namorix.Server.Workers;
+namespace Namorix.Server.Workers.Beacon;
 
 public sealed class BcnCheckWorker(IServiceScopeFactory scopeFactory,
     IPublicIpDetector ipDetector, ILogger<BcnCheckWorker> logger) : BackgroundService

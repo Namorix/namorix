@@ -5,6 +5,7 @@ public static class ServerSignalRGroups
     public const string SystemMonitor = "system-monitor";
     public const string Addon = "addon";
     public const string Beacon = "beacon";
+    public const string Frontgate = "frontgate";
 }
 
 public static class ServerSignalREvent
@@ -17,4 +18,5 @@ public static class ServerSignalREvent
     public const string BeaconHostnameStatusChanged = $"{ServerSignalRGroups.Beacon}:hostname-status-changed";
     public const string BeaconActivityCreated = $"{ServerSignalRGroups.Beacon}:activity-created";
     public const string BeaconHostnamesRefreshed = $"{ServerSignalRGroups.Beacon}:hostnames-refreshed";
+    public const string FrontgateCertStatusChanged = $"{ServerSignalRGroups.Frontgate}:cert-status-changed";
 }

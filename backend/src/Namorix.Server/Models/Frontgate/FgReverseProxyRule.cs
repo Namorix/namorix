@@ -31,7 +31,7 @@ public class FgReverseProxyRule
     public FgCertificate? Certificate { get; init; }
     
     public ProxyAccessMode Access { get; set; } = ProxyAccessMode.Private;
-    [MaxLength(32)] public string? AccessPolicyId { get; init; }
+    [MaxLength(32)] public string? AccessPolicyId { get; set; }
     public FgAccessPolicy? AccessPolicy { get; init; }
     
     public bool WebSocketsSupport { get; set; } = true;
@@ -46,6 +46,10 @@ public class FgReverseProxyRule
     public string? AdditionalHeadersJson { get; set; }
 
     public ProxyRuleStatus Status { get; set; } = ProxyRuleStatus.Inactive;
+    
+    public DateTime? DryRunExpiresAt { get; set; }
+    [MaxLength(8192)] public string? DryRunSnapshotJson { get; set; }
+    
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
     

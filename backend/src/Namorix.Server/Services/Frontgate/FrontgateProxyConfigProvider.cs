@@ -14,6 +14,11 @@ public class FrontgateProxyConfigProvider(IServiceScopeFactory scopeFactory) : I
 {
     private FrontgateProxyConfig _config = new([], []);
     public ConcurrentDictionary<string, byte> ForceSslSources { get; } = new();
+    public ConcurrentDictionary<string, byte> WebSocketSources { get; } = new();
+   public ConcurrentDictionary<string, byte> HstsSources { get; } = new();
+    public ConcurrentDictionary<string, byte> HstsSubdomainSources { get; } = new();
+    public ConcurrentDictionary<string, byte> BlockExploitSources { get; } = new();
+    public ConcurrentDictionary<string, (ProxyAccessMode Mode, FgAccessPolicy? Policy)> AccessSources { get; } = new();
 
     public IProxyConfig GetConfig() => _config;
 
@@ -25,6 +30,8 @@ public class FrontgateProxyConfigProvider(IServiceScopeFactory scopeFactory) : I
         // Only load active rules; join with certificates to get domains if applicable
         var rules = await db.FgReverseProxyRules
             .Where(r => r.Status == ProxyRuleStatus.Active)
+            .Include(fgReverseProxyRule => fgReverseProxyRule.Locations)
+            .Include(fgReverseProxyRule => fgReverseProxyRule.AccessPolicy)
             .ToListAsync();
 
         var clusters = new Dictionary<string, ClusterConfig>();
@@ -47,21 +54,12 @@ public class FrontgateProxyConfigProvider(IServiceScopeFactory scopeFactory) : I
                 HttpRequest = new ForwarderRequestConfig
                 {
                     Version = rule.Http2Support ? HttpVersion.Version20 : HttpVersion.Version11,
-                    VersionPolicy = rule.Http2Support
-                        ? HttpVersionPolicy.RequestVersionExact
-                        : HttpVersionPolicy.RequestVersionOrLower,
+                    VersionPolicy = HttpVersionPolicy.RequestVersionOrLower,
                 }
             };
 
             var transforms = new List<Dictionary<string, string>>();
-            if (rule.WebSocketsSupport)
-            {
-                transforms.Add(new Dictionary<string, string>
-                {
-                    ["X-Forwarded"] = "Transform"
-                });
-            }
-
+            
             if (!string.IsNullOrEmpty(rule.AdditionalHeadersJson))
             {
                 var customHeaders = JsonSerializer.Deserialize<Dictionary<string, string>>(rule.AdditionalHeadersJson);
@@ -77,6 +75,15 @@ public class FrontgateProxyConfigProvider(IServiceScopeFactory scopeFactory) : I
                 }
             }
 
+            if (rule.CacheAssets)
+            {
+                transforms.Add(new Dictionary<string, string>
+                {
+                    ["ResponseHeader"] = "Cache-Control",
+                    ["Set"] = "public, max-age=86400"
+                });
+            }
+
             routes.Add(new RouteConfig
             {
                 RouteId = $"fg:{rule.Id}",
@@ -84,6 +91,37 @@ public class FrontgateProxyConfigProvider(IServiceScopeFactory scopeFactory) : I
                 Match = new RouteMatch { Hosts = [rule.Source] },
                 Transforms = transforms.Count > 0 ? transforms : null,
             });
+
+            if (rule.Locations is not { Count: > 0 })
+                continue;
+            
+            foreach (var loc in rule.Locations)
+            {
+                var locClusterId = $"fg:{rule.Id}:{loc.Path}";
+                clusters[locClusterId] = new ClusterConfig
+                {
+                    ClusterId = locClusterId,
+                    Destinations = new Dictionary<string, DestinationConfig>
+                    {
+                        ["default"] = new()
+                        {
+                            Address = $"{loc.Scheme}://{loc.ForwardHost}:{loc.ForwardPort}"
+                        }
+                    }
+                };
+
+                routes.Add(new RouteConfig
+                {
+                    RouteId = locClusterId,
+                    ClusterId = locClusterId,
+                    Match = new RouteMatch
+                    {
+                        Hosts = [rule.Source],
+                        Path = loc.Path + "/{**catch-all}"
+                    },
+                    Transforms = transforms.Count > 0 ? transforms : null,
+                });
+            }
         }
 
         var oldConfig = _config;
@@ -93,6 +131,26 @@ public class FrontgateProxyConfigProvider(IServiceScopeFactory scopeFactory) : I
         ForceSslSources.Clear();
         foreach (var rule in rules.Where(r => r.ForceSsl))
             ForceSslSources.TryAdd(rule.Source, 0);
+        
+        WebSocketSources.Clear();
+        foreach (var ruleWs in rules.Where(r => r.WebSocketsSupport))
+            WebSocketSources.TryAdd(ruleWs.Source, 0);
+        
+        HstsSources.Clear();
+        foreach (var rule in rules.Where(r => r.HstsEnabled))
+            HstsSources.TryAdd(rule.Source, 0);
+
+        HstsSubdomainSources.Clear();
+        foreach (var rule in rules.Where(r => r.HstsSubdomains))
+            HstsSubdomainSources.TryAdd(rule.Source, 0);
+
+        BlockExploitSources.Clear();
+        foreach (var rule in rules.Where(r => r.BlockCommonExploits))
+            BlockExploitSources.TryAdd(rule.Source, 0);
+        
+        AccessSources.Clear();
+        foreach (var rule in rules)
+            AccessSources[rule.Source] = (rule.Access, rule.AccessPolicy);
     }
 }
 

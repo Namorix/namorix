@@ -1,9 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using Namorix.Server.Models;
 using Namorix.Server.Models.Frontgate;
 using Namorix.Server.Persistence;
 
-namespace Namorix.Server.Workers;
+namespace Namorix.Server.Workers.Frontgate;
 
 public class FgCertPendingResetWorker(
     IServiceProvider serviceProvider,
