@@ -15,6 +15,9 @@ import {
   NmxIconFont,
   NmxIconFontSymbol,
   NmxKeyValueEditor,
+  NmxMenuButton,
+  NmxMetaItem,
+  NmxMetaList,
   NmxPagination,
   NmxSelect,
   type NmxSelectData,
@@ -104,6 +107,72 @@ function formatDryRunRemaining(expiresAt: string, now: number): string {
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`
 }
 
+function isDryRunActive(
+  expiresAt: string | null | undefined,
+  now: number,
+): boolean {
+  return expiresAt != null && new Date(expiresAt).getTime() > now
+}
+
+function renderAccess(access: ReverseProxyRuleAccess) {
+  return (
+    <NmxBadge
+      semantic={
+        access === "public"
+          ? "warning"
+          : access === "private"
+            ? "info"
+            : access === "restricted"
+              ? "error"
+              : "debug"
+      }
+      size="sm"
+    >
+      {access}
+    </NmxBadge>
+  )
+}
+
+function renderStatus(status: ReverseProxyRuleStatus) {
+  return (
+    <NmxBadge
+      className={status}
+      semantic={
+        status === "active" ? "success" : status === "error" ? "error" : "debug"
+      }
+      size="sm"
+    >
+      {status}
+    </NmxBadge>
+  )
+}
+
+function renderDryRun(dryRunExpiresAt: string | undefined, now: number) {
+  if (!isDryRunActive(dryRunExpiresAt, now)) {
+    return <span>—</span>
+  }
+
+  return (
+    <NmxBadge semantic="warning" size="sm">
+      {formatDryRunRemaining(dryRunExpiresAt ?? "", now)}
+    </NmxBadge>
+  )
+}
+
+function renderSslStatus(rule: ReverseProxyRule) {
+  if (!rule.certificateId) {
+    return <span>—</span>
+  }
+
+  return (
+    <NmxIconFont
+      symbol={NmxIconFontSymbol.LOCK}
+      size="lg"
+      semantic={getStatusSemantic(rule.certStatus, rule.forceSsl)}
+    />
+  )
+}
+
 export const FrontgateReverseProxy: React.FC = () => {
   const { t } = useTranslation()
   const activeTab = useActiveTab<FrontgateTab>()
@@ -119,8 +188,8 @@ export const FrontgateReverseProxy: React.FC = () => {
   const [activeTabDialog, setActiveTabDialog] =
     useState<FrontgateTabDialog>("general")
   const [formSubmitting, setFormSubmitting] = useState(false)
+  const [infoRule, setInfoRule] = useState<ReverseProxyRule | null>(null)
   const [editingRule, setEditingRule] = useState<ReverseProxyRule | null>(null)
-
   const [deletingRule, setDeletingRule] = useState<ReverseProxyRule | null>(
     null,
   )
@@ -166,6 +235,7 @@ export const FrontgateReverseProxy: React.FC = () => {
   const [formAccess, setFormAccess] = useState(initialForm.access)
 
   const [formDryRun, setFormDryRun] = useState(false)
+  const [formDryRunMinutes, setFormDryRunMinutes] = useState(1)
   const [now, setNow] = useState(() => Date.now())
 
   const fetchRules = useCallback(
@@ -265,6 +335,7 @@ export const FrontgateReverseProxy: React.FC = () => {
     setFormStatus(initialForm.status)
     setFormForceSsl(initialForm.forceSsl)
     setFormDryRun(false)
+    setFormDryRunMinutes(1)
 
     setFormWebSockets(initialForm.webSocketsSupport)
     setFormCacheAssets(initialForm.cacheAssets)
@@ -406,6 +477,7 @@ export const FrontgateReverseProxy: React.FC = () => {
       cacheAssets: formCacheAssets,
       forceSsl: formForceSsl,
       dryRun: formDryRun,
+      dryRunMinutes: formDryRun ? formDryRunMinutes : undefined,
       http2Support: formHttp2,
       hstsEnabled: formHsts,
       hstsSubdomains: formHstsSub,
@@ -461,6 +533,7 @@ export const FrontgateReverseProxy: React.FC = () => {
     formCacheAssets,
     formForceSsl,
     formDryRun,
+    formDryRunMinutes,
     formHttp2,
     formHsts,
     formHstsSub,
@@ -562,7 +635,7 @@ export const FrontgateReverseProxy: React.FC = () => {
             </a>
           </div>
           <div className="nmx-addon-frontgate__created">
-            {t("addon.frontgate.pages.reverseProxy.fields.createdAt", {
+            {t("addon.frontgate.pages.reverseProxy.fields.createdTime", {
               time: dateTime(row.createdAt),
             })}
           </div>
@@ -580,24 +653,7 @@ export const FrontgateReverseProxy: React.FC = () => {
     },
     {
       header: t("addon.frontgate.pages.reverseProxy.fields.ssl"),
-      renderCell: (row) => {
-        if (!row.certificateId) {
-          return (
-            <NmxBadge semantic="trace" size="sm">
-              —
-            </NmxBadge>
-          )
-        }
-
-        return (
-          <NmxBadge
-            semantic={getStatusSemantic(row.certStatus, row.forceSsl)}
-            size="sm"
-          >
-            <NmxIconFont symbol={NmxIconFontSymbol.LOCK} />
-          </NmxBadge>
-        )
-      },
+      renderCell: (row) => renderSslStatus(row),
       grow: 0,
       alignHeader: "center",
       alignCell: "center",
@@ -606,22 +662,7 @@ export const FrontgateReverseProxy: React.FC = () => {
     },
     {
       header: t("addon.frontgate.pages.reverseProxy.fields.access"),
-      renderCell: (row) => (
-        <NmxBadge
-          semantic={
-            row.access === "public"
-              ? "warning"
-              : row.access === "private"
-                ? "info"
-                : row.access === "restricted"
-                  ? "error"
-                  : "debug"
-          }
-          size="sm"
-        >
-          {row.access}
-        </NmxBadge>
-      ),
+      renderCell: (row) => renderAccess(row.access),
       grow: 1,
       alignHeader: "center",
       alignCell: "center",
@@ -630,21 +671,7 @@ export const FrontgateReverseProxy: React.FC = () => {
     },
     {
       header: t("addon.frontgate.pages.reverseProxy.fields.status"),
-      renderCell: (row) => (
-        <NmxBadge
-          className={row.status}
-          semantic={
-            row.status === "active"
-              ? "success"
-              : row.status === "error"
-                ? "error"
-                : "debug"
-          }
-          size="sm"
-        >
-          {row.status}
-        </NmxBadge>
-      ),
+      renderCell: (row) => renderStatus(row.status),
       grow: 1,
       alignHeader: "center",
       alignCell: "center",
@@ -652,45 +679,7 @@ export const FrontgateReverseProxy: React.FC = () => {
     },
     {
       header: t("addon.frontgate.pages.reverseProxy.fields.dryRun"),
-      renderCell: (row) => {
-        if (!row.dryRunExpiresAt) {
-          return (
-            <NmxBadge semantic="trace" size="sm">
-              —
-            </NmxBadge>
-          )
-        }
-        return (
-          <div className="nmx-addon-frontgate__dryrun">
-            <NmxBadge semantic="warning" size="sm">
-              <NmxIconFont symbol={NmxIconFontSymbol.TIME} />
-              {formatDryRunRemaining(row.dryRunExpiresAt, now)}
-            </NmxBadge>
-            <NmxButton
-              variant="outline"
-              semantic="success"
-              onClick={(e) => {
-                e.stopPropagation()
-                handleDryRunConfirm(row.id)
-              }}
-              data-row-action
-            >
-              {t("addon.frontgate.pages.reverseProxy.dryRun.confirm")}
-            </NmxButton>
-            <NmxButton
-              variant="ghost"
-              semantic="error"
-              onClick={(e) => {
-                e.stopPropagation()
-                handleDryRunCancel(row.id)
-              }}
-              data-row-action
-            >
-              {t("addon.frontgate.pages.reverseProxy.dryRun.cancel")}
-            </NmxButton>
-          </div>
-        )
-      },
+      renderCell: (row) => renderDryRun(row.dryRunExpiresAt, now),
       grow: 2,
       alignHeader: "center",
       alignCell: "center",
@@ -699,19 +688,65 @@ export const FrontgateReverseProxy: React.FC = () => {
     },
     {
       header: "",
-      renderCell: (row) => (
-        <NmxButton
-          variant="ghost"
-          semantic="error"
-          onClick={(e) => {
-            e.stopPropagation()
-            handleDelete(row)
-          }}
-          data-row-action
-        >
-          <NmxIconFont symbol={NmxIconFontSymbol.DELETE} />
-        </NmxButton>
-      ),
+      renderCell: (row) => {
+        const hasDryRun = isDryRunActive(row.dryRunExpiresAt, now)
+        return (
+          <NmxMenuButton
+            variant="ghost"
+            semantic="trace"
+            arrowDisabled
+            filterItem={(opt) =>
+              opt.value === "confirm-dry-run" || opt.value === "cancel-dry-run"
+                ? hasDryRun
+                : true
+            }
+            options={[
+              {
+                value: "confirm-dry-run",
+                label: t("addon.frontgate.pages.reverseProxy.dryRun.confirm"),
+                semantic: "success",
+                icon: NmxIconFontSymbol.CHECK,
+              },
+              {
+                value: "cancel-dry-run",
+                label: t("addon.frontgate.pages.reverseProxy.dryRun.cancel"),
+                semantic: "warning",
+                icon: NmxIconFontSymbol.UNDO,
+              },
+              {
+                value: "edit",
+                label: t(
+                  "addon.frontgate.pages.reverseProxy.actions.editProxy",
+                ),
+                icon: NmxIconFontSymbol.EDIT,
+              },
+              {
+                value: "delete",
+                label: t(
+                  "addon.frontgate.pages.reverseProxy.actions.deleteProxy",
+                ),
+                semantic: "error",
+                icon: NmxIconFontSymbol.DELETE,
+              },
+            ]}
+            dividerIndexes={[
+              { value: "edit", position: "top" },
+              { value: "delete", position: "top" },
+            ]}
+            onSelect={(value) => {
+              if (value === "confirm-dry-run") handleDryRunConfirm(row.id)
+              else if (value === "cancel-dry-run") handleDryRunCancel(row.id)
+              else if (value === "edit") {
+                setEditingRule(row)
+                fillForm(row)
+                setShowAddDialog(true)
+              } else handleDelete(row)
+            }}
+          >
+            <NmxIconFont symbol={NmxIconFontSymbol.MENU_VERTICAL} />
+          </NmxMenuButton>
+        )
+      },
       grow: 0,
       alignHeader: "center",
       alignCell: "center",
@@ -785,6 +820,27 @@ export const FrontgateReverseProxy: React.FC = () => {
     },
   ]
 
+  const dryRunMinuteOptions: NmxSelectData[] = [
+    {
+      value: "1",
+      label: t(
+        "addon.frontgate.pages.reverseProxy.fields.dryRunMinuteOptions.dryRun1m",
+      ),
+    },
+    {
+      value: "5",
+      label: t(
+        "addon.frontgate.pages.reverseProxy.fields.dryRunMinuteOptions.dryRun5m",
+      ),
+    },
+    {
+      value: "10",
+      label: t(
+        "addon.frontgate.pages.reverseProxy.fields.dryRunMinuteOptions.dryRun10m",
+      ),
+    },
+  ]
+
   const totalPages = Math.ceil(total / pageSize)
 
   return (
@@ -807,11 +863,7 @@ export const FrontgateReverseProxy: React.FC = () => {
           rows={rules}
           fallbackConditions={fallbackConditions}
           clickableRows={true}
-          onRowClick={(row) => {
-            setEditingRule(row)
-            fillForm(row)
-            setShowAddDialog(true)
-          }}
+          onRowClick={(row) => setInfoRule(row)}
           className="nmx-addon-page__data-table"
         />
 
@@ -834,6 +886,107 @@ export const FrontgateReverseProxy: React.FC = () => {
           />
         )}
       </div>
+
+      <NmxAlertDialog
+        open={infoRule !== null}
+        title={t("addon.frontgate.pages.reverseProxy.actions.proxyInfo")}
+        confirmLabel={t("addon.frontgate.pages.reverseProxy.dryRun.confirm")}
+        extraActionLabel={t(
+          "addon.frontgate.pages.reverseProxy.actions.editProxy",
+        )}
+        onConfirm={() => {
+          if (infoRule) handleDryRunConfirm(infoRule?.id)
+          setInfoRule(null)
+        }}
+        onExtraAction={() => {
+          if (infoRule) {
+            setEditingRule(infoRule)
+            fillForm(infoRule)
+            setShowAddDialog(true)
+          }
+          setInfoRule(null)
+        }}
+        confirmShouldRender={isDryRunActive(infoRule?.dryRunExpiresAt, now)}
+        onClose={() => setInfoRule(null)}
+        size="md"
+      >
+        {infoRule && (
+          <>
+            <NmxMetaList>
+              <NmxMetaItem
+                label={t("addon.frontgate.pages.reverseProxy.fields.source")}
+                alignValue="end"
+              >
+                <a
+                  href={`https://${infoRule.source}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="nmx-addon-frontgate__domain-item"
+                >
+                  {infoRule.source}
+                </a>
+              </NmxMetaItem>
+              <NmxMetaItem
+                label={t(
+                  "addon.frontgate.pages.reverseProxy.fields.destination",
+                )}
+                value={`${infoRule.destinationScheme}://${infoRule.destinationHost}:${infoRule.destinationPort}`}
+                alignValue="end"
+              />
+              <NmxMetaItem
+                label={t("addon.frontgate.pages.reverseProxy.fields.ssl")}
+                alignValue="end"
+              >
+                {renderSslStatus(infoRule)}
+              </NmxMetaItem>
+              <NmxMetaItem
+                label={t("addon.frontgate.pages.reverseProxy.fields.access")}
+                alignValue="end"
+              >
+                {renderAccess(infoRule.access)}
+              </NmxMetaItem>
+              <NmxMetaItem
+                label={t("addon.frontgate.pages.reverseProxy.fields.status")}
+                alignValue="end"
+              >
+                {renderStatus(infoRule.status)}
+              </NmxMetaItem>
+              <NmxMetaItem
+                label={t("addon.frontgate.pages.reverseProxy.fields.createdAt")}
+                value={dateTime(infoRule.createdAt)}
+                alignValue="end"
+              />
+              {isDryRunActive(infoRule.dryRunExpiresAt, now) && (
+                <NmxMetaItem
+                  label={t("addon.frontgate.pages.reverseProxy.fields.dryRun")}
+                  alignValue="end"
+                >
+                  {renderDryRun(infoRule.dryRunExpiresAt, now)}
+                </NmxMetaItem>
+              )}
+            </NmxMetaList>
+            {isDryRunActive(infoRule.dryRunExpiresAt, now) && (
+              <NmxButton
+                variant="ghost"
+                semantic="warning"
+                fullWidth={true}
+                uppercase={true}
+                onClick={() => {
+                  handleDryRunCancel(infoRule?.id)
+                  setInfoRule(null)
+                }}
+                className="nmx-addon-frontgate__btn-cancel-dryrun"
+              >
+                <span>
+                  <span>
+                    {t("addon.frontgate.pages.reverseProxy.dryRun.cancel")}
+                  </span>
+                </span>
+              </NmxButton>
+            )}
+          </>
+        )}
+      </NmxAlertDialog>
 
       <NmxAlertDialog
         open={showAddDialog}
@@ -970,6 +1123,19 @@ export const FrontgateReverseProxy: React.FC = () => {
                 onCheckedChanged={setFormDryRun}
               />
             </NmxFormField>
+            {formDryRun && (
+              <NmxFormField
+                label={t(
+                  "addon.frontgate.pages.reverseProxy.fields.dryRunMinutes",
+                )}
+              >
+                <NmxSelect
+                  value={String(formDryRunMinutes)}
+                  options={dryRunMinuteOptions}
+                  onChange={(v) => setFormDryRunMinutes(Number(v))}
+                />
+              </NmxFormField>
+            )}
           </NmxForm>
         )}
 

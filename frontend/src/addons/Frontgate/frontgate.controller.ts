@@ -80,6 +80,7 @@ export interface CreateReverseProxyRulePayload {
   }[]
   requestCert?: boolean
   dryRun?: boolean
+  dryRunMinutes?: number
 }
 
 export interface CreateLetsEncryptCertPayload {
