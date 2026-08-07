@@ -63,6 +63,8 @@ export const NmxIconFontSymbol = {
   FILE_LINK: "ic-file-link",
   HOSTNAME: "ic-hostname",
   ACTIVITY: "ic-activity",
+  EDIT: "ic-edit",
+  UNDO: "ic-undo",
 } as const
 
 export type NmxIconFontSymbol =

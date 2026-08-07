@@ -10,6 +10,7 @@ export interface NmxAlertDialogProps extends WithBaseProps {
   size?: NmxDialogSize
   confirmLabel?: string
   confirmDisabled?: boolean
+  confirmShouldRender?: boolean
   confirmSemantic?: NmxSemanticColor
   cancelLabel?: string
   closeLabel?: string

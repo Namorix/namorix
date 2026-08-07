@@ -2,6 +2,7 @@ import type {
   NmxButtonVariant,
   NmxCxInput,
   NmxSemanticColor,
+  NmxSize,
   NmxSpacing,
 } from "../types"
 
@@ -37,4 +38,8 @@ export function cxMuted(prefix: string, muted?: boolean) {
 
 export function cxSpacing(prefix: string, spacing?: NmxSpacing) {
   return !spacing ? "" : `${prefix}--${spacing}`
+}
+
+export function cxSize(prefix: string, size?: NmxSize) {
+  return !size ? "" : `${prefix}--${size}`
 }

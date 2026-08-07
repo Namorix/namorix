@@ -18,6 +18,7 @@ export const NmxAlertDialog = ({
   size = "md",
   confirmLabel,
   confirmDisabled = false,
+  confirmShouldRender = true,
   confirmSemantic = "primary",
   cancelLabel,
   closeLabel,
@@ -97,7 +98,7 @@ export const NmxAlertDialog = ({
             label={confirm}
             onClick={onConfirm}
             disabled={loading || confirmDisabled}
-            shouldRender={!!onConfirm}
+            shouldRender={!!onConfirm && confirmShouldRender}
             uppercase={true}
             className="nmx-dialog__button"
           />
