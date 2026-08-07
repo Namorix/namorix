@@ -85,14 +85,7 @@
     }
   }
 
-  &__dryrun {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--nmx-spacing-sm);
-    .nmx-button {
-      padding: var(--nmx-spacing-xs) var(--nmx-spacing-sm);
-      font-size: var(--nmx-font-size-sm);
-    }
+  &__btn-cancel-dryrun {
+    margin-top: var(--nmx-spacing-xl);
   }
 }

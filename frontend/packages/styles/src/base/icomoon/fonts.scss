@@ -16,6 +16,16 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.ic-undo {
+  &:before {
+    content: $ic-undo; 
+  }
+}
+.ic-edit {
+  &:before {
+    content: $ic-edit; 
+  }
+}
 .ic-activity {
   &:before {
     content: $ic-activity; 

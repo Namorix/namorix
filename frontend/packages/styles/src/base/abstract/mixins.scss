@@ -113,6 +113,14 @@
   }
 }
 
+@mixin fontSizes($prefix) {
+  @each $name, $size in $nmx-font-sizes {
+    &--#{$name} {
+      --#{$prefix}-fontSize: #{$size};
+    }
+  }
+}
+
 @mixin flex-fill-column {
   flex: 1;
   display: flex;

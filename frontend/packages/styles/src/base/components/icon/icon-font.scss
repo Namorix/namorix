@@ -1,0 +1,12 @@
+@use "../../abstract/mixins" as *;
+
+.nmx-icon-font {
+  font-size: var(--nmx-icon-font-fontSize, var(--nmx-font-size-sm));
+
+  @include fontSizes(nmx-icon-font);
+  @include semantic-variants(nmx-icon-font, false, true);
+}
+
+.nmx-icon-font--color {
+  color: var(--nmx-icon-font-text, var(--nmx-color-on-surface));
+}
