@@ -132,7 +132,7 @@ public class ReverseProxyController(AppDbContext db, AcmeCertQueue certQueue,
         };
         
         if (request.DryRun)
-            rule.DryRunExpiresAt = DateTime.UtcNow.AddSeconds(_dryRunSeconds);
+            rule.DryRunExpiresAt = DateTime.UtcNow.AddSeconds(ResolveDryRunSeconds(request.DryRunMinutes));
         
         if (request.Locations is { Count: > 0 })
         {
@@ -210,7 +210,7 @@ public class ReverseProxyController(AppDbContext db, AcmeCertQueue certQueue,
         if (request.DryRun)
         {
             rule.DryRunSnapshotJson ??= JsonSerializer.Serialize(FgRuleSnapshot.From(rule));
-            rule.DryRunExpiresAt = DateTime.UtcNow.AddSeconds(_dryRunSeconds);
+            rule.DryRunExpiresAt = DateTime.UtcNow.AddSeconds(ResolveDryRunSeconds(request.DryRunMinutes));
         }
 
         rule.Source = request.Source;
@@ -351,6 +351,9 @@ public class ReverseProxyController(AppDbContext db, AcmeCertQueue certQueue,
     }
     
     private static string EffectiveStatus(bool dryRun, string status) => dryRun ? "active" : status;
+    
+    private static int ResolveDryRunSeconds(int minutes) =>
+        minutes is 1 or 5 or 10 ? minutes * 60 : 60;
 }
 
 public record CreateRuleRequest(
@@ -373,7 +376,8 @@ public record CreateRuleRequest(
     string? AdditionalHeadersJson,
     List<LocationRequest>? Locations,
     bool RequestCert = false,
-    bool DryRun = false
+    bool DryRun = false,
+    int DryRunMinutes = 1
 );
 
 public record LocationRequest(
