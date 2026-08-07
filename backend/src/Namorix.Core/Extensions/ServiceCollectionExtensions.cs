@@ -13,6 +13,7 @@ using Namorix.Core.Config;
 using Namorix.Core.Constants;
 using Namorix.Core.Filters;
 using Namorix.Core.FlatFile;
+using Namorix.Core.Helpers;
 using Namorix.Core.Hubs;
 using Namorix.Core.Infrastructure;
 using Namorix.Core.IO;
@@ -104,6 +105,7 @@ public static class ServiceCollectionExtensions
             options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
             options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+            options.JsonSerializerOptions.Converters.Add(new UtcDateTimeJsonConverter());
         });
         
         services.AddCors();
