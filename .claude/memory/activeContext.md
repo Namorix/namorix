@@ -27,6 +27,16 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-08-2026.md](versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-08-07 — Frontgate Phase 3: Access Control + dry-run + Warden scaffold
+
+- **Phase 3 Access Control (FE + BE)**: `FrontgateAccessPolicy.tsx` (Access Policy tab — CRUD, type switch ipAllowlist/geoBlock/basicAuth/ipDenylist, rules textarea ↔ JSON, username/password cho basicAuth), `AccessPolicyController` + `FrontgateAccessService` + `AccessControlMiddleware` + `GeoIpService` (MaxMind.GeoIP2). **BasicAuth hash fix**: `HashBasicAuthPassword` skip re-hash nếu password bắt đầu `$2a`/`$2b`/`$2y` → edit giữ nguyên hash cũ khi để trống password.
+- **Dry-run**: FE toggle + countdown badge + Apply/Cancel, backend `FgReverseProxyRule.DryRunExpiresAt` + `FgDryRunRollbackWorker` rollback. **Fix stale closure**: `formDryRun` thêm vào deps `handleConfirm` (FrontgateReverseProxy.tsx:463).
+- **Certificate**: retry/renew endpoints, `SniCertProvider`, `FgCertRenewWorker`, SignalR `frontgate:cert-status-changed` (group `frontgate`).
+- **Warden scaffold**: plan `warden-security-addon.md` + addon scaffold (ban IP qua iptables/nftables — backend chưa implement).
+- **Fix**: LogViewer/NetworkTraffic loading guard (`setLoading(true)` gating + deps `[entries.length]`).
+- Versions: core 0.58.0 / ui 0.40.0 / styles 0.49.0 / frontend 0.76.0 / server 0.67.0 / frontgate 1.4.0.
+- **Pending**: test runtime Phase 3 FE (dry-run toggle, countdown, access policy CRUD).
+
 ### 2026-08-06 — Drop DNS-01
 
 - Quyết định **bỏ hẳn LE via DNS (DNS-01)** — hiếm dùng, cần credential/zone per provider, chi phí maintain cao. Đã gỡ: `IDnsProvider`/`CloudflareDnsProvider`/`DnsProviderResolver`/`DnsProviderServiceCollectionExtensions`, `RunDnsAsync`, `POST /certificates/letsencrypt-dns/dry-run`, FE dialog `letsEncryptDns`, `createLetsEncryptDnsCert`, `listDnsProviders`, catalog `DnsProviders.cs`, enum `LetsEncryptDns`. **Giữ column `FgCertificate.DnsProviderId`** (drop khi migration tổng thể). Provider list lưu trong frontgate plan làm reference.

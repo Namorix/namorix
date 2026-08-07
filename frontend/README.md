@@ -49,8 +49,9 @@ frontend/
 │   │   ├── SystemMonitor/           # CPU, memory, uptime, disk, IO real-time (SignalR)
 │   │   └── Terminal/                # Terminal emulator scaffold
 │   │   │
-│   │   ├── Frontgate/               # Reverse proxy management (YARP integration, CRUD UI, routing rules)
-│   │   └── Beacon/                  # DDNS updater — updates DNS when IP changes (provider multi-host, activity, settings)
+│   │   ├── Frontgate/               # Reverse proxy management (YARP integration, CRUD UI, routing rules, access control, dry-run)
+│   │   ├── Beacon/                  # DDNS updater — updates DNS when IP changes (provider multi-host, activity, settings)
+│   │   └── Warden/                  # Security — ban IP (scaffold)
 │   │
 │   ├── components/
 │   │   ├── AuthView.tsx             # Two-column layout (hero + form panel)
@@ -205,7 +206,7 @@ Built-in addons use the same contract as external addons (M4):
 - **NmxAddonManifest**: id, name, description?, localeKey?, icon?, defaultWidth?, defaultHeight?, preferFullSize?, role?, instanceMode?
 - **AddonContext**: addonId, nmxStore?, store?, isExternal?, sendCommand?
 
-Ten built-in addons: About, LogViewer, NetworkTraffic, SystemMonitor, Settings, FileManager (scaffold), Terminal (scaffold), PackageCenter, Frontgate, Beacon.
+Eleven built-in addons: About, LogViewer, NetworkTraffic, SystemMonitor, Settings, FileManager (scaffold), Terminal (scaffold), PackageCenter, Frontgate, Beacon, Warden (scaffold).
 
 ### External Addons (Docker-based)
 
@@ -224,7 +225,7 @@ External addons integrate via two modes:
 
 - **M1** — Static shell UI + mock auth ✅
 - **M2** — Full auth backend ✅
-- **M3** — System Addons (Built-in): addon contract + registry, 10 built-in addons, theme system, SignalR realtime ✅
+- **M3** — System Addons (Built-in): addon contract + registry, 11 built-in addons, theme system, SignalR realtime ✅
 - **M4** — External addon system: Docker lifecycle, OAuth2 (PKCE + client_credentials), gRPC, addon catalog, standalone mode ✅
-    - **Frontgate addon**: YARP reverse proxy with runtime config reload, CRUD API and management UI (Phase 1 ✅), certificate management (Phase 2 ✅ — LE HTTP-01 + dry-run, custom cert; DNS-01 dropped)
+    - **Frontgate addon**: YARP reverse proxy with runtime config reload, CRUD API and management UI (Phase 1 ✅), certificate management (Phase 2 ✅ — LE HTTP-01 + dry-run, custom cert; DNS-01 dropped), access control (Phase 3 ✅ — Access Policy CRUD, IP allowlist/denylist, Geo blocking, BasicAuth, dry-run)
 - **M5** — `@namorix/core` publish npm + addon integration guide

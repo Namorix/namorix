@@ -181,7 +181,7 @@ backend/
         │   ├── Addon.cs              # Addon task phase constants, error codes
         │   ├── Beacon.cs             # Beacon codes (BcnErrorCodes/BcnActivityCodes/BcnParam/BcnCredentialParam/BcnHttpClientNames/BcnHeaderKey)
         │   ├── Frontgate.cs          # Frontgate error codes (FgErrorCodes)
-        │   └── ServerSignalR.cs      # Server-specific SignalR event names + groups (incl. beacon)
+        │   └── ServerSignalR.cs      # Server-specific SignalR event names + groups (incl. beacon, frontgate)
         ├── Extensions/
         │   └── ApplicationBuilderExtensions.cs  # Server middleware pipeline wrapper
         ├── Middleware/
@@ -189,20 +189,29 @@ backend/
         │   ├── OAuth2Middleware.cs       # OAuth bearer token validation (private_key_jwt)
         │   ├── RequirePermissionAttribute.cs
         │   ├── TrustedProxyMiddleware.cs
-        │   ├── ForceSslMiddleware.cs     # HTTP → HTTPS redirect trên proxy port
-        │   └── AcmeChallengeMiddleware.cs  # Serve .well-known/acme-challenge token (LE HTTP-01)
+        │   └── Frontgate/
+        │       ├── ForceSslMiddleware.cs             # HTTP → HTTPS redirect trên proxy port
+        │       ├── AcmeChallengeMiddleware.cs        # Serve .well-known/acme-challenge token (LE HTTP-01)
+        │       ├── AccessControlMiddleware.cs        # Access policy enforcement (IP allow/deny, Geo, BasicAuth)
+        │       ├── BlockCommonExploitsMiddleware.cs  # Block common exploit signatures
+        │       ├── BlockWebSocketMiddleware.cs       # Block WebSocket upgrades theo policy
+        │       ├── HstsMiddleware.cs                 # Strict-Transport-Security header
+        │       ├── ProxyTrafficMiddleware.cs         # Proxy traffic metrics
+        │       └── RewriteRedirectLocationMiddleware.cs  # Rewrite Location header trên proxy redirect
         ├── Hubs/
-        │   ├── MainHub.cs               # Real-time events (system stats, addon, notifications, beacon groups)
+        │   ├── MainHub.cs               # Real-time events (system stats, addon, notifications, beacon, frontgate groups)
         │   ├── SignalRAddonNotifier.cs
         │   ├── SignalRSystemMonitorNotifier.cs
-        │   └── SignalRBeaconNotifier.cs # IBeaconNotifier (activity-created / hostname-status-changed / refreshed)
+        │   ├── SignalRBeaconNotifier.cs # IBeaconNotifier (activity-created / hostname-status-changed / refreshed)
+        │   └── SignalRFrontgateNotifier.cs # IFrontgateNotifier (cert-status-changed, group frontgate)
         ├── Infrastructure/
         │   ├── IAddonNotifier.cs
-        │   └── ISystemMonitorNotifier.cs
+        │   ├── ISystemMonitorNotifier.cs
+        │   └── IFrontgateNotifier.cs   # Frontgate cert status notification
         ├── Models/                  # Grouped theo addon domain
         │   ├── Addon/               # AddonCatalogEntry, AddonInstallation, AddonTask
         │   ├── Beacon/              # BcnHostname, BcnSettings, BcnActivityLog, BcnProviderConfig, BcnProviderInfo
-        │   ├── Frontgate/           # FgReverseProxyRule, FgCertificate(+Domain), FgAccessPolicy, FgReverseProxyLocation
+        │   ├── Frontgate/           # FgReverseProxyRule, FgCertificate(+Domain), FgAccessPolicy, FgReverseProxyLocation, FgRuleSnapshot (runtime — dry-run rollback)
         │   └── Catalog/             # Catalog DTOs (AddonManifestDto, CatalogIndex, PortDto)
         ├── Services/
         │   ├── AuthService.cs               # Login, Register, RefreshToken, RevokeToken, VerifyAccessToken
@@ -223,12 +232,15 @@ backend/
         │   ├── Beacon/                  # DDNS — BcnHostnameService (update logic), BcnUpdateQueue, BcnProbeQueue,
         │   │                            #   Providers/ (6 built-in + custom get/rest, resolver, secret protector, DNS resolver)
         │   ├── Frontgate/               # FrontgateProxyConfigProvider (YARP), AcmeCertQueue (LE worker),
-        │   │                            #   AcmeChallengeStore, AcmeDryRunService, DnsLookupChecker
+        │   │                            #   AcmeChallengeStore, AcmeDryRunService, DnsLookupChecker,
+        │   │                            #   FrontgateAccessService (access policy eval), GeoIpService (MaxMind.GeoIP2),
+        │   │                            #   SniCertProvider (SNI cert lookup)
         │   └── Grpc/
         │       └── AddonChannelService.cs  # gRPC bidirectional stream handler + interceptor auth
         ├── Controllers/
         │   ├── AuthController.cs        # 7 auth endpoints (login, register, logout, session, refresh, status, logout-all)
-        │   ├── FrontgateController.cs   # Frontgate CRUD + certificates (LE HTTP-01 + dry-run, custom upload)
+        │   ├── Frontgate/               # ReverseProxyController (CRUD + dry-run confirm/cancel),
+        │   │                            #   AccessPolicyController (CRUD), CertificateController (LE HTTP-01 + dry-run, retry/renew, custom)
         │   ├── BcnController.cs         # Beacon DDNS (hostnames CRUD/toggle/check/test, activity, providers, settings)
         │   ├── HealthController.cs      # Health check endpoint
         │   ├── SettingsController.cs    # System settings + appearance defaults + options
@@ -245,9 +257,10 @@ backend/
             ├── SystemMonitorStatsWorker.cs       # System metrics collection (CPU, memory, disk, IO, network)
             ├── DockerMonitorWorker.cs             # Docker event stream + container health checks + orphan cleanup
             ├── CatalogSyncWorker.cs               # Background catalog sync with retry
-            ├── BcnCheckWorker.cs                  # Beacon DDNS check loop (orchestrator → BcnHostnameService)
-            ├── BcnActivityCleanupWorker.cs        # Beacon activity log pruning (retention 7d)
-            └── FgCertPendingResetWorker.cs        # Frontgate cert Pending → Error on startup
+            ├── Beacon/                           # BcnCheckWorker (DDNS loop → BcnHostnameService),
+            │                                     #   BcnActivityCleanupWorker (activity pruning)
+            └── Frontgate/                        # FgCertPendingResetWorker (Pending → Error on startup),
+                                                  #   FgCertRenewWorker (auto-renew), FgDryRunRollbackWorker (dry-run rollback)
 ```
 
 ## API Endpoints
@@ -335,6 +348,17 @@ backend/
 | POST | `/api/frontgate/reverse-proxy` | Admin | Create rule (source, destination, features, access) |
 | PUT | `/api/frontgate/reverse-proxy/{id}` | Admin | Update rule, triggers YARP runtime reload |
 | DELETE | `/api/frontgate/reverse-proxy/{id}` | Admin | Delete rule, triggers YARP runtime reload |
+| POST | `/api/frontgate/reverse-proxy/{id}/dry-run/confirm` | Admin | Xác nhận dry-run rule (giữ nguyên Active) |
+| POST | `/api/frontgate/reverse-proxy/{id}/dry-run/cancel` | Admin | Hủy dry-run rule (rollback snapshot qua `FgRuleSnapshot`) |
+
+### Frontgate Access Policies (`/api/frontgate/access-policies`)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/frontgate/access-policies` | Admin | List access policies (ipAllowlist/geoBlock/basicAuth/ipDenylist) |
+| POST | `/api/frontgate/access-policies` | Admin | Create policy (rules = CIDR / ISO codes / `{username,password}` cho basicAuth) |
+| PUT | `/api/frontgate/access-policies/{id}` | Admin | Update policy (giữ hash cũ khi password trống) |
+| DELETE | `/api/frontgate/access-policies/{id}` | Admin | Delete policy (lỗi `PolicyInUse` nếu đang được rule dùng) |
 
 ### Frontgate Certificates (`/api/frontgate/certificates`)
 
@@ -345,6 +369,8 @@ backend/
 | POST | `/api/frontgate/certificates/letsencrypt-http` | Admin | Create LE HTTP-01 cert (async queue, SignalR push) |
 | POST | `/api/frontgate/certificates/letsencrypt-http/dry-run` | Admin | Test HTTP-01 challenge (staging, không phát hành cert) |
 | POST | `/api/frontgate/certificates/custom` | Admin | Upload custom PEM cert |
+| POST | `/api/frontgate/certificates/{id}/retry` | Admin | Retry cert ở trạng thái Pending/Error |
+| POST | `/api/frontgate/certificates/{id}/renew` | Admin | Renew cert (SNI lookup + auto-renew qua `FgCertRenewWorker`) |
 | DELETE | `/api/frontgate/certificates/{id}` | Admin | Delete cert |
 
 ### Beacon (`/api/beacon`) — DDNS Updater
@@ -468,10 +494,10 @@ SQLite database file (`namorix.db`), tạo tự động khi chạy migrations.
 - **OAuthToken** — `id`, `tokenId`, `clientId`, `userId`, `type`, `expiresAt`
 - **OAuthRegistration** — `id`, `clientId`, `token`, `expiresAt`
 - **OAuthRefreshToken** — `id`, `clientId`, `tokenHash`, `expiresAt`, `createdAt`, `used`
-- **FgReverseProxyRule** — `id`, `source`, `destinationScheme`, `destinationHost`, `destinationPort`, `access`, `status`, SSL/feature flags (WebSocketsSupport, CacheAssets, ForceSsl, Http2Support, HstsEnabled, HstsSubdomains, BlockCommonExploits, TrustForwardedProtoHeaders, AdditionalHeadersJson), `CertificateId` (FK), `AccessPolicyId` (FK)
+- **FgReverseProxyRule** — `id`, `source`, `destinationScheme`, `destinationHost`, `destinationPort`, `access`, `status`, `dryRunExpiresAt` (dry-run), SSL/feature flags (WebSocketsSupport, CacheAssets, ForceSsl, Http2Support, HstsEnabled, HstsSubdomains, BlockCommonExploits, TrustForwardedProtoHeaders, AdditionalHeadersJson), `CertificateId` (FK), `AccessPolicyId` (FK)
 - **FgCertificate** — `id`, `issuer`, `type` (Rsa/Ecdsa), `source` (LetsEncryptHttp/Custom), `status` (Pending/Active/Error), `dnsProviderId` (unused — DNS-01 dropped), `expiresAt`, `autoRenew`; PEM lưu file-based `data/pki/certs/{name}/` (privkey.pem + fullchain.pem); `CertificateDomains` (1:n SAN, cascade)
 - **FgCertificateDomain** — `id`, `domain`, `certificateId` (FK, cascade)
-- **FgAccessPolicy** — `id`, `name`, `type`, `rulesJson`
+- **FgAccessPolicy** — `id`, `name`, `type` (ipAllowlist/geoBlock/basicAuth/ipDenylist), `rulesJson` (CIDR/ISO array hoặc `{username,password}` basicAuth, password BCrypt hash)
 - **FgReverseProxyLocation** — `id`, `ruleId` (FK), `path`, `scheme`, `forwardHost`, `forwardPort` (Cascade delete)
 - **BcnHostname** — `id`, `host` (multi-tag comma: `@`, `www`, `*.example.com`), `domain` (FQDN), `providerId`, `kind`, `configJson` (encrypted secrets), `status` (updating/active/disabled/error), `currentIpv4/6`, `lastCheckedAt`, `lastUpdatedAt`, `lastError`, `backoffUntil`
 - **BcnSettings** — `id` (=1), `checkIntervalMinutes`, `heartbeatIntervalHours`, `ipDetectionService`, `updateIpv6`
@@ -527,6 +553,7 @@ SignalR hub tại `/hubs/main`:
 | `beacon:activity-created` | Server → Client | Beacon activity log entry |
 | `beacon:hostname-status-changed` | Server → Client | Beacon hostname status change |
 | `beacon:hostnames-refreshed` | Server → Client | Beacon probe/refresh completed |
+| `frontgate:cert-status-changed` | Server → Client | Frontgate cert status change (retry/renew/worker) |
 
 SignalR client auto-reconnects with exponential backoff (5s → 30s cap, infinite retry).
 

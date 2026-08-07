@@ -430,6 +430,7 @@ On disconnect
 | `beacon:hostname-status-changed` | Server → Client | `{ hostnameId: string, hostname: string, status: string }` | Beacon (status badge live update) |
 | `beacon:activity-created` | Server → Client | `{ id, timestamp, level, code, paramsJson, hostname }` | BeaconActivity (realtime log — no handler khi tab activity chưa mở → SignalR JS log warning benign) |
 | `beacon:hostnames-refreshed` | Server → Client | `{ updated: number }` | BeaconHostnames (sau probe queue) |
+| `frontgate:cert-status-changed` | Server → Client | `{ domain: string, status: string, message?: string }` | Frontgate (certificate status — `FgCertRenewWorker`/`CertificateController`; group `frontgate`) |
 
 ### Hooks
 
@@ -455,6 +456,7 @@ NmxHub (IHubContext)
   └── IBeaconNotifier → NotifyActivityCreated(log, hostname)
        ├── NotifyHostnameStatusChanged(hostnameId, hostname, status)
        └── NotifyHostnamesRefreshed(updated)
+  └── IFrontgateNotifier → NotifyCertStatusChanged(domain, status, message?)
 ```
 
 ### Key files

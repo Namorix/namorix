@@ -1,5 +1,16 @@
 # Version History — August 2026
 
+## 2026-08-07 — Frontgate Phase 3: Access Control + dry-run + Warden scaffold
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.57.1 → 0.58.0 | MODIFIED: `apiRoutes.ts` — +6 routes (`reverseProxyDryRunConfirm`/`reverseProxyDryRunCancel`/`certificateRetry`/`certificateRenew`/`accessPolicies`/`accessPolicyById`). `version.ts` — `NmxAddonVersions`: frontgate 1.3.1→1.4.0, logViewer 1.1.0→1.1.1, networkTraffic 1.2.0→1.2.1, + warden 0.1.0. |
+| @namorix/ui | 0.39.0 → 0.40.0 | MODIFIED: `Primitives/NmxIcon/NmxIconSvg.types.ts` — +`APP_WARDEN` icon symbol. |
+| @namorix/styles | 0.48.2 → 0.49.0 | MODIFIED: `base/shell/addon/frontgate.scss` — +`__dryrun` block (nút compact trong Dry run column); `base/tokens/icons.scss` — +`--nmx-icon-app-warden`; theme CSS rebuild (default + dark). |
+| frontend | 0.75.0 → 0.76.0 | NEW: `addons/Warden/` scaffold (Warden.tsx, Warden.addon.tsx, `public/icons/app-warden.svg`), `addons/Frontgate/FrontgateAccessPolicy.tsx` (Access Policy tab — CRUD, type switch ipAllowlist/geoBlock/basicAuth/ipDenylist, rules textarea ↔ JSON, username/password basicAuth). MODIFIED: `FrontgateReverseProxy.tsx` — **dry-run UI** (toggle + countdown + Apply/Cancel + fix stale closure `formDryRun` trong deps `handleConfirm`); `signalr/constants.ts` — +`ServerSignalRGroups.Frontgate` + `FrontgateCertStatusChanged`; `LogViewer.tsx`/`NetworkTrafficLogs.tsx` — **fix loading guard** (`setLoading(true)` gating + deps `[entries.length]`); `addons/index.ts` (+Warden import), `addons/types.ts` (+warden id + locale keys), `i18n/locales/en.json` (accessPolicy + dryRun keys). |
+| Namorix.Core | 0.53.0 → 0.53.1 | MODIFIED: `IO/DataDirectory.cs` — +`CertDir`/`PrivateKeyFile`/`FullChainFile` constants, `DeleteFile`, `CertPath`. |
+| Namorix.Server | 0.66.0 → 0.67.0 | NEW Phase 3 Access Control: `Controllers/Frontgate/AccessPolicyController.cs` (CRUD + `HashBasicAuthPassword` giữ old hash `$2a`/`$2b`/`$2y` khi edit), `Services/Frontgate/FrontgateAccessService.cs` + `GeoIpService.cs` (MaxMind.GeoIP2), `Middleware/Frontgate/AccessControlMiddleware.cs`. NEW dry-run: `Workers/Frontgate/FgDryRunRollbackWorker.cs` + migration `AddFgDryRun` (`FgReverseProxyRule.DryRunExpiresAt`). NEW cert: `Controllers/Frontgate/CertificateController.cs` (retry/renew), `Services/Frontgate/SniCertProvider.cs`, `Workers/Frontgate/FgCertRenewWorker.cs`, `Infrastructure/IFrontgateNotifier.cs` + `Hubs/SignalRFrontgateNotifier.cs` (`frontgate:cert-status-changed`, group `frontgate`). NEW security middleware: `BlockCommonExploitsMiddleware`, `BlockWebSocketMiddleware`, `HstsMiddleware`, `ProxyTrafficMiddleware`, `RewriteRedirectLocationMiddleware`. MODIFIED: namespace reorg (Frontgate/Beacon subfolders), `ReverseProxyController`, `FrontgateRuleSchema`, `FgReverseProxyRule`/`FgAccessPolicy` (RulesJson storage), `Models/Frontgate/FgRuleSnapshot.cs`. NEW dep `MaxMind.GeoIP2` (Directory.Packages.props). |
+
 ## 2026-08-06 — Drop DNS-01 + backend reorganization
 
 | Package | Version | Changes |

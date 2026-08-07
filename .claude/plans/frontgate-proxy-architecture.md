@@ -34,7 +34,7 @@ FgCertificate       ── 1:n ──> FgCertificateDomain             (Multi-do
 
 | Table | Fields | Status |
 |-------|--------|--------|
-| `FgReverseProxyRules` | Id, Source, DestinationScheme, DestinationHost, DestinationPort, CertificateId (FK), Access, AccessPolicyId (FK), WebSocketsSupport, CacheAssets, ForceSsl, Http2Support, HstsEnabled, HstsSubdomains, TrustForwardedProtoHeaders, AdditionalHeadersJson, Status, CreatedAt, UpdatedAt | ✅ |
+| `FgReverseProxyRules` | Id, Source, DestinationScheme, DestinationHost, DestinationPort, CertificateId (FK), Access, AccessPolicyId (FK), WebSocketsSupport, CacheAssets, ForceSsl, Http2Support, HstsEnabled, HstsSubdomains, TrustForwardedProtoHeaders, AdditionalHeadersJson, Status, DryRunExpiresAt, DryRunSnapshotJson, CreatedAt, UpdatedAt | ✅ |
 | `FgCertificates` | Id, Issuer, Type, Source, Status, DnsProviderId, ExpiresAt, AutoRenew, CreatedAt | ✅ |
 | `FgCertificateDomains` | Id, Domain, CertificateId (FK → FgCertificates, Cascade), Index trên Domain | ✅ |
 | `FgAccessPolicies` | Id, Name, Type, RulesJson, CreatedAt | ✅ |
@@ -69,21 +69,22 @@ Không có "raw custom config" kiểu Nginx — đây là design decision bảo 
 
 Tất cả các flag đều implement được bằng C#/YARP, không cần Nginx hay config bên ngoài:
 
-| Flag | Implementation Approach |
-|------|----------------------|
-| **WebSocketsSupport** | YARP built-in — tự động xử lý upgrade request, chỉ cần không disable |
-| **ForceSsl** | Middleware trước `MapReverseProxy()` — check `HttpContext.Request.Scheme`, redirect 301 nếu không phải HTTPS |
-| **CacheAssets** | YARP transform: `ResponseHeaderAppendTransform("Cache-Control", "public, max-age=86400")` kết hợp path condition |
-| **Http2Support** | YARP cluster config — dùng `HttpVersionPolicy.RequestVersionOrHigher`, tự động fallback nếu backend không hỗ trợ |
-| **HstsEnabled / HstsSubdomains** | Middleware hoặc YARP transform — thêm header `Strict-Transport-Security: max-age=31536000` (+ `includeSubDomains`) per-rule |
-| **TrustForwardedProtoHeaders** | YARP mặc định tự động thêm `X-Forwarded-*` headers. Có thể disable transform per-route nếu backend không tin cậy |
-| **BlockCommonExploits** | Middleware inspect request trước YARP — Regex pattern cho SQL injection, XSS, path traversal → 403 nếu khớp |
+| Flag | Implementation |
+|------|----------------|
+| **WebSocketsSupport** | `BlockWebSocketMiddleware` — block `Upgrade: websocket` 426 nếu flag false (YARP tự xử lý upgrade). Tra cứu per-rule qua `WebSocketSources` dictionary |
+| **ForceSsl** | `ForceSslMiddleware` — redirect 301 HTTP→HTTPS. Tra cứu per-rule qua `ForceSslSources` |
+| **CacheAssets** | YARP `ResponseHeader` transform: `Cache-Control: public, max-age=86400` |
+| **Http2Support** | YARP `HttpRequest.Version` + `VersionPolicy` per-rule |
+| **HstsEnabled / HstsSubdomains** | `HstsMiddleware` — `Strict-Transport-Security` header. Tra cứu per-rule qua `HstsSources` + `HstsSubdomainSources` |
+| **TrustForwardedProtoHeaders** | YARP mặc định auto-add X-Forwarded-* (chưa có per-rule toggle) |
+| **BlockCommonExploits** | `BlockCommonExploitsMiddleware` — Regex SQLi/XSS/path traversal → 403. Tra cứu per-rule qua `BlockExploitSources` |
+| **AdditionalHeadersJson** | YARP `RequestHeader` transform — deserialize JSON, mỗi key-value thành 1 transform |
 
 ### Enums
 - `ProxyAccessMode`: Public, Private, Restricted, BasicAuth
 - `ProxyRuleStatus`: Inactive, Active, Error
 - `CertificateType`: Rsa, Ecdsa
-- `AccessPolicyType`: IpAllowlist, GeoBlock, BasicAuth
+- `AccessPolicyType`: IpAllowlist, GeoBlock, BasicAuth, IpDenylist
 
 ## Current Status
 
@@ -212,7 +213,16 @@ Thư viện ACME: **Certes** (`Certes` NuGet) — giao tiếp với Let's Encryp
 - [x] **Dedup + validation**: `CERT_ALREADY_EXISTS` (chặn Pending/Active cùng primary domain) + `FrontgateCertSchema` (`[Validate]`): domain non-empty / format regex / wildcard reject (`WILDCARD_NOT_ALLOWED`), keyType chỉ `rsa`/`ecdsa`. Guard `CERT_DOMAINS_REQUIRED` chặn `.First()` 500 khi domains rỗng. FE: 2 error code mới (`CERT_DOMAINS_REQUIRED`, `WILDCARD_NOT_ALLOWED`) + i18n en.json. Schema chỉ áp dụng HTTP-01 (DNS-01 sẽ cần schema riêng cho phép wildcard).
 - [x] **Domain validation — DNS lookup** ✅ 2026-08-06: `DnsLookupChecker` — resolve A record (IPv4) từng domain so với public IP server (**reuse `IPublicIpDetector`** thay vì `AppConfig.FrontgatePublicIp` override — khác spec gốc), trả `DryRunWarning(Domain, ResolvedIps[], ServerIp)` khi lệch/no A record; IP detect fail → bỏ qua im lặng. Gắn vào dry-run (`TestLetsEncryptHttp` trả `warnings[]`).
 - [x] **Dry-run test** ✅ 2026-08-06: nút "Test" ở UI = `POST /certificates/letsencrypt-http/dry-run` — `AcmeDryRunService` chạy **staging flow**: account key riêng `pki/acme-staging-account.key` (không trộn prod, `NewAccount(null, true)` khi key mới), NewOrder qua `LetsEncryptStagingV2` → `auth.Http()` → `challengeStore.Add(token, KeyAuthz)` → `challenge.Validate()` → **dừng ở challenge, không finalize/Generate**. Sau mỗi lần validate (cả success lẫn fail) `challengeStore.Remove(token)` (trong `finally`). Timeout 60s → `passed: false`. Response: `{ passed, message?, warnings[] }` (warnings từ `DnsLookupChecker`). `CreateLetsEncryptDryRunRequest(Domains)` — **bỏ `KeyType`** (dry-run không Generate nên keyType thừa). FE: `frontgate.controller.testLetsEncryptHttp` + `onExtraAction={handleTestLetsEncrypt}` (disable khi chạy) + i18n `testSuccess`/`testError`/`testWarning`.
-- [ ] **SignalR cert status push**: notify khi cert status đổi (Pending → Active/Error) để frontend tự refresh list
+- [x] **SignalR cert status push**: ✅ 2026-08-07 — `IFrontgateNotifier` → `SignalRFrontgateNotifier` send via `Clients.Group("frontgate")`; `MainHub.SubscribeFrontgate`/`UnsubscribeFrontgate`; frontend `useServerSignalRGroup` + `useServerSignalREvent` → auto-refresh list when cert Pending→Active/Error
+- [x] **Retry flow**: ✅ 2026-08-07 — `POST /certificates/{id}/retry` → set Pending → re-enqueue; frontend `handleAction("retry")` → `retryCertificate()` → toast; error code `CertNotRetriable`; i18n `retrySuccess`/`retryError`
+- [x] **ACME account registration**: ✅ 2026-08-07 — `NewAccount(contacts: [mailto:{adminEmail}], true)` — lấy email từ admin user đầu tiên, idempotent
+- [x] **useActiveTab refetch**: ✅ 2026-08-07 — `FrontgateCertificate` + `FrontgateReverseProxy` gọi `useActiveTab()` trong `useEffect` → refetch khi chuyển tab
+- [x] **ProxyTrafficMiddleware**: ✅ 2026-08-07 — middleware bọc toàn bộ proxy pipeline (port 80/443), log traffic vào `TrafficBuffer` giống `TrafficMonitorFilter` nhưng dùng ASP.NET middleware (không phải MVC filter) — capture ACME challenge, YARP forward, static files. `CountingStream` + `Stopwatch` cho duration + response size.
+- [x] **DeleteCertificate xóa file PEM**: ✅ 2026-08-07 — `DELETE /certificates/{id}` giờ Include domains, xóa `certs/{name}/privkey.pem` + `certs/{name}/fullchain.pem` qua `DataDirectory.DeleteFile()` trước khi Remove DB record.
+- [x] **DataDirectory constants**: ✅ 2026-08-07 — `CertDir = "certs"`, `PrivateKeyFile = "privkey.pem"`, `FullChainFile = "fullchain.pem"`, `DeleteFile(subPath)`, `CertPath(certName)`. Thay toàn bộ hardcode string `certs/`/`privkey.pem`/`fullchain.pem` trong `AcmeCertQueue`, `CreateCustomCert`, `DeleteCertificate`.
+- [x] **Add rule + request cert flow**: ✅ 2026-08-07 — `CERT_REQUEST_NEW` gửi `undefined` lên backend (tránh FK error), frontend fire-and-forget `createLetsEncryptCert()` sau khi create rule thành công. Rule luôn được tạo, cert fail → toast riêng không ảnh hưởng rule.
+- [x] **CreateRule/UpdateRule RequestCert**: ✅ 2026-08-07 — `CreateRuleRequest.RequestCert` (bool). Backend xử lý atomic trong cùng 1 SaveChanges: tạo cert Pending → gán CertificateId cho rule → enqueue ACME. UpdateRule cũng có logic tương tự.
+- [x] **SSL column + cert status trong ReverseProxy**: ✅ 2026-08-07 — backend trả `certStatus` trong ListRules (JOIN `FgCertificates`), frontend hiển thị badge với `getStatusSemantic`. `FrontgateReverseProxy` lắng nghe `FrontgateCertStatusChanged` SignalR event để refresh khi cert chuyển status.
 
 #### ❌ Let's Encrypt via DNS (DNS-01) — DROPPED (2026-08-06)
 
@@ -252,17 +262,28 @@ Backlog (chưa có schema): active24, akamai-edgedns, aliyun, arvancloud, baidu,
 
 #### 🔨 Auto-renew Worker & SNI
 
-- [ ] **Renew worker**: `IHostedService` chạy daily, check cert `AutoRenew = true` và `ExpiresAt < now + 30 days`. Enqueue vào **ACME worker** chung — gọi lại đúng flow (HTTP-01/DNS-01) theo `Source` gốc
-- [ ] **Kestrel SNI binding**: `ServerOptionsSelectionCallback` (async) — query DB theo SNI hostname, fallback self-signed cert nếu không match
+- [x] **Renew worker**: ✅ 2026-08-07 — `FgCertRenewWorker` BackgroundService, chạy daily, check cert `AutoRenew=true` + `ExpiresAt < now+30 days` → set Pending → `certQueue.EnqueueAsync()`. Pattern theo `BcnCheckWorker`.
+- [x] **Renew UI + endpoint**: ✅ 2026-08-07 — `POST /certificates/{id}/renew` + `frontgateController.renewCertificate()` + handleAction "renew" với toast.
+- [x] **Kestrel SNI binding**: ✅ 2026-08-07 — `ServerOptionsSelectionCallback` đọc file cert trực tiếp từ `certs/{sni}/privkey.pem` + `fullchain.pem` qua `CreateFromPemFile`, fallback về self-signed cert. Không cần DI, không cần DB query.
 - [x] **Certificate tab UI**: list cert (Domain, Issuer, Type, Status gộp InUse, ExpiresAt), action menu (Renew/Download/Delete), click row show detail dialog. `NmxMenuButton` với `getReferenceProps` compose pattern fix row click leak. i18n keys cho status values, inUse values, actions.
+- [x] **RewriteRedirectLocationMiddleware**: ✅ 2026-08-07 — rewrite response `Location` header từ internal IP → public domain (host:port). Đặt trong proxy pipeline, sau AcmeChallenge, trước ForceSsl.
+- [x] **Pipeline fix**: ✅ 2026-08-07 — `UseApiErrorHandling` + `UseSecurityHeaders` chuyển vào `UseWhen` cho API port (5001), tránh can thiệp proxy ports gây lỗi 415 UNSUPPORTED_MEDIA_TYPE.
+- [x] **YARP log level**: ✅ 2026-08-07 — raise `Yarp` → Warning, `HttpForwarder` → Error trong appsettings, bỏ noise log proxying per-request.
+- [x] **Locations sub-routing**: ✅ 2026-08-07 — `FrontgateProxyConfigProvider` build routes riêng cho từng location, match `Path` + `Hosts`, cluster destination riêng. Fix `abstract record` → `record` cho `LocationRequest`. Path pattern `/{**catch-all}`.
 
 ### 🔜 Phase 3 — Access Control
-- [ ] IP Allowlist/Denylist (qua AccessPolicy)
-- [ ] Geo-block via MaxMind GeoIP2 .NET
-- [ ] HTTP Basic Auth
-- [ ] **Self-lockout prevention**: simulate request từ admin IP trước khi save, chặn nếu rule mới khóa mất admin
-- [ ] **Dry-run mode**: apply rule set tạm thời, tự rollback sau N giây nếu admin không confirm
-- [ ] Frontgate UI: Access tab (manage policies)
+
+#### ✅ Backend Done (2026-08-07)
+
+- [x] **IP Allowlist/Denylist**: `AccessPolicyType.IpAllowlist`/`IpDenylist` qua `FgAccessPolicy` — `FrontgateAccessService.Evaluate` (allowlist match→Allow, denylist match→Deny)
+- [x] **Geo-block via MaxMind GeoIP2**: `MaxMind.GeoIP2` 6.1.0 + `GeoIpService` singleton (lazy-load mmdb, path tương đối theo `DataBasePath`), fail-open khi thiếu file/IP không tìm thấy
+- [x] **HTTP Basic Auth**: hash BCrypt khi save (`AccessPolicyController.HashBasicAuthPassword`), verify trong `Evaluate`, 401 + `WWW-Authenticate: Basic realm="{host}"` từ `AccessControlMiddleware`, fail-closed
+- [x] **Self-lockout prevention**: `ValidatePolicyAsync` simulate request từ admin IP (`GetAdminIp` từ `HttpContextKeys.RealIp`) trước khi save → `FG_POLICY_LOCKS_OUT_ADMIN` (bỏ qua rule Inactive + BasicAuth)
+- [x] **Dry-run mode**: `CreateRuleRequest.DryRun` → rule Status=Active + `DryRunExpiresAt` (apply thật), `FgDryRunRollbackWorker` tự rollback sau `Frontgate:DryRunSeconds` nếu không confirm, `POST {id}/dry-run/confirm` + `{id}/dry-run/cancel`, snapshot qua `FgRuleSnapshot` (Create + Update)
+- [x] **Policy infra**: `AccessSources` cache trong `FrontgateProxyConfigProvider` + `UpdateAsync()` sau mọi CRUD rule/policy — bỏ DB query per-request trong `AccessControlMiddleware`
+
+- [x] **Frontend UI: Access tab** ✅ 2026-08-07 (implemented, **chờ test** ngày 08-08) — `FrontgateAccessPolicy.tsx`: DataTable + dialog add/edit theo 4 loại policy (ipAllowlist/ipDenylist/geoBlock = textarea lines → JSON array; basicAuth = username+password → JSON, edit để trống password giữ hash cũ nhờ `HashBasicAuthPassword` skip prefix `$2b$`). Nối C2 dry-run: toggle → `payload.dryRun`, column countdown (tick 1s, `formatDryRunRemaining`) + nút Apply/Cancel gọi `confirmDryRun`/`cancelDryRun`. i18n en.json: `pages.accessPolicy.*` + `reverseProxy.dryRun.*`, SCSS `__dryrun`.
+  - ✅ **Fix stale closure** 2026-08-07: `formDryRun` đã thêm vào deps `handleConfirm` (FrontgateReverseProxy.tsx:463) — toggle giờ áp dụng đúng khi save.
 
 ### 🔜 Phase 4 — Advanced Features
 - [ ] TCP/UDP Stream forwarding (non-HTTP addon)
@@ -270,7 +291,7 @@ Backlog (chưa có schema): active24, akamai-edgedns, aliyun, arvancloud, baidu,
 - [ ] 404 Default Host
 - [ ] Custom Error Pages (502/503 per rule)
 - [ ] Audit log (ai sửa rule gì, lúc nào)
-- [ ] 2FA (TOTP) cho Frontgate admin
+không thêm giá trị thực tế.
 
 ### 🔜 Phase 5 — Edge Cases
 - [ ] Docker addon expose port tự động update rule
