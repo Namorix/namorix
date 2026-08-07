@@ -91,8 +91,11 @@ export const LogViewer: React.FC = () => {
 
   const fetchLogs = useCallback(
     async (pg: number, lvls: string[], src: string, size: number) => {
-      setLoading(true)
       setPage(pg)
+
+      if (entries.length <= 0) {
+        setLoading(true)
+      }
 
       logController
         .listLogs(pg, size, lvls || undefined, src || undefined)
@@ -102,7 +105,7 @@ export const LogViewer: React.FC = () => {
         })
         .finally(() => setLoading(false))
     },
-    [],
+    [entries.length],
   )
 
   useEffect(() => {

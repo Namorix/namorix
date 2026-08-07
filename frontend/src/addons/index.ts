@@ -16,6 +16,7 @@ import "./Terminal/Terminal.addon"
 import "./PackageCenter/PackageCenter.addon"
 import "./Frontgate/Frontgate.addon"
 import "./Beacon/Beacon.addon"
+import "./Warden/Warden.addon"
 
 export const addonToItems = (addon: AddonModule): AddonItem => ({
   ...addon.manifest,

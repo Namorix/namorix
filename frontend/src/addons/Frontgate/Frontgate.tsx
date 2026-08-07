@@ -12,8 +12,13 @@ import { useTranslation } from "react-i18next"
 import { FrontgateReverseProxy } from "./FrontgateReverseProxy"
 import { FrontgateCertificate } from "./FrontgateCertificate"
 import { FrontgateErrorPages } from "./FrontgateErrorPages"
+import { FrontgateAccessPolicy } from "./FrontgateAccessPolicy"
 
-export type FrontgateTab = "reverseProxy" | "certificate" | "errorPages"
+export type FrontgateTab =
+  | "reverseProxy"
+  | "certificate"
+  | "errorPages"
+  | "accessPolicy"
 
 const TABS: NmxToolbarItemData<FrontgateTab>[] = [
   {
@@ -27,6 +32,11 @@ const TABS: NmxToolbarItemData<FrontgateTab>[] = [
     label: "addon.frontgate.tabs.certificate",
   },
   {
+    key: "accessPolicy",
+    icon: NmxIconFontSymbol.SECURITY,
+    label: "addon.frontgate.tabs.accessPolicy",
+  },
+  {
     key: "errorPages",
     icon: NmxIconFontSymbol.ERROR_PAGE,
     label: "addon.frontgate.tabs.errorPages",
@@ -38,7 +48,7 @@ export const Frontgate: React.FC = () => {
 
   return (
     <NmxAddonRoot>
-      <NmxToolbar<FrontgateTab> defaultTab="certificate">
+      <NmxToolbar<FrontgateTab> defaultTab="reverseProxy">
         <NmxToolbarHeader>
           <NmxToolbarList items={TABS} t={t} />
         </NmxToolbarHeader>
@@ -47,6 +57,9 @@ export const Frontgate: React.FC = () => {
         </NmxToolbarContent>
         <NmxToolbarContent<FrontgateTab> tabKey="certificate">
           <FrontgateCertificate />
+        </NmxToolbarContent>
+        <NmxToolbarContent<FrontgateTab> tabKey="accessPolicy">
+          <FrontgateAccessPolicy />
         </NmxToolbarContent>
         <NmxToolbarContent<FrontgateTab> tabKey="errorPages">
           <FrontgateErrorPages />

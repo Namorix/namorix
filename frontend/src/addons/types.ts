@@ -17,6 +17,7 @@ export const NmxAddonId = {
   packageCenter: "package-center",
   frontgate: "frontgate",
   beacon: "beacon",
+  warden: "warden",
 } as const
 
 export type NmxAddonId = (typeof NmxAddonId)[keyof typeof NmxAddonId]
@@ -32,6 +33,7 @@ export const NmxAddonLocaleKeys = {
   packageCenter: "packageCenter",
   frontgate: "frontgate",
   beacon: "beacon",
+  warden: "warden",
 } as const
 
 export type NmxAddonLocaleKeys =

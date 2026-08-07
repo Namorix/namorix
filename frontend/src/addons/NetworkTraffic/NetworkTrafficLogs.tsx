@@ -49,8 +49,11 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
 
   const fetchLogs = useCallback(
     async (pg: number, filter: string | undefined, size: number) => {
-      setLoading(true)
       setPage(pg)
+
+      if (logs.length <= 0) {
+        setLoading(true)
+      }
 
       trafficController
         .listLogs(pg, size, filter)
@@ -61,7 +64,7 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
         })
         .finally(() => setLoading(false))
     },
-    [],
+    [logs.length],
   )
 
   useEffect(() => {

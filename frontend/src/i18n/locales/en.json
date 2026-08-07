@@ -370,6 +370,7 @@
       "tabs": {
         "reverseProxy": "Reverse Proxy",
         "certificate": "Certificate",
+        "accessPolicy": "Access Policy",
         "errorPages": "Error Pages"
       },
       "errors": {
@@ -382,7 +383,14 @@
         "invalidCertificate": "Invalid certificate or key. Make sure the key and certificate match and the key has no passphrase",
         "certificateAlreadyExists": "A certificate with this identifier already exists",
         "certificateDomainsRequired": "Certificate must include at least one domain",
-        "wildcardNotAllowed": "Wildcard certificates are not allowed"
+        "certificateNotRetriable": "Only failed certificates can be retried",
+        "wildcardNotAllowed": "Wildcard certificates are not allowed",
+        "policyRequired": "An access policy is required for Restricted and Basic Auth modes",
+        "policyNotFound": "Access policy not found",
+        "policyTypeMismatch": "Access policy type does not match the access mode",
+        "policyInUse": "This policy is still in use by one or more rules",
+        "policyLocksOutAdmin": "This policy would block your own IP address. Adjust the rule before saving",
+        "dryRunNotPending": "No dry-run is currently pending for this rule"
       },
       "pages": {
         "reverseProxy": {
@@ -392,6 +400,7 @@
             "locations": "Locations",
             "advanced": "Advanced"
           },
+
           "actions": {
             "refresh": "Refresh",
             "addProxy": "Add proxy",
@@ -404,6 +413,7 @@
             "cancel": "Cancel",
             "confirmDelete": "Are you sure you want to delete this proxy rule?"
           },
+
           "fields": {
             "source": "Source",
             "sourcePlaceholder": "e.g. app.namorix.local",
@@ -413,6 +423,7 @@
             "destinationPort": "Port",
             "destinationHostPlaceholder": "e.g. 192.168.1.10",
             "access": "Access",
+            "ssl": "SSL",
             "createdAt": "Created {{time}}",
             "status": "Status",
             "certificate": "Certificate",
@@ -427,6 +438,7 @@
             "hstsSubdomains": "HSTS Subdomains",
             "trustForwardedProto": "Trust Forwarded Headers",
             "blockCommonExploits": "Block Common Exploits",
+            "dryRun": "Dry run",
             "headerName": "Name",
             "headerValue": "Value",
 
@@ -434,6 +446,7 @@
               "active": "Active",
               "inactive": "Inactive"
             },
+
             "accessOptions": {
               "public": "Public",
               "private": "Private",
@@ -441,6 +454,7 @@
               "basicAuth": "Basic Auth"
             }
           },
+
           "fallbacks": {
             "loading": "Loading proxies...",
             "error": "Failed to load proxies",
@@ -448,6 +462,7 @@
             "emptyHeaders": "No custom headers added yet",
             "emptyLocations": "No custom locations added yet"
           },
+
           "feedback": {
             "createSuccess": "Reverse proxy rule created successfully",
             "createError": "Failed to create reverse proxy rule",
@@ -457,6 +472,16 @@
             "deleteError": "Failed to delete reverse proxy rule",
             "deleteConfirm": "Are you sure you want to delete the proxy rule [color:warning]**{{source}}**[/color] this?"
           },
+
+          "dryRun": {
+            "confirm": "Apply",
+            "cancel": "Cancel",
+            "confirmSuccess": "Dry-run applied — configuration is now active",
+            "confirmError": "Failed to apply dry-run",
+            "cancelSuccess": "Dry-run cancelled — rule rolled back",
+            "cancelError": "Failed to cancel dry-run"
+          },
+
           "certificateOptions": {
             "noneDescription": "Disable SSL/TLS encryption for this host",
             "requestNewDescription": "Automatically provision a new Let's Encrypt SSL certificate",
@@ -479,7 +504,8 @@
             "issuer": "Issuer",
             "type": "Type",
             "source": "Source",
-            "createdAt": "Created {{time}}",
+            "createdAt": "Created at",
+            "createdTime": "Created {{time}}",
             "expires": "Expires",
             "status": "Status",
             "action": "Action",
@@ -507,7 +533,11 @@
           "feedback": {
             "deleteConfirm": "Are you sure [color:warning]**{{domain}}**[/color] should be permanently deleted?",
             "deleteSuccess": "Certificate deleted successfully",
-            "deleteError": "Failed to delete certificate"
+            "deleteError": "Failed to delete certificate",
+            "retrySuccess": "Certificate request re-queued",
+            "retryError": "Failed to re-queue certificate request",
+            "renewSuccess": "Certificate renewal queued",
+            "renewError": "Failed to queue certificate renewal"
           },
           "dialogs": {
             "letsEncryptHttp": {
@@ -534,6 +564,50 @@
               "success": "Custom certificate uploaded successfully",
               "error": "Failed to upload custom certificate"
             }
+          }
+        },
+        "accessPolicy": {
+          "actions": {
+            "refresh": "Refresh",
+            "addPolicy": "Add policy",
+            "editPolicy": "Edit policy",
+            "deletePolicy": "Delete policy",
+            "save": "Save",
+            "delete": "Delete"
+          },
+          "fields": {
+            "name": "Name",
+            "namePlaceholder": "e.g. Home network",
+            "type": "Type",
+            "rules": "Rules",
+            "username": "Username",
+            "usernamePlaceholder": "Username for Basic Auth",
+            "password": "Password",
+            "passwordPlaceholder": "Password for Basic Auth",
+            "passwordPlaceholderKeep": "Leave blank to keep the current password",
+            "ipList": "IP addresses / CIDR ranges",
+            "ipListPlaceholder": "One IP or CIDR per line\ne.g.\n192.168.1.10\n10.0.0.0/8",
+            "countryCodes": "Allowed country codes",
+            "countryCodesPlaceholder": "One ISO-2 country code per line\ne.g.\nVN\nUS\nJP",
+            "typeOptions": {
+              "ipAllowlist": "IP Allowlist",
+              "ipDenylist": "IP Denylist",
+              "geoBlock": "Geo Block",
+              "basicAuth": "Basic Auth"
+            }
+          },
+          "fallbacks": {
+            "loading": "Loading access policies...",
+            "error": "Failed to load access policies",
+            "empty": "No access policies configured yet"
+          },
+          "feedback": {
+            "saveSuccess": "Access policy saved successfully",
+            "createError": "Failed to create access policy",
+            "updateError": "Failed to update access policy",
+            "deleteSuccess": "Access policy deleted successfully",
+            "deleteError": "Failed to delete access policy",
+            "deleteConfirm": "Are you sure you want to delete the access policy [color:warning]**{{name}}**[/color]?"
           }
         }
       }
@@ -764,6 +838,10 @@
           "saveError": "Failed to save settings"
         }
       }
+    },
+    "warden": {
+      "title": "Warden",
+      "description": "Host-level firewall and intrusion protection"
     }
   }
 }

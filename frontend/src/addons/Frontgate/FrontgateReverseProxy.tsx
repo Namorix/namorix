@@ -21,6 +21,7 @@ import {
   type NmxTab,
   NmxTabs,
   NmxToggle,
+  useActiveTab,
 } from "@namorix/ui"
 import {
   formatCustomError,
@@ -35,9 +36,16 @@ import {
   type ReverseProxyRuleAccess,
   type ReverseProxyRuleStatus,
 } from "./frontgate.controller"
-import { FrontgateErrorCodes } from "./Frontgate.types"
+import { FrontgateErrorCodes, getStatusSemantic } from "./Frontgate.types"
+import type { FrontgateTab } from "./Frontgate"
+import {
+  ServerSignalREvent,
+  ServerSignalRGroups,
+  useServerSignalREvent,
+  useServerSignalRGroup,
+} from "../../signalr"
 
-type FrontgateTab = "general" | "headers" | "locations" | "advanced"
+type FrontgateTabDialog = "general" | "headers" | "locations" | "advanced"
 
 interface LocationRow {
   path: string
@@ -46,7 +54,7 @@ interface LocationRow {
   forwardPort: number
 }
 
-const tabs: NmxTab<FrontgateTab>[] = [
+const tabs: NmxTab<FrontgateTabDialog>[] = [
   {
     value: "general",
     label: "addon.frontgate.pages.reverseProxy.tabs.general",
@@ -70,7 +78,7 @@ const tabs: NmxTab<FrontgateTab>[] = [
 ]
 
 const initialForm: CreateReverseProxyRulePayload = {
-  source: "izerocs.space",
+  source: "izerocs.duckdns.org",
   destinationScheme: "http",
   destinationHost: "192.168.31.150",
   destinationPort: 5000,
@@ -88,8 +96,17 @@ const initialForm: CreateReverseProxyRulePayload = {
 
 const CERT_REQUEST_NEW = "__request_new__"
 
+function formatDryRunRemaining(expiresAt: string, now: number): string {
+  const seconds = Math.max(
+    0,
+    Math.floor((new Date(expiresAt).getTime() - now) / 1000),
+  )
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`
+}
+
 export const FrontgateReverseProxy: React.FC = () => {
   const { t } = useTranslation()
+  const activeTab = useActiveTab<FrontgateTab>()
   const { dateOnly, dateTime } = useDateTimeFormat()
   const { pageSize, setPageSize, options: pageSizeOptions } = usePageSize()
   const [rules, setRules] = useState<ReverseProxyRule[]>([])
@@ -99,7 +116,8 @@ export const FrontgateReverseProxy: React.FC = () => {
   const [error, setError] = useState<unknown>()
 
   const [showAddDialog, setShowAddDialog] = useState(false)
-  const [activeTab, setActiveTab] = useState<FrontgateTab>("general")
+  const [activeTabDialog, setActiveTabDialog] =
+    useState<FrontgateTabDialog>("general")
   const [formSubmitting, setFormSubmitting] = useState(false)
   const [editingRule, setEditingRule] = useState<ReverseProxyRule | null>(null)
 
@@ -147,28 +165,40 @@ export const FrontgateReverseProxy: React.FC = () => {
   )
   const [formAccess, setFormAccess] = useState(initialForm.access)
 
-  const fetchRules = useCallback(async (pg: number, size: number) => {
-    setLoading(true)
-    setError(undefined)
-    setPage(pg)
+  const [formDryRun, setFormDryRun] = useState(false)
+  const [now, setNow] = useState(() => Date.now())
 
-    frontgateController
-      .listRules(pg, size)
-      .then((res) => {
-        setRules(res.items)
-        setTotal(res.total)
-      })
-      .finally(() => setLoading(false))
-  }, [])
+  const fetchRules = useCallback(
+    async (pg: number, size: number) => {
+      setError(undefined)
+      setPage(pg)
+
+      if (rules.length <= 0) {
+        setLoading(true)
+      }
+
+      frontgateController
+        .listRules(pg, size)
+        .then((res) => {
+          setRules(res.items)
+          setTotal(res.total)
+        })
+        .finally(() => setLoading(false))
+    },
+    [rules.length],
+  )
 
   useEffect(() => {
+    if (activeTab !== "reverseProxy") return
     const timeout = setTimeout(() => {
       fetchRules(page, pageSize).catch(setError)
     }, 0)
     return () => clearTimeout(timeout)
-  }, [page, pageSize, fetchRules])
+  }, [activeTab, page, pageSize, fetchRules])
 
   useEffect(() => {
+    if (activeTab !== "reverseProxy") return
+
     frontgateController
       .listAllCertificates()
       .then((certs) => {
@@ -208,10 +238,24 @@ export const FrontgateReverseProxy: React.FC = () => {
         ] as NmxSelectData[])
       })
       .catch(nmxToast.error)
-  }, [dateOnly, t])
+  }, [activeTab, dateOnly, t])
+
+  useEffect(() => {
+    if (activeTab !== "reverseProxy") return
+    const id = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(id)
+  }, [activeTab])
+
+  useServerSignalRGroup(ServerSignalRGroups.Frontgate, true)
+  useServerSignalREvent<{ certId: string }>(
+    ServerSignalREvent.FrontgateCertStatusChanged,
+    useCallback(() => {
+      fetchRules(page, pageSize).catch(nmxToast.error)
+    }, [fetchRules, page, pageSize]),
+  )
 
   const resetForm = useCallback(() => {
-    setActiveTab("general")
+    setActiveTabDialog("general")
 
     setFormSource(initialForm.source)
     setFormScheme(initialForm.destinationScheme)
@@ -220,6 +264,7 @@ export const FrontgateReverseProxy: React.FC = () => {
     setFormCertificateId("")
     setFormStatus(initialForm.status)
     setFormForceSsl(initialForm.forceSsl)
+    setFormDryRun(false)
 
     setFormWebSockets(initialForm.webSocketsSupport)
     setFormCacheAssets(initialForm.cacheAssets)
@@ -243,6 +288,7 @@ export const FrontgateReverseProxy: React.FC = () => {
     setFormPort(rule.destinationPort)
     setFormCertificateId(rule.certificateId ?? "")
     setFormForceSsl(rule.forceSsl)
+    setFormDryRun(Boolean(rule.dryRunExpiresAt))
     setFormStatus(rule.status)
     setFormWebSockets(rule.webSocketsSupport)
     setFormCacheAssets(rule.cacheAssets)
@@ -350,12 +396,16 @@ export const FrontgateReverseProxy: React.FC = () => {
       destinationScheme: formScheme,
       destinationHost: formHost,
       destinationPort: formPort,
-      certificateId: formCertificateId || undefined,
+      certificateId:
+        formCertificateId === CERT_REQUEST_NEW
+          ? undefined
+          : formCertificateId || undefined,
       access: formAccess,
       status: formStatus,
       webSocketsSupport: formWebSockets,
       cacheAssets: formCacheAssets,
       forceSsl: formForceSsl,
+      dryRun: formDryRun,
       http2Support: formHttp2,
       hstsEnabled: formHsts,
       hstsSubdomains: formHstsSub,
@@ -363,6 +413,7 @@ export const FrontgateReverseProxy: React.FC = () => {
       blockCommonExploits: formBlockExploits,
       additionalHeadersJson: serializeHeaders(),
       locations: formLocations.length > 0 ? formLocations : undefined,
+      requestCert: formCertificateId === CERT_REQUEST_NEW,
     }
 
     setFormSubmitting(true)
@@ -372,7 +423,7 @@ export const FrontgateReverseProxy: React.FC = () => {
       : frontgateController.createRule(payload)
 
     action
-      .then(() => {
+      .then(async () => {
         nmxToast.success(
           t(
             editingRule
@@ -380,11 +431,13 @@ export const FrontgateReverseProxy: React.FC = () => {
               : "addon.frontgate.pages.reverseProxy.feedback.createSuccess",
           ),
         )
+
         setEditingRule(null)
         resetForm()
         setShowAddDialog(false)
         return fetchRules(page, pageSize)
       })
+
       .catch((err) =>
         nmxToast.error(
           formatCustomError(t, err, FrontgateErrorCodes),
@@ -407,6 +460,7 @@ export const FrontgateReverseProxy: React.FC = () => {
     formWebSockets,
     formCacheAssets,
     formForceSsl,
+    formDryRun,
     formHttp2,
     formHsts,
     formHstsSub,
@@ -451,6 +505,46 @@ export const FrontgateReverseProxy: React.FC = () => {
     setDeletingRule(null)
   }, [])
 
+  const handleDryRunConfirm = useCallback(
+    (id: string) => {
+      frontgateController
+        .confirmDryRun(id)
+        .then(() => {
+          nmxToast.success(
+            t("addon.frontgate.pages.reverseProxy.dryRun.confirmSuccess"),
+          )
+          return fetchRules(page, pageSize)
+        })
+        .catch((err) =>
+          nmxToast.error(
+            formatCustomError(t, err, FrontgateErrorCodes),
+            t("addon.frontgate.pages.reverseProxy.dryRun.confirmError"),
+          ),
+        )
+    },
+    [fetchRules, page, pageSize, t],
+  )
+
+  const handleDryRunCancel = useCallback(
+    (id: string) => {
+      frontgateController
+        .cancelDryRun(id)
+        .then(() => {
+          nmxToast.success(
+            t("addon.frontgate.pages.reverseProxy.dryRun.cancelSuccess"),
+          )
+          return fetchRules(page, pageSize)
+        })
+        .catch((err) =>
+          nmxToast.error(
+            formatCustomError(t, err, FrontgateErrorCodes),
+            t("addon.frontgate.pages.reverseProxy.dryRun.cancelError"),
+          ),
+        )
+    },
+    [fetchRules, page, pageSize, t],
+  )
+
   const columns: NmxDataTableColumn<ReverseProxyRule>[] = [
     {
       header: t("addon.frontgate.pages.reverseProxy.fields.source"),
@@ -483,6 +577,32 @@ export const FrontgateReverseProxy: React.FC = () => {
         `${row.destinationScheme}://${row.destinationHost}:${row.destinationPort}`,
       grow: 3,
       enableUserSelectCell: true,
+    },
+    {
+      header: t("addon.frontgate.pages.reverseProxy.fields.ssl"),
+      renderCell: (row) => {
+        if (!row.certificateId) {
+          return (
+            <NmxBadge semantic="trace" size="sm">
+              —
+            </NmxBadge>
+          )
+        }
+
+        return (
+          <NmxBadge
+            semantic={getStatusSemantic(row.certStatus, row.forceSsl)}
+            size="sm"
+          >
+            <NmxIconFont symbol={NmxIconFontSymbol.LOCK} />
+          </NmxBadge>
+        )
+      },
+      grow: 0,
+      alignHeader: "center",
+      alignCell: "center",
+      hideBelow: "md",
+      disableEllipsisCell: true,
     },
     {
       header: t("addon.frontgate.pages.reverseProxy.fields.access"),
@@ -528,6 +648,53 @@ export const FrontgateReverseProxy: React.FC = () => {
       grow: 1,
       alignHeader: "center",
       alignCell: "center",
+      disableEllipsisCell: true,
+    },
+    {
+      header: t("addon.frontgate.pages.reverseProxy.fields.dryRun"),
+      renderCell: (row) => {
+        if (!row.dryRunExpiresAt) {
+          return (
+            <NmxBadge semantic="trace" size="sm">
+              —
+            </NmxBadge>
+          )
+        }
+        return (
+          <div className="nmx-addon-frontgate__dryrun">
+            <NmxBadge semantic="warning" size="sm">
+              <NmxIconFont symbol={NmxIconFontSymbol.TIME} />
+              {formatDryRunRemaining(row.dryRunExpiresAt, now)}
+            </NmxBadge>
+            <NmxButton
+              variant="outline"
+              semantic="success"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleDryRunConfirm(row.id)
+              }}
+              data-row-action
+            >
+              {t("addon.frontgate.pages.reverseProxy.dryRun.confirm")}
+            </NmxButton>
+            <NmxButton
+              variant="ghost"
+              semantic="error"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleDryRunCancel(row.id)
+              }}
+              data-row-action
+            >
+              {t("addon.frontgate.pages.reverseProxy.dryRun.cancel")}
+            </NmxButton>
+          </div>
+        )
+      },
+      grow: 2,
+      alignHeader: "center",
+      alignCell: "center",
+      hideBelow: "md",
       disableEllipsisCell: true,
     },
     {
@@ -661,7 +828,6 @@ export const FrontgateReverseProxy: React.FC = () => {
               setPage(1)
             }}
             onPageChange={(pg) => {
-              setLoading(true)
               setError(undefined)
               setPage(pg)
             }}
@@ -684,16 +850,16 @@ export const FrontgateReverseProxy: React.FC = () => {
         loading={formSubmitting}
         confirmLabel={t("addon.frontgate.pages.reverseProxy.actions.save")}
         extraActionLabel={
-          activeTab === "headers"
+          activeTabDialog === "headers"
             ? t("addon.frontgate.pages.reverseProxy.actions.addHeader")
-            : activeTab === "locations"
+            : activeTabDialog === "locations"
               ? t("addon.frontgate.pages.reverseProxy.actions.addLocation")
               : undefined
         }
         onExtraAction={() => {
-          if (activeTab === "headers") {
+          if (activeTabDialog === "headers") {
             setFormHeaders((prev) => [...prev, { key: "", value: "" }])
-          } else if (activeTab === "locations") {
+          } else if (activeTabDialog === "locations") {
             setFormLocations((prev) => [
               ...prev,
               { path: "", scheme: "http", forwardHost: "", forwardPort: 0 },
@@ -701,8 +867,13 @@ export const FrontgateReverseProxy: React.FC = () => {
           }
         }}
       >
-        <NmxTabs tabs={tabs} value={activeTab} onChange={setActiveTab} t={t} />
-        {activeTab === "general" && (
+        <NmxTabs
+          tabs={tabs}
+          value={activeTabDialog}
+          onChange={setActiveTabDialog}
+          t={t}
+        />
+        {activeTabDialog === "general" && (
           <NmxForm className="nmx-addon-frontgate__form">
             <NmxFormField
               label={t("addon.frontgate.pages.reverseProxy.fields.source")}
@@ -790,10 +961,19 @@ export const FrontgateReverseProxy: React.FC = () => {
                 onCheckedChanged={setFormForceSsl}
               />
             </NmxFormField>
+            <NmxFormField
+              label={t("addon.frontgate.pages.reverseProxy.fields.dryRun")}
+              inline
+            >
+              <NmxToggle
+                checked={formDryRun}
+                onCheckedChanged={setFormDryRun}
+              />
+            </NmxFormField>
           </NmxForm>
         )}
 
-        {activeTab === "headers" && (
+        {activeTabDialog === "headers" && (
           <NmxForm className="nmx-addon-frontgate__form">
             {formHeaders.length <= 0 ? (
               <div className="nmx-addon-frontgate__empty">
@@ -817,7 +997,7 @@ export const FrontgateReverseProxy: React.FC = () => {
           </NmxForm>
         )}
 
-        {activeTab === "locations" && (
+        {activeTabDialog === "locations" && (
           <NmxForm className="nmx-addon-frontgate__form">
             {formLocations.length <= 0 ? (
               <div className="nmx-addon-frontgate__empty">
@@ -888,7 +1068,7 @@ export const FrontgateReverseProxy: React.FC = () => {
           </NmxForm>
         )}
 
-        {activeTab === "advanced" && (
+        {activeTabDialog === "advanced" && (
           <NmxForm className="nmx-addon-frontgate__form">
             <NmxFormField
               label={t(

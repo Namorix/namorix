@@ -24,11 +24,13 @@ import {
   type NmxSemanticColor,
   NmxTagInput,
   NmxToggle,
+  useActiveTab,
 } from "@namorix/ui"
 import { useTranslation } from "react-i18next"
 import {
   type CertificateItem,
   frontgateController,
+  type ReverseCertificateStatus,
 } from "./frontgate.controller"
 import {
   formatCustomError,
@@ -40,7 +42,15 @@ import type { TFunction } from "i18next"
 import {
   type FrontgateCertificateKeyType,
   FrontgateErrorCodes,
+  getStatusSemantic,
 } from "./Frontgate.types"
+import {
+  ServerSignalREvent,
+  ServerSignalRGroups,
+  useServerSignalREvent,
+  useServerSignalRGroup,
+} from "../../signalr"
+import type { FrontgateTab } from "./Frontgate"
 
 type FrontgateCertificateType = "letsEncryptHttp" | "custom"
 type FrontgateActionMenuType = "renew" | "retry" | "download" | "delete"
@@ -61,27 +71,21 @@ function renderType(type: FrontgateCertificateKeyType) {
 }
 
 const renderStatus = (
-  status: string | undefined,
+  status: ReverseCertificateStatus | undefined,
   isInUse: boolean | undefined,
   t: TFunction,
 ) => {
   let label: string
-  let semantic: NmxSemanticColor
-  if (status === "pending") {
+  if (status === "pending")
     label = t("addon.frontgate.pages.certificate.fields.statusValues.pending")
-    semantic = "warning"
-  } else if (status === "error") {
+  else if (status === "error")
     label = t("addon.frontgate.pages.certificate.fields.statusValues.error")
-    semantic = "error"
-  } else if (isInUse) {
+  else if (isInUse)
     label = t("addon.frontgate.pages.certificate.fields.inUseValues.true")
-    semantic = "success"
-  } else {
-    label = t("addon.frontgate.pages.certificate.fields.inUseValues.false")
-    semantic = "trace"
-  }
+  else label = t("addon.frontgate.pages.certificate.fields.inUseValues.false")
+
   return (
-    <NmxBadge semantic={semantic} size="sm">
+    <NmxBadge semantic={getStatusSemantic(status, isInUse)} size="sm">
       {label}
     </NmxBadge>
   )
@@ -117,6 +121,7 @@ function renderSource(source: string) {
 
 export const FrontgateCertificate: React.FC = () => {
   const { t } = useTranslation()
+  const activeTab = useActiveTab<FrontgateTab>()
   const { dateOnly, dateTime } = useDateTimeFormat()
   const [certs, setCerts] = useState<CertificateItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -143,23 +148,32 @@ export const FrontgateCertificate: React.FC = () => {
 
   const [testing, setTesting] = useState(false)
 
-  const fetchCerts = useCallback((pg: number, sz: number) => {
-    setLoading(true)
-    setError(undefined)
-    frontgateController
-      .listCertificates(pg, sz)
-      .then((res) => {
-        setCerts(res.items)
-        setTotal(res.total)
-      })
-      .catch(setError)
-      .finally(() => setLoading(false))
-  }, [])
+  const fetchCerts = useCallback(
+    async (pg: number, sz: number) => {
+      setError(undefined)
+
+      if (certs.length <= 0) {
+        setLoading(true)
+      }
+
+      frontgateController
+        .listCertificates(pg, sz)
+        .then((res) => {
+          setCerts(res.items)
+          setTotal(res.total)
+        })
+        .finally(() => setLoading(false))
+    },
+    [certs.length],
+  )
 
   useEffect(() => {
-    const timeout = setTimeout(() => fetchCerts(page, pageSize), 0)
+    if (activeTab !== "certificate") return
+    const timeout = setTimeout(() => {
+      fetchCerts(page, pageSize).catch(setError)
+    }, 0)
     return () => clearTimeout(timeout)
-  }, [fetchCerts, page, pageSize])
+  }, [activeTab, fetchCerts, page, pageSize])
 
   useEffect(() => {
     frontgateController
@@ -168,11 +182,53 @@ export const FrontgateCertificate: React.FC = () => {
       .catch(nmxToast.error)
   }, [])
 
+  useServerSignalRGroup(ServerSignalRGroups.Frontgate, true)
+  useServerSignalREvent<{ certId: string; status: string }>(
+    ServerSignalREvent.FrontgateCertStatusChanged,
+    useCallback(() => {
+      fetchCerts(page, pageSize)
+    }, [fetchCerts, page, pageSize]),
+  )
+
   const handleAction = useCallback(
     (value: FrontgateActionMenuType, row: CertificateItem) => {
+      if (value === "retry") {
+        frontgateController
+          .retryCertificate(row.id)
+          .then(() => {
+            nmxToast.success(
+              t("addon.frontgate.pages.certificate.feedback.retrySuccess"),
+            )
+            fetchCerts(page, pageSize)
+          })
+          .catch((err) => {
+            nmxToast.error(
+              formatCustomError(t, err, FrontgateErrorCodes),
+              t("addon.frontgate.pages.certificate.feedback.retryError"),
+            )
+          })
+      }
+
+      if (value === "renew") {
+        frontgateController
+          .renewCertificate(row.id)
+          .then(() => {
+            nmxToast.success(
+              t("addon.frontgate.pages.certificate.feedback.renewSuccess"),
+            )
+            fetchCerts(page, pageSize)
+          })
+          .catch((err) =>
+            nmxToast.error(
+              formatCustomError(t, err, FrontgateErrorCodes),
+              t("addon.frontgate.pages.certificate.feedback.renewError"),
+            ),
+          )
+      }
+
       if (value === "delete") setDeletingCert(row)
     },
-    [],
+    [fetchCerts, page, pageSize, t],
   )
 
   const handleDeleteConfirm = useCallback(() => {
@@ -196,6 +252,32 @@ export const FrontgateCertificate: React.FC = () => {
       })
       .finally(() => setDeleteSubmitting(false))
   }, [deletingCert, fetchCerts, page, pageSize, t])
+
+  const handleConfirmLetsEncrypt = useCallback(() => {
+    setAddSubmitting(true)
+    frontgateController
+      .createLetsEncryptCert({
+        domains: certDomains.map((d) => d.trim()).filter(Boolean),
+        keyType: certType,
+        autoRenew: certAutoRenew,
+      })
+      .then(() => {
+        setAddDialogType(null)
+        fetchCerts(page, pageSize)
+        nmxToast.success(
+          t(
+            "addon.frontgate.pages.certificate.dialogs.letsEncryptHttp.success",
+          ),
+        )
+      })
+      .catch((err) => {
+        nmxToast.error(
+          formatCustomError(t, err, FrontgateErrorCodes),
+          t("addon.frontgate.pages.certificate.dialogs.letsEncryptHttp.error"),
+        )
+      })
+      .finally(() => setAddSubmitting(false))
+  }, [certAutoRenew, certDomains, certType, fetchCerts, page, pageSize, t])
 
   const handleTestLetsEncrypt = useCallback(() => {
     setTesting(true)
@@ -276,7 +358,7 @@ export const FrontgateCertificate: React.FC = () => {
             ))}
           </div>
           <span className="nmx-addon-frontgate__created">
-            {t("addon.frontgate.pages.certificate.fields.createdAt", {
+            {t("addon.frontgate.pages.certificate.fields.createdTime", {
               time: dateTime(row.createdAt),
             })}
           </span>
@@ -425,7 +507,6 @@ export const FrontgateCertificate: React.FC = () => {
             setPage(1)
           }}
           onPageChange={(pg) => {
-            setLoading(true)
             setError(undefined)
             setPage(pg)
           }}
@@ -533,33 +614,7 @@ export const FrontgateCertificate: React.FC = () => {
         extraActionDisabled={testing || certDomains.every((d) => !d.trim())}
         onExtraAction={handleTestLetsEncrypt}
         onClose={() => setAddDialogType(null)}
-        onConfirm={() => {
-          setAddSubmitting(true)
-          frontgateController
-            .createLetsEncryptCert({
-              domains: certDomains.map((d) => d.trim()).filter(Boolean),
-              keyType: certType,
-              autoRenew: certAutoRenew,
-            })
-            .then(() => {
-              setAddDialogType(null)
-              fetchCerts(page, pageSize)
-              nmxToast.success(
-                t(
-                  "addon.frontgate.pages.certificate.dialogs.letsEncryptHttp.success",
-                ),
-              )
-            })
-            .catch((err) => {
-              nmxToast.error(
-                formatCustomError(t, err, FrontgateErrorCodes),
-                t(
-                  "addon.frontgate.pages.certificate.dialogs.letsEncryptHttp.error",
-                ),
-              )
-            })
-            .finally(() => setAddSubmitting(false))
-        }}
+        onConfirm={handleConfirmLetsEncrypt}
         size="md"
       >
         <NmxForm>
