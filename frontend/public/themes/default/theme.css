@@ -3346,6 +3346,7 @@ input[type=number] {
   --nmx-icon-app-package-center: url("/icons/app-package-center.svg");
   --nmx-icon-app-frontgate: url("/icons/app-frontgate.svg");
   --nmx-icon-app-beacon: url("/icons/app-beacon.svg");
+  --nmx-icon-app-warden: url("/icons/app-warden.svg");
 }
 :root {
   --nmx-split-panel-min-width: 480px;
