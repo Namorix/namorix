@@ -1,5 +1,15 @@
 # Version History — August 2026
 
+## 2026-08-08 — SignalR realtime CRUD — Beacon + Frontgate (rule/dry-run/cert)
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/styles | 0.50.0 → 0.51.0 | MODIFIED: `base/shell/addon/frontgate.scss` — `__dry-run` button group (flex row + join radius, `--flex-end` modifier), `__destination` selector (cùng màu `__created`), bỏ `__btn-cancel-dryrun`. |
+| frontend | 0.77.0 → 0.78.0 | MODIFIED: `addons/Frontgate/FrontgateReverseProxy.tsx` — SignalR realtime `rule-changed`/`dry-run-changed` (đóng info/edit khi rule bị xóa ngoài + toast `ruleDeletedExternally` kèm `{{source}}`, refetch mọi change); `FrontgateCertificate.tsx` — realtime `cert-changed` (đóng info khi cert bị xóa ngoài + toast `deletedExternally` kèm `{{domain}}`, refetch); `addons/Beacon/BeaconHostnames.tsx` — realtime `hostname-changed` (đóng edit dialog khi hostname bị xóa ngoài + toast `deletedExternally` kèm `{{hostname}}`, refetch); **fix `.then()` detached** — `fetchRules`/`fetchCerts`/`fetchHosts` bỏ chuỗi `.finally()` nuốt rejection → `await` + `return res.items` (`Promise<Item[]>`); `signalr/constants.ts` — +3 event (`BeaconHostnameChanged`, `FrontgateDryRunChanged`, `FrontgateCertChanged`); `Frontgate.types.ts`/`Beacon.types.ts` — +payload interfaces + action unions (`FrontgateCertAction`, `BcnHostnameAction`); `i18n/locales/en.json` — +`deletedExternally` (certificate + hostname). |
+| Namorix.Server | 0.68.0 → 0.69.0 | MODIFIED: SignalR realtime CRUD — `Infrastructure/IBeaconNotifier.cs` +`NotifyHostnameChanged` (`Hubs/SignalRBeaconNotifier` — `action = action.ToString().ToLowerInvariant()`), `Controllers/BcnController.cs` gọi Created/Updated/Deleted sau Create/Update/Delete hostname; `IFrontgateNotifier` +`NotifyRuleChanged`/`NotifyDryRunChanged`/`NotifyCertChanged`, `ReverseProxyController` (rule CRUD + dry-run confirm/cancel), `FgDryRunRollbackWorker` (Expire), `CertificateController` (Delete → Deleted). NEW enum `FgCertAction { Created, Updated, Deleted }` (`Constants/Frontgate.cs`) + `BcnHostnameAction` (`Constants/Beacon.cs`); `Constants/ServerSignalR.cs` +3 event (`beacon:hostname-changed`, `frontgate:dry-run-changed`, `frontgate:cert-changed`). **Lưu ý SignalR enum**: protocol serializer không dùng `JsonStringEnumConverter` → enum thành số, bắt buộc `ToLowerInvariant()` ở notifier. MODIFIED: `AcmeCertQueue`/`BcnHostnameService`/`BcnUpdateQueue` tweaks; `appsettings.json` bỏ `Frontgate:DryRunSeconds` (thay `ResolveDryRunSeconds(minutes)`). |
+| frontgate addon | 1.5.0 → 1.6.0 | `version.ts` `NmxAddonVersions` — MINOR bump (SignalR realtime rule/dry-run/cert + deletedExternally toast). |
+| beacon addon | 1.0.0 → 1.1.0 | `version.ts` `NmxAddonVersions` — MINOR bump (SignalR realtime hostname CRUD). |
+
 ## 2026-08-07 — Frontgate Reverse Proxy UX hoàn thiện (menu actions, info dialog, dry-run minutes, UTC fix)
 
 | Package | Version | Changes |

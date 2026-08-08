@@ -301,6 +301,29 @@ Backlog (chưa có schema): active24, akamai-edgedns, aliyun, arvancloud, baidu,
 - [x] **Countdown expiry fix** ✅ 2026-08-07 — `isDryRunActive(expiresAt, now)` (expiresAt != null && > now) dùng chung badge/menu/info dialog — hết đếm ngược "00:00" ngay sau khi hết hạn; cột dry-run hiển thị "—" khi inactive.
 - [x] **UTC serialization fix** ✅ 2026-08-07 — `Namorix.Core/Helpers/UtcDateTimeJsonConverter.cs` (`JsonConverter<DateTime>`: Unspecified → treat as UTC, Write → `DateTime.SpecifyKind` Utc) đăng ký global trong `AddJsonOptions` (`options.JsonSerializerOptions.Converters.Add`). SQLite + EF Core mất `DateTimeKind` (Unspecified) → serializer trước đây xuất thiếu `Z` (`2026-08-07T14:12:35.775856`) → `new Date()` parse nhầm local (+7h). Giờ xuất `...Z` → countdown chạy đúng.
 
+#### ✅ SignalR realtime — rule/dry-run changed (2026-08-08)
+
+- [x] **2 SignalR event mới**: `frontgate:rule-changed` (created/updated/deleted) + `frontgate:dry-run-changed` (confirm/cancel/expire) — khai báo trong `Constants/ServerSignalR.cs` (backend) + `src/signalr/constants.ts` (frontend).
+- [x] **Enum → lowercase string**: `SignalRFrontgateNotifier` dùng `action.ToString().ToLowerInvariant()` (dạng named member `action = ...` — projection `new { action.ToString().ToLowerInvariant() }` gây lỗi CS0828). **Lý do:** SignalR protocol serializer (`AddJsonProtocol`) không dùng `JsonStringEnumConverter` của MVC `AddJsonOptions` → enum serialize thành **số** (0/1/2). Cùng fix cho `status` trong `NotifyCertStatusChanged`.
+- [x] **Notifier wiring**: `ReverseProxyController` inject `IFrontgateNotifier` — gọi `NotifyRuleChanged` sau Create/Update/Delete rule, `NotifyDryRunChanged` sau Confirm/Cancel dry-run. `FgDryRunRollbackWorker` gọi `NotifyDryRunChanged(Expire)` sau rollback.
+- [x] **Frontend subscribe + refresh**: `FrontgateReverseProxy` đã subscribe group `frontgate` (`useServerSignalRGroup`); thêm `useServerSignalREvent` cho cả 2 event → gọi `refresh()` refetch list.
+- [x] **fetchRules trả `items`**: bỏ pattern `.then()` detached (chuỗi `.finally()` nuốt rejection → `.catch(setError)`/`.catch(nmxToast.error)` không bao giờ chạy), chuyển `await` + `return res.items` → `Promise<ReverseProxyRule[]>`.
+- [x] **Dialog sync khi thay đổi ngoài**: `handleRuleChanged` — nếu rule đang mở info/edit bị xóa ngoài → đóng dialog + toast `ruleDeletedExternally` kèm `{{source}}` (lấy từ `infoRule?.source`/`editingRule?.source`); mọi change → `refresh()` sync lại `infoRule` theo id (find → null nếu đã xóa). Chỉ `deleted` mới đóng dialog, `created`/`updated` chỉ refresh.
+
+#### 🚫 SignalR realtime — không làm (bỏ 2026-08-08)
+
+- [x] ~~Toast create/update/delete kèm source~~ — user thấy dài dòng, bỏ. Toast chỉ có `ruleDeletedExternally` (đã kèm `{{source}}`) + `deleteConfirm` (đã có sẵn).
+- [x] **Gỡ `"create"` khỏi `FrontgateDryRunAction`** ✅ 2026-08-08 — FE union giờ `"confirm" | "cancel" | "expire"`, khớp backend `FgDryRunAction { Confirm, Cancel, Expire }`.
+
+#### ✅ SignalR realtime — cert changed (2026-08-08)
+
+- [x] **`FgCertAction` enum + `frontgate:cert-changed` event**: `FgCertAction { Created, Updated, Deleted }` trong `Constants/Frontgate.cs`; `FrontgateCertChanged = $"{ServerSignalRGroups.Frontgate}:cert-changed"` trong `Constants/ServerSignalR.cs` (backend) + `src/signalr/constants.ts` (frontend).
+- [x] **Notifier wiring**: `IFrontgateNotifier.NotifyCertChanged(certId, FgCertAction)` + implementation trong `SignalRFrontgateNotifier` (cùng pattern `action = action.ToString().ToLowerInvariant()`). `CertificateController` inject `IFrontgateNotifier` — gọi `NotifyCertChanged(Deleted)` trong `DeleteCertificate` sau khi Remove + SaveChanges.
+- [x] **Frontend subscribe + refresh**: `FrontgateCertificate` thêm `useServerSignalREvent<FrontgateCertChangedPayload>` → mọi change refetch list.
+- [x] **Dialog sync khi xóa ngoài**: listener chỉ check `selectedCert?.id` (info dialog — **không** check `deletingCert` để tránh false-fire toast khi chính mình xóa, SignalR event có thể tới trước khi local `.then()` clear state) — cert đang mở info bị xóa ngoài → đóng dialog + toast `deletedExternally` kèm `{{domain}}` (từ `selectedCert?.domains?.[0]`); `created`/`updated` chỉ refresh.
+- [x] **fetchCerts trả `items`**: cùng fix `.then()` detached (`.finally()` nuốt rejection) → `await` + `return res.items` (`Promise<CertificateItem[]>`).
+- [x] **en.json**: `"deletedExternally": "Certificate **{{domain}}** was deleted by another session"` trong `pages.certificate.feedback`.
+
 ### 🔜 Phase 4 — Advanced Features
 - [ ] TCP/UDP Stream forwarding (non-HTTP addon)
 - [ ] Redirection Hosts (301/302)

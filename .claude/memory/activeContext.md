@@ -27,6 +27,15 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-08-2026.md](versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-08-08 — SignalR realtime CRUD — Beacon + Frontgate (rule/dry-run/cert)
+
+- **Pattern realtime CRUD (frontgate-style)**: backend notifier push `{id, action}` lowercase-string event (group `beacon`/`frontgate`) → frontend `useServerSignalREvent` subscribe → đóng info/edit dialog nếu item bị xóa ngoài + toast → refetch list.
+- **Frontgate**: `FgCertAction` (Created/Updated/Deleted) + event `frontgate:cert-changed` — `IFrontgateNotifier.NotifyCertChanged(certId, action)`; FE `FrontgateCertificate` subscribe → close info dialog nếu `deleted && payload.certId === selectedCert?.id` + toast `deletedExternally` → refetch. **Fix detached-finally**: `fetchCerts` `await` + `return res.items` → `Promise<CertificateItem[]>` (trước đây `.then().finally()` không return → rejection nuốt, callers `.catch` không fire).
+- **Beacon**: `BcnHostnameAction` + event `beacon:hostname-changed` — `IBeaconNotifier.NotifyHostnameChanged(hostnameId, hostname, action)`; FE `BeaconHostnames` subscribe → close edit dialog nếu hostname bị xóa ngoài + refetch.
+- **SignalR enum serialization**: protocol serializer SignalR (`AddJsonProtocol`) không chịu `JsonStringEnumConverter` của MVC — enum ra integer. Fix: `action.ToString().ToLowerInvariant()` tại notifier call site, dùng **named anonymous member** (`action = action.ToString()...`) — dạng projection gây CS0828.
+- **Self-delete race avoidance**: toast "deleted externally" chỉ check info/edit dialog state (`selectedCert`/`editing`/`infoRule`), KHÔNG check delete-confirm state (`deletingCert`/`deleting`) — tránh false-fire khi SignalR event tới trước khi local `.then()` clear state (own-delete).
+- Versions: styles 0.51.0 / frontend 0.78.0 / Namorix.Server 0.69.0 / frontgate 1.6.0 / beacon 1.1.0.
+
 ### 2026-08-07 — Frontgate Reverse Proxy UX hoàn thiện (menu actions, info dialog, dry-run minutes, UTC fix)
 
 - **Row action menu**: nút Delete cuối row → `NmxMenuButton` (MENU_VERTICAL trigger, `arrowDisabled`) — Confirm dry-run / Cancel dry-run / Edit / Delete. `filterItem` chỉ hiện 2 mục dry-run khi `isDryRunActive`; `dividerIndexes` top-divider trước Edit + Delete.

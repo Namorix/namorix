@@ -202,12 +202,12 @@ backend/
         │   ├── MainHub.cs               # Real-time events (system stats, addon, notifications, beacon, frontgate groups)
         │   ├── SignalRAddonNotifier.cs
         │   ├── SignalRSystemMonitorNotifier.cs
-        │   ├── SignalRBeaconNotifier.cs # IBeaconNotifier (activity-created / hostname-status-changed / refreshed)
-        │   └── SignalRFrontgateNotifier.cs # IFrontgateNotifier (cert-status-changed, group frontgate)
+        │   ├── SignalRBeaconNotifier.cs # IBeaconNotifier (activity-created / hostname-status-changed / refreshed / hostname-changed)
+        │   └── SignalRFrontgateNotifier.cs # IFrontgateNotifier (cert-status-changed / rule-changed / dry-run-changed / cert-changed, group frontgate)
         ├── Infrastructure/
         │   ├── IAddonNotifier.cs
         │   ├── ISystemMonitorNotifier.cs
-        │   └── IFrontgateNotifier.cs   # Frontgate cert status notification
+        │   └── IFrontgateNotifier.cs   # Frontgate notifier (cert status, rule/dry-run/cert changed)
         ├── Models/                  # Grouped theo addon domain
         │   ├── Addon/               # AddonCatalogEntry, AddonInstallation, AddonTask
         │   ├── Beacon/              # BcnHostname, BcnSettings, BcnActivityLog, BcnProviderConfig, BcnProviderInfo
@@ -553,7 +553,11 @@ SignalR hub tại `/hubs/main`:
 | `beacon:activity-created` | Server → Client | Beacon activity log entry |
 | `beacon:hostname-status-changed` | Server → Client | Beacon hostname status change |
 | `beacon:hostnames-refreshed` | Server → Client | Beacon probe/refresh completed |
+| `beacon:hostname-changed` | Server → Client | Beacon hostname CRUD (create/update/delete) |
 | `frontgate:cert-status-changed` | Server → Client | Frontgate cert status change (retry/renew/worker) |
+| `frontgate:rule-changed` | Server → Client | Frontgate reverse proxy rule CRUD |
+| `frontgate:dry-run-changed` | Server → Client | Frontgate dry-run confirm/cancel/expire |
+| `frontgate:cert-changed` | Server → Client | Frontgate cert CRUD |
 
 SignalR client auto-reconnects with exponential backoff (5s → 30s cap, infinite retry).
 

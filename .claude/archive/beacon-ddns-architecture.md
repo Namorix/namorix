@@ -40,6 +40,7 @@
 - [x] **HostIsDomain + provider error param end-to-end (2026-08-05)** — provider record name == FQDN luôn (No-IP) khai `BcnProviderInfo.HostIsDomain = true`; controller derive `hostValue = domain`; FE ẩn host field + collapse `hostnameLabel`/activity label; `WithProvider` + `firstFailure` enrich → check/retry toast + activity log có tên provider; `renderBeaconCodeMessage` dùng chung formatBeaconError + check toast; chi tiết Phase 10
 - [x] **Provider error detail + notification/activity interpolation + toggle enable + DisplayName collapse (2026-08-05)** — Namecheap `<Err1>` extract + NoIp `reason` mọi nhánh error + `bcnErrorDetail`/`DescribeDetail` 3-tier (`detail → httpStatus>0 → reason`); notification renderer translate provider/hostname/detail + thêm `return t(...)` (hết raw `BCN_PROVIDER_ERROR`); `firstFailure` enrich thêm `WithTag` (activity hết literal `{{hostname}}`); toggle Enable → `Updating` + enqueue (chạy update thật qua queue); `DisplayName` collapse backend (`Host == Domain ? Domain : …`); chi tiết Phase 11
 - [x] **Multi-host chuyển xuống provider + token-match classify + constants consolidation + FE hints (2026-08-05)** — `BcnHostnameService` bỏ split, truyền `host.Host` (full comma string) cho provider tự xử lý; Cloudflare/GoDaddy split+loop per tag, **DuckDNS batch 1 request** (API nhận comma list — docs chính thức), **Namecheap split+loop per host** (docs chính thức mỗi request 1 giá trị `host=`, không nhận gộp); schema Host relax `*.suffix`; Dynu/NoIp classify token-match (`good <ip>`/`nochg <ip>` success, Dynu `notfqdn`→HostnameNotFound + `servererror`→Unavailable); `BcnParam`/`BcnCredentialParam`/`BcnHttpClientNames`/`BcnHeaderKey` constants thay hết hardcode; FE `hostHint`/`domainHint` (NmxFormField `helper`); chi tiết Phase 12
+- [x] **SignalR realtime CRUD hostname (2026-08-08)** — event `beacon:hostname-changed` (created/updated/deleted) push từ `BcnController` sau mọi CRUD; FE đóng dialog edit + toast khi hostname đang mở bị xóa ngoài, refetch mọi thay đổi; fix `fetchHosts` detached-`.finally()` (giống frontgate); chi tiết Phase 13
 
 ### UI mock
 - Mock `beacon-ddns-mock.jsx` (React + Tailwind + lucide-react) style Synology DSM: sidebar Hostnames/Activity/Settings, bảng hostname với status dot ping + provider badge monogram, modal Add hostname với lưới provider card + form động, custom provider toggle Simple GET / REST-JSON, Settings (interval, IP detection, IPv6 toggle).
@@ -481,6 +482,24 @@ Verify: `dotnet build` 0 errors 0 warnings + `pnpm tsc -b` pass — **đã chạ
 **Verify**: `dotnet build` 0 errors 0 warnings. NoIp + Dynu đã test thật (lỗi `good <ip>` → fix token-match → retest). Cloudflare đang test multi-host.
 
 **Pending**: SignalR reconnect bug (`@namorix/core` — Open Decision #14); activity per-tag → 1 log đã chấp nhận.
+
+### Phase 13 — SignalR realtime CRUD hostname (2026-08-08) ✅
+
+**Context**: Frontgate có pattern realtime CRUD (`frontgate:rule-changed`) — Beacon chưa. `BcnController` không notify khi create/update/delete hostname; chỉ `BcnHostnameService`/`BcnProbeQueue` push status/refresh (Phase 7). Cross-session sửa/xóa hostname → session kia list + dialog edit stale, không có toast.
+
+**Chốt fix (đã apply đủ, đọc lại 9 file xác nhận):**
+- [x] **Enum `BcnHostnameAction { Created, Updated, Deleted }`** — `Constants/Beacon.cs:73`
+- [x] **Event `beacon:hostname-changed`** — `ServerSignalREvent.BeaconHostnameChanged` (backend `Constants/ServerSignalR.cs:21` + FE `src/signalr/constants.ts:17`)
+- [x] **`IBeaconNotifier.NotifyHostnameChanged(hostnameId, hostname, BcnHostnameAction)`** + `SignalRBeaconNotifier` implement — action `action.ToString().ToLowerInvariant()` (SignalR protocol serializer không dùng `JsonStringEnumConverter` của MVC → enum serialize thành **số**, phải convert tay — giống fix frontgate)
+- [x] **`BcnController` inject `IBeaconNotifier`** (param cuối constructor) — Create → `Created` (:71), Update → `Updated` (:117), Delete → `Deleted` (:133, capture `displayName = host.DisplayName` trước `Remove`)
+- [x] **FE types** — `BcnHostnameChangedPayload { hostnameId, hostname, action }` (`Beacon.types.ts:89-92`) + union `BcnHostnameAction = "created"|"updated"|"deleted"` (:23)
+- [x] **FE listener `BeaconHostnameChanged`** (`BeaconHostnames.tsx:736-755`) — nếu hostname đang mở dialog edit (`editing.id`) bị xóa ngoài → `resetForm()` + đóng dialog + toast `deletedExternally` kèm `{{hostname}}`; mọi action → refetch list
+- [x] **en.json `deletedExternally`** = "**{{hostname}}** was deleted by another session"
+- [x] **`fetchHosts` fix lỗi `.finally()` detached** — chuyển `await` + `return res.items` (`Promise<BcnHostnameDto[]>`) → `.catch(nmxToast.error)` bên ngoài giờ bắt được rejection (giống fix frontgate)
+
+**Design notes**: toast chỉ bắn khi hostname đang mở dialog edit bị xóa ngoài (self-delete không bắn — `editing` đã null sau khi đóng); **không** theo dõi `deleting` state (tránh race self-delete, giống frontgate không check dialog delete). `created`/`updated` chỉ refetch, **không** re-sync form edit đang mở — form Beacon có `keptSecrets` phức tạp, re-sync dễ hỏng secret.
+
+**Files**: `Constants/Beacon.cs`, `Constants/ServerSignalR.cs`, `Infrastructure/IBeaconNotifier.cs`, `Hubs/SignalRBeaconNotifier.cs`, `Controllers/BcnController.cs`, FE `src/signalr/constants.ts`, `Beacon.types.ts`, `BeaconHostnames.tsx`, `en.json`
 
 1. ~~**Naming**~~ ✅ Chốt: **`Bcn` + `/api/beacon`** (nhất quán với Fg = addon initialism).
 2. ~~**Public IP detection reuse**~~ ✅ Chốt 2026-08-03: **dựng shared service mới** `IPublicIpDetector`/`PublicIpService` (namespace `Namorix.Server.Services`, không gắn Bcn). Lưu ý: plan cũ ghi Frontgate "đã có DnsLookupChecker + ipify" là **sai** — backend chưa từng có code public IP. Nhưng **Frontgate cần public IP thật** cho HTTP-01 challenge check (so DNS resolve ↔ public IP, port 80 mở trước khi LE validate). Beacon dùng trước (worker + `/test`), Frontgate inject `IPublicIpDetector` reuse sau.

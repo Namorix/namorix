@@ -430,7 +430,11 @@ On disconnect
 | `beacon:hostname-status-changed` | Server → Client | `{ hostnameId: string, hostname: string, status: string }` | Beacon (status badge live update) |
 | `beacon:activity-created` | Server → Client | `{ id, timestamp, level, code, paramsJson, hostname }` | BeaconActivity (realtime log — no handler khi tab activity chưa mở → SignalR JS log warning benign) |
 | `beacon:hostnames-refreshed` | Server → Client | `{ updated: number }` | BeaconHostnames (sau probe queue) |
-| `frontgate:cert-status-changed` | Server → Client | `{ domain: string, status: string, message?: string }` | Frontgate (certificate status — `FgCertRenewWorker`/`CertificateController`; group `frontgate`) |
+| `beacon:hostname-changed` | Server → Client | `{ hostnameId: string, hostname: string, action: string }` | BeaconHostnames (realtime CRUD — create/update/delete; action lowercase) |
+| `frontgate:cert-status-changed` | Server → Client | `{ certId: string, status: string, issuer?: string, expiresAt?: string }` | Frontgate (certificate status — `FgCertRenewWorker`/`CertificateController`; group `frontgate`) |
+| `frontgate:rule-changed` | Server → Client | `{ ruleId: string, action: string }` | FrontgateReverseProxy (realtime CRUD — group `frontgate`) |
+| `frontgate:dry-run-changed` | Server → Client | `{ ruleId: string, action: string }` | FrontgateReverseProxy (dry-run confirm/cancel/expire — group `frontgate`) |
+| `frontgate:cert-changed` | Server → Client | `{ certId: string, action: string }` | FrontgateCertificate (realtime CRUD — group `frontgate`) |
 
 ### Hooks
 
@@ -455,8 +459,12 @@ NmxHub (IHubContext)
   │    └── NotifyAddonWidgetEvent(addonId, payload)
   └── IBeaconNotifier → NotifyActivityCreated(log, hostname)
        ├── NotifyHostnameStatusChanged(hostnameId, hostname, status)
-       └── NotifyHostnamesRefreshed(updated)
-  └── IFrontgateNotifier → NotifyCertStatusChanged(domain, status, message?)
+       ├── NotifyHostnamesRefreshed(updated)
+       └── NotifyHostnameChanged(hostnameId, hostname, action)
+  └── IFrontgateNotifier → NotifyCertStatusChanged(certId, status, issuer, expiresAt)
+       ├── NotifyDryRunChanged(ruleId, action)
+       ├── NotifyRuleChanged(ruleId, action)
+       └── NotifyCertChanged(certId, action)
 ```
 
 ### Key files
@@ -852,7 +860,7 @@ BcnProviderResolver — built-in → registry, custom → theo Kind
 - `BcnUpdateQueue` — 1 hostname/event (create/update → `EnqueueAsync(host.Id)`): `SemaphoreSlim` max 2 concurrent, `RequeueUpdatingAsync` on startup (hostname Updating bị orphan sau restart → requeue), fail → status Error + `NotifyHostnameStatusChanged`.
 - `BcnProbeQueue` — refresh toàn bộ (controller `POST /refresh` → `EnqueueAsync()`): batch probe hostname non-disabled qua `RefreshHostFromProviderAsync` (so sánh authoritative DNS + provider update), xong `NotifyHostnamesRefreshed(updated)`.
 
-**SignalR realtime (2026-08-05):** `IBeaconNotifier` + `SignalRBeaconNotifier` (IHubContext<MainHub>, group `beacon`): `beacon:activity-created` (mỗi log BCN_PROBED/BCN_UPDATED), `beacon:hostname-status-changed`, `beacon:hostnames-refreshed` (sau probe). Note: JS SignalR client log warning `No client method with the name 'beacon:activity-created'` khi tab Activity chưa mount (không có handler) — event name đúng, warning benign. NmxRail giữ tab mounted (display:none) — `BeaconActivity` đã fix refresh-on-open bằng `useActiveTab()` gate (refetch mỗi khi tab active) + subscribe cả 2 beacon events. Warning `No client method` đã fix (BeaconActivity tự register handler khi mount).
+**SignalR realtime (2026-08-05):** `IBeaconNotifier` + `SignalRBeaconNotifier` (IHubContext<MainHub>, group `beacon`): `beacon:activity-created` (mỗi log BCN_PROBED/BCN_UPDATED), `beacon:hostname-status-changed`, `beacon:hostnames-refreshed` (sau probe). `beacon:hostname-changed` (2026-08-08) — create/update/delete hostname push `{hostnameId, hostname, action}` (action lowercase, `BcnHostnameAction`); FE `BeaconHostnames` subscribe → close edit dialog nếu hostname bị xóa ngoài + refetch. Note: JS SignalR client log warning `No client method with the name 'beacon:activity-created'` khi tab Activity chưa mount (không có handler) — event name đúng, warning benign. NmxRail giữ tab mounted (display:none) — `BeaconActivity` đã fix refresh-on-open bằng `useActiveTab()` gate (refetch mỗi khi tab active) + subscribe cả 2 beacon events. Warning `No client method` đã fix (BeaconActivity tự register handler khi mount).
 
 **Config validation 2 lớp (2026-08-03):**
 - **Runtime guard (provider)**: `BcnSimpleGetProvider` check `UrlTemplate` + basic `User`/`Password`; `BcnRestJsonProvider` check `EndpointTemplate` + `RecordLookupTemplate` (khi endpoint chứa `{recordId}`) → trả `BcnUpdateResult(false, BCN_CONFIG_INVALID, { field })`.
