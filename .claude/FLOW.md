@@ -337,6 +337,7 @@ Request → JsonErrorMiddleware → ExceptionMiddleware
 | `backend/src/Namorix.Core/Validation/ValidationRule.cs` | All rule types |
 | `backend/src/Namorix.Core/Validation/IValidationSchema.cs` | Marker interface |
 | `backend/src/Namorix.Core/Validation/Schemas/` | All schemas |
+| `backend/src/Namorix.Server/Validation/Frontgate/` | Frontgate schemas — FrontgateRuleSchema, FrontgateCertSchema, AccessPolicySchema, CustomCertSchema (schema prop name phải khớp request record prop — `ValidateAttribute.GetPropertyValue`) |
 | `backend/src/Namorix.Core/Filters/ValidationFilter.cs` | ModelState filter |
 | `backend/src/Namorix.Core/Constants/Error.cs` | Error codes |
 | `backend/src/Namorix.Core/Constants/Validation.cs` | ValidationMeta |
@@ -417,7 +418,7 @@ On disconnect
 
 | Event | Direction | Payload | Used by |
 |-------|-----------|---------|---------|
-| `traffic:new-logs` | Server → Client | TrafficLogsFlushed + BucketData | NetworkTraffic |
+| `traffic:new-logs` | Server → Client | TrafficLogsFlushed + BucketData (TOTAL API + proxy mixed — mỗi entry có `source` field) | NetworkTraffic |
 | `traffic:stats-init` | Server → Client | BucketData[] | NetworkTraffic stats |
 | `logs:new-entry` | Server → Client | LogEntry[] | LogViewer (live mode) |
 | `system:config-changed` | Server → Client | `{ key: string }` | useAppearanceSync |
@@ -435,6 +436,7 @@ On disconnect
 | `frontgate:rule-changed` | Server → Client | `{ ruleId: string, action: string }` | FrontgateReverseProxy (realtime CRUD — group `frontgate`) |
 | `frontgate:dry-run-changed` | Server → Client | `{ ruleId: string, action: string }` | FrontgateReverseProxy (dry-run confirm/cancel/expire — group `frontgate`) |
 | `frontgate:cert-changed` | Server → Client | `{ certId: string, action: string }` | FrontgateCertificate (realtime CRUD — group `frontgate`) |
+| `frontgate:audit-created` | Server → Client | `{ targetType: string, targetId: string, action: string }` (lowercase enum — FgAuditTargetType/FgAuditAction) | FrontgateAudit (realtime log — `FrontgateAudit.NotifyAuditCreated`; group `frontgate`) |
 
 ### Hooks
 

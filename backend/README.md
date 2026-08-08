@@ -196,7 +196,8 @@ backend/
         │       ├── BlockCommonExploitsMiddleware.cs  # Block common exploit signatures
         │       ├── BlockWebSocketMiddleware.cs       # Block WebSocket upgrades theo policy
         │       ├── HstsMiddleware.cs                 # Strict-Transport-Security header
-        │       ├── ProxyTrafficMiddleware.cs         # Proxy traffic metrics
+        │       ├── ProxyTrafficMiddleware.cs         # Proxy traffic metrics (source = Proxy)
+        │       ├── RateLimitMiddleware.cs            # Per-rule rate limiting trên proxy port
         │       └── RewriteRedirectLocationMiddleware.cs  # Rewrite Location header trên proxy redirect
         ├── Hubs/
         │   ├── MainHub.cs               # Real-time events (system stats, addon, notifications, beacon, frontgate groups)
@@ -211,7 +212,7 @@ backend/
         ├── Models/                  # Grouped theo addon domain
         │   ├── Addon/               # AddonCatalogEntry, AddonInstallation, AddonTask
         │   ├── Beacon/              # BcnHostname, BcnSettings, BcnActivityLog, BcnProviderConfig, BcnProviderInfo
-        │   ├── Frontgate/           # FgReverseProxyRule, FgCertificate(+Domain), FgAccessPolicy, FgReverseProxyLocation, FgRuleSnapshot (runtime — dry-run rollback)
+        │   ├── Frontgate/           # FgReverseProxyRule, FgCertificate(+Domain), FgAccessPolicy, FgReverseProxyLocation, FgAuditLog, FgRuleSnapshot (runtime — dry-run rollback)
         │   └── Catalog/             # Catalog DTOs (AddonManifestDto, CatalogIndex, PortDto)
         ├── Services/
         │   ├── AuthService.cs               # Login, Register, RefreshToken, RevokeToken, VerifyAccessToken
@@ -234,13 +235,14 @@ backend/
         │   ├── Frontgate/               # FrontgateProxyConfigProvider (YARP), AcmeCertQueue (LE worker),
         │   │                            #   AcmeChallengeStore, AcmeDryRunService, DnsLookupChecker,
         │   │                            #   FrontgateAccessService (access policy eval), GeoIpService (MaxMind.GeoIP2),
-        │   │                            #   SniCertProvider (SNI cert lookup)
+        │   │                            #   FrontgateAudit (audit log write + push), SniCertProvider (SNI cert lookup)
         │   └── Grpc/
         │       └── AddonChannelService.cs  # gRPC bidirectional stream handler + interceptor auth
         ├── Controllers/
         │   ├── AuthController.cs        # 7 auth endpoints (login, register, logout, session, refresh, status, logout-all)
         │   ├── Frontgate/               # ReverseProxyController (CRUD + dry-run confirm/cancel),
-        │   │                            #   AccessPolicyController (CRUD), CertificateController (LE HTTP-01 + dry-run, retry/renew, custom)
+        │   │                            #   AccessPolicyController (CRUD), CertificateController (LE HTTP-01 + dry-run, retry/renew, custom, download),
+        │   │                            #   AuditLogController (audit list/clear)
         │   ├── BcnController.cs         # Beacon DDNS (hostnames CRUD/toggle/check/test, activity, providers, settings)
         │   ├── HealthController.cs      # Health check endpoint
         │   ├── SettingsController.cs    # System settings + appearance defaults + options
@@ -260,7 +262,8 @@ backend/
             ├── Beacon/                           # BcnCheckWorker (DDNS loop → BcnHostnameService),
             │                                     #   BcnActivityCleanupWorker (activity pruning)
             └── Frontgate/                        # FgCertPendingResetWorker (Pending → Error on startup),
-                                                  #   FgCertRenewWorker (auto-renew), FgDryRunRollbackWorker (dry-run rollback)
+                                                  #   FgCertRenewWorker (auto-renew), FgDryRunRollbackWorker (dry-run rollback),
+                                                  #   FgAuditCleanupWorker (audit pruning), FgBackendHealthWorker (upstream health)
 ```
 
 ## API Endpoints
@@ -371,7 +374,15 @@ backend/
 | POST | `/api/frontgate/certificates/custom` | Admin | Upload custom PEM cert |
 | POST | `/api/frontgate/certificates/{id}/retry` | Admin | Retry cert ở trạng thái Pending/Error |
 | POST | `/api/frontgate/certificates/{id}/renew` | Admin | Renew cert (SNI lookup + auto-renew qua `FgCertRenewWorker`) |
+| GET | `/api/frontgate/certificates/{id}/download` | Admin | Download cert — zip `privatekey.pem` + `fullchain.pem` (`{name}.zip`; 404 `CertificateFilesMissing` nếu file thiếu) |
 | DELETE | `/api/frontgate/certificates/{id}` | Admin | Delete cert |
+
+### Frontgate Audit (`/api/frontgate/audit`)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/frontgate/audit` | Admin | List audit log (paginated: `page`, `size`, filter `targetType`/`targetId`) |
+| DELETE | `/api/frontgate/audit` | Admin | Clear audit log (ghi lại sự kiện AuditCleared) |
 
 ### Beacon (`/api/beacon`) — DDNS Updater
 
@@ -542,7 +553,7 @@ SignalR hub tại `/hubs/main`:
 | Event | Direction | Description |
 |-------|-----------|-------------|
 | `log:*` | Server → Client | Real-time log entry streaming |
-| `traffic:*` | Server → Client | Network traffic data |
+| `traffic:*` | Server → Client | Network traffic data (TOTAL API + proxy, mỗi entry có `source`) |
 | `system:config-changed` | Server → Client | Config changes (appearance defaults sync) |
 | `user:settings-changed` | Server → Client | User settings changes (multi-tab sync) |
 | `notification:received` | Server → Client | New notification push |
@@ -558,6 +569,7 @@ SignalR hub tại `/hubs/main`:
 | `frontgate:rule-changed` | Server → Client | Frontgate reverse proxy rule CRUD |
 | `frontgate:dry-run-changed` | Server → Client | Frontgate dry-run confirm/cancel/expire |
 | `frontgate:cert-changed` | Server → Client | Frontgate cert CRUD |
+| `frontgate:audit-created` | Server → Client | Frontgate audit log entry |
 
 SignalR client auto-reconnects with exponential backoff (5s → 30s cap, infinite retry).
 

@@ -43,13 +43,13 @@ frontend/
 │   │   ├── About/                   # Version info, meta-list, GitHub links
 │   │   ├── FileManager/             # File browser scaffold
 │   │   ├── LogViewer/               # Log entry viewer with level chips, source search, pagination, detail dialog
-│   │   ├── NetworkTraffic/          # Network traffic overview, logs (SignalR + flat file), detail dialog
+│   │   ├── NetworkTraffic/          # Network traffic overview, logs (SignalR + flat file), detail dialog, API/Proxy source filter
 │   │   ├── PackageCenter/           # External addon management (catalog browse, install, start/stop, grid view)
 │   │   ├── Settings/                # Appearance (theme, accent, density, font, language, date/time), System, Account
 │   │   ├── SystemMonitor/           # CPU, memory, uptime, disk, IO real-time (SignalR)
 │   │   └── Terminal/                # Terminal emulator scaffold
 │   │   │
-│   │   ├── Frontgate/               # Reverse proxy management (YARP integration, CRUD UI, routing rules, access control, dry-run)
+│   │   ├── Frontgate/               # Reverse proxy management (YARP integration, CRUD UI, routing rules, access control, dry-run, audit log, cert download)
 │   │   ├── Beacon/                  # DDNS updater — updates DNS when IP changes (provider multi-host, activity, settings)
 │   │   └── Warden/                  # Security — ban IP (scaffold)
 │   │
@@ -82,7 +82,7 @@ frontend/
 │   │   ├── log.controller.ts        # listLogs with level/source filters
 │   │   ├── health.controller.ts     # Health check, untrusted proxy detection
 │   │   └── addon.controller.ts      # Addon install/start/stop/uninstall/list/catalog
-│   │   └── frontgate.controller.ts  # Frontgate reverse proxy CRUD (listRules, createRule, updateRule, deleteRule)
+│   │   └── frontgate.controller.ts  # Frontgate reverse proxy CRUD + audit + cert download (listRules, createRule, updateRule, deleteRule, listAudit, clearAudit, downloadCert)
 │   │   └── beacon.controller.ts     # Beacon DDNS (hostnames, activity, settings, providers, dry-run check)
 │   │
 │   ├── hooks/
@@ -227,5 +227,6 @@ External addons integrate via two modes:
 - **M2** — Full auth backend ✅
 - **M3** — System Addons (Built-in): addon contract + registry, 11 built-in addons, theme system, SignalR realtime ✅
 - **M4** — External addon system: Docker lifecycle, OAuth2 (PKCE + client_credentials), gRPC, addon catalog, standalone mode ✅
-    - **Frontgate addon**: YARP reverse proxy with runtime config reload, CRUD API and management UI (Phase 1 ✅), certificate management (Phase 2 ✅ — LE HTTP-01 + dry-run, custom cert; DNS-01 dropped), access control (Phase 3 ✅ — Access Policy CRUD, IP allowlist/denylist, Geo blocking, BasicAuth, dry-run)
+    - **Frontgate addon**: YARP reverse proxy with runtime config reload, CRUD API and management UI (Phase 1 ✅), certificate management (Phase 2 ✅ — LE HTTP-01 + dry-run, custom cert; DNS-01 dropped), access control (Phase 3 ✅ — Access Policy CRUD, IP allowlist/denylist, Geo blocking, BasicAuth, dry-run), audit log + rate limit + backend health (Phase 4 ✅)
+    - **NetworkTraffic**: source filter API/Proxy — tách traffic từ API port vs proxy ports (cùng buffer, lọc theo `source` query param)
 - **M5** — `@namorix/core` publish npm + addon integration guide

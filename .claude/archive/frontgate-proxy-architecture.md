@@ -332,15 +332,37 @@ Backlog (chưa có schema): active24, akamai-edgedns, aliyun, arvancloud, baidu,
 - [x] **FE rule-form policy selector**: `FrontgateReverseProxy.tsx` — `formPolicyId` + `accessPolicies` state + fetch `listAccessPolicies()`, payload `accessPolicyId`, `policyOptions` lọc theo `formAccess` (basicAuth → chỉ basicAuth policies), select hiện khi `restricted`/`basicAuth`, `handleAccessChange` reset policy khi đổi mode; `frontgate.controller.ts` `CreateReverseProxyRulePayload` +`accessPolicyId?`. i18n `accessPolicy`/`selectPolicy`.
 
 ### 🔜 Phase 4 — Advanced Features
+
+- [x] **Audit log (ai sửa rule gì, lúc nào)** ✅ 2026-08-08 — `FgAuditLog` entity (`Id` long, `Timestamp`, `Actor`/`ActorId` denormalized, `ClientIp` từ RealIp, `TargetType`/`TargetId`/`TargetName`, `Action`, `BeforeJson`/`AfterJson` 8192) + helper tĩnh `FrontgateAudit.Who()/LogAsync()` (không cần DI). Hook 13 call-site: rule (Create/Update/Delete/DryRunConfirm/DryRunCancel), policy (Create/Update/Delete — **không snapshot** `RulesJson` để tránh lọt `passwordHash`), cert (Create LE/custom, Delete, Retry/Renew). Update rule snapshot `before` (trước mutation) + `after` (trước SaveChanges) cho diff. `AuditLogController` `[RequireAdmin]`: `GET /api/frontgate/audit?page&size&targetType&targetId` (desc) + `DELETE` clear (self-log `AuditCleared` ghi `{deleted}` — xoá trước, log sau). `FgAuditCleanupWorker` retention 30 ngày (6h/lần). Migration `AddFgAuditLog`. FE: tab `audit` (icon `ACTIVITY`), `FrontgateAudit.tsx` (`NmxLogList` + pagination + clear confirm, mirror `BeaconActivity`), `listAudit`/`clearAudit` + route `/audit`, i18n `pages.audit.*`. Enum serialize camelCase nhờ global `JsonStringEnumConverter` (`ServiceCollectionExtensions.cs`).
+  - ✅ **SignalR audit** 2026-08-08 — `IFrontgateNotifier.NotifyAuditCreated` + `frontgate:audit-created` event (`targetType`/`action` `.ToLowerInvariant()` vì SignalR protocol không dùng MVC enum converter). FE `FrontgateAudit` subscribe → refetch.
+  - ✅ **Row-click snapshot** 2026-08-08 — `NmxLogList.onItemClick` prop mới (`@namorix/ui`, backward-compatible, keyboard Enter/Space + `nmx-log-list__item--clickable` styles) → click row log mở `NmxAlertDialog` hiện meta qua `NmxMetaList` (action/timestamp/actor/ip/target) + **chỉ** `BeforeJson` pretty-print (`formatJson` = `JSON.stringify(JSON.parse, null, 2)`, `isBlockMessage` → mono + `pre-wrap`).
+  - **Clear log realtime**: dùng chung event `frontgate:audit-created` (self-log `AuditCleared` → `NotifyAuditCreated`) — **không có** event riêng `audit-cleared` (đủ dùng vì FE refetch toàn list, chốt không tách).
+- [x] **No-op detection UpdateRule/UpdatePolicy** ✅ 2026-08-08 — `UpdateRule` so field-by-field (Source/Destination/AccessPolicyId/CertificateId/Access/Status/các cờ SSL-cache/AdditionalHeadersJson + `LocationsEqual` so Path/Scheme/ForwardHost/ForwardPort; `RequestCert`/`DryRun` luôn coi là change) — không đổi → `return Ok(rule)` im lặng, **skip** SaveChanges + audit `Updated` + `proxyProvider.UpdateAsync()` + notify. Validation (`[Validate]` + `ValidatePolicyAsync`) chạy trước nên data sai vẫn báo lỗi. `UpdatePolicy` so Name/Type/RulesJson — BasicAuth re-save hash cũ → no-op đúng, plaintext mới → re-hash = change. Không đổi response shape (FE không cần sửa).
 - [ ] TCP/UDP Stream forwarding (non-HTTP addon)
 - [ ] Redirection Hosts (301/302)
-- [ ] 404 Default Host
-- [ ] Custom Error Pages (502/503 per rule)
-- [ ] Audit log (ai sửa rule gì, lúc nào)
-không thêm giá trị thực tế.
+
+TCP/UDP Stream + Redirection Hosts: không thêm giá trị thực tế cho Namorix — giữ backlog, không ưu tiên.
 
 ### 🔜 Phase 5 — Edge Cases
-- [ ] Docker addon expose port tự động update rule
-- [ ] Rate limiting per rule
-- [ ] Health check backend per rule
-- [ ] Metrics + real-time traffic stats
+
+#### ✅ Rate limiting per rule (2026-08-08)
+
+- [x] **Backend model**: `FgReverseProxyRule.RateLimit` (int?) + `RateLimitWindowSec` (int?, default 60) — migration `AddFgRateLimit`
+- [x] **RateLimitMiddleware**: sliding-window in-memory `ConcurrentDictionary<string, RateWindow>` key `host|RemoteIpAddress`, vượt `Limit` trong `WindowSec` → `429 Too Many Requests`. Đăng ký proxy pipeline sau `BlockCommonExploitsMiddleware`, trước `ForceSslMiddleware` → cả HTTP (trước redirect) lẫn HTTPS đều bị đếm
+- [x] **Config cache**: `FrontgateProxyConfigProvider.RateLimitSources` populate trong `UpdateAsync()` — không đọc DB per-request (cùng pattern `BlockExploitSources`/`AccessSources`)
+- [x] **CRUD wiring**: `CreateRuleRequest.RateLimit/RateLimitWindowSec`, list projection, CreateRule/UpdateRule assignment (kèm no-op detection), `FrontgateRuleSchema` validation (RateLimit 0–1.000.000, WindowSec 1–86.400 — nullable nên bỏ qua khi không set)
+- [x] **Frontend UI**: toggle `formRateLimitEnabled` (Advanced tab) → `NmxSlider` (1–1000 req, `showValue`) + `NmxSegmentedGroup` window (1s/10s/60s/1h); `rateLimit`/`rateLimitWindowSec` trong `ReverseProxyRule` + `CreateReverseProxyRulePayload`; payload gửi `undefined` khi tắt (backend giữ null)
+- [x] **NmxSlider `unit` prop**: thay hardcode `"px"` bằng prop `unit` (default `""`) — số thuần, không suffix
+- [x] **i18n**: `rateLimit`, `rateLimitRequests`, `rateLimitWindow`
+- [x] **Test** ✅ 2026-08-08: rule `izerocs.space` RateLimit=5/10s — request 1–5 pass (302), request 6–8 → **429**, sau 10s window reset → pass lại. Mỗi client IP có bucket riêng nên 1 IP spam không ảnh hưởng người khác
+
+#### ✅ Health check backend per rule (2026-08-08)
+
+- [x] **Backend model**: `FgReverseProxyRule.IsHealthy` (bool?, null = chưa probe) + `LastHealthCheckAt` (DateTime?) — migration `AddFgBackendHealth`
+- [x] **`FgBackendHealthWorker`**: `PeriodicTimer(60s)`, chỉ probe rule `Status == Active`. Probe `GET {scheme}://{host}:{port}/` qua `SocketsHttpHandler` (`ConnectTimeout` 5s, bypass cert check vì chỉ check reachability — backend self-signed vẫn tính sống). `2xx/3xx` = up, `4xx/5xx`/exception = down. **Chỉ notify khi trạng thái đổi** — tái dùng `NotifyRuleChanged(Updated)` → FE refetch qua SignalR `frontgate:rule-changed` sẵn có (zero FE realtime code mới). SaveChanges mỗi cycle (vài row/60s, rất nhẹ)
+- [x] **UpdateRule reset destination**: khi đổi `DestinationScheme`/`DestinationHost`/`DestinationPort` → reset `IsHealthy`/`LastHealthCheckAt` về null (health cũ không còn đúng destination mới) — UI hiện "—" chờ probe kế (≤60s)
+- [x] **ListRules projection**: trả `IsHealthy`/`LastHealthCheckAt` → FE nhận được
+- [x] **NmxPulseDot primitive** (`@namorix/ui`): component `status?: "live" | "stopped" | "error"` (spread `...rest`, title tooltip pass-through) + `pulse-dot.scss` (`--live` success + pulse 1.4s, `--error`, `--stopped` gray) + barrel export
+- [x] **Frontend**: `ReverseProxyRule` + `isHealthy`/`lastHealthCheckAt`; health column dùng `NmxPulseDot` — map `null → stopped` / `true → live` / `false → error`; hiển thị cả trong info dialog; i18n `health`
+- [x] **Design decision**: giữ `Status = Active` khi backend chết (hướng B) — vẫn proxy → user nhận 502 thay vì connection refused, không mất cả domain. Không đổi Status = Error (sẽ bị `UpdateAsync` gỡ khỏi YARP). Không audit health change (tránh spam log 60s/lần)
+- [x] **Test**: kill backend destination → ≤60s badge chuyển đỏ + SignalR push → bật lại → quay về xanh

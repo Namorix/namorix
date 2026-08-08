@@ -12,7 +12,7 @@ Browser-based desktop shell, self-hosted.
 
 - **Desktop Shell** — Window manager, taskbar, launcher, desktop icon shortcuts
 - **System Addons** — Built-in addons (About, NetworkTraffic, Log Viewer, Settings, SystemMonitor, File Manager, Terminal, Package Center, Frontgate, Beacon, Warden) via addon contract
-- **Reverse Proxy** — YARP-based reverse proxy management (Frontgate): route traffic to addons via custom domains, SSL termination, WebSocket support, access control
+- **Reverse Proxy** — YARP-based reverse proxy management (Frontgate): route traffic to addons via custom domains, SSL termination, WebSocket support, access control, audit log, rate limiting, backend health monitoring
 - **External Addons** — Docker-based addons with widget (Module Federation mount) and standalone (OAuth PKCE, own server) modes
 - **Centralized Auth** — Single auth server for shell and addons, OAuth2 authorization server (authorization_code + PKCE, client_credentials + private_key_jwt)
 
@@ -337,7 +337,7 @@ Addon có 2 mode tích hợp:
 
 1. **M1** — Static shell UI + mock auth page ✅
 2. **M2** — Full auth backend (login/register/logout/refresh/session, decorators, i18n, validation) ✅
-3. **M3** — System Addons (Built-in): addon contract + registry, About, Log Viewer, NetworkTraffic (SignalR + flat file storage), SystemMonitor, Settings (Appearance/System/Account), theme system (hot swap CSS, server-driven), File Manager, Terminal, Package Center
+3. **M3** — System Addons (Built-in): addon contract + registry, About, Log Viewer, NetworkTraffic (SignalR + flat file storage, API/Proxy source filter), SystemMonitor, Settings (Appearance/System/Account), theme system (hot swap CSS, server-driven), File Manager, Terminal, Package Center
 4. **M4** — External addon system: Docker lifecycle, OAuth2 (client_credentials + private_key_jwt + authorization_code + PKCE), gRPC bidirectional streaming, addon catalog sync, standalone mode, web UI ✅
-    - **Frontgate addon**: YARP reverse proxy with runtime config reload, CRUD API and management UI (Phase 1 ✅), certificate management (Phase 2 ✅ — LE HTTP-01 + dry-run test, custom cert upload, auto-renew/SNI; DNS-01 dropped), access control (Phase 3 ✅ — Access Policy CRUD, IP allowlist/denylist, Geo blocking, BasicAuth, dry-run)
+    - **Frontgate addon**: YARP reverse proxy with runtime config reload, CRUD API and management UI (Phase 1 ✅), certificate management (Phase 2 ✅ — LE HTTP-01 + dry-run test, custom cert upload/download, auto-renew/SNI; DNS-01 dropped), access control (Phase 3 ✅ — Access Policy CRUD, IP allowlist/denylist, Geo blocking, BasicAuth, dry-run), audit log + rate limiting + backend health (Phase 4 ✅)
 5. **M5** — @namorix/core publish npm + addon integration guide
