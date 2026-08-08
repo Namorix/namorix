@@ -1,7 +1,10 @@
+using System.IO.Compression;
+using System.Net.Mime;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Namorix.Core.IO;
 using Namorix.Core.Middleware;
@@ -13,6 +16,7 @@ using Namorix.Server.Models.Frontgate;
 using Namorix.Server.Persistence;
 using Namorix.Server.Services.Frontgate;
 using Namorix.Server.Validation;
+using Namorix.Server.Validation.Frontgate;
 
 namespace Namorix.Server.Controllers.Frontgate;
 
@@ -90,6 +94,8 @@ public class CertificateController(AppDbContext db, DataDirectory dataDir, AcmeC
 
         db.FgCertificates.Remove(cert);
         await db.SaveChangesAsync();
+        await FrontgateAudit.LogAsync(db, notifier, FrontgateAudit.Who(HttpContext), FgAuditTargetType.Cert,
+            cert.Id, primaryDomain, FgAuditAction.Deleted);
         await notifier.NotifyCertChanged(cert.Id, FgCertAction.Deleted);
         return Ok(ApiResponse.Ok());
 
@@ -110,6 +116,10 @@ public class CertificateController(AppDbContext db, DataDirectory dataDir, AcmeC
             .ExecuteUpdateAsync(s => s.SetProperty(c => c.Status, FgCertificateStatus.Pending));
 
         await certQueue.EnqueueAsync(id);
+        var retryDomain = await db.FgCertificateDomains
+            .Where(d => d.CertificateId == id).Select(d => d.Domain).FirstOrDefaultAsync();
+        await FrontgateAudit.LogAsync(db, notifier, FrontgateAudit.Who(HttpContext), FgAuditTargetType.Cert,
+            id, retryDomain, FgAuditAction.CertRetry);
         return Ok(ApiResponse.Ok());
     }
     
@@ -128,6 +138,10 @@ public class CertificateController(AppDbContext db, DataDirectory dataDir, AcmeC
             .ExecuteUpdateAsync(s => s.SetProperty(c => c.Status, FgCertificateStatus.Pending));
 
         await certQueue.EnqueueAsync(id);
+        var retryDomain = await db.FgCertificateDomains
+            .Where(d => d.CertificateId == id).Select(d => d.Domain).FirstOrDefaultAsync();
+        await FrontgateAudit.LogAsync(db, notifier, FrontgateAudit.Who(HttpContext), FgAuditTargetType.Cert,
+            id, retryDomain, FgAuditAction.CertRenew);
         return Ok(ApiResponse.Ok());
     }
     
@@ -163,6 +177,8 @@ public class CertificateController(AppDbContext db, DataDirectory dataDir, AcmeC
         
         db.FgCertificates.Add(cert);
         await db.SaveChangesAsync();
+        await FrontgateAudit.LogAsync(db, notifier, FrontgateAudit.Who(HttpContext), FgAuditTargetType.Cert,
+            cert.Id, primary, FgAuditAction.Created);
         await notifier.NotifyCertChanged(cert.Id, FgCertAction.Created);
         await certQueue.EnqueueAsync(cert.Id);
         return Ok(ApiResponse.Ok(cert));
@@ -185,6 +201,7 @@ public class CertificateController(AppDbContext db, DataDirectory dataDir, AcmeC
     }
     
     [HttpPost("custom")]
+    [Validate(typeof(CustomCertSchema))]
     public async Task<IActionResult> CreateCustomCert(
         [FromBody] CreateCustomCertRequest request)
     {
@@ -235,8 +252,49 @@ public class CertificateController(AppDbContext db, DataDirectory dataDir, AcmeC
         
         db.FgCertificates.Add(cert);
         await db.SaveChangesAsync();
+        await FrontgateAudit.LogAsync(db, notifier, FrontgateAudit.Who(HttpContext), FgAuditTargetType.Cert,
+            cert.Id, name, FgAuditAction.Created);
         await notifier.NotifyCertChanged(cert.Id, FgCertAction.Created);
         return Ok(ApiResponse.Ok(cert));
+    }
+    
+    [HttpGet("{id}/download")]
+    public async Task<IActionResult> DownloadCertificate(string id)
+    {
+        var cert = await db.FgCertificates
+            .Include(c => c.CertificateDomains)
+            .FirstOrDefaultAsync(c => c.Id == id);
+        
+        if (cert == null)
+            return NotFound(ApiResponse.Fail(FgErrorCodes.CertificateNotFound));
+
+        var primaryDomain = cert.CertificateDomains.FirstOrDefault()?.Domain;
+        if (primaryDomain == null)
+            return NotFound(ApiResponse.Fail(FgErrorCodes.CertificateNotFound));
+
+        var name = primaryDomain.Replace('*', '_');
+        var certDir = Path.Combine(DataDirectory.CertDir, name);
+        var keyBytes = dataDir.ReadFile(Path.Combine(certDir, DataDirectory.PrivateKeyFile));
+        var chainBytes = dataDir.ReadFile(Path.Combine(certDir, DataDirectory.FullChainFile));
+        if (keyBytes == null || chainBytes == null)
+            return NotFound(ApiResponse.Fail(FgErrorCodes.CertificateFilesMissing));
+
+        using var ms = new MemoryStream();
+        await using (var archive = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
+        {
+            var keyEntry = archive.CreateEntry(DataDirectory.PrivateKeyFile);
+            await using (var keyStream = await keyEntry.OpenAsync())
+            {
+                await keyStream.WriteAsync(keyBytes);
+            }
+
+            var chainEntry = archive.CreateEntry(DataDirectory.FullChainFile);
+            await using (var chainStream = await chainEntry.OpenAsync())
+            {
+                await chainStream.WriteAsync(chainBytes);
+            }
+        }
+        return File(ms.ToArray(), MediaTypeNames.Application.Zip, $"{name}.zip");
     }
     
     [HttpGet("unused-domains")]

@@ -3,22 +3,28 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Namorix.Core.Middleware;
 using Namorix.Core.Responses;
+using Namorix.Core.Validation;
 using Namorix.Server.Constants;
+using Namorix.Server.Infrastructure;
 using Namorix.Server.Models.Frontgate;
 using Namorix.Server.Persistence;
 using Namorix.Server.Services.Frontgate;
+using Namorix.Server.Validation.Frontgate;
 
 namespace Namorix.Server.Controllers.Frontgate;
+
 [ApiController]
 [RequireAdmin]
 [Route("api/frontgate/access-policies")]
-public class AccessPolicyController(AppDbContext db, FrontgateProxyConfigProvider proxyProvider) : ControllerBase
+public class AccessPolicyController(AppDbContext db, FrontgateProxyConfigProvider proxyProvider,
+    IFrontgateNotifier notifier) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> List() =>
         Ok(ApiResponse.Ok(await db.FgAccessPolicies.OrderByDescending(p => p.CreatedAt).ToListAsync()));
 
     [HttpPost]
+    [Validate(typeof(AccessPolicySchema))]
     public async Task<IActionResult> Create([FromBody] CreateAccessPolicyRequest request)
     {
         var rulesJson = request.Type == AccessPolicyType.BasicAuth
@@ -34,11 +40,14 @@ public class AccessPolicyController(AppDbContext db, FrontgateProxyConfigProvide
         
         db.FgAccessPolicies.Add(policy);
         await db.SaveChangesAsync();
+        await FrontgateAudit.LogAsync(db, notifier, FrontgateAudit.Who(HttpContext), FgAuditTargetType.Policy,
+            policy.Id, policy.Name, FgAuditAction.Created);
         await proxyProvider.UpdateAsync();
         return Ok(ApiResponse.Ok(policy));
     }
 
     [HttpPut("{id}")]
+    [Validate(typeof(AccessPolicySchema))]
     public async Task<IActionResult> Update(string id, [FromBody] CreateAccessPolicyRequest request)
     {
         var policy = await db.FgAccessPolicies.FindAsync(id);
@@ -49,11 +58,20 @@ public class AccessPolicyController(AppDbContext db, FrontgateProxyConfigProvide
             ? HashBasicAuthPassword(request.RulesJson)
             : request.RulesJson;
 
+        var changed = policy.Name != request.Name
+            || policy.Type != request.Type
+            || policy.RulesJson != rulesJson;
+        
+        if (!changed)
+            return Ok(ApiResponse.Ok(policy));
+
         policy.Name = request.Name;
         policy.Type = request.Type;
         policy.RulesJson = rulesJson;
-        
+
         await db.SaveChangesAsync();
+        await FrontgateAudit.LogAsync(db, notifier, FrontgateAudit.Who(HttpContext), FgAuditTargetType.Policy,
+            id, policy.Name, FgAuditAction.Updated);
         await proxyProvider.UpdateAsync();
         return Ok(ApiResponse.Ok(policy));
     }
@@ -64,11 +82,15 @@ public class AccessPolicyController(AppDbContext db, FrontgateProxyConfigProvide
         var hasRef = await db.FgReverseProxyRules.AnyAsync(r => r.AccessPolicyId == id);
         if (hasRef)
             return BadRequest(ApiResponse.Fail(FgErrorCodes.PolicyInUse));
-        
+
+        var policyName = await db.FgAccessPolicies
+            .Where(p => p.Id == id).Select(p => p.Name).FirstOrDefaultAsync();
         await db.FgAccessPolicies
             .Where(p => p.Id == id)
             .ExecuteDeleteAsync();
         await proxyProvider.UpdateAsync();
+        await FrontgateAudit.LogAsync(db, notifier, FrontgateAudit.Who(HttpContext), FgAuditTargetType.Policy,
+            id, policyName, FgAuditAction.Deleted);
         return Ok(ApiResponse.Ok());
     }
     

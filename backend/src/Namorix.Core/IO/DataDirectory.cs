@@ -122,6 +122,12 @@ public class DataDirectory(string basePath)
     
     public string CertPath(string certName) => Path.Combine(basePath, CertDir, certName);
     
+    public byte[]? ReadFile(string subPath)
+    {
+        var fullPath = Path.Combine(basePath, subPath);
+        return File.Exists(fullPath) ? File.ReadAllBytes(fullPath) : null;
+    }
+    
     private static string LogPattern => "*.log";
     
     private static string DateFromFileName(string file)

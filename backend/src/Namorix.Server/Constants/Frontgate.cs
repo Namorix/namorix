@@ -19,6 +19,7 @@ public static class FgErrorCodes
     public const string PolicyTypeMismatch = "FG_POLICY_TYPE_MISMATCH";
     public const string PolicyLocksOutAdmin = "FG_POLICY_LOCKS_OUT_ADMIN";
     public const string DryRunNotPending = "FG_DRY_RUN_NOT_PENDING";
+    public const string CertificateFilesMissing = "FG_CERTIFICATE_FILES_MISSING";
 }
 
 public enum FgRuleAction { Created, Updated, Deleted }
