@@ -16,6 +16,8 @@ export const FrontgateErrorCodes: Record<string, string> = {
     "addon.frontgate.errors.certificateDomainsRequired",
   FG_CERTIFICATE_NOT_RETRIABLE:
     "addon.frontgate.errors.certificateNotRetriable",
+  FG_CERTIFICATE_FILES_MISSING:
+    "addon.frontgate.errors.certificateFilesMissing",
   FG_WILDCARD_NOT_ALLOWED: "addon.frontgate.errors.wildcardNotAllowed",
   FG_POLICY_NOT_FOUND: "addon.frontgate.errors.policyNotFound",
   FG_POLICY_REQUIRED: "addon.frontgate.errors.policyRequired",
@@ -56,4 +58,10 @@ export interface FrontgateDryRunChangedPayload {
 export interface FrontgateCertChangedPayload {
   certId: string
   action: FrontgateCertAction
+}
+
+export interface FrontgateAuditCreatedPayload {
+  targetType: string
+  targetId?: string
+  action: string
 }

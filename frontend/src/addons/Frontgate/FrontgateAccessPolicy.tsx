@@ -16,6 +16,7 @@ import {
   type NmxSemanticColor,
   NmxSelect,
   type NmxSelectData,
+  NmxTagInput,
 } from "@namorix/ui"
 import { formatCustomError, nmxToast, useDateTimeFormat } from "@namorix/core"
 import {
@@ -26,25 +27,6 @@ import {
 } from "./frontgate.controller"
 import { FrontgateErrorCodes } from "./Frontgate.types"
 
-function parseRulesToLines(rulesJson: string): string {
-  try {
-    const arr = JSON.parse(rulesJson)
-    if (Array.isArray(arr)) return arr.join("\n")
-  } catch {
-    /* rulesJson không phải array hợp lệ */
-  }
-  return ""
-}
-
-function serializeLinesToArray(rulesText: string): string {
-  return JSON.stringify(
-    rulesText
-      .split("\n")
-      .map((s) => s.trim())
-      .filter(Boolean),
-  )
-}
-
 function parseBasicAuthUsername(rulesJson: string): string {
   try {
     const obj = JSON.parse(rulesJson)
@@ -52,6 +34,17 @@ function parseBasicAuthUsername(rulesJson: string): string {
   } catch {
     return ""
   }
+}
+
+function parseRulesToArray(rulesJson: string): string[] {
+  try {
+    const arr = JSON.parse(rulesJson)
+    if (Array.isArray(arr))
+      return arr.map((s) => String(s).trim()).filter(Boolean)
+  } catch {
+    /* empty */
+  }
+  return []
 }
 
 const typeSemantic: Record<AccessPolicyType, NmxSemanticColor> = {
@@ -79,7 +72,7 @@ export const FrontgateAccessPolicy: React.FC = () => {
 
   const [formName, setFormName] = useState("")
   const [formType, setFormType] = useState<AccessPolicyType>("ipAllowlist")
-  const [formRulesText, setFormRulesText] = useState("")
+  const [formRules, setFormRules] = useState<string[]>([])
   const [formUsername, setFormUsername] = useState("")
   const [formPassword, setFormPassword] = useState("")
 
@@ -107,7 +100,7 @@ export const FrontgateAccessPolicy: React.FC = () => {
   const resetForm = useCallback(() => {
     setFormName("")
     setFormType("ipAllowlist")
-    setFormRulesText("")
+    setFormRules([])
     setFormUsername("")
     setFormPassword("")
   }, [])
@@ -115,13 +108,12 @@ export const FrontgateAccessPolicy: React.FC = () => {
   const fillForm = useCallback((policy: AccessPolicy) => {
     setFormName(policy.name)
     setFormType(policy.type)
+    setFormRules(parseRulesToArray(policy.rulesJson))
     setFormPassword("")
 
     if (policy.type === "basicAuth") {
       setFormUsername(parseBasicAuthUsername(policy.rulesJson))
-      setFormRulesText("")
     } else {
-      setFormRulesText(parseRulesToLines(policy.rulesJson))
       setFormUsername("")
     }
   }, [])
@@ -140,17 +132,10 @@ export const FrontgateAccessPolicy: React.FC = () => {
   const handleConfirm = useCallback(() => {
     const name = formName.trim()
     if (!name) return
+    if (formType !== "basicAuth" && formRules.length <= 0) return
     if (formType === "basicAuth" && !formUsername.trim()) return
     if (formType === "basicAuth" && !editingPolicy && !formPassword.trim())
       return
-
-    if (formType !== "basicAuth") {
-      const lines = formRulesText
-        .split("\n")
-        .map((s) => s.trim())
-        .filter(Boolean)
-      if (lines.length <= 0) return
-    }
 
     const rulesJson =
       formType === "basicAuth"
@@ -160,7 +145,7 @@ export const FrontgateAccessPolicy: React.FC = () => {
               username: formUsername.trim(),
               password: formPassword,
             })
-        : serializeLinesToArray(formRulesText)
+        : JSON.stringify(formRules)
 
     const payload: CreateAccessPolicyPayload = {
       name,
@@ -195,7 +180,7 @@ export const FrontgateAccessPolicy: React.FC = () => {
   }, [
     formName,
     formType,
-    formRulesText,
+    formRules,
     formUsername,
     formPassword,
     editingPolicy,
@@ -413,7 +398,7 @@ export const FrontgateAccessPolicy: React.FC = () => {
               onChange={(v) => {
                 setFormType(v)
                 if (v === "basicAuth") {
-                  setFormRulesText("")
+                  setFormRules([])
                 } else {
                   setFormUsername("")
                   setFormPassword("")
@@ -461,11 +446,9 @@ export const FrontgateAccessPolicy: React.FC = () => {
               )}
               required
             >
-              <textarea
-                className="nmx-form-input"
-                rows={6}
-                value={formRulesText}
-                onChange={(e) => setFormRulesText(e.target.value)}
+              <NmxTagInput
+                value={formRules}
+                onChange={setFormRules}
                 placeholder={t(
                   formType === "geoBlock"
                     ? "addon.frontgate.pages.accessPolicy.fields.countryCodesPlaceholder"

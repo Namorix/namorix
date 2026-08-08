@@ -20,8 +20,12 @@ import {
   NmxMetaItem,
   NmxMetaList,
   NmxPagination,
+  NmxPulseDot,
+  NmxSegmentedGroup,
+  type NmxSegmentedGroupData,
   NmxSelect,
   type NmxSelectData,
+  NmxSlider,
   type NmxTab,
   NmxTabs,
   NmxToggle,
@@ -56,6 +60,12 @@ import {
 } from "../../signalr"
 
 type FrontgateTabDialog = "general" | "headers" | "locations" | "advanced"
+const DryRunDurations = [0, 1, 5, 10]
+const RateLimitWindowDurations = [1, 10, 60, 3600]
+
+const CERT_REQUEST_NEW = "__request_new__"
+const RATE_LIMIT_DEFAULT = 60
+const RATE_LIMIT_WINDOW_DEFAULT = 60
 
 interface LocationRow {
   path: string
@@ -88,10 +98,10 @@ const tabs: NmxTab<FrontgateTabDialog>[] = [
 ]
 
 const initialForm: CreateReverseProxyRulePayload = {
-  source: "izerocs.duckdns.org",
-  destinationScheme: "http",
-  destinationHost: "192.168.31.150",
-  destinationPort: 5000,
+  source: "",
+  destinationScheme: "htp",
+  destinationHost: "",
+  destinationPort: 80,
   http2Support: false,
   hstsEnabled: false,
   hstsSubdomains: false,
@@ -102,9 +112,9 @@ const initialForm: CreateReverseProxyRulePayload = {
   forceSsl: false,
   trustForwardedProtoHeaders: true,
   blockCommonExploits: false,
+  rateLimit: RATE_LIMIT_DEFAULT,
+  rateLimitWindowSec: RATE_LIMIT_WINDOW_DEFAULT,
 }
-
-const CERT_REQUEST_NEW = "__request_new__"
 
 function formatDryRunRemaining(expiresAt: string, now: number): string {
   const seconds = Math.max(
@@ -119,6 +129,16 @@ function isDryRunActive(
   now: number,
 ): boolean {
   return expiresAt != null && new Date(expiresAt).getTime() > now
+}
+
+function resolveDryRunMinutes(
+  expiresAt: string | null | undefined,
+  now: number,
+): number {
+  if (!expiresAt) return 0
+  const remainingMin = (new Date(expiresAt).getTime() - now) / 60000
+  if (remainingMin <= 0) return 0
+  return DryRunDurations.find((m) => remainingMin <= m) ?? 10
 }
 
 function renderAccess(access: ReverseProxyRuleAccess) {
@@ -164,6 +184,20 @@ function renderSslStatus(rule: ReverseProxyRule) {
       symbol={NmxIconFontSymbol.LOCK}
       size="lg"
       semantic={getStatusSemantic(rule.certStatus, rule.forceSsl)}
+    />
+  )
+}
+
+function renderHealth(isHealthy?: boolean | undefined | null) {
+  return (
+    <NmxPulseDot
+      status={
+        isHealthy === null || isHealthy === undefined
+          ? "stopped"
+          : isHealthy
+            ? "live"
+            : "error"
+      }
     />
   )
 }
@@ -227,12 +261,20 @@ export const FrontgateReverseProxy: React.FC = () => {
   const [formBlockExploits, setFormBlockExploits] = useState(
     initialForm.blockCommonExploits,
   )
+  const [formRateLimitEnabled, setFormRateLimitEnabled] = useState(
+    !!initialForm.rateLimit,
+  )
+  const [formRateLimit, setFormRateLimit] = useState(
+    initialForm.rateLimit ?? RATE_LIMIT_DEFAULT,
+  )
+  const [formRateLimitWindow, setFormRateLimitWindow] = useState(
+    initialForm.rateLimitWindowSec ?? RATE_LIMIT_WINDOW_DEFAULT,
+  )
   const [formAccess, setFormAccess] = useState(initialForm.access)
   const [formPolicyId, setFormPolicyId] = useState("")
   const [accessPolicies, setAccessPolicies] = useState<AccessPolicy[]>([])
 
-  const [formDryRun, setFormDryRun] = useState(false)
-  const [formDryRunMinutes, setFormDryRunMinutes] = useState(1)
+  const [formDryRunMinutes, setFormDryRunMinutes] = useState(0)
   const [now, setNow] = useState(() => Date.now())
 
   const fetchRules = useCallback(
@@ -392,8 +434,7 @@ export const FrontgateReverseProxy: React.FC = () => {
     setFormCertificateId("")
     setFormStatus(initialForm.status)
     setFormForceSsl(initialForm.forceSsl)
-    setFormDryRun(false)
-    setFormDryRunMinutes(1)
+    setFormDryRunMinutes(0)
 
     setFormWebSockets(initialForm.webSocketsSupport)
     setFormCacheAssets(initialForm.cacheAssets)
@@ -403,6 +444,9 @@ export const FrontgateReverseProxy: React.FC = () => {
     setFormHstsSub(initialForm.hstsSubdomains)
     setFormTrustForwardedProto(initialForm.trustForwardedProtoHeaders)
     setFormBlockExploits(initialForm.blockCommonExploits)
+    setFormRateLimitEnabled(false)
+    setFormRateLimit(initialForm.rateLimit!)
+    setFormRateLimitWindow(initialForm.rateLimitWindowSec!)
     setFormAccess(initialForm.access)
 
     setFormHeaders([])
@@ -420,7 +464,7 @@ export const FrontgateReverseProxy: React.FC = () => {
       setFormPort(rule.destinationPort)
       setFormCertificateId(rule.certificateId ?? "")
       setFormForceSsl(rule.forceSsl)
-      setFormDryRun(isDryRunActive(rule.dryRunExpiresAt, now))
+      setFormDryRunMinutes(resolveDryRunMinutes(rule.dryRunExpiresAt, now))
       setFormStatus(rule.status)
       setFormWebSockets(rule.webSocketsSupport)
       setFormCacheAssets(rule.cacheAssets)
@@ -429,6 +473,11 @@ export const FrontgateReverseProxy: React.FC = () => {
       setFormHstsSub(rule.hstsSubdomains)
       setFormTrustForwardedProto(rule.trustForwardedProtoHeaders)
       setFormBlockExploits(rule.blockCommonExploits)
+      setFormRateLimitEnabled(!!rule.rateLimit)
+      setFormRateLimit(rule.rateLimit ?? RATE_LIMIT_DEFAULT)
+      setFormRateLimitWindow(
+        rule.rateLimitWindowSec ?? RATE_LIMIT_WINDOW_DEFAULT,
+      )
       setFormAccess(rule.access)
       setFormPolicyId(rule.accessPolicyId ?? "")
 
@@ -526,6 +575,18 @@ export const FrontgateReverseProxy: React.FC = () => {
       return
     }
 
+    if (
+      formDryRunMinutes !== 0 &&
+      !DryRunDurations.includes(formDryRunMinutes)
+    ) {
+      nmxToast.error(
+        t("core:common.validation.invalidFormat", {
+          field: t("addon.frontgate.pages.reverseProxy.fields.dryRunMinutes"),
+        }),
+      )
+      return
+    }
+
     const payload: CreateReverseProxyRulePayload = {
       source: formSource,
       destinationScheme: formScheme,
@@ -541,13 +602,17 @@ export const FrontgateReverseProxy: React.FC = () => {
       webSocketsSupport: formWebSockets,
       cacheAssets: formCacheAssets,
       forceSsl: formForceSsl,
-      dryRun: formDryRun,
-      dryRunMinutes: formDryRun ? formDryRunMinutes : undefined,
+      dryRun: formDryRunMinutes > 0,
+      dryRunMinutes: formDryRunMinutes > 0 ? formDryRunMinutes : undefined,
       http2Support: formHttp2,
       hstsEnabled: formHsts,
       hstsSubdomains: formHstsSub,
       trustForwardedProtoHeaders: formTrustForwardedProto,
       blockCommonExploits: formBlockExploits,
+      rateLimit: formRateLimitEnabled ? formRateLimit : undefined,
+      rateLimitWindowSec: formRateLimitEnabled
+        ? formRateLimitWindow
+        : undefined,
       additionalHeadersJson: serializeHeaders(),
       locations: formLocations.length > 0 ? formLocations : undefined,
       requestCert: formCertificateId === CERT_REQUEST_NEW,
@@ -590,6 +655,7 @@ export const FrontgateReverseProxy: React.FC = () => {
     formSource,
     formHost,
     formPort,
+    formDryRunMinutes,
     formScheme,
     formCertificateId,
     formAccess,
@@ -598,13 +664,14 @@ export const FrontgateReverseProxy: React.FC = () => {
     formWebSockets,
     formCacheAssets,
     formForceSsl,
-    formDryRun,
-    formDryRunMinutes,
     formHttp2,
     formHsts,
     formHstsSub,
     formTrustForwardedProto,
     formBlockExploits,
+    formRateLimitEnabled,
+    formRateLimit,
+    formRateLimitWindow,
     serializeHeaders,
     formLocations,
     editingRule,
@@ -744,15 +811,18 @@ export const FrontgateReverseProxy: React.FC = () => {
       renderCell: (row) => (
         <div className="nmx-addon-frontgate__domain-wrap">
           <div className="nmx-addon-frontgate__domain-list">
-            <a
-              href={`https://${row.source}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="nmx-addon-frontgate__domain-item"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {row.source}
-            </a>
+            <div className="nmx-addon-frontgate__domain-item">
+              <a
+                href={`https://${row.source}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="nmx-addon-frontgate__domain-item-link"
+                data-row-action
+                onClick={(e) => e.stopPropagation()}
+              >
+                {row.source}
+              </a>
+            </div>
           </div>
           <div className="nmx-addon-frontgate__destination">
             {`${row.destinationScheme}://${row.destinationHost}:${row.destinationPort}`}
@@ -787,6 +857,14 @@ export const FrontgateReverseProxy: React.FC = () => {
       alignHeader: "center",
       alignCell: "center",
       hideBelow: "md",
+      disableEllipsisCell: true,
+    },
+    {
+      header: t("addon.frontgate.pages.reverseProxy.fields.health"),
+      renderCell: (row) => renderHealth(row.isHealthy),
+      grow: 0,
+      alignHeader: "center",
+      alignCell: "center",
       disableEllipsisCell: true,
     },
     {
@@ -913,26 +991,14 @@ export const FrontgateReverseProxy: React.FC = () => {
     },
   ]
 
-  const dryRunMinuteOptions: NmxSelectData[] = [
-    {
-      value: "1",
+  const dryRunMinuteOptions: NmxSegmentedGroupData[] = DryRunDurations.map(
+    (d) => ({
+      value: String(d),
       label: t(
-        "addon.frontgate.pages.reverseProxy.fields.dryRunMinuteOptions.dryRun1m",
+        `addon.frontgate.pages.reverseProxy.fields.dryRunMinuteOptions.dryRun${d}m`,
       ),
-    },
-    {
-      value: "5",
-      label: t(
-        "addon.frontgate.pages.reverseProxy.fields.dryRunMinuteOptions.dryRun5m",
-      ),
-    },
-    {
-      value: "10",
-      label: t(
-        "addon.frontgate.pages.reverseProxy.fields.dryRunMinuteOptions.dryRun10m",
-      ),
-    },
-  ]
+    }),
+  )
 
   const policyOptions: NmxSelectData[] = [
     {
@@ -947,6 +1013,14 @@ export const FrontgateReverseProxy: React.FC = () => {
       )
       .map((p) => ({ value: p.id, label: p.name })),
   ]
+
+  const rateLimitWindowOptions: NmxSegmentedGroupData[] =
+    RateLimitWindowDurations.map((d) => ({
+      value: String(d),
+      label: t(
+        `addon.frontgate.pages.reverseProxy.fields.rateLimitWindowOptions.rateLimitWindow${d}`,
+      ),
+    }))
 
   const totalPages = Math.ceil(total / pageSize)
 
@@ -1019,14 +1093,16 @@ export const FrontgateReverseProxy: React.FC = () => {
                 label={t("addon.frontgate.pages.reverseProxy.fields.source")}
                 alignValue="end"
               >
-                <a
-                  href={`https://${infoRule.source}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="nmx-addon-frontgate__domain-item"
-                >
-                  {infoRule.source}
-                </a>
+                <div className="nmx-addon-frontgate__domain-item">
+                  <a
+                    href={`https://${infoRule.source}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="nmx-addon-frontgate__domain-item-link"
+                  >
+                    {infoRule.source}
+                  </a>
+                </div>
               </NmxMetaItem>
               <NmxMetaItem
                 label={t(
@@ -1035,6 +1111,12 @@ export const FrontgateReverseProxy: React.FC = () => {
                 value={`${infoRule.destinationScheme}://${infoRule.destinationHost}:${infoRule.destinationPort}`}
                 alignValue="end"
               />
+              <NmxMetaItem
+                label={t("addon.frontgate.pages.reverseProxy.fields.health")}
+                alignValue="end"
+              >
+                {renderHealth(infoRule.isHealthy)}
+              </NmxMetaItem>
               <NmxMetaItem
                 label={t("addon.frontgate.pages.reverseProxy.fields.ssl")}
                 alignValue="end"
@@ -1197,28 +1279,6 @@ export const FrontgateReverseProxy: React.FC = () => {
                 onCheckedChanged={setFormForceSsl}
               />
             </NmxFormField>
-            <NmxFormField
-              label={t("addon.frontgate.pages.reverseProxy.fields.dryRun")}
-              inline
-            >
-              <NmxToggle
-                checked={formDryRun}
-                onCheckedChanged={setFormDryRun}
-              />
-            </NmxFormField>
-            {formDryRun && (
-              <NmxFormField
-                label={t(
-                  "addon.frontgate.pages.reverseProxy.fields.dryRunMinutes",
-                )}
-              >
-                <NmxSelect
-                  value={String(formDryRunMinutes)}
-                  options={dryRunMinuteOptions}
-                  onChange={(v) => setFormDryRunMinutes(Number(v))}
-                />
-              </NmxFormField>
-            )}
           </NmxForm>
         )}
 
@@ -1389,7 +1449,60 @@ export const FrontgateReverseProxy: React.FC = () => {
               />
             </NmxFormField>
             <NmxFormField
+              label={t("addon.frontgate.pages.reverseProxy.fields.rateLimit")}
+              inline
+            >
+              <NmxToggle
+                checked={formRateLimitEnabled}
+                onCheckedChanged={setFormRateLimitEnabled}
+              />
+            </NmxFormField>
+            {formRateLimitEnabled && (
+              <>
+                <NmxFormField
+                  label={t(
+                    "addon.frontgate.pages.reverseProxy.fields.rateLimitRequests",
+                  )}
+                >
+                  <NmxSlider
+                    value={formRateLimit}
+                    min={1}
+                    max={1000}
+                    step={1}
+                    onChange={setFormRateLimit}
+                    showValue={true}
+                  />
+                </NmxFormField>
+                <NmxFormField
+                  label={t(
+                    "addon.frontgate.pages.reverseProxy.fields.rateLimitWindow",
+                  )}
+                >
+                  <NmxSegmentedGroup
+                    value={String(formRateLimitWindow)}
+                    options={rateLimitWindowOptions}
+                    onChange={(v) => setFormRateLimitWindow(Number(v))}
+                  />
+                </NmxFormField>
+              </>
+            )}
+            <NmxFormField
+              label={t(
+                "addon.frontgate.pages.reverseProxy.fields.dryRunMinutes",
+              )}
+            >
+              <NmxSegmentedGroup
+                value={String(formDryRunMinutes)}
+                options={dryRunMinuteOptions}
+                onChange={(v) => setFormDryRunMinutes(Number(v))}
+              />
+            </NmxFormField>
+            <NmxFormField
               label={t("addon.frontgate.pages.reverseProxy.fields.access")}
+              helper={t(
+                "addon.frontgate.pages.reverseProxy.fields.accessDryRunHint",
+              )}
+              helperSemantic="warning"
             >
               <NmxSelect
                 value={formAccess}

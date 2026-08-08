@@ -250,6 +250,17 @@ export const FrontgateCertificate: React.FC = () => {
           )
       }
 
+      if (value === "download") {
+        frontgateController
+          .downloadCert(row.id)
+          .catch((err) =>
+            nmxToast.error(
+              formatCustomError(t, err, FrontgateErrorCodes),
+              t("addon.frontgate.pages.certificate.feedback.downloadError"),
+            ),
+          )
+      }
+
       if (value === "delete") setDeletingCert(row)
     },
     [fetchCerts, page, pageSize, t],
@@ -369,16 +380,19 @@ export const FrontgateCertificate: React.FC = () => {
         <div className="nmx-addon-frontgate__domain-wrap">
           <div className="nmx-addon-frontgate__domain-list">
             {row.domains?.map((d) => (
-              <a
-                key={d}
-                href={`https://${d}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="nmx-addon-frontgate__domain-item"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {d}
-              </a>
+              <div className="nmx-addon-frontgate__domain-item">
+                <a
+                  key={d}
+                  href={`https://${d}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="nmx-addon-frontgate__domain-item-link"
+                  data-row-action
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {d}
+                </a>
+              </div>
             ))}
           </div>
           <span className="nmx-addon-frontgate__created">
@@ -556,7 +570,7 @@ export const FrontgateCertificate: React.FC = () => {
                     href={`https://${d}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="nmx-addon-frontgate__domain-item"
+                    className="nmx-addon-frontgate__domain-item-link"
                   >
                     {d}
                   </a>
@@ -706,7 +720,7 @@ export const FrontgateCertificate: React.FC = () => {
             })
             .then(() => {
               setAddDialogType(null)
-              fetchCerts(page, pageSize)
+              fetchCerts(page, pageSize).catch(nmxToast.error)
               nmxToast.success(
                 t("addon.frontgate.pages.certificate.dialogs.custom.success"),
               )
@@ -737,6 +751,9 @@ export const FrontgateCertificate: React.FC = () => {
             label={t(
               "addon.frontgate.pages.certificate.dialogs.custom.certificateKey",
             )}
+            helper={t(
+              "addon.frontgate.pages.certificate.dialogs.custom.certificateKeyHint",
+            )}
             required
           >
             <NmxFileInput
@@ -749,6 +766,9 @@ export const FrontgateCertificate: React.FC = () => {
           <NmxFormField
             label={t(
               "addon.frontgate.pages.certificate.dialogs.custom.certificate",
+            )}
+            helper={t(
+              "addon.frontgate.pages.certificate.dialogs.custom.certificateHint",
             )}
             required
           >
@@ -763,6 +783,9 @@ export const FrontgateCertificate: React.FC = () => {
           <NmxFormField
             label={t(
               "addon.frontgate.pages.certificate.dialogs.custom.intermediate",
+            )}
+            helper={t(
+              "addon.frontgate.pages.certificate.dialogs.custom.intermediateHint",
             )}
           >
             <NmxFileInput

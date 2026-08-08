@@ -162,10 +162,18 @@
           "ip": "IP",
           "dateTime": "Time"
         },
+
         "fallbacks": {
           "error": "Failed to load logs",
           "loading": "Loading network logs...",
           "empty": "No network logs recorded yet"
+        },
+
+        "sourceFilter": "Source",
+        "sourceOptions": {
+          "all": "All",
+          "api": "API",
+          "proxy": "Proxy"
         }
       },
       "threats": {
@@ -371,7 +379,7 @@
         "reverseProxy": "Reverse Proxy",
         "certificate": "Certificate",
         "accessPolicy": "Access Policy",
-        "errorPages": "Error Pages"
+        "audit": "Audit Log"
       },
       "errors": {
         "ruleNotFound": "Rule not found",
@@ -390,7 +398,9 @@
         "policyTypeMismatch": "Access policy type does not match the access mode",
         "policyInUse": "This policy is still in use by one or more rules",
         "policyLocksOutAdmin": "This policy would block your own IP address. Adjust the rule before saving",
-        "dryRunNotPending": "No dry-run is currently pending for this rule"
+        "dryRunNotPending": "No dry-run is currently pending for this rule",
+        "certificateFilesMissing": "Certificate files are missing on disk",
+        "downloadError": "Failed to download certificate"
       },
       "pages": {
         "reverseProxy": {
@@ -426,6 +436,7 @@
             "access": "Access",
             "accessPolicy": "Access policy",
             "selectPolicy": "Select a policy…",
+            "accessDryRunHint": "This access mode can block you out. Enable dry-run to test it before applying",
             "ssl": "SSL",
             "createdAt": "Created at",
             "status": "Status",
@@ -443,6 +454,10 @@
             "blockCommonExploits": "Block Common Exploits",
             "dryRun": "Dry run",
             "dryRunMinutes": "Dry run duration",
+            "rateLimit": "Rate limit",
+            "rateLimitRequests": "Requests per window",
+            "rateLimitWindow": "Time window",
+            "health": "Health",
             "headerName": "Name",
             "headerValue": "Value",
 
@@ -457,10 +472,19 @@
               "restricted": "Restricted",
               "basicAuth": "Basic Auth"
             },
+
             "dryRunMinuteOptions": {
-              "dryRun1m": "Every 1 minutes",
-              "dryRun5m": "Every 5 minutes",
-              "dryRun10m": "Every 10 minutes"
+              "dryRun0m": "Off",
+              "dryRun1m": "1 minutes",
+              "dryRun5m": "5 minutes",
+              "dryRun10m": "10 minutes"
+            },
+
+            "rateLimitWindowOptions": {
+              "rateLimitWindow1": "1s",
+              "rateLimitWindow10": "10s",
+              "rateLimitWindow60": "1 min",
+              "rateLimitWindow3600": "1 hour"
             }
           },
 
@@ -484,8 +508,6 @@
           },
 
           "dryRun": {
-            "confirm": "Apply",
-            "cancel": "Rollback",
             "confirmSuccess": "Dry-run applied — configuration is now active",
             "confirmError": "Failed to apply dry-run",
             "cancelSuccess": "Dry-run cancelled — rule rolled back",
@@ -569,8 +591,11 @@
               "confirm": "Upload",
               "name": "Name",
               "certificateKey": "Certificate Key",
+              "certificateKeyHint": "PEM private key (.key, .pem)",
               "certificate": "Certificate",
+              "certificateHint": "PEM certificate (.crt, .cer, .pem)",
               "intermediate": "Intermediate Certificate (optional)",
+              "intermediateCertificateHint": "PEM certificate chain, if issued by an intermediate CA",
               "info": "Upload your custom certificate files. Make sure the key does not have a passphrase.",
               "success": "Custom certificate uploaded successfully",
               "error": "Failed to upload custom certificate"
@@ -621,6 +646,51 @@
             "deleteSuccess": "Access policy deleted successfully",
             "deleteError": "Failed to delete access policy",
             "deleteConfirm": "Are you sure you want to delete the access policy [color:warning]**{{name}}**[/color]?"
+          }
+        },
+        "audit": {
+          "actions": {
+            "refresh": "Refresh",
+            "clear": "Clear log",
+            "view": "View entry"
+          },
+          "fields": {
+            "action": "Action",
+            "actor": "Actor",
+            "clientIp": "Client IP",
+            "target": "Target",
+            "timestamp": "Timestamp",
+            "before": "Before",
+            "empty": "—",
+
+            "actionOptions": {
+              "created": "Created",
+              "updated": "Updated",
+              "deleted": "Deleted",
+              "dryRunConfirm": "Dry-run applied",
+              "dryRunCancel": "Dry-run cancelled",
+              "dryRunExpire": "Dry-run expired",
+              "certRetry": "Certificate retried",
+              "certRenew": "Certificate renewed",
+              "auditCleared": "Audit log cleared"
+            },
+            "targetTypes": {
+              "rule": "proxy rule",
+              "cert": "certificate",
+              "policy": "access policy",
+              "audit": "audit log"
+            },
+            "targetPrint": "{{target}}"
+          },
+          "fallbacks": {
+            "loading": "Loading audit log...",
+            "error": "Failed to load audit log",
+            "empty": "No audit entries yet"
+          },
+          "feedback": {
+            "clearSuccess": "Audit log cleared ({{count}} entries)",
+            "clearError": "Failed to clear audit log",
+            "clearConfirm": "This will permanently delete all audit entries. Continue?"
           }
         }
       }

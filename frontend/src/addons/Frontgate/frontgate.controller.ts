@@ -2,6 +2,7 @@ import {
   ApiError,
   ApiFrontgateRoutes,
   getApiBaseUrl,
+  type HttpMethods,
   nmxHttp,
 } from "@namorix/core"
 import type { FrontgateCertificateKeyType } from "./Frontgate.types"
@@ -19,6 +20,18 @@ export type AccessPolicyType =
   | "geoBlock"
   | "basicAuth"
   | "ipDenylist"
+
+export type AuditTargetType = "rule" | "cert" | "policy" | "audit"
+export type AuditAction =
+  | "created"
+  | "updated"
+  | "deleted"
+  | "dryRunConfirm"
+  | "dryRunCancel"
+  | "dryRunExpire"
+  | "certRetry"
+  | "certRenew"
+  | "auditCleared"
 
 export interface ReverseProxyRule {
   id: string
@@ -48,6 +61,10 @@ export interface ReverseProxyRule {
     forwardHost: string
     forwardPort: number
   }[]
+  rateLimit?: number
+  rateLimitWindowSec?: number
+  isHealthy?: boolean | null
+  lastHealthCheckAt?: string | null
 }
 
 export interface ReverseProxyRuleResponse {
@@ -82,6 +99,8 @@ export interface CreateReverseProxyRulePayload {
   requestCert?: boolean
   dryRun?: boolean
   dryRunMinutes?: number
+  rateLimit?: number
+  rateLimitWindowSec?: number
 }
 
 export interface CreateLetsEncryptCertPayload {
@@ -138,6 +157,41 @@ export interface CreateAccessPolicyPayload {
   name: string
   type: AccessPolicyType
   rulesJson: string
+}
+
+export interface AuditLogItem {
+  id: number
+  timestamp: string
+  actor: string
+  actorId?: string
+  clientIp?: string
+  targetType: AuditTargetType
+  targetId?: string
+  targetName?: string
+  action: AuditAction
+  beforeJson?: string
+  afterJson?: string
+}
+export interface AuditLogResponse {
+  items: AuditLogItem[]
+  total: number
+}
+
+export interface FgTrafficLog {
+  id: number
+  method: HttpMethods
+  path: string
+  statusCode: number
+  durationMs: number
+  responseSizeBytes: number
+  ip?: string
+  userId?: number
+  timestamp: string
+}
+export interface FgTrafficLogResponse {
+  items: FgTrafficLog[]
+  total: number
+  elapsedMs: number
 }
 
 async function listRules(
@@ -325,6 +379,37 @@ async function deleteAccessPolicy(id: string): Promise<void> {
   if (!data.success) throw ApiError.fromResponse(data)
 }
 
+async function listAudit(
+  page: number,
+  size: number,
+): Promise<AuditLogResponse> {
+  const data = await nmxHttp
+    .url(getApiBaseUrl() + ApiFrontgateRoutes.audit)
+    .query({ page, size })
+    .get()
+    .json<AuditLogResponse>()
+  if (!data.success) throw ApiError.fromResponse(data)
+  return data.data
+}
+
+async function clearAudit(): Promise<{ deleted: number }> {
+  const data = await nmxHttp
+    .url(getApiBaseUrl() + ApiFrontgateRoutes.audit)
+    .delete()
+    .json<{ deleted: number }>()
+  if (!data.success) throw ApiError.fromResponse(data)
+  return data.data
+}
+
+async function downloadCert(id: string): Promise<void> {
+  const url = getApiBaseUrl() + ApiFrontgateRoutes.certificateDownload(id)
+  const a = document.createElement("a")
+  a.href = url
+  a.target = "_blank"
+  a.rel = "noopener"
+  a.click()
+}
+
 export const frontgateController = {
   listRules,
   createRule,
@@ -345,4 +430,7 @@ export const frontgateController = {
   createAccessPolicy,
   updateAccessPolicy,
   deleteAccessPolicy,
+  listAudit,
+  clearAudit,
+  downloadCert,
 }

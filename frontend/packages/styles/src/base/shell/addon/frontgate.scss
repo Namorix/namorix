@@ -42,15 +42,18 @@
 
   &__domain-item {
     display: inline-block;
-    color: var(--nmx-color-on-surface);
-    font-size: var(--nmx-font-size-sm);
-    text-decoration: none;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
     min-width: 0;
 
-    &:hover {
+    &-link {
+      color: var(--nmx-color-on-surface);
+      font-size: var(--nmx-font-size-sm);
+      text-decoration: none;
+    }
+
+    &-link:hover {
       text-decoration: underline;
     }
   }
@@ -120,5 +123,12 @@
         border-bottom-left-radius: 0;
       }
     }
+  }
+
+  &__audit-json {
+    text-align: start;
+    font-family: var(--nmx-font-mono), monospace;
+    white-space: pre-wrap;
+    word-break: break-word;
   }
 }

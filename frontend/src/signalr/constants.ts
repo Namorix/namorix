@@ -20,6 +20,7 @@ export const ServerSignalREvent = {
   FrontgateRuleChanged: ServerSignalRGroups.Frontgate + ":rule-changed",
   FrontgateDryRunChanged: ServerSignalRGroups.Frontgate + ":dry-run-changed",
   FrontgateCertChanged: ServerSignalRGroups.Frontgate + ":cert-changed",
+  FrontgateAuditCreated: ServerSignalRGroups.Frontgate + ":audit-created",
 }
 
 export type ServerSignalRGroupsType =

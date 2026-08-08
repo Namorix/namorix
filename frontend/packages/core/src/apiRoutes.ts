@@ -98,10 +98,14 @@ export const ApiFrontgateRoutes = {
   certificatesLetsEncryptHttpDryRun:
     API_FRONTGATE_BASE + "/certificates/letsencrypt-http/dry-run",
   certificatesCustom: API_FRONTGATE_BASE + "/certificates/custom",
+  certificateDownload: (id: string) =>
+    `${API_FRONTGATE_BASE}/certificates/${id}/download`,
 
   accessPolicies: API_FRONTGATE_BASE + "/access-policies",
   accessPolicyById: (id: string) =>
     `${API_FRONTGATE_BASE}/access-policies/${id}`,
+
+  audit: API_FRONTGATE_BASE + "/audit",
 } as const
 
 export const ApiBeaconRoutes = {
