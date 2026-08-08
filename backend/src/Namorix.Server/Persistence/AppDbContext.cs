@@ -31,6 +31,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<FgCertificateDomain> FgCertificateDomains { get; init; } = null!;
     public DbSet<FgAccessPolicy> FgAccessPolicies { get; set; }
     public DbSet<FgReverseProxyLocation> FgReverseProxyLocations { get; set; }
+    public DbSet<FgAuditLog> FgAuditLogs { get; set; }
 
     public DbSet<BcnHostname> BcnHostnames { get; set; }
     public DbSet<BcnSettings> BcnSettings { get; set; }
@@ -137,6 +138,22 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasForeignKey(l => l.RuleId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<FgAuditLog>()
+            .HasIndex(l => new { l.TargetType, l.TargetId });
+        
+        modelBuilder.Entity<FgAuditLog>()
+            .HasIndex(l => l.Timestamp);
+        
+        modelBuilder.Entity<FgAuditLog>()
+            .Property(l => l.TargetType)
+            .HasConversion<string>()
+            .HasMaxLength(16);
+        
+        modelBuilder.Entity<FgAuditLog>()
+            .Property(l => l.Action)
+            .HasConversion<string>()
+            .HasMaxLength(24);
+        
         modelBuilder.Entity<BcnHostname>()
             .Property(h => h.Kind)
             .HasConversion<string>().HasMaxLength(20);

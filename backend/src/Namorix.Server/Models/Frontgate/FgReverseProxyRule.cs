@@ -50,6 +50,12 @@ public class FgReverseProxyRule
     public DateTime? DryRunExpiresAt { get; set; }
     [MaxLength(8192)] public string? DryRunSnapshotJson { get; set; }
     
+    public int? RateLimit { get; set; } 
+    public int? RateLimitWindowSec { get; set; } 
+    
+    public bool? IsHealthy { get; set; }
+    public DateTime? LastHealthCheckAt { get; set; }
+    
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
     

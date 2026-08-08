@@ -9,5 +9,5 @@ public interface IFrontgateNotifier
     Task NotifyDryRunChanged(string ruleId, FgDryRunAction action);
     Task NotifyRuleChanged(string ruleId, FgRuleAction action);
     Task NotifyCertChanged(string certId, FgCertAction action);
-
+    Task NotifyAuditCreated(FgAuditTargetType targetType, string? targetId, FgAuditAction action);
 }

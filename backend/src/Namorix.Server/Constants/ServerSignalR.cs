@@ -23,4 +23,5 @@ public static class ServerSignalREvent
     public const string FrontgateRuleChanged = $"{ServerSignalRGroups.Frontgate}:rule-changed";
     public const string FrontgateDryRunChanged = $"{ServerSignalRGroups.Frontgate}:dry-run-changed";
     public const string FrontgateCertChanged = $"{ServerSignalRGroups.Frontgate}:cert-changed";
+    public const string FrontgateAuditCreated = $"{ServerSignalRGroups.Frontgate}:audit-created";
 }

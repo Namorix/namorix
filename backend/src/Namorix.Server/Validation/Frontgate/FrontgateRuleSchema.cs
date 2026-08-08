@@ -66,4 +66,16 @@ public class FrontgateRuleSchema : IValidationSchema
             return new ValidationResult(null, true);
         },
     };
+    
+    public StringValidationRule RateLimit => new()
+    {
+        Min = 0,
+        Max = 1000000,
+    };
+
+    public StringValidationRule RateLimitWindowSec => new()
+    {
+        Min = 1,
+        Max = 86400,
+    };
 }

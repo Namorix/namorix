@@ -19,6 +19,8 @@ public class FrontgateProxyConfigProvider(IServiceScopeFactory scopeFactory) : I
     public ConcurrentDictionary<string, byte> HstsSubdomainSources { get; } = new();
     public ConcurrentDictionary<string, byte> BlockExploitSources { get; } = new();
     public ConcurrentDictionary<string, (ProxyAccessMode Mode, FgAccessPolicy? Policy)> AccessSources { get; } = new();
+    public ConcurrentDictionary<string, (int Limit, int WindowSec)> RateLimitSources { get; } = new();
+    public bool HasDryRun { get; private set; }
 
     public IProxyConfig GetConfig() => _config;
 
@@ -151,6 +153,12 @@ public class FrontgateProxyConfigProvider(IServiceScopeFactory scopeFactory) : I
         AccessSources.Clear();
         foreach (var rule in rules)
             AccessSources[rule.Source] = (rule.Access, rule.AccessPolicy);
+
+        RateLimitSources.Clear();
+        foreach (var rule in rules.Where(r => r.RateLimit.HasValue))
+            RateLimitSources[rule.Source] = (rule.RateLimit!.Value, rule.RateLimitWindowSec ?? 60);
+        
+        HasDryRun = await db.FgReverseProxyRules.AnyAsync(r => r.DryRunExpiresAt != null);
     }
 }
 

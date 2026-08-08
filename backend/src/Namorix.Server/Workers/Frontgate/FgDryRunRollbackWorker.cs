@@ -18,6 +18,9 @@ public class FgDryRunRollbackWorker(IServiceScopeFactory scopeFactory,
         {
             try
             {
+                if (!proxyProvider.HasDryRun)
+                    continue;
+
                 using var scope = scopeFactory.CreateScope();
                 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 var notifier = scope.ServiceProvider.GetRequiredService<IFrontgateNotifier>();

@@ -161,6 +161,8 @@ builder.Services.AddHostedService<CatalogSyncWorker>();
 builder.Services.AddHostedService<FgCertPendingResetWorker>();
 builder.Services.AddHostedService<FgCertRenewWorker>();
 builder.Services.AddHostedService<FgDryRunRollbackWorker>();
+builder.Services.AddHostedService<FgAuditCleanupWorker>();
+builder.Services.AddHostedService<FgBackendHealthWorker>();
 builder.Services.AddHostedService<BcnCheckWorker>();
 builder.Services.AddHostedService<BcnActivityCleanupWorker>();
 
@@ -254,6 +256,7 @@ if (proxyPorts.Length > 0)
         proxy.UseMiddleware<BlockWebSocketMiddleware>();
         proxy.UseMiddleware<RewriteRedirectLocationMiddleware>();
         proxy.UseMiddleware<BlockCommonExploitsMiddleware>();
+        proxy.UseMiddleware<RateLimitMiddleware>();
         proxy.UseMiddleware<ForceSslMiddleware>();
         proxy.UseMiddleware<HstsMiddleware>();
         

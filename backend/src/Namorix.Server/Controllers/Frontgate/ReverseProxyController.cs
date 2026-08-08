@@ -12,6 +12,7 @@ using Namorix.Server.Models.Frontgate;
 using Namorix.Server.Persistence;
 using Namorix.Server.Services.Frontgate;
 using Namorix.Server.Validation;
+using Namorix.Server.Validation.Frontgate;
 
 namespace Namorix.Server.Controllers.Frontgate;
 
@@ -52,6 +53,10 @@ public class ReverseProxyController(AppDbContext db, AcmeCertQueue certQueue,
                 r.TrustForwardedProtoHeaders,
                 r.BlockCommonExploits,
                 r.DryRunExpiresAt,
+                r.RateLimit,
+                r.RateLimitWindowSec,
+                r.IsHealthy,
+                r.LastHealthCheckAt,
                 CertStatus = r.CertificateId != null
                     ? db.FgCertificates.Where(c => c.Id == r.CertificateId).Select(c => 
                         (string?)c.Status.ToString().ToLower()).FirstOrDefault()
@@ -128,6 +133,8 @@ public class ReverseProxyController(AppDbContext db, AcmeCertQueue certQueue,
             TrustForwardedProtoHeaders = request.TrustForwardedProtoHeaders,
             BlockCommonExploits = request.BlockCommonExploits,
             AdditionalHeadersJson = request.AdditionalHeadersJson,
+            RateLimit = request.RateLimit,
+            RateLimitWindowSec = request.RateLimitWindowSec
         };
         
         if (request.DryRun)
@@ -151,6 +158,9 @@ public class ReverseProxyController(AppDbContext db, AcmeCertQueue certQueue,
         
         db.FgReverseProxyRules.Add(rule);
         await db.SaveChangesAsync();
+        await FrontgateAudit.LogAsync(db, notifier, FrontgateAudit.Who(HttpContext), FgAuditTargetType.Rule,
+            rule.Id, rule.Source, FgAuditAction.Created,
+            after: JsonSerializer.Serialize(rule, FrontgateAudit.JsonOptions));
 
         if (request.RequestCert && cert is not null)
             await certQueue.EnqueueAsync(cert.Id);
@@ -181,11 +191,49 @@ public class ReverseProxyController(AppDbContext db, AcmeCertQueue certQueue,
                 return Conflict(ApiResponse.Fail(FgErrorCodes.DuplicateSourceError));
         }
         
+        var auditBefore = JsonSerializer.Serialize(rule, FrontgateAudit.JsonOptions);
         var effectiveStatus = EffectiveStatus(request.DryRun, request.Status);
         var policyError = await ValidatePolicyAsync(request.AccessPolicyId, request.Access, effectiveStatus);
         if (policyError is not null)
             return policyError;
-        
+
+        var newAccess = Enum.Parse<ProxyAccessMode>(request.Access, ignoreCase: true);
+        var newStatus = Enum.Parse<ProxyRuleStatus>(effectiveStatus, ignoreCase: true);
+        var newLocations = request.Locations?.Select(loc => new FgReverseProxyLocation
+        {
+            RuleId = rule.Id,
+            Path = loc.Path,
+            Scheme = loc.Scheme,
+            ForwardHost = loc.ForwardHost,
+            ForwardPort = loc.ForwardPort,
+        }).ToList() ?? [];
+
+        var changed = request.RequestCert
+            || request.DryRun
+            || request.Source != rule.Source
+            || request.DestinationScheme != rule.DestinationScheme
+            || request.DestinationHost != rule.DestinationHost
+            || request.DestinationPort != rule.DestinationPort
+            || request.AccessPolicyId != rule.AccessPolicyId
+            || request.CertificateId != rule.CertificateId
+            || newAccess != rule.Access
+            || newStatus != rule.Status
+            || request.WebSocketsSupport != rule.WebSocketsSupport
+            || request.CacheAssets != rule.CacheAssets
+            || request.ForceSsl != rule.ForceSsl
+            || request.Http2Support != rule.Http2Support
+            || request.HstsEnabled != rule.HstsEnabled
+            || request.HstsSubdomains != rule.HstsSubdomains
+            || request.TrustForwardedProtoHeaders != rule.TrustForwardedProtoHeaders
+            || request.BlockCommonExploits != rule.BlockCommonExploits
+            || request.AdditionalHeadersJson != rule.AdditionalHeadersJson
+            || request.RateLimit != rule.RateLimit
+            || request.RateLimitWindowSec != rule.RateLimitWindowSec
+            || !LocationsEqual(rule.Locations, newLocations);
+
+        if (!changed)
+            return Ok(ApiResponse.Ok(rule));
+
         FgCertificate? newCertForUpdate = null;
         if (request.RequestCert)
         {
@@ -211,6 +259,14 @@ public class ReverseProxyController(AppDbContext db, AcmeCertQueue certQueue,
             rule.DryRunSnapshotJson ??= JsonSerializer.Serialize(FgRuleSnapshot.From(rule));
             rule.DryRunExpiresAt = DateTime.UtcNow.AddSeconds(ResolveDryRunSeconds(request.DryRunMinutes));
         }
+        
+        if (request.DestinationScheme != rule.DestinationScheme
+            || request.DestinationHost != rule.DestinationHost
+            || request.DestinationPort != rule.DestinationPort)
+        {
+            rule.IsHealthy = null;
+            rule.LastHealthCheckAt = null;
+        }
 
         rule.Source = request.Source;
         rule.DestinationScheme = request.DestinationScheme;
@@ -218,8 +274,8 @@ public class ReverseProxyController(AppDbContext db, AcmeCertQueue certQueue,
         rule.DestinationPort = request.DestinationPort;
         rule.AccessPolicyId = request.AccessPolicyId;
         rule.CertificateId = newCertForUpdate?.Id ?? request.CertificateId;
-        rule.Access = Enum.Parse<ProxyAccessMode>(request.Access, ignoreCase: true);
-        rule.Status = Enum.Parse<ProxyRuleStatus>(effectiveStatus, ignoreCase: true);
+        rule.Access = newAccess;
+        rule.Status = newStatus;
         rule.WebSocketsSupport = request.WebSocketsSupport;
         rule.CacheAssets = request.CacheAssets;
         rule.ForceSsl = request.ForceSsl;
@@ -230,17 +286,14 @@ public class ReverseProxyController(AppDbContext db, AcmeCertQueue certQueue,
         rule.BlockCommonExploits = request.BlockCommonExploits;
         rule.AdditionalHeadersJson = request.AdditionalHeadersJson;
         rule.UpdatedAt = DateTime.UtcNow;
+        rule.Locations = newLocations;
+        rule.RateLimit = request.RateLimit;
+        rule.RateLimitWindowSec = request.RateLimitWindowSec;
         
-        rule.Locations = request.Locations?.Select(loc => new FgReverseProxyLocation
-        {
-            RuleId = rule.Id,
-            Path = loc.Path,
-            Scheme = loc.Scheme,
-            ForwardHost = loc.ForwardHost,
-            ForwardPort = loc.ForwardPort,
-        }).ToList() ?? [];
-        
+        var auditAfter = JsonSerializer.Serialize(rule, FrontgateAudit.JsonOptions);
         await db.SaveChangesAsync();
+        await FrontgateAudit.LogAsync(db, notifier, FrontgateAudit.Who(HttpContext), FgAuditTargetType.Rule,
+            id, rule.Source, FgAuditAction.Updated, before: auditBefore, after: auditAfter);
         
         if (newCertForUpdate != null)
             await certQueue.EnqueueAsync(newCertForUpdate.Id);
@@ -261,6 +314,9 @@ public class ReverseProxyController(AppDbContext db, AcmeCertQueue certQueue,
         
         db.FgReverseProxyRules.Remove(rule);
         await db.SaveChangesAsync();
+        await FrontgateAudit.LogAsync(db, notifier, FrontgateAudit.Who(HttpContext), FgAuditTargetType.Rule,
+            id, rule.Source, FgAuditAction.Deleted,
+            before: JsonSerializer.Serialize(rule, FrontgateAudit.JsonOptions));
         await proxyProvider.UpdateAsync();
         await notifier.NotifyRuleChanged(id, FgRuleAction.Deleted);
         return Ok(ApiResponse.Ok());
@@ -280,6 +336,8 @@ public class ReverseProxyController(AppDbContext db, AcmeCertQueue certQueue,
         rule.DryRunSnapshotJson = null;
         
         await db.SaveChangesAsync();
+        await FrontgateAudit.LogAsync(db, notifier, FrontgateAudit.Who(HttpContext), FgAuditTargetType.Rule,
+            id, rule.Source, FgAuditAction.DryRunConfirm);
         await notifier.NotifyDryRunChanged(id, FgDryRunAction.Confirm);
         return Ok(ApiResponse.Ok());
     }
@@ -306,6 +364,8 @@ public class ReverseProxyController(AppDbContext db, AcmeCertQueue certQueue,
         }
         
         await db.SaveChangesAsync();
+        await FrontgateAudit.LogAsync(db, notifier, FrontgateAudit.Who(HttpContext), FgAuditTargetType.Rule,
+            id, rule.Source, FgAuditAction.DryRunCancel);
         await proxyProvider.UpdateAsync();
         await notifier.NotifyDryRunChanged(id, FgDryRunAction.Cancel);
         return Ok(ApiResponse.Ok());
@@ -357,6 +417,26 @@ public class ReverseProxyController(AppDbContext db, AcmeCertQueue certQueue,
     
     private static int ResolveDryRunSeconds(int minutes) =>
         minutes is 1 or 5 or 10 ? minutes * 60 : 60;
+
+    private static bool LocationsEqual(
+        ICollection<FgReverseProxyLocation>? a,
+        ICollection<FgReverseProxyLocation>? b)
+    {
+        if (ReferenceEquals(a, b)) return true;
+        if (a is null || b is null) return false;
+        if (a.Count != b.Count) return false;
+        using var ia = a.GetEnumerator();
+        using var ib = b.GetEnumerator();
+        while (ia.MoveNext() && ib.MoveNext())
+        {
+            var x = ia.Current;
+            var y = ib.Current;
+            if (x.Path != y.Path || x.Scheme != y.Scheme ||
+                x.ForwardHost != y.ForwardHost || x.ForwardPort != y.ForwardPort)
+                return false;
+        }
+        return true;
+    }
 }
 
 public record CreateRuleRequest(
@@ -380,7 +460,9 @@ public record CreateRuleRequest(
     List<LocationRequest>? Locations,
     bool RequestCert = false,
     bool DryRun = false,
-    int DryRunMinutes = 1
+    int DryRunMinutes = 1,
+    int? RateLimit = null,
+    int? RateLimitWindowSec = null
 );
 
 public record LocationRequest(

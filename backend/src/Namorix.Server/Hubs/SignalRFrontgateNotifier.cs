@@ -46,4 +46,15 @@ public class SignalRFrontgateNotifier(IHubContext<MainHub>
             action = action.ToString().ToLowerInvariant()
         });
     }
+    
+    public async Task NotifyAuditCreated(FgAuditTargetType targetType, string? targetId, FgAuditAction action)
+    {
+        await hubContext.Clients.Group(ServerSignalRGroups.Frontgate).SendAsync(
+            ServerSignalREvent.FrontgateAuditCreated, new
+            {
+                targetType = targetType.ToString().ToLowerInvariant(),
+                targetId,
+                action = action.ToString().ToLowerInvariant(),
+            });
+    }
 }

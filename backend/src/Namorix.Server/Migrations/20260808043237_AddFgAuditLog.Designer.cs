@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Namorix.Server.Persistence;
 
@@ -10,9 +11,11 @@ using Namorix.Server.Persistence;
 namespace Namorix.Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260808043237_AddFgAuditLog")]
+    partial class AddFgAuditLog
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
@@ -962,18 +965,6 @@ namespace Namorix.Server.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("Http2Support")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool?>("IsHealthy")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime?>("LastHealthCheckAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int?>("RateLimit")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("RateLimitWindowSec")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Source")
