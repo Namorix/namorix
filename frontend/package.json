@@ -1,7 +1,7 @@
 {
   "name": "@namorix/frontend",
   "private": true,
-  "version": "0.81.0",
+  "version": "0.81.1",
   "license": "AGPL-3.0-only",
   "author": "IzeroCs",
   "keywords": [
@@ -21,7 +21,7 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"pnpm --parallel -r --filter @namorix/styles dev\" \"vite\"",
-    "build": "tsc -b && vite build",
+    "build": "pnpm --filter @namorix/styles build && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "docker:dev": "docker compose down desktop-dev && docker compose up desktop-dev",

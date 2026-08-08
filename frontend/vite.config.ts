@@ -44,6 +44,10 @@ export default defineConfig((config) => {
       __BACKEND_SERVER_VERSION__: getBackendVersionXML(backendServer),
     },
     cacheDir: ".vite",
+    build: {
+      outDir: "./dist",
+      emptyOutDir: true,
+    },
     server: {
       host: "0.0.0.0",
       port: frontendPort,

@@ -1,0 +1,10 @@
+**/.git
+**/node_modules
+**/bin
+**/obj
+**/dist
+**/.vite
+**/*.log
+**/data
+frontend/public/themes
+backend/src/Namorix.Server/public

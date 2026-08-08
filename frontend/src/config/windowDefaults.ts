@@ -15,8 +15,8 @@ type WindowDefaults = {
 }
 
 const WINDOW_DEFAULTS = {
-  defaultWidth: ["--nmx-window-default-width", 800],
-  defaultHeight: ["--nmx-window-default-height", 500],
+  defaultWidth: ["--nmx-window-light-width", 800],
+  defaultHeight: ["--nmx-window-light-height", 500],
   minWidth: ["--nmx-window-min-width", 400],
   minHeight: ["--nmx-window-min-height", 300],
   margin: ["--nmx-window-margin", 20],

@@ -1,0 +1,21 @@
+services:
+  namorix:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: namorix/namorix:latest
+    container_name: namorix
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+      - "5002:5002"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /home/izerocs/Documents/GitHub/namorix/data:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+    # user: "1000:984"
+    cap_add:
+      - NET_BIND_SERVICE
