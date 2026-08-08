@@ -8,7 +8,7 @@ export default defineConfig(() => {
     cssMinify: false,
     rolldownOptions: {
       input: {
-        "default/theme": resolve(__dirname, "src/themes/default/index.scss"),
+        "light/theme": resolve(__dirname, "src/themes/light/index.scss"),
         "dark/theme": resolve(__dirname, "src/themes/dark/index.scss"),
       },
       output: {
