@@ -4,7 +4,7 @@ import {
   NMX_THEME_CSS_PATH_KEY,
   NMX_THEME_STORAGE_KEY,
 } from "../constants"
-import { sanitizePathSegment } from "../utils"
+import { sanitizePath } from "../utils"
 import type { AppearanceSettings } from "../types"
 
 function appendStylesheet(
@@ -12,8 +12,8 @@ function appendStylesheet(
   path: string,
   callback?: (element: HTMLLinkElement) => void,
 ) {
-  const safeSaveId = sanitizePathSegment(id)
-  const safeSavePath = sanitizePathSegment(path)
+  const safeSaveId = sanitizePath(id)
+  const safeSavePath = sanitizePath(path)
 
   const link = document.createElement("link")
   link.id = NMX_THEME_CSS_ID
@@ -45,10 +45,7 @@ export async function loadTheme(cssId: string, cssPath: string): Promise<void> {
 }
 
 export function applyTheme(themeId: string): Promise<void> {
-  const cssUrl = ThemeRoutes.themes
-    .replace("{id}", themeId)
-    .replace("{path}", themeId)
-  return loadTheme(themeId, cssUrl)
+  return loadTheme(themeId, "theme.css")
 }
 
 export function applyAppearanceTokens(settings: AppearanceSettings) {

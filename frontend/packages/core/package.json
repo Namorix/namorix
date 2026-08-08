@@ -1,6 +1,6 @@
 {
   "name": "@namorix/core",
-  "version": "0.60.0",
+  "version": "0.61.0",
   "license": "AGPL-3.0-only",
   "author": "IzeroCs",
   "keywords": [
@@ -28,8 +28,8 @@
   },
   "exports": {
     ".": {
-      "types": "./src/index.d.ts",
-      "import": "./src/index.js"
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
     },
     "./env": {
       "types": "./src/env/development.ts",
