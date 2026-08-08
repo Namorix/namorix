@@ -38,19 +38,28 @@ import {
   markAllAsRead as apiMarkAllAsRead,
   deleteRead,
 } from "../../controllers"
-import { type NmxNotificationDto, nmxToast } from "@namorix/core"
-import { NotificationItem, NotificationItemSkeleton } from "../NotificationItem"
+import {
+  AppearanceDefaults,
+  type NmxNotificationDto,
+  nmxToast,
+  setAppearanceStore,
+  useAppearanceStore,
+} from "@namorix/core"
 import {
   NOTIFICATION_SOURCE_ICON,
   NOTIFICATION_TYPE_ICON,
   resolveNotificationDescriptionHtml,
   resolveSourceName,
-} from "../../utils/notification"
+} from "../../utils"
+import { NotificationItem, NotificationItemSkeleton } from "../Notification"
+import { settingsController } from "../../addons/Settings/settings.controller"
 
 const PAGE_SIZE = 10
 
 export const NotificationPanel = memo(() => {
   const { t } = useTranslation()
+  const appearance = useAppearanceStore()
+  const toastEnabled = appearance?.appearance_notifications_toast !== "false"
   const panelRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const didInitialFetch = useRef(false)
@@ -126,6 +135,20 @@ export const NotificationPanel = memo(() => {
     [dispatch, readCount, t],
   )
 
+  const handleToggleToast = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation()
+      const next = {
+        ...AppearanceDefaults,
+        ...(appearance ?? {}),
+        appearance_notifications_toast: String(!toastEnabled),
+      }
+      setAppearanceStore(next)
+      settingsController.saveUserSettings(next).catch(nmxToast.error)
+    },
+    [appearance, toastEnabled],
+  )
+
   return (
     <div className="nmx-notification-panel" ref={panelRef}>
       <div className="nmx-notification-panel__header">
@@ -147,6 +170,23 @@ export const NotificationPanel = memo(() => {
           {unreadCount > 0 && (
             <>
               <button
+                className={cx(
+                  "nmx-notification-panel__actions-btn",
+                  "nmx-notification-panel__btn-snooze",
+                  {
+                    "nmx-notification-panel__btn-snooze--active": !toastEnabled,
+                  },
+                )}
+                type="button"
+                onClick={handleToggleToast}
+              >
+                <NmxIconFont
+                  symbol={NmxIconFontSymbol.SNOOZE}
+                  className="nmx-notification-panel__actions-icon"
+                />
+              </button>
+
+              <button
                 className="nmx-notification-panel__actions-btn"
                 type="button"
                 onClick={() => {
@@ -160,6 +200,7 @@ export const NotificationPanel = memo(() => {
                   className="nmx-notification-panel__actions-icon"
                 />
               </button>
+
               <button
                 className={cx(
                   "nmx-notification-panel__actions-btn",

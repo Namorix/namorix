@@ -16,7 +16,7 @@ import {
   NOTIFICATION_TYPE_ICON,
   resolveNotificationDescriptionHtml,
   resolveSourceName,
-} from "../utils/notification"
+} from "../../utils"
 import { useDoubleTap } from "@namorix/core/hooks/useDoubleTap"
 
 interface NotificationItemProps extends WithBaseProps {
@@ -24,10 +24,20 @@ interface NotificationItemProps extends WithBaseProps {
   onRead?: (id: number) => void
   onDetail?: (id: number) => void
   isSkeleton?: boolean
+  iconDisabled?: boolean
+  timeDisabled?: boolean
 }
 
 export const NotificationItem = memo<NotificationItemProps>(
-  ({ notification, onRead, onDetail, className, isSkeleton }) => {
+  ({
+    notification,
+    onRead,
+    onDetail,
+    className,
+    isSkeleton,
+    iconDisabled = false,
+    timeDisabled = false,
+  }) => {
     const { t } = useTranslation()
     const { relativeTime } = useDateTimeFormat()
 
@@ -47,34 +57,40 @@ export const NotificationItem = memo<NotificationItemProps>(
           onRead?.(notification.id)
         }}
       >
-        <div className="nmx-notification-item__icon-box">
-          <NmxIconSvg
-            symbol={
-              NOTIFICATION_SOURCE_ICON[notification.source ?? ""] ??
-              NmxIconSvgSymbol.APP_SYSTEM
-            }
-            className="nmx-notification-item__icon"
-          />
-          <NmxIconBox
-            semantic={
-              (
-                { security: "error" } as Partial<
-                  Record<string, NmxSemanticColor>
-                >
-              )[notification.type] ?? (notification.type as NmxSemanticColor)
-            }
-            className="nmx-notification-item__box-level"
-          >
-            <NmxIconFont
+        {!iconDisabled && (
+          <div className="nmx-notification-item__icon-box">
+            <NmxIconSvg
               symbol={
-                NOTIFICATION_TYPE_ICON[notification.type ?? "info"] ??
-                NmxIconFontSymbol.INFO
+                NOTIFICATION_SOURCE_ICON[notification.source ?? ""] ??
+                NmxIconSvgSymbol.APP_SYSTEM
               }
-              className="nmx-notification-item__icon-level"
+              className="nmx-notification-item__icon"
             />
-          </NmxIconBox>
-        </div>
-        <div className="nmx-notification-item__body">
+            <NmxIconBox
+              semantic={
+                (
+                  { security: "error" } as Partial<
+                    Record<string, NmxSemanticColor>
+                  >
+                )[notification.type] ?? (notification.type as NmxSemanticColor)
+              }
+              className="nmx-notification-item__box-level"
+            >
+              <NmxIconFont
+                symbol={
+                  NOTIFICATION_TYPE_ICON[notification.type ?? "info"] ??
+                  NmxIconFontSymbol.INFO
+                }
+                className="nmx-notification-item__icon-level"
+              />
+            </NmxIconBox>
+          </div>
+        )}
+        <div
+          className={cx("nmx-notification-item__body", {
+            "nmx-notification-item__body--icon-disabled": iconDisabled,
+          })}
+        >
           <span className="nmx-notification-item__title">
             {isSkeleton
               ? notification.source
@@ -88,20 +104,22 @@ export const NotificationItem = memo<NotificationItemProps>(
                 : resolveNotificationDescriptionHtml(t, notification),
             }}
           />
-          <div className="nmx-notification-item__time">
-            {notification.occurrences > 1 && (
-              <span className="nmx-notification-item__occurred-times">
-                {t("notification.occurredTimes", {
-                  count: notification.occurrences,
-                })}
+          {!timeDisabled && (
+            <div className="nmx-notification-item__time">
+              {notification.occurrences > 1 && (
+                <span className="nmx-notification-item__occurred-times">
+                  {t("notification.occurredTimes", {
+                    count: notification.occurrences,
+                  })}
+                </span>
+              )}
+              <span>
+                {notification.createdAt
+                  ? relativeTime(notification.createdAt)
+                  : ""}
               </span>
-            )}
-            <span>
-              {notification.createdAt
-                ? relativeTime(notification.createdAt)
-                : ""}
-            </span>
-          </div>
+            </div>
+          )}
         </div>
       </button>
     )

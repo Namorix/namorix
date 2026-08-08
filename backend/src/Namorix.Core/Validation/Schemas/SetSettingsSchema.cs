@@ -58,4 +58,9 @@ public class SetSettingsSchema : IValidationSchema
         IsRequired = true,
         AllowedValues = [.. AppearanceOptionsData.Default.DateFormats.Select(c => c.Value)]
     };
+    
+    public AllowedValuesValidationRule AppearanceNotificationsToast => new()
+    {
+        AllowedValues = [SettingValues.True, SettingValues.False]
+    };
 }

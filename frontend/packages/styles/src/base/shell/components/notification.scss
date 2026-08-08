@@ -1,4 +1,4 @@
-@use "../abstract/mixins" as *;
+@use "../../abstract/mixins" as *;
 
 .nmx-notification-panel {
   position: absolute;
@@ -70,7 +70,6 @@
     background: none;
     border: none;
     color: var(--nmx-color-on-surface);
-    font-size: var(--nmx-font-size-lg);
     padding: var(--nmx-spacing-sm);
     margin: 0;
     outline: 0;
@@ -82,8 +81,24 @@
     }
   }
 
+  &__actions-icon {
+    font-size: var(--nmx-font-size-lg);
+  }
+
   &__actions-btn:hover &__actions-icon {
     color: color-mix(in oklab, var(--nmx-color-on-surface) 70%, transparent);
+  }
+
+  &__btn-snooze {
+    color: var(--nmx-color-on-surface-variant);
+  }
+
+  &__btn-snooze--active &__actions-icon {
+    color: var(--nmx-color-primary);
+  }
+
+  &__btn-snooze--active:hover &__actions-icon {
+    color: color-mix(in oklab, var(--nmx-color-primary) 80%, transparent);
   }
 
   &__btn-filter {
@@ -197,6 +212,10 @@
     gap: var(--nmx-spacing-sm);
     flex: 1;
     min-width: 0;
+
+    &--icon-disabled {
+      padding-left: var(--nmx-spacing-xs);
+    }
   }
 
   &__title {

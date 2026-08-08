@@ -1,0 +1,64 @@
+@use "../../abstract/mixins" as *;
+
+.nmx-notification-toast-provider {
+  --nmx-taskbar-notification-toast-width: var(
+    --nmx-taskbar-notification-toast-width-md
+  );
+
+  position: fixed;
+  bottom: calc(var(--nmx-taskbar-height) + var(--nmx-spacing-md));
+  right: var(--nmx-spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--nmx-spacing-sm);
+  z-index: var(--nmx-z-notification);
+  width: min(
+    var(--nmx-taskbar-notification-toast-width),
+    calc(100vw - var(--nmx-spacing-md) * 2)
+  );
+  pointer-events: none;
+
+  > * {
+    pointer-events: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .nmx-notification-toast-provider {
+    --nmx-taskbar-notification-toast-width: var(
+      --nmx-taskbar-notification-toast-width-sm
+    );
+  }
+}
+
+.nmx-notification-toast {
+  background: var(--nmx-color-surface);
+  border-radius: var(--nmx-radius-md);
+  box-shadow: var(--nmx-shadow-md);
+  overflow: hidden;
+  will-change: transform, opacity;
+
+  &--enter {
+    animation: nmx-notification-toast-in var(--nmx-duration-slow)
+      var(--nmx-easing-enter) both;
+  }
+
+  &--exit {
+    animation: nmx-notification-toast-out var(--nmx-duration-slow)
+      var(--nmx-easing-exit) both;
+  }
+}
+
+@keyframes nmx-notification-toast-in {
+  from {
+    opacity: 0;
+    translate: calc(100% + var(--nmx-spacing-md)) 0;
+  }
+}
+
+@keyframes nmx-notification-toast-out {
+  to {
+    opacity: 0;
+    translate: calc(100% + var(--nmx-spacing-md)) 0;
+  }
+}

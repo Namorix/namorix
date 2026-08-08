@@ -26,7 +26,8 @@ public static class AppearanceSettingKeys
     public const string Language = "appearance_language";
     public const string TimeFormat = "appearance_time_format";
     public const string DateFormat = "appearance_date_format";
-    
+    public const string NotificationsToast = "appearance_notifications_toast";
+
     public static readonly string[] All = [
         Theme, AccentColor, Collapsed, Density,
         FontFamily, FontSize, Language, TimeFormat, DateFormat
@@ -46,5 +47,6 @@ public static class AppearanceDefaults
         [AppearanceSettingKeys.Language] = "en",
         [AppearanceSettingKeys.TimeFormat] = "HH:mm",
         [AppearanceSettingKeys.DateFormat] = "DD/MM/YYYY",
+        [AppearanceSettingKeys.NotificationsToast] = "true",
     };
 }

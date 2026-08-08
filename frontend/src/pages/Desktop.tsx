@@ -1,5 +1,11 @@
 import React, { useEffect } from "react"
-import { DesktopArea, Launcher, Taskbar, WindowManager } from "../components"
+import {
+  DesktopArea,
+  Launcher,
+  NotificationToasts,
+  Taskbar,
+  WindowManager,
+} from "../components"
 import { defocusAll, useAppDispatch } from "../store"
 import { useSignalR } from "@namorix/core"
 import { useNotificationEvents } from "../hooks"
@@ -36,6 +42,7 @@ export const Desktop: React.FC = () => {
       <WindowManager />
       <Launcher />
       <Taskbar />
+      <NotificationToasts />
     </>
   )
 }

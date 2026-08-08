@@ -8,6 +8,7 @@ export interface AppearanceSettings {
   appearance_language?: string
   appearance_time_format?: string
   appearance_date_format?: string
+  appearance_notifications_toast?: string
 }
 
 export const AppearanceDefaults: AppearanceSettings = {
@@ -20,4 +21,5 @@ export const AppearanceDefaults: AppearanceSettings = {
   appearance_language: "en",
   appearance_time_format: "HH:mm",
   appearance_date_format: "DD/MM/YYYY",
+  appearance_notifications_toast: "true",
 } as const

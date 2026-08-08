@@ -139,6 +139,9 @@ public class SetSettingsRequest
     [JsonPropertyName(AppearanceSettingKeys.Collapsed)]
     public string? AppearanceCollapsed { get; init; }
     
+    [JsonPropertyName(AppearanceSettingKeys.NotificationsToast)]
+    public string? AppearanceNotificationsToast { get; init; }
+    
     public Dictionary<string, string> ToDictionary()
     {
         var dict = new Dictionary<string, string>();
@@ -169,6 +172,9 @@ public class SetSettingsRequest
         
         if (AppearanceCollapsed != null)
             dict[AppearanceSettingKeys.Collapsed] = AppearanceCollapsed;
+        
+        if (AppearanceNotificationsToast != null)
+            dict[AppearanceSettingKeys.NotificationsToast] = AppearanceNotificationsToast;
         
         return dict;
     }
