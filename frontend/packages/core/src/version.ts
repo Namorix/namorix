@@ -5,7 +5,7 @@ export const NmxAddonVersions = {
   systemMonitor: "1.2.0",
   networkTraffic: "1.2.1",
   packageCenter: "1.2.0",
-  frontgate: "1.6.0",
+  frontgate: "1.7.0",
   beacon: "1.1.0",
   fileManager: "0.1.0",
   terminal: "0.1.0",
