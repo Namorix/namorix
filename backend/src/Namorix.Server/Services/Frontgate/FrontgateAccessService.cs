@@ -13,8 +13,17 @@ public enum AccessDecision
 
 public class FrontgateAccessService(GeoIpService geoIpService)
 {
+    public static readonly JsonSerializerOptions SerializerOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    };
+    
     public AccessDecision Evaluate(ProxyAccessMode mode, FgAccessPolicy? policy, IPAddress clientIp, string? authorizationHeader)
     {
+        if (clientIp.IsIPv4MappedToIPv6) 
+            clientIp = clientIp.MapToIPv4();
+
         switch (mode)
         {
             case ProxyAccessMode.Private:
@@ -41,7 +50,7 @@ public class FrontgateAccessService(GeoIpService geoIpService)
                     : AccessDecision.Deny;
             
             case ProxyAccessMode.BasicAuth when policy?.Type == AccessPolicyType.BasicAuth:
-                var creds = JsonSerializer.Deserialize<FgBasicAuthPolicy>(policy.RulesJson);
+                var creds = JsonSerializer.Deserialize<FgBasicAuthPolicy>(policy.RulesJson, SerializerOptions);
                 return creds is not null && TryParseBasicAuth(authorizationHeader, out var username, out var password)
                                          && username == creds.Username && BCrypt.Net.BCrypt.Verify(password, creds.PasswordHash)
                     ? AccessDecision.Allow

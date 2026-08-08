@@ -1,3 +1,4 @@
+using Namorix.Core.Helpers;
 using Namorix.Server.Models.Frontgate;
 using Namorix.Server.Services.Frontgate;
 
@@ -23,6 +24,7 @@ public class AccessControlMiddleware(RequestDelegate next,
         
         var clientIp = context.Connection.RemoteIpAddress!;
         var authHeader = context.Request.Headers.Authorization.ToString();
+
         if (accessService.Evaluate(entry.Mode, entry.Policy, clientIp, authHeader) == AccessDecision.Deny)
         {
             if (entry.Mode == ProxyAccessMode.BasicAuth)

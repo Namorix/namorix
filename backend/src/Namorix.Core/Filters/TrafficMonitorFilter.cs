@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Namorix.Core.Attributes;
 using Namorix.Core.FlatFile;
+using Namorix.Core.Helpers;
 using Namorix.Core.Infrastructure;
 
 namespace Namorix.Core.Filters;
@@ -44,7 +45,7 @@ public class TrafficMonitorFilter : IAsyncActionFilter
                 StatusCode = httpContext.Response.StatusCode,
                 DurationMs = stopwatch.ElapsedMilliseconds,
                 ResponseSizeBytes = countingStream.BytesWritten,
-                Ip = httpContext.Connection.RemoteIpAddress?.ToString(),
+                Ip = NetworkHelper.ToDisplayString(httpContext.Connection.RemoteIpAddress),
                 UserId = userId
             };
 

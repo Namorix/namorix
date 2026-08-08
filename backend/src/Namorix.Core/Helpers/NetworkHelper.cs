@@ -34,4 +34,11 @@ public static class NetworkHelper
                (b[0] == 172 && b[1] >= 16 && b[1] <= 31) ||
                (b[0] == 192 && b[1] == 168);
     }
+    
+    public static string? ToDisplayString(IPAddress? ip)
+    {
+        if (ip is null) return null;
+        if (ip.IsIPv4MappedToIPv6) ip = ip.MapToIPv4();
+        return ip.ToString();
+    }
 }

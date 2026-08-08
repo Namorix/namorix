@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Net;
 using Namorix.Core.Constants;
+using Namorix.Core.Helpers;
 using Namorix.Core.Responses;
 using Namorix.Server.Services;
 
@@ -59,7 +60,7 @@ public class TrustedProxyMiddleware(RequestDelegate requestDelegate, ILogger<Tru
             {
                 await notificationService.CreateForAdminsAsync(
                     "security", "proxy:untrustedProxy", "system",
-                    new { remoteIp = remoteIp?.ToString() });
+                    new { remoteIp = NetworkHelper.ToDisplayString(remoteIp) });
             }
 
             httpContext.Items[HttpContextKeys.Validated] = true;

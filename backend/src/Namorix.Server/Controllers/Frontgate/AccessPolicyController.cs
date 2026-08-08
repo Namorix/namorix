@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Namorix.Core.Middleware;
 using Namorix.Core.Responses;
 using Namorix.Server.Constants;
-using Namorix.Server.Models;
 using Namorix.Server.Models.Frontgate;
 using Namorix.Server.Persistence;
 using Namorix.Server.Services.Frontgate;
@@ -79,13 +78,22 @@ public class AccessPolicyController(AppDbContext db, FrontgateProxyConfigProvide
         var root = doc.RootElement;
         if (!root.TryGetProperty("username", out var u) || !root.TryGetProperty("password", out var p))
             return rulesJson;
-
+        
         var password = p.GetString() ?? "";
+        if (string.IsNullOrEmpty(password) &&
+            root.TryGetProperty("passwordHash", out var ph) &&
+            ph.GetString() is { Length: > 0 } existingHash)
+        {
+            return JsonSerializer.Serialize(new FgBasicAuthPolicy(u.GetString() ?? "", existingHash),
+                FrontgateAccessService.SerializerOptions);
+        }
+        
         if (password.StartsWith("$2a$") || password.StartsWith("$2b$") || password.StartsWith("$2y$"))
             return rulesJson;
-
+        
         return JsonSerializer.Serialize(new FgBasicAuthPolicy(
-            u.GetString() ?? "", BCrypt.Net.BCrypt.HashPassword(password)));
+                u.GetString() ?? "", BCrypt.Net.BCrypt.HashPassword(password)),
+            FrontgateAccessService.SerializerOptions);
     }
 }
 

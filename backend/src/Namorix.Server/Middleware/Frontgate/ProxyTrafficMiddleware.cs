@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Namorix.Core.FlatFile;
+using Namorix.Core.Helpers;
 using Namorix.Core.Infrastructure;
 
 namespace Namorix.Server.Middleware.Frontgate;
@@ -29,7 +30,7 @@ public class ProxyTrafficMiddleware(RequestDelegate next)
                 StatusCode = context.Response.StatusCode,
                 DurationMs = sw.ElapsedMilliseconds,
                 ResponseSizeBytes = countingStream.BytesWritten,
-                Ip = context.Connection.RemoteIpAddress?.ToString()
+                Ip = NetworkHelper.ToDisplayString(context.Connection.RemoteIpAddress)
             });
         }
     }
