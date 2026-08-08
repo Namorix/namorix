@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Namorix.Core.FlatFile;
 using Namorix.Core.Middleware;
 using Namorix.Core.Responses;
 using Namorix.Core.Services;
@@ -16,10 +17,11 @@ public class TrafficMonitorController(TrafficMonitorService trafficMonitorServic
         [FromQuery] int size = 30,
         [FromQuery] DateTime? from = null,
         [FromQuery] DateTime? to = null,
-        [FromQuery] string? search = null)
+        [FromQuery] string? search = null,
+        [FromQuery] TrafficSource? source = null)
     {
         var (items, total, elapsedMs) = await trafficMonitorService
-            .GetLogs(page, size, from, to, search);
+            .GetLogs(page, size, from, to, search, source);
         return Ok(ApiResponse.Ok(new { items, total, elapsedMs }));
     }
     

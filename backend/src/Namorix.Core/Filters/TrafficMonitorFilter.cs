@@ -40,6 +40,7 @@ public class TrafficMonitorFilter : IAsyncActionFilter
 
             var log = new TrafficLogSerializer
             {
+                Source = TrafficSource.Api,
                 Method = httpContext.Request.Method,
                 Path = httpContext.Request.Path.Value,
                 StatusCode = httpContext.Response.StatusCode,

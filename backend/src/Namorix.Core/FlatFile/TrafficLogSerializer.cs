@@ -1,8 +1,11 @@
 namespace Namorix.Core.FlatFile;
 
+public enum TrafficSource { Api, Proxy }
+
 public class TrafficLogSerializer : IFlatFileSerializer<TrafficLogSerializer>
 {
     public long Id { get; init; }
+    public TrafficSource Source { get; init; } = TrafficSource.Api; 
     public string? Method { get; init; }
     public string? Path { get; init; }
     public int StatusCode { get; init; }
@@ -15,16 +18,16 @@ public class TrafficLogSerializer : IFlatFileSerializer<TrafficLogSerializer>
     public static string Serialize(TrafficLogSerializer entry)
     {
         var ip = entry.Ip ?? "-";
-        var uid = entry.UserId?.ToString() ?? "";
+        var uid = entry.UserId?.ToString() ?? "-";
         return
             $"{entry.Timestamp:yyyy-MM-ddTHH:mm:ssZ} {entry.Method ?? "-"} " +
             $"{entry.Path ?? "-"} {entry.StatusCode} {entry.DurationMs}ms " +
-            $"{entry.ResponseSizeBytes}B {ip}{(uid.Length > 0 ? $" {uid}" : "")}";
+            $"{entry.ResponseSizeBytes}B {ip} {uid} {entry.Source.ToString().ToLowerInvariant()}";
     }
 
     public static TrafficLogSerializer? Deserialize(string line, string category)
     {
-        var parts = line.Split(' ', 8);
+        var parts = line.Split(' ', 9);
         if (parts.Length < 7)
             return null;
 
@@ -34,6 +37,9 @@ public class TrafficLogSerializer : IFlatFileSerializer<TrafficLogSerializer>
             return null;
         }
         
+
+        var source = parts.Length > 8 && Enum.TryParse<TrafficSource>(parts[8], true, out var s)
+            ? s : TrafficSource.Api;
         var method = parts[1];
         var path = parts[2];
         
@@ -46,6 +52,7 @@ public class TrafficLogSerializer : IFlatFileSerializer<TrafficLogSerializer>
 
         return new TrafficLogSerializer
         {
+            Source = source,
             Timestamp = ts,
             StatusCode = status,
             DurationMs = dur,

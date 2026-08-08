@@ -6,6 +6,8 @@ import {
   nmxHttp,
 } from "@namorix/core"
 
+export type TrafficSource = "api" | "proxy"
+
 export interface TrafficLog {
   id: number
   method: HttpMethods
@@ -28,10 +30,11 @@ async function listLogs(
   page: number,
   size: number,
   search?: string,
+  source?: TrafficSource,
 ): Promise<TrafficLogResponse> {
   const data = await nmxHttp
     .url(getApiBaseUrl() + ApiTrafficRoutes.logs)
-    .query({ page, size, search })
+    .query({ page, size, search, source })
     .get()
     .json<TrafficLogResponse>()
   if (!data.success) throw ApiError.fromResponse(data)

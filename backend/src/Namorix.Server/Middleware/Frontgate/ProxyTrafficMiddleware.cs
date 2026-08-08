@@ -25,6 +25,7 @@ public class ProxyTrafficMiddleware(RequestDelegate next)
 
             TrafficBuffer.Logs.Writer.TryWrite(new TrafficLogSerializer
             {
+                Source = TrafficSource.Proxy,
                 Method = context.Request.Method,
                 Path = context.Request.Path.Value,
                 StatusCode = context.Response.StatusCode,

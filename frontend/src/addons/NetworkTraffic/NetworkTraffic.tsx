@@ -12,11 +12,13 @@ import {
   type NmxSearchSuggestion,
   NmxButtonRefresh,
   NmxButtonLive,
+  NmxMenuButton,
 } from "@namorix/ui"
 import { NetworkTrafficOverview } from "./NetworkTrafficOverview"
 import { useTranslation } from "react-i18next"
 import { NetworkTrafficLogs } from "./NetworkTrafficLogs"
 import { NetworkTrafficThreats } from "./NetworkTrafficThreats"
+import type { TrafficSource } from "./traffic.controller"
 
 export type NetworkTrafficTab = "overview" | "logs" | "threats"
 
@@ -71,11 +73,14 @@ const SUGGESTIONS_META: NmxSearchSuggestion[] = [
   },
 ]
 
+export type NetworkTrafficSource = "all" | TrafficSource
+
 export const NetworkTraffic: React.FC = () => {
   const { t } = useTranslation()
   const [filterLogs, setFilterLogs] = useState("")
   const [live, setLive] = useState(true)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [source, setSource] = useState<NetworkTrafficSource>("all")
   const searchSuggestions = useMemo(() => {
     return SUGGESTIONS_META.map((s) => ({
       key: s.key,
@@ -99,6 +104,29 @@ export const NetworkTraffic: React.FC = () => {
               placeholder={t("addon.networkTraffic.searchPlaceholder")}
               suggestions={searchSuggestions}
             />
+            <NmxMenuButton
+              semantic="primary"
+              options={[
+                {
+                  value: "all",
+                  label: t("addon.networkTraffic.logs.sourceOptions.all"),
+                  icon: NmxIconFontSymbol.FILTER,
+                },
+                {
+                  value: "api",
+                  label: t("addon.networkTraffic.logs.sourceOptions.api"),
+                  icon: NmxIconFontSymbol.API,
+                },
+                {
+                  value: "proxy",
+                  label: t("addon.networkTraffic.logs.sourceOptions.proxy"),
+                  icon: NmxIconFontSymbol.PROXY,
+                },
+              ]}
+              onSelect={(value) => setSource(value as NetworkTrafficSource)}
+            >
+              {t("addon.networkTraffic.logs.sourceFilter")}
+            </NmxMenuButton>
             <NmxButtonRefresh onClick={() => setRefreshKey((k) => k + 1)} />
             <NmxButtonLive live={live} onToggle={() => setLive((l) => !l)} />
           </NmxToolbarActions>
@@ -111,6 +139,7 @@ export const NetworkTraffic: React.FC = () => {
             filterSearch={filterLogs}
             refreshKey={refreshKey}
             live={live}
+            source={source}
           />
         </NmxToolbarContent>
         <NmxToolbarContent<NetworkTrafficTab> tabKey="threats">

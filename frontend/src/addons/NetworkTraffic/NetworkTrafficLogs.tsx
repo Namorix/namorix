@@ -22,17 +22,20 @@ import {
   useSignalREvent,
   useSignalRGroup,
 } from "@namorix/core"
+import type { NetworkTrafficSource } from "./NetworkTraffic"
 
 interface NetworkTrafficLogsProps {
   filterSearch?: string
   refreshKey?: number
   live?: boolean
+  source?: NetworkTrafficSource
 }
 
 export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
   filterSearch,
   refreshKey,
   live,
+  source = "all",
 }) => {
   const { t } = useTranslation()
   const { dateTime } = useDateTimeFormat()
@@ -46,6 +49,7 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
   const [selectedLog, setSelectedLog] = useState<TrafficLog | null>(null)
 
   const prevFilterRef = useRef(filterSearch)
+  const prevSourceRef = useRef(source)
 
   const fetchLogs = useCallback(
     async (pg: number, filter: string | undefined, size: number) => {
@@ -56,7 +60,7 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
       }
 
       trafficController
-        .listLogs(pg, size, filter)
+        .listLogs(pg, size, filter, source === "all" ? undefined : source)
         .then((res) => {
           setLogs(res.items)
           setTotal(res.total)
@@ -64,19 +68,22 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
         })
         .finally(() => setLoading(false))
     },
-    [logs.length],
+    [logs.length, source],
   )
 
   useEffect(() => {
     const isNewFilter = prevFilterRef.current !== filterSearch
     if (isNewFilter) prevFilterRef.current = filterSearch
-    const pg = isNewFilter ? 1 : page
 
+    const isNewSource = prevSourceRef.current !== source
+    if (isNewSource) prevSourceRef.current = source
+
+    const pg = isNewFilter || isNewSource ? 1 : page
     const timeout = setTimeout(() => {
       fetchLogs(pg, filterSearch, pageSize).catch(setError)
     }, 0)
     return () => clearTimeout(timeout)
-  }, [filterSearch, page, live, pageSize, refreshKey, fetchLogs])
+  }, [filterSearch, page, live, pageSize, refreshKey, fetchLogs, source])
 
   useSignalRGroup(SignalRGroups.Traffic, !!live)
 

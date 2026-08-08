@@ -28,8 +28,9 @@ public class TrafficMonitorService(IFlatFileStore flatFileStore, DataDirectory d
     public void Initialize(List<TrafficLogSerializer> logs)
     {
         var buckets = new HourlyBucket[24];
-        for (int i = 0; i < 24; i++)
+        for (var i = 0; i < 24; i++)
             buckets[i] = new HourlyBucket { Hour = i };
+        
         foreach (var log in logs)
         {
             var h = log.Timestamp.Hour;
@@ -41,6 +42,7 @@ public class TrafficMonitorService(IFlatFileStore flatFileStore, DataDirectory d
                 TotalSize = buckets[h].TotalSize + log.ResponseSizeBytes,
             };
         }
+        
         lock (_lock)
         {
             _buckets = buckets;
@@ -64,6 +66,7 @@ public class TrafficMonitorService(IFlatFileStore flatFileStore, DataDirectory d
             _avgResponseSizeBytes = prevTotal > 0
                 ? (_avgResponseSizeBytes * prevTotal + batch.Sum(l => l.ResponseSizeBytes)) / _totalRequests
                 : batch.Average(l => l.ResponseSizeBytes);
+            
             foreach (var log in batch)
             {
                 var h = log.Timestamp.Hour;
@@ -81,20 +84,29 @@ public class TrafficMonitorService(IFlatFileStore flatFileStore, DataDirectory d
     
     public HourlyBucket[] GetTimeSeries()
     {
-        lock (_lock) return _buckets.ToArray();
+        lock (_lock)
+            return [.. _buckets];
     }
     
     public async Task<(List<TrafficLogSerializer> Items, long Total, long ElapsedMs)> GetLogs(
-        int page, int pageSize, DateTime? from, DateTime? to, string? search = null)
+        int page, int pageSize, DateTime? from, DateTime? to, string? search = null,
+        TrafficSource? source = null)
     {
         var sw = Stopwatch.StartNew();
         var filter = TrafficLogFilterParser.Parse(page, pageSize, null, from, to, search);
-        var predicate = filter.ToPredicate();
+        var basePredicate = filter.ToPredicate();
+        var predicate = source is null
+            ? basePredicate
+            : log => log.Source == source.Value && basePredicate(log);
         var total = await flatFileStore.CountAsync(predicate);
         var totalPages = Math.Max(1, (int)Math.Ceiling((double)total / pageSize));
-        if (page > totalPages) page = totalPages;
+
+        if (page > totalPages)
+            page = totalPages;
+
         var skip = (page - 1) * pageSize;
         var items = new List<TrafficLogSerializer>();
+
         await foreach (var item in flatFileStore.QueryAsync(predicate, skip, pageSize))
             items.Add(item);
         sw.Stop();
