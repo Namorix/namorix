@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
+  cx,
   NmxAlertDialog,
   NmxAlign,
   NmxBadge,
@@ -39,7 +40,12 @@ import {
   type ReverseProxyRuleAccess,
   type ReverseProxyRuleStatus,
 } from "./frontgate.controller"
-import { FrontgateErrorCodes, getStatusSemantic } from "./Frontgate.types"
+import {
+  type FrontgateDryRunChangedPayload,
+  FrontgateErrorCodes,
+  type FrontgateRuleChangedPayload,
+  getStatusSemantic,
+} from "./Frontgate.types"
 import type { FrontgateTab } from "./Frontgate"
 import {
   ServerSignalREvent,
@@ -147,18 +153,6 @@ function renderStatus(status: ReverseProxyRuleStatus) {
   )
 }
 
-function renderDryRun(dryRunExpiresAt: string | undefined, now: number) {
-  if (!isDryRunActive(dryRunExpiresAt, now)) {
-    return <span>—</span>
-  }
-
-  return (
-    <NmxBadge semantic="warning" size="sm">
-      {formatDryRunRemaining(dryRunExpiresAt ?? "", now)}
-    </NmxBadge>
-  )
-}
-
 function renderSslStatus(rule: ReverseProxyRule) {
   if (!rule.certificateId) {
     return <span>—</span>
@@ -239,7 +233,7 @@ export const FrontgateReverseProxy: React.FC = () => {
   const [now, setNow] = useState(() => Date.now())
 
   const fetchRules = useCallback(
-    async (pg: number, size: number) => {
+    async (pg: number, size: number): Promise<ReverseProxyRule[]> => {
       setError(undefined)
       setPage(pg)
 
@@ -247,16 +241,25 @@ export const FrontgateReverseProxy: React.FC = () => {
         setLoading(true)
       }
 
-      frontgateController
-        .listRules(pg, size)
-        .then((res) => {
-          setRules(res.items)
-          setTotal(res.total)
-        })
-        .finally(() => setLoading(false))
+      try {
+        const res = await frontgateController.listRules(pg, size)
+        setRules(res.items)
+        setTotal(res.total)
+        return res.items
+      } finally {
+        setLoading(false)
+      }
     },
     [rules.length],
   )
+
+  const refresh = useCallback(() => {
+    fetchRules(page, pageSize).then((items) => {
+      setInfoRule((prev) =>
+        prev ? (items.find((r) => r.id === prev.id) ?? null) : prev,
+      )
+    })
+  }, [fetchRules, page, pageSize])
 
   useEffect(() => {
     if (activeTab !== "reverseProxy") return
@@ -319,9 +322,53 @@ export const FrontgateReverseProxy: React.FC = () => {
   useServerSignalRGroup(ServerSignalRGroups.Frontgate, true)
   useServerSignalREvent<{ certId: string }>(
     ServerSignalREvent.FrontgateCertStatusChanged,
-    useCallback(() => {
-      fetchRules(page, pageSize).catch(nmxToast.error)
-    }, [fetchRules, page, pageSize]),
+    useCallback(() => refresh(), [refresh]),
+  )
+
+  useServerSignalREvent<FrontgateDryRunChangedPayload>(
+    ServerSignalREvent.FrontgateDryRunChanged,
+    useCallback(() => refresh(), [refresh]),
+  )
+
+  useServerSignalREvent<FrontgateRuleChangedPayload>(
+    ServerSignalREvent.FrontgateRuleChanged,
+    useCallback(
+      (data) => {
+        const deleted = data.action === "deleted"
+        const viewing = deleted && data.ruleId === infoRule?.id
+        const editing = deleted && data.ruleId === editingRule?.id
+        const deletedSource = viewing
+          ? infoRule?.source
+          : editing
+            ? editingRule?.source
+            : undefined
+
+        if (viewing) setInfoRule(null)
+        if (editing) {
+          setEditingRule(null)
+          setShowAddDialog(false)
+        }
+
+        if (viewing || editing) {
+          nmxToast.warning(
+            t(
+              "addon.frontgate.pages.reverseProxy.feedback.ruleDeletedExternally",
+              { source: deletedSource },
+            ),
+          )
+        }
+
+        refresh()
+      },
+      [
+        editingRule?.id,
+        editingRule?.source,
+        infoRule?.id,
+        infoRule?.source,
+        refresh,
+        t,
+      ],
+    ),
   )
 
   const resetForm = useCallback(() => {
@@ -352,49 +399,52 @@ export const FrontgateReverseProxy: React.FC = () => {
     setFormLocations([])
   }, [])
 
-  const fillForm = useCallback((rule: ReverseProxyRule) => {
-    setFormSource(rule.source)
-    setFormScheme(rule.destinationScheme)
-    setFormHost(rule.destinationHost)
-    setFormPort(rule.destinationPort)
-    setFormCertificateId(rule.certificateId ?? "")
-    setFormForceSsl(rule.forceSsl)
-    setFormDryRun(Boolean(rule.dryRunExpiresAt))
-    setFormStatus(rule.status)
-    setFormWebSockets(rule.webSocketsSupport)
-    setFormCacheAssets(rule.cacheAssets)
-    setFormHttp2(rule.http2Support)
-    setFormHsts(rule.hstsEnabled)
-    setFormHstsSub(rule.hstsSubdomains)
-    setFormTrustForwardedProto(rule.trustForwardedProtoHeaders)
-    setFormBlockExploits(rule.blockCommonExploits)
-    setFormAccess(rule.access)
+  const fillForm = useCallback(
+    (rule: ReverseProxyRule) => {
+      setFormSource(rule.source)
+      setFormScheme(rule.destinationScheme)
+      setFormHost(rule.destinationHost)
+      setFormPort(rule.destinationPort)
+      setFormCertificateId(rule.certificateId ?? "")
+      setFormForceSsl(rule.forceSsl)
+      setFormDryRun(isDryRunActive(rule.dryRunExpiresAt, now))
+      setFormStatus(rule.status)
+      setFormWebSockets(rule.webSocketsSupport)
+      setFormCacheAssets(rule.cacheAssets)
+      setFormHttp2(rule.http2Support)
+      setFormHsts(rule.hstsEnabled)
+      setFormHstsSub(rule.hstsSubdomains)
+      setFormTrustForwardedProto(rule.trustForwardedProtoHeaders)
+      setFormBlockExploits(rule.blockCommonExploits)
+      setFormAccess(rule.access)
 
-    if (rule.additionalHeadersJson) {
-      try {
-        const parsed = JSON.parse(rule.additionalHeadersJson) as Record<
-          string,
-          string
-        >
-        setFormHeaders(
-          Object.entries(parsed).map(([key, value]) => ({ key, value })),
-        )
-      } catch {
+      if (rule.additionalHeadersJson) {
+        try {
+          const parsed = JSON.parse(rule.additionalHeadersJson) as Record<
+            string,
+            string
+          >
+          setFormHeaders(
+            Object.entries(parsed).map(([key, value]) => ({ key, value })),
+          )
+        } catch {
+          setFormHeaders([])
+        }
+      } else {
         setFormHeaders([])
       }
-    } else {
-      setFormHeaders([])
-    }
 
-    setFormLocations(
-      rule.locations?.map((loc) => ({
-        path: loc.path,
-        scheme: loc.scheme,
-        forwardHost: loc.forwardHost,
-        forwardPort: loc.forwardPort,
-      })) ?? [],
-    )
-  }, [])
+      setFormLocations(
+        rule.locations?.map((loc) => ({
+          path: loc.path,
+          scheme: loc.scheme,
+          forwardHost: loc.forwardHost,
+          forwardPort: loc.forwardPort,
+        })) ?? [],
+      )
+    },
+    [now],
+  )
 
   const handleDialogOpen = useCallback(() => {
     setEditingRule(null)
@@ -618,6 +668,53 @@ export const FrontgateReverseProxy: React.FC = () => {
     [fetchRules, page, pageSize, t],
   )
 
+  const renderDryRun = useCallback(
+    (row: ReverseProxyRule, flexEnd?: boolean) => {
+      return (
+        <div
+          className={cx("nmx-addon-frontgate__dry-run", {
+            "nmx-addon-frontgate__dry-run--flex-end": flexEnd === true,
+          })}
+        >
+          {!isDryRunActive(row.dryRunExpiresAt, now) ? (
+            <span>—</span>
+          ) : (
+            <>
+              <NmxBadge semantic="warning" size="sm">
+                {formatDryRunRemaining(row.dryRunExpiresAt ?? "", now)}
+              </NmxBadge>
+              <div className="nmx-addon-frontgate__btn-wrap">
+                <NmxButton
+                  semantic="success"
+                  className="nmx-addon-frontgate__dry-run__btn"
+                  data-row-action
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleDryRunConfirm(row.id)
+                  }}
+                >
+                  <NmxIconFont symbol={NmxIconFontSymbol.CHECK} size="xs" />
+                </NmxButton>
+                <NmxButton
+                  semantic="error"
+                  className="nmx-addon-frontgate__dry-run__btn"
+                  data-row-action
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleDryRunCancel(row.id)
+                  }}
+                >
+                  <NmxIconFont symbol={NmxIconFontSymbol.UNDO} size="xs" />
+                </NmxButton>
+              </div>
+            </>
+          )}
+        </div>
+      )
+    },
+    [handleDryRunCancel, handleDryRunConfirm, now],
+  )
+
   const columns: NmxDataTableColumn<ReverseProxyRule>[] = [
     {
       header: t("addon.frontgate.pages.reverseProxy.fields.source"),
@@ -634,20 +731,11 @@ export const FrontgateReverseProxy: React.FC = () => {
               {row.source}
             </a>
           </div>
-          <div className="nmx-addon-frontgate__created">
-            {t("addon.frontgate.pages.reverseProxy.fields.createdTime", {
-              time: dateTime(row.createdAt),
-            })}
+          <div className="nmx-addon-frontgate__destination">
+            {`${row.destinationScheme}://${row.destinationHost}:${row.destinationPort}`}
           </div>
         </div>
       ),
-      grow: 3,
-      enableUserSelectCell: true,
-    },
-    {
-      header: t("addon.frontgate.pages.reverseProxy.fields.destination"),
-      renderCell: (row) =>
-        `${row.destinationScheme}://${row.destinationHost}:${row.destinationPort}`,
       grow: 3,
       enableUserSelectCell: true,
     },
@@ -675,44 +763,26 @@ export const FrontgateReverseProxy: React.FC = () => {
       grow: 1,
       alignHeader: "center",
       alignCell: "center",
+      hideBelow: "md",
       disableEllipsisCell: true,
     },
     {
       header: t("addon.frontgate.pages.reverseProxy.fields.dryRun"),
-      renderCell: (row) => renderDryRun(row.dryRunExpiresAt, now),
+      renderCell: (row) => renderDryRun(row),
       grow: 2,
       alignHeader: "center",
       alignCell: "center",
-      hideBelow: "md",
       disableEllipsisCell: true,
     },
     {
       header: "",
       renderCell: (row) => {
-        const hasDryRun = isDryRunActive(row.dryRunExpiresAt, now)
         return (
           <NmxMenuButton
             variant="ghost"
             semantic="trace"
             arrowDisabled
-            filterItem={(opt) =>
-              opt.value === "confirm-dry-run" || opt.value === "cancel-dry-run"
-                ? hasDryRun
-                : true
-            }
             options={[
-              {
-                value: "confirm-dry-run",
-                label: t("addon.frontgate.pages.reverseProxy.dryRun.confirm"),
-                semantic: "success",
-                icon: NmxIconFontSymbol.CHECK,
-              },
-              {
-                value: "cancel-dry-run",
-                label: t("addon.frontgate.pages.reverseProxy.dryRun.cancel"),
-                semantic: "warning",
-                icon: NmxIconFontSymbol.UNDO,
-              },
               {
                 value: "edit",
                 label: t(
@@ -734,13 +804,13 @@ export const FrontgateReverseProxy: React.FC = () => {
               { value: "delete", position: "top" },
             ]}
             onSelect={(value) => {
-              if (value === "confirm-dry-run") handleDryRunConfirm(row.id)
-              else if (value === "cancel-dry-run") handleDryRunCancel(row.id)
-              else if (value === "edit") {
+              if (value === "edit") {
                 setEditingRule(row)
                 fillForm(row)
                 setShowAddDialog(true)
-              } else handleDelete(row)
+              }
+
+              if (value === "delete") handleDelete(row)
             }}
           >
             <NmxIconFont symbol={NmxIconFontSymbol.MENU_VERTICAL} />
@@ -890,14 +960,9 @@ export const FrontgateReverseProxy: React.FC = () => {
       <NmxAlertDialog
         open={infoRule !== null}
         title={t("addon.frontgate.pages.reverseProxy.actions.proxyInfo")}
-        confirmLabel={t("addon.frontgate.pages.reverseProxy.dryRun.confirm")}
         extraActionLabel={t(
           "addon.frontgate.pages.reverseProxy.actions.editProxy",
         )}
-        onConfirm={() => {
-          if (infoRule) handleDryRunConfirm(infoRule?.id)
-          setInfoRule(null)
-        }}
         onExtraAction={() => {
           if (infoRule) {
             setEditingRule(infoRule)
@@ -961,29 +1026,10 @@ export const FrontgateReverseProxy: React.FC = () => {
                   label={t("addon.frontgate.pages.reverseProxy.fields.dryRun")}
                   alignValue="end"
                 >
-                  {renderDryRun(infoRule.dryRunExpiresAt, now)}
+                  {renderDryRun(infoRule, true)}
                 </NmxMetaItem>
               )}
             </NmxMetaList>
-            {isDryRunActive(infoRule.dryRunExpiresAt, now) && (
-              <NmxButton
-                variant="ghost"
-                semantic="warning"
-                fullWidth={true}
-                uppercase={true}
-                onClick={() => {
-                  handleDryRunCancel(infoRule?.id)
-                  setInfoRule(null)
-                }}
-                className="nmx-addon-frontgate__btn-cancel-dryrun"
-              >
-                <span>
-                  <span>
-                    {t("addon.frontgate.pages.reverseProxy.dryRun.cancel")}
-                  </span>
-                </span>
-              </NmxButton>
-            )}
           </>
         )}
       </NmxAlertDialog>

@@ -20,6 +20,7 @@ export const BeaconErrorCodes: Record<string, string> = {
 export type BcnProviderKind = "get" | "rest"
 export type BcnHostnameStatus = "updating" | "active" | "disabled" | "error"
 export type BcnLogLevel = "info" | "warn" | "error"
+export type BcnHostnameAction = "created" | "updated" | "deleted"
 
 export interface BcnHostnameDto {
   id: string
@@ -83,6 +84,22 @@ export interface BcnStatusDto {
   total: number
   healthy: number
   lastCheck?: string
+}
+
+export interface BcnHostnameStatusChangePayload {
+  hostnameId: string
+  hostname: string
+  status: BcnHostnameStatus
+}
+
+export interface BcnHostnamesRefreshPayload {
+  update: number
+}
+
+export interface BcnHostnameChangedPayload {
+  hostnameId: string
+  hostname: string
+  action: BcnHostnameAction
 }
 
 export function bcnErrorDetail(params?: Record<string, unknown>): string {

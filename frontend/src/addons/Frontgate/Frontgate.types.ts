@@ -26,6 +26,9 @@ export const FrontgateErrorCodes: Record<string, string> = {
 }
 
 export type FrontgateCertificateKeyType = "rsa" | "ecdsa"
+export type FrontgateRuleAction = "created" | "updated" | "deleted"
+export type FrontgateDryRunAction = "confirm" | "cancel" | "expire"
+export type FrontgateCertAction = "created" | "updated" | "deleted"
 
 export function getStatusSemantic(
   status: ReverseCertificateStatus | undefined,
@@ -38,4 +41,19 @@ export function getStatusSemantic(
       : isInUse
         ? "success"
         : "trace"
+}
+
+export interface FrontgateRuleChangedPayload {
+  ruleId: string
+  action: FrontgateRuleAction
+}
+
+export interface FrontgateDryRunChangedPayload {
+  ruleId: string
+  action: FrontgateDryRunAction
+}
+
+export interface FrontgateCertChangedPayload {
+  certId: string
+  action: FrontgateCertAction
 }

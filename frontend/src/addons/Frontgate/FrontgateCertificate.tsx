@@ -40,6 +40,7 @@ import {
 } from "@namorix/core"
 import type { TFunction } from "i18next"
 import {
+  type FrontgateCertChangedPayload,
   type FrontgateCertificateKeyType,
   FrontgateErrorCodes,
   getStatusSemantic,
@@ -149,20 +150,21 @@ export const FrontgateCertificate: React.FC = () => {
   const [testing, setTesting] = useState(false)
 
   const fetchCerts = useCallback(
-    async (pg: number, sz: number) => {
+    async (pg: number, sz: number): Promise<CertificateItem[]> => {
       setError(undefined)
 
       if (certs.length <= 0) {
         setLoading(true)
       }
 
-      frontgateController
-        .listCertificates(pg, sz)
-        .then((res) => {
-          setCerts(res.items)
-          setTotal(res.total)
-        })
-        .finally(() => setLoading(false))
+      try {
+        const res = await frontgateController.listCertificates(pg, sz)
+        setCerts(res.items)
+        setTotal(res.total)
+        return res.items
+      } finally {
+        setLoading(false)
+      }
     },
     [certs.length],
   )
@@ -186,8 +188,30 @@ export const FrontgateCertificate: React.FC = () => {
   useServerSignalREvent<{ certId: string; status: string }>(
     ServerSignalREvent.FrontgateCertStatusChanged,
     useCallback(() => {
-      fetchCerts(page, pageSize)
+      fetchCerts(page, pageSize).catch(nmxToast.error)
     }, [fetchCerts, page, pageSize]),
+  )
+
+  useServerSignalREvent<FrontgateCertChangedPayload>(
+    ServerSignalREvent.FrontgateCertChanged,
+    useCallback(
+      (payload) => {
+        const deleted = payload?.action === "deleted"
+        const viewingDeleted = deleted && payload.certId === selectedCert?.id
+
+        if (viewingDeleted) {
+          setSelectedCert(null)
+          nmxToast.warning(
+            t("addon.frontgate.pages.certificate.feedback.deletedExternally", {
+              domain: selectedCert?.domains?.[0],
+            }),
+          )
+        }
+
+        fetchCerts(page, pageSize).catch(nmxToast.error)
+      },
+      [selectedCert?.id, selectedCert?.domains, fetchCerts, page, pageSize, t],
+    ),
   )
 
   const handleAction = useCallback(
@@ -199,7 +223,7 @@ export const FrontgateCertificate: React.FC = () => {
             nmxToast.success(
               t("addon.frontgate.pages.certificate.feedback.retrySuccess"),
             )
-            fetchCerts(page, pageSize)
+            fetchCerts(page, pageSize).catch(nmxToast.error)
           })
           .catch((err) => {
             nmxToast.error(
@@ -216,7 +240,7 @@ export const FrontgateCertificate: React.FC = () => {
             nmxToast.success(
               t("addon.frontgate.pages.certificate.feedback.renewSuccess"),
             )
-            fetchCerts(page, pageSize)
+            fetchCerts(page, pageSize).catch(nmxToast.error)
           })
           .catch((err) =>
             nmxToast.error(
@@ -242,7 +266,7 @@ export const FrontgateCertificate: React.FC = () => {
           t("addon.frontgate.pages.certificate.feedback.deleteSuccess"),
         )
         setDeletingCert(null)
-        fetchCerts(page, pageSize)
+        fetchCerts(page, pageSize).catch(nmxToast.error)
       })
       .catch((err) => {
         nmxToast.error(
@@ -263,7 +287,7 @@ export const FrontgateCertificate: React.FC = () => {
       })
       .then(() => {
         setAddDialogType(null)
-        fetchCerts(page, pageSize)
+        fetchCerts(page, pageSize).catch(nmxToast.error)
         nmxToast.success(
           t(
             "addon.frontgate.pages.certificate.dialogs.letsEncryptHttp.success",

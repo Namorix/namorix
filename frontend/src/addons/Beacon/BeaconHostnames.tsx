@@ -32,6 +32,9 @@ import {
   type BcnHostnameDto,
   type BcnProviderInfo,
   bcnErrorDetail,
+  type BcnHostnameChangedPayload,
+  type BcnHostnameStatusChangePayload,
+  type BcnHostnamesRefreshPayload,
 } from "./Beacon.types"
 import { ServerSignalREvent, useServerSignalREvent } from "../../signalr"
 import type { TFunction } from "i18next"
@@ -105,7 +108,7 @@ export const BeaconHostnames: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false)
 
   const fetchHosts = useCallback(
-    async (pg: number, size: number) => {
+    async (pg: number, size: number): Promise<BcnHostnameDto[]> => {
       setError(undefined)
       setPage(pg)
 
@@ -113,13 +116,14 @@ export const BeaconHostnames: React.FC = () => {
         setLoading(true)
       }
 
-      beaconController
-        .listHostnames(pg, size)
-        .then((res) => {
-          setHosts(res.items)
-          setTotal(res.total)
-        })
-        .finally(() => setLoading(false))
+      try {
+        const res = await beaconController.listHostnames(pg, size)
+        setHosts(res.items)
+        setTotal(res.total)
+        return res.items
+      } finally {
+        setLoading(false)
+      }
     },
     [hosts.length],
   )
@@ -136,11 +140,7 @@ export const BeaconHostnames: React.FC = () => {
     return () => clearTimeout(timeout)
   }, [page, pageSize, fetchHosts, activityTab])
 
-  useServerSignalREvent<{
-    hostnameId: string
-    hostname: string
-    status: string
-  }>(
+  useServerSignalREvent<BcnHostnameStatusChangePayload>(
     ServerSignalREvent.BeaconHostnameStatusChanged,
     useCallback(
       (payload) => {
@@ -157,7 +157,7 @@ export const BeaconHostnames: React.FC = () => {
     ),
   )
 
-  useServerSignalREvent(
+  useServerSignalREvent<BcnHostnamesRefreshPayload>(
     ServerSignalREvent.BeaconHostnamesRefreshed,
     useCallback(() => {
       fetchHosts(page, pageSize).catch(nmxToast.error)
@@ -729,6 +729,28 @@ export const BeaconHostnames: React.FC = () => {
   ]
 
   const totalPages = Math.ceil(total / pageSize)
+
+  useServerSignalREvent<BcnHostnameChangedPayload>(
+    ServerSignalREvent.BeaconHostnameChanged,
+    useCallback(
+      (payload) => {
+        const deleted = payload?.action === "deleted"
+        const editingDeleted = deleted && payload.hostnameId === editing?.id
+
+        if (editingDeleted) {
+          resetForm()
+          setShowDialog(false)
+          nmxToast.warning(
+            t("addon.beacon.hostnames.feedback.deletedExternally", {
+              hostname: payload.hostname,
+            }),
+          )
+        }
+        fetchHosts(page, pageSize).catch(nmxToast.error)
+      },
+      [editing?.id, resetForm, fetchHosts, page, pageSize, t],
+    ),
+  )
 
   return (
     <>

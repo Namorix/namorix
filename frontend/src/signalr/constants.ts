@@ -14,8 +14,12 @@ export const ServerSignalREvent = {
     ServerSignalRGroups.Beacon + ":hostname-status-changed",
   BeaconActivityCreated: ServerSignalRGroups.Beacon + ":activity-created",
   BeaconHostnamesRefreshed: ServerSignalRGroups.Beacon + ":hostnames-refreshed",
+  BeaconHostnameChanged: ServerSignalRGroups.Beacon + ":hostname-changed",
   FrontgateCertStatusChanged:
     ServerSignalRGroups.Frontgate + ":cert-status-changed",
+  FrontgateRuleChanged: ServerSignalRGroups.Frontgate + ":rule-changed",
+  FrontgateDryRunChanged: ServerSignalRGroups.Frontgate + ":dry-run-changed",
+  FrontgateCertChanged: ServerSignalRGroups.Frontgate + ":cert-changed",
 }
 
 export type ServerSignalRGroupsType =

@@ -426,7 +426,6 @@
             "access": "Access",
             "ssl": "SSL",
             "createdAt": "Created at",
-            "createdTime": "Created {{time}}",
             "status": "Status",
             "certificate": "Certificate",
             "certificatePlaceholder": "Select a certificate…",
@@ -478,12 +477,13 @@
             "updateError": "Failed to update reverse proxy rule",
             "deleteSuccess": "Reverse proxy rule deleted successfully",
             "deleteError": "Failed to delete reverse proxy rule",
-            "deleteConfirm": "Are you sure you want to delete the proxy rule [color:warning]**{{source}}**[/color] this?"
+            "deleteConfirm": "Are you sure you want to delete the proxy rule [color:warning]**{{source}}**[/color] this?",
+            "ruleDeletedExternally": "Reverse proxy rule **{{source}}** was deleted by another session"
           },
 
           "dryRun": {
-            "confirm": "Apply dry-run",
-            "cancel": "Rollback dry-run",
+            "confirm": "Apply",
+            "cancel": "Rollback",
             "confirmSuccess": "Dry-run applied — configuration is now active",
             "confirmError": "Failed to apply dry-run",
             "cancelSuccess": "Dry-run cancelled — rule rolled back",
@@ -545,7 +545,8 @@
             "retrySuccess": "Certificate request re-queued",
             "retryError": "Failed to re-queue certificate request",
             "renewSuccess": "Certificate renewal queued",
-            "renewError": "Failed to queue certificate renewal"
+            "renewError": "Failed to queue certificate renewal",
+            "deletedExternally": "Certificate **{{domain}}** was deleted by another session"
           },
           "dialogs": {
             "letsEncryptHttp": {
@@ -727,7 +728,8 @@
           "checking": "Updating **{{hostname}}**…",
           "checkSuccess": "Update completed for **{{hostname}}**",
           "checkError": "Update failed for **{{hostname}}**",
-          "retrying": "Retrying **{{hostname}}**…"
+          "retrying": "Retrying **{{hostname}}**…",
+          "deletedExternally": "**{{hostname}}** was deleted by another session"
         }
       },
       "addDialog": {
