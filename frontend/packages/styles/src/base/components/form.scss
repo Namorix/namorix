@@ -1,3 +1,5 @@
+@use "../abstract/mixins" as *;
+
 .nmx-form {
   display: flex;
   flex-direction: column;
@@ -35,8 +37,13 @@
 
 .nmx-form-field__helper {
   margin: 0;
-  color: var(--nmx-color-on-surface-variant);
+  color: var(
+    --nmx-form-field__helper-text,
+    var(--nmx-color-on-surface-variant)
+  );
   font-size: var(--nmx-font-size-xs);
+
+  @include semantic-variants(nmx-form-field__helper, false, true);
 }
 
 .nmx-form-field--inline {

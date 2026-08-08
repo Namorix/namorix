@@ -16,6 +16,21 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.ic-api {
+  &:before {
+    content: $ic-api; 
+  }
+}
+.ic-proxy {
+  &:before {
+    content: $ic-proxy; 
+  }
+}
+.ic-snooze {
+  &:before {
+    content: $ic-snooze; 
+  }
+}
 .ic-undo {
   &:before {
     content: $ic-undo; 

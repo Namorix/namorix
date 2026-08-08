@@ -33,6 +33,20 @@
     }
   }
 
+  &__item--clickable {
+    cursor: pointer;
+    border-radius: var(--nmx-radius-sm);
+
+    &:hover {
+      background: var(--nmx-color-surface-high);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--nmx-color-primary);
+      outline-offset: -2px;
+    }
+  }
+
   @container (max-width: 480px) {
     &__item {
       flex-direction: column;
