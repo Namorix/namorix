@@ -65,6 +65,9 @@ export const NmxIconFontSymbol = {
   ACTIVITY: "ic-activity",
   EDIT: "ic-edit",
   UNDO: "ic-undo",
+  SNOOZE: "ic-snooze",
+  API: "ic-api",
+  PROXY: "ic-proxy",
 } as const
 
 export type NmxIconFontSymbol =

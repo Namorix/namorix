@@ -9,6 +9,7 @@ interface NmxSliderProps extends WithBaseProps {
   max: number
   step?: number
   showValue?: boolean
+  unit?: string
   onChange?: (value: number) => void
 }
 
@@ -19,6 +20,7 @@ export const NmxSlider: React.FC<NmxSliderProps> = ({
   max,
   step = 1,
   showValue = false,
+  unit = "",
   onChange,
   className,
   shouldRender,
@@ -39,8 +41,26 @@ export const NmxSlider: React.FC<NmxSliderProps> = ({
     onChange?.(v)
   }
 
+  const percent = ((displayValue - min) / (max - min)) * 100
+
   return (
-    <div {...rest} className={cx("nmx-slider", className)}>
+    <div
+      {...rest}
+      className={cx(
+        "nmx-slider",
+        { "nmx-slider--with-value": showValue },
+        className,
+      )}
+    >
+      {showValue && (
+        <div
+          className="nmx-slider__bubble"
+          style={{ left: `calc(${percent}% * (100% - 18px) / 100% + 9px)` }}
+        >
+          {displayValue}
+          {unit}
+        </div>
+      )}
       <input
         type="range"
         className="nmx-slider__input"
@@ -50,7 +70,6 @@ export const NmxSlider: React.FC<NmxSliderProps> = ({
         step={step}
         onChange={handleChange}
       />
-      {showValue && <span className="nmx-slider__value">{displayValue}px</span>}
     </div>
   )
 }

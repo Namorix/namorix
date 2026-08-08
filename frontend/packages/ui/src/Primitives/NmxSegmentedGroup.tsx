@@ -1,9 +1,9 @@
 import { useState } from "react"
 import type { WithBaseProps } from "../types"
 import { cx } from "../utils"
-import  { NmxIconFont, type NmxIconFontSymbol } from "./NmxIcon"
+import { NmxIconFont, type NmxIconFontSymbol } from "./NmxIcon"
 
-export interface NmxSegmentedGroupData<T extends string> {
+export interface NmxSegmentedGroupData<T = string> {
   value: T
   label: string
   icon?: NmxIconFontSymbol

@@ -1,6 +1,16 @@
 import React, { useRef, useState } from "react"
-import { cx } from "../utils"
 import type { WithBaseProps } from "../types"
+import { cx } from "../utils"
+import {
+  autoUpdate,
+  flip,
+  FloatingPortal,
+  shift,
+  size,
+  useDismiss,
+  useFloating,
+  useInteractions,
+} from "@floating-ui/react"
 
 interface NmxTagInputProps extends WithBaseProps {
   value: string[]
@@ -25,6 +35,28 @@ export const NmxTagInput: React.FC<NmxTagInputProps> = ({
   const [showDropdown, setShowDropdown] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  const { refs, floatingStyles, context } = useFloating({
+    open: showDropdown,
+    onOpenChange: setShowDropdown,
+    placement: "bottom-start",
+    whileElementsMounted: autoUpdate,
+    middleware: [
+      flip(),
+      shift({ padding: 8 }),
+      size({
+        apply({ rects, availableHeight, elements }) {
+          Object.assign(elements.floating.style, {
+            width: `${rects.reference.width}px`,
+            maxHeight: `${Math.min(200, availableHeight)}px`,
+          })
+        },
+      }),
+    ],
+  })
+
+  const dismiss = useDismiss(context, { referencePress: false })
+  const { getReferenceProps, getFloatingProps } = useInteractions([dismiss])
 
   if (!shouldRender) return null
 
@@ -98,7 +130,13 @@ export const NmxTagInput: React.FC<NmxTagInputProps> = ({
   }
 
   return (
-    <div className={cx("nmx-tag-input", className)}>
+    <div
+      ref={(node) => {
+        refs.setReference(node)
+      }}
+      className={cx("nmx-tag-input", className)}
+      {...getReferenceProps()}
+    >
       <div className="nmx-tag-input__scroller-wrap">
         <div className="nmx-tag-input__scroller">
           {value.map((tag) => (
@@ -130,29 +168,38 @@ export const NmxTagInput: React.FC<NmxTagInputProps> = ({
         </div>
       </div>
       {showDropdown && totalItems > 0 && (
-        <div className="nmx-tag-input__dropdown">
-          {input && (
-            <div
-              className={cx("nmx-tag-input__option", {
-                "nmx-tag-input__option--active": activeIndex === 0,
-              })}
-              onMouseDown={() => createTag(input)}
-            >
-              Create &quot;{input}&quot;
-            </div>
-          )}
-          {filtered.map((s, i) => (
-            <div
-              key={s}
-              className={cx("nmx-tag-input__option", {
-                "nmx-tag-input__option--active": activeIndex === i + 1,
-              })}
-              onMouseDown={() => createTag(s)}
-            >
-              {s}
-            </div>
-          ))}
-        </div>
+        <FloatingPortal>
+          <div
+            ref={(node) => {
+              refs.setFloating(node)
+            }}
+            style={floatingStyles}
+            className="nmx-tag-input__dropdown"
+            {...getFloatingProps()}
+          >
+            {input && (
+              <div
+                className={cx("nmx-tag-input__option", {
+                  "nmx-tag-input__option--active": activeIndex === 0,
+                })}
+                onMouseDown={() => createTag(input)}
+              >
+                Create &quot;{input}&quot;
+              </div>
+            )}
+            {filtered.map((s, i) => (
+              <div
+                key={s}
+                className={cx("nmx-tag-input__option", {
+                  "nmx-tag-input__option--active": activeIndex === i + 1,
+                })}
+                onMouseDown={() => createTag(s)}
+              >
+                {s}
+              </div>
+            ))}
+          </div>
+        </FloatingPortal>
       )}
     </div>
   )

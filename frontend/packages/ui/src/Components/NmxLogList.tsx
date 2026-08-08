@@ -16,6 +16,7 @@ interface NmxLogListProps extends WithBaseProps {
   showTime?: boolean
   contained?: boolean
   fallbackConditions?: NmxFallback[]
+  onItemClick?: (item: NmxLogEntry, index: number) => void
 }
 
 export const NmxLogList: React.FC<NmxLogListProps> = ({
@@ -23,6 +24,7 @@ export const NmxLogList: React.FC<NmxLogListProps> = ({
   showTime = true,
   contained = false,
   fallbackConditions,
+  onItemClick,
   shouldRender = true,
   className,
   ...rest
@@ -49,8 +51,26 @@ export const NmxLogList: React.FC<NmxLogListProps> = ({
           {fallbackEntry.content}
         </div>
       ) : (
-        items.map((item) => (
-          <div key={item.id} className="nmx-log-list__item">
+        items.map((item, index) => (
+          <div
+            key={item.id}
+            onClick={onItemClick ? () => onItemClick(item, index) : undefined}
+            className={cx("nmx-log-list__item", {
+              "nmx-log-list__item--clickable": onItemClick !== undefined,
+            })}
+            role={onItemClick ? "button" : undefined}
+            tabIndex={onItemClick ? 0 : undefined}
+            onKeyDown={
+              onItemClick
+                ? (e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault()
+                      onItemClick(item, index)
+                    }
+                  }
+                : undefined
+            }
+          >
             {showTime && (
               <span className="nmx-log-list__item-time">{item.time}</span>
             )}

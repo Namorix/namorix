@@ -20,7 +20,7 @@ export function cx(...classes: NmxCxInput[]): string {
 
 export function cxSemantic(
   prefix: string,
-  semantic?: NmxSemanticColor,
+  semantic?: NmxSemanticColor | null,
   doubleSymbolMinus: boolean = true,
 ) {
   return !semantic
