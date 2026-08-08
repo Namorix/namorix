@@ -1,7 +1,7 @@
 using Namorix.Core.Constants;
 using Namorix.Core.Validation;
 
-namespace Namorix.Server.Validation;
+namespace Namorix.Server.Validation.Frontgate;
 
 public class FrontgateRuleSchema : IValidationSchema
 {

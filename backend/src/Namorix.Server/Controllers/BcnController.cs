@@ -14,6 +14,7 @@ using Namorix.Server.Services;
 using Namorix.Server.Services.Beacon;
 using Namorix.Server.Services.Beacon.Providers;
 using Namorix.Server.Validation;
+using Namorix.Server.Validation.Beacon;
 
 namespace Namorix.Server.Controllers;
 

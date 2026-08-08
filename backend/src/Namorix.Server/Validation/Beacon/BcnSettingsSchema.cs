@@ -1,6 +1,6 @@
 using Namorix.Core.Validation;
 
-namespace Namorix.Server.Validation;
+namespace Namorix.Server.Validation.Beacon;
 
 public class BcnSettingsSchema : IValidationSchema
 {
