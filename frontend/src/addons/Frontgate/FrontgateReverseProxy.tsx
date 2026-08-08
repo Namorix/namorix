@@ -34,6 +34,7 @@ import {
   usePageSize,
 } from "@namorix/core"
 import {
+  type AccessPolicy,
   type CreateReverseProxyRulePayload,
   frontgateController,
   type ReverseProxyRule,
@@ -227,6 +228,8 @@ export const FrontgateReverseProxy: React.FC = () => {
     initialForm.blockCommonExploits,
   )
   const [formAccess, setFormAccess] = useState(initialForm.access)
+  const [formPolicyId, setFormPolicyId] = useState("")
+  const [accessPolicies, setAccessPolicies] = useState<AccessPolicy[]>([])
 
   const [formDryRun, setFormDryRun] = useState(false)
   const [formDryRunMinutes, setFormDryRunMinutes] = useState(1)
@@ -268,6 +271,14 @@ export const FrontgateReverseProxy: React.FC = () => {
     }, 0)
     return () => clearTimeout(timeout)
   }, [activeTab, page, pageSize, fetchRules])
+
+  useEffect(() => {
+    if (activeTab !== "reverseProxy") return
+    frontgateController
+      .listAccessPolicies()
+      .then(setAccessPolicies)
+      .catch(nmxToast.error)
+  }, [activeTab])
 
   useEffect(() => {
     if (activeTab !== "reverseProxy") return
@@ -395,8 +406,10 @@ export const FrontgateReverseProxy: React.FC = () => {
     setFormAccess(initialForm.access)
 
     setFormHeaders([])
-
     setFormLocations([])
+
+    setFormAccess("public")
+    setFormPolicyId("")
   }, [])
 
   const fillForm = useCallback(
@@ -417,6 +430,7 @@ export const FrontgateReverseProxy: React.FC = () => {
       setFormTrustForwardedProto(rule.trustForwardedProtoHeaders)
       setFormBlockExploits(rule.blockCommonExploits)
       setFormAccess(rule.access)
+      setFormPolicyId(rule.accessPolicyId ?? "")
 
       if (rule.additionalHeadersJson) {
         try {
@@ -522,6 +536,7 @@ export const FrontgateReverseProxy: React.FC = () => {
           ? undefined
           : formCertificateId || undefined,
       access: formAccess,
+      accessPolicyId: formPolicyId || undefined,
       status: formStatus,
       webSocketsSupport: formWebSockets,
       cacheAssets: formCacheAssets,
@@ -578,6 +593,7 @@ export const FrontgateReverseProxy: React.FC = () => {
     formScheme,
     formCertificateId,
     formAccess,
+    formPolicyId,
     formStatus,
     formWebSockets,
     formCacheAssets,
@@ -667,6 +683,13 @@ export const FrontgateReverseProxy: React.FC = () => {
     },
     [fetchRules, page, pageSize, t],
   )
+
+  const handleAccessChange = (value: ReverseProxyRuleAccess) => {
+    setFormAccess(value)
+    if (value !== "restricted" && value !== "basicAuth") {
+      setFormPolicyId("")
+    }
+  }
 
   const renderDryRun = useCallback(
     (row: ReverseProxyRule, flexEnd?: boolean) => {
@@ -909,6 +932,20 @@ export const FrontgateReverseProxy: React.FC = () => {
         "addon.frontgate.pages.reverseProxy.fields.dryRunMinuteOptions.dryRun10m",
       ),
     },
+  ]
+
+  const policyOptions: NmxSelectData[] = [
+    {
+      value: "",
+      label: t("addon.frontgate.pages.reverseProxy.fields.selectPolicy"),
+    },
+    ...accessPolicies
+      .filter((p) =>
+        formAccess === "basicAuth"
+          ? p.type === "basicAuth"
+          : p.type !== "basicAuth",
+      )
+      .map((p) => ({ value: p.id, label: p.name })),
   ]
 
   const totalPages = Math.ceil(total / pageSize)
@@ -1310,7 +1347,6 @@ export const FrontgateReverseProxy: React.FC = () => {
             >
               <NmxToggle checked={formHttp2} onCheckedChanged={setFormHttp2} />
             </NmxFormField>
-
             <NmxFormField
               label={t("addon.frontgate.pages.reverseProxy.fields.hstsEnabled")}
               inline
@@ -1358,9 +1394,22 @@ export const FrontgateReverseProxy: React.FC = () => {
               <NmxSelect
                 value={formAccess}
                 options={accessOptions}
-                onChange={setFormAccess}
+                onChange={handleAccessChange}
               />
             </NmxFormField>
+            {(formAccess === "restricted" || formAccess === "basicAuth") && (
+              <NmxFormField
+                label={t(
+                  "addon.frontgate.pages.reverseProxy.fields.accessPolicy",
+                )}
+              >
+                <NmxSelect
+                  value={formPolicyId}
+                  options={policyOptions}
+                  onChange={setFormPolicyId}
+                />
+              </NmxFormField>
+            )}{" "}
           </NmxForm>
         )}
       </NmxAlertDialog>

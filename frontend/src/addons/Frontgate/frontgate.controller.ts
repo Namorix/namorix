@@ -61,6 +61,7 @@ export interface CreateReverseProxyRulePayload {
   destinationHost: string
   destinationPort: number
   certificateId?: string
+  accessPolicyId?: string
   access: ReverseProxyRuleAccess
   status: ReverseProxyRuleStatus
   webSocketsSupport: boolean

@@ -257,8 +257,12 @@ export const FrontgateAccessPolicy: React.FC = () => {
   ]
 
   const renderRulesSummary = (policy: AccessPolicy): string => {
-    if (policy.type === "basicAuth")
-      return `${t("addon.frontgate.pages.accessPolicy.fields.username")}: ${parseBasicAuthUsername(policy.rulesJson)}`
+    if (policy.type === "basicAuth") {
+      return `${t("addon.frontgate.pages.accessPolicy.fields.usernamePrint", {
+        username: parseBasicAuthUsername(policy.rulesJson),
+      })}`
+    }
+
     try {
       const arr = JSON.parse(policy.rulesJson)
       if (Array.isArray(arr)) return arr.join(", ")
@@ -272,16 +276,16 @@ export const FrontgateAccessPolicy: React.FC = () => {
     {
       header: t("addon.frontgate.pages.accessPolicy.fields.name"),
       renderCell: (row) => (
-        <div>
+        <div className="nmx-addon-frontgate__name-wrap">
           <div>{row.name}</div>
           <div className="nmx-addon-frontgate__created">
-            {t("addon.frontgate.pages.reverseProxy.fields.createdAt", {
+            {t("addon.frontgate.pages.accessPolicy.fields.createdTime", {
               time: dateTime(row.createdAt),
             })}
           </div>
         </div>
       ),
-      grow: 2,
+      grow: 5,
       enableUserSelectCell: true,
     },
     {
