@@ -113,7 +113,7 @@ frontend/
 │   ├── styles/                      # @namorix/styles — SCSS tokens, reset, themes, icomoon icons
 │   └── ui/                          # @namorix/ui — React primitives + composite components + layouts
 │
-├── public/themes/                   # Compiled theme CSS (default, dark)
+├── public/themes/                   # Compiled theme CSS (light, dark)
 ├── vite.config.ts                   # Vite config with /api and /hubs proxy
 └── .env.example                     # VITE_API_URL=http://localhost:5001
 ```

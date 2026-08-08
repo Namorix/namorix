@@ -27,6 +27,15 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-08-2026.md](versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-08-08 — Theme rework default→light + Docker deployment + RemoveThemeCssPath
+
+- **Theme rename**: folder `themes/default` → `themes/light` (index/shell/tokens); styles vite input `light/theme` → output `/themes/light/theme.css`. `shell.scss` forward `themes/light/shell`.
+- **RemoveThemeCssPath**: `ThemeManifest` bỏ `CssPath` (backend model + FE type + migration `20260808132328_RemoveThemeCssPath`). `@namorix/core` `applyTheme` → `loadTheme(themeId, "theme.css")` — path cố định qua `ThemeRoutes.themes` `/themes/{id}/{path}`.
+- **sanitizePath**: +`sanitizePath(path)` (join segments) + `sanitizePathSegment` loop-until-stable (strip `..`/`/`/`\` lặp — chống traversal bypass). @namorix/core exports trỏ `./src/index.ts`.
+- **Docker deploy**: root `Dockerfile` (3-stage: node SPA build → dotnet publish → aspnet runtime, SPA vào `/app/public`), `docker-compose.yml` (ports 5001/5002/80/443, bind `data/`, docker.sock, `user: 1000:984` + `cap_add NET_BIND_SERVICE`), `docker-compose.deploy.yml` (named volume), `.dockerignore`, `Makefile`. `Program.cs`: prod serve SPA từ `./public`, startup `MigrateAsync()` trước `FrontgateProxyConfigProvider.UpdateAsync()` (fix `no such table: FgReverseProxyRules` trên DB trống).
+- Versions: core 0.61.0 / styles 0.53.0 / frontend 0.81.1 / Namorix.Core 0.55.0 / Namorix.Server 0.71.1.
+- **Lưu ý (rename kèm đợt đổi tên theme, chưa khớp SCSS — đang dùng fallback)**: `windowDefaults.ts` đọc `--nmx-window-light-width` (token SCSS vẫn `--nmx-window-default-width`); `NmxIconFont.types.ts` `DENSITY_DEFAULT: "ic-density-light"` (glyph SCSS vẫn `.ic-density-default`); `shell.scss` đang forward `themes/dark/shell` (nội dung `light`/`dark` shell giống nhau — cùng forward `base/shell`).
+
 ### 2026-08-08 — Frontgate cert download + access policy/custom cert validation + NmxTagInput overflow fix
 
 - **Cert download**: backend `CertificateController.DownloadCertificate` `GET /api/frontgate/certificates/{id}/download` — đọc `privatekey.pem` + `fullchain.pem` từ `certs/{name}/` (name = primaryDomain `*`→`_`), zip 2 file → `{name}.zip` (MediaTypeNames.Application.Zip); 404 `CertificateNotFound`/`CertificateFilesMissing` (`FG_CERTIFICATE_FILES_MISSING` — constant mới). `DataDirectory` +`ReadFile(subPath)` (`byte[]?`, null nếu file thiếu). FE: `downloadCert` dùng `fetch` blob + `<a>` anchor (vì `nmxHttp` chỉ có `.json()`), branch `download` trong `handleAction`, `certificateDownload` route, mapping `FG_CERTIFICATE_FILES_MISSING`, i18n `certificateFilesMissing`/`downloadError`. **Bug gặp**: `ZipArchive` `archive.CreateEntry(...).Open().Write(...)` không dispose stream entry trước khi tạo entry thứ 2 → `IOException "Entries cannot be created while previously created entries are still open"` → fix `await using` từng entry stream.

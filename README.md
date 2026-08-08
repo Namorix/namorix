@@ -71,6 +71,17 @@ cd backend && dotnet watch run  # Backend C# (port 5001)
 cd frontend && pnpm dev         # Frontend (Vite port 5000)
 ```
 
+## Docker Deployment
+
+```bash
+docker compose up -d --build    # Build + run (ports 5001/5002/80/443)
+```
+
+- `Dockerfile` 3-stage: build SPA (`frontend/dist`) → publish backend → runtime `dotnet/aspnet` (SPA copy vào `/app/public`, serve bởi backend).
+- `docker-compose.yml`: bind-mount `data/` (SQLite + pki) + `/var/run/docker.sock` (addon lifecycle), chạy `user: 1000:984` với `cap_add: NET_BIND_SERVICE` (bind port 80/443).
+- Nếu `data/` từng được tạo bởi container chạy root: `sudo chown -R 1000:1000 data/`.
+- `docker-compose.deploy.yml`: bản deploy dùng named volume `namorix-data` thay bind-mount.
+
 ## Ports
 
 | Port | Service | Protocol | Purpose |
@@ -116,7 +127,7 @@ namorix/
 │   ├── package.json          # pnpm workspace root (port 5000)
 │   ├── pnpm-workspace.yaml   # workspace config
 │   ├── tsconfig.base.json    # shared TypeScript config
-│   ├── public/themes/        # Compiled theme CSS (default, dark)
+│   ├── public/themes/        # Compiled theme CSS (light, dark)
 │   ├── packages/
 │   │   ├── core/             # @namorix/core — browser-only types, utils (publishable)
 │   │   │   └── src/

@@ -154,10 +154,13 @@ Admin change system defaults
 
 ```
 applyTheme(themeId)
-  └── loadTheme(themeId, cssUrl)
-        ├── xóa <link id="nmx-theme-css"> cũ
-        ├── tạo <link> mới → append vào <head>
-        └── Promise resolve/reject dựa trên onload/onerror
+  └── loadTheme(themeId, "theme.css")   # cssPath cố định — ThemeManifest không còn CssPath
+        └── appendStylesheet(themeId, "theme.css")
+              ├── href = ThemeRoutes.themes.replace("{id}", themeId).replace("{path}", "theme.css")
+              │        → /themes/{themeId}/theme.css (vd /themes/light/theme.css)
+              ├── xóa <link id="nmx-theme-css"> cũ
+              ├── tạo <link> mới → append vào <head>
+              └── Promise resolve/reject dựa trên onload/onerror
 ```
 
 ### Appearance settings keys

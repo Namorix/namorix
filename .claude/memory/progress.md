@@ -1,5 +1,15 @@
 # Version History — August 2026
 
+## 2026-08-08 — Theme rework default→light + Docker deployment + RemoveThemeCssPath
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.60.0 → 0.61.0 | MODIFIED: `theme/loader.ts` — `applyTheme` dùng `loadTheme(themeId, "theme.css")` (bỏ template `ThemeRoutes.themes` `{path}` — theme CSS path giờ cố định `/themes/{themeId}/theme.css`); `theme/types.ts` — bỏ `cssPath` khỏi `ThemeManifest`; `utils/sanitizePath.ts` — +`sanitizePath(path)` (join segment theo `/`) + `sanitizePathSegment` loop-until-stable (strip `..`/`/`/`\` nhiều lần — chống path traversal bypass); `package.json` — exports `.` trỏ `./src/index.ts` thay `./src/index.js`. |
+| @namorix/styles | 0.52.1 → 0.53.0 | MODIFIED: theme folder `default` → `light` (index/shell/tokens); `vite.config.ts` input `default/theme` → `light/theme` (output CSS đổi `/themes/default/theme.css` → `/themes/light/theme.css`); `shell.scss` forward `themes/light/shell`; comment token fixes (`typography.scss`, `dark/tokens.scss`). Theme CSS rebuild. |
+| frontend | 0.81.0 → 0.81.1 | MODIFIED: `package.json` — build script `pnpm --filter @namorix/styles build && tsc -b && vite build` (styles build chạy trước — theme CSS sinh kịp); `vite.config.ts` — `build.outDir: "./dist"` + `emptyOutDir`. NEW root deploy: `Dockerfile` (3-stage: node SPA build → dotnet publish → aspnet runtime, SPA copy vào `/app/public`), `docker-compose.yml` (ports 5001/5002/80/443, bind `data/`, docker.sock, `user: 1000:984` + `cap_add NET_BIND_SERVICE`), `docker-compose.deploy.yml` (named volume `namorix-data`), `.dockerignore`, `Makefile`. |
+| Namorix.Core | 0.54.1 → 0.55.0 | MODIFIED: `Models/ThemeManifest.cs` — bỏ `CssPath` property (theme CSS path không còn trong manifest — FE dùng `theme.css` cố định). |
+| Namorix.Server | 0.71.0 → 0.71.1 | MODIFIED: `Program.cs` — prod static serve SPA từ `./public` + log `pathPublic`, startup `MigrateAsync()` (Production) chạy TRƯỚC `FrontgateProxyConfigProvider.UpdateAsync()` (DB trống không crash `no such table: FgReverseProxyRules`); `Services/ThemeService.cs` — bỏ `CssPath`. NEW migration `RemoveThemeCssPath` + `backend/src/Namorix.Server/.gitignore`. |
+
 ## 2026-08-08 — Frontgate cert download + access policy/custom cert validation + NmxTagInput overflow fix
 
 | Package | Version | Changes |
