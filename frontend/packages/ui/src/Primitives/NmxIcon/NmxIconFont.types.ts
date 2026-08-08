@@ -40,7 +40,7 @@ export const NmxIconFontSymbol = {
   WARNING: "ic-warning",
   INFO: "ic-info",
   DENSITY_COMPACT: "ic-density-compact",
-  DENSITY_DEFAULT: "ic-density-default",
+  DENSITY_DEFAULT: "ic-density-light",
   DENSITY_SPACIOUS: "ic-density-spacious",
   MARK_ALL: "ic-mark-all",
   FILTER: "ic-filter",
