@@ -324,6 +324,13 @@ Backlog (chưa có schema): active24, akamai-edgedns, aliyun, arvancloud, baidu,
 - [x] **fetchCerts trả `items`**: cùng fix `.then()` detached (`.finally()` nuốt rejection) → `await` + `return res.items` (`Promise<CertificateItem[]>`).
 - [x] **en.json**: `"deletedExternally": "Certificate **{{domain}}** was deleted by another session"` trong `pages.certificate.feedback`.
 
+#### ✅ Access control fixes + policy selector (2026-08-08)
+
+- [x] **IPv4-mapped IPv6 normalize**: `FrontgateAccessService.Evaluate` đầu method `if (clientIp.IsIPv4MappedToIPv6) clientIp = clientIp.MapToIPv4();` — fix denylist/allowlist/Private mode không bao giờ match (`::ffff:27.67.212.166` vs `27.67.212.166` string/byte-length lệch). `NetworkHelper.ToDisplayString` (`Namorix.Core/Helpers`) normalize IP cho traffic/log/notification (hết tiền tố `::ffff:`). Dùng ở `TrafficMonitorFilter`, `ProxyTrafficMiddleware`, `TrustedProxyMiddleware` (notification). `AccessControlMiddleware` bỏ debug `Console.WriteLine`, truyền thẳng `IPAddress` cho `Evaluate` tự normalize.
+- [x] **BasicAuth `rulesJson` camelCase storage**: `FrontgateAccessService.SerializerOptions` (`PropertyNamingPolicy = CamelCase` + `PropertyNameCaseInsensitive = true`) — `AccessPolicyController.HashBasicAuthPassword` serialize `FgBasicAuthPolicy` bằng options này → DB lưu `{"username","passwordHash"}` (trước đây `JsonSerializer.Serialize` mặc định → PascalCase `{"Username","PasswordHash"}` → FE `parseBasicAuthUsername` đọc `obj?.username` ra rỗng). `Evaluate` deserialize bằng options này (case-insensitive — row cũ PascalCase vẫn đọc được).
+- [x] **Keep-hash khi password trống**: `HashBasicAuthPassword` — nếu `password` rỗng + có sẵn `passwordHash` trong rulesJson → giữ hash cũ, không hash chuỗi rỗng (trước đây edit để trống password → hash rỗng → mất password). FE đã có hint "Leave blank to keep the current password".
+- [x] **FE rule-form policy selector**: `FrontgateReverseProxy.tsx` — `formPolicyId` + `accessPolicies` state + fetch `listAccessPolicies()`, payload `accessPolicyId`, `policyOptions` lọc theo `formAccess` (basicAuth → chỉ basicAuth policies), select hiện khi `restricted`/`basicAuth`, `handleAccessChange` reset policy khi đổi mode; `frontgate.controller.ts` `CreateReverseProxyRulePayload` +`accessPolicyId?`. i18n `accessPolicy`/`selectPolicy`.
+
 ### 🔜 Phase 4 — Advanced Features
 - [ ] TCP/UDP Stream forwarding (non-HTTP addon)
 - [ ] Redirection Hosts (301/302)

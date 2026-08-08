@@ -27,6 +27,15 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-08-2026.md](versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-08-08 — Frontgate access control fixes: ::ffff: IP normalize + BasicAuth camelCase + policy selector
+
+- **Root cause block không ăn**: Kestrel dual-stack bind `[::]` → client IPv4 xuất hiện dạng mapped `::ffff:a.b.c.d`. `FrontgateAccessService.IpMatches` so string/byte-length giữa 16-byte mapped IP vs 4-byte IPv4 rule → **không bao giờ match**. Fix: đầu `Evaluate` thêm `if (clientIp.IsIPv4MappedToIPv6) clientIp = clientIp.MapToIPv4();` — denylist/allowlist/Private mode hoạt động đúng.
+- **`::ffff:` hiển thị**: `NetworkHelper.ToDisplayString` (normalize mapped → hiển thị thuần IPv4) dùng cho traffic/log/notification — thay `.ToString()` ở `TrafficMonitorFilter`, `ProxyTrafficMiddleware`, `TrustedProxyMiddleware`. `AccessControlMiddleware` bỏ debug `Console.WriteLine`, truyền thẳng `IPAddress` cho `Evaluate` tự normalize (dư 1 `using Namorix.Core.Helpers;` không lỗi).
+- **BasicAuth `rulesJson` camelCase**: `FrontgateAccessService.SerializerOptions` (CamelCase + `PropertyNameCaseInsensitive`) — `HashBasicAuthPassword` serialize `FgBasicAuthPolicy` bằng options này (trước đây `JsonSerializer.Serialize` mặc định → **PascalCase** `{"Username","PasswordHash"}` → FE `parseBasicAuthUsername` đọc `obj?.username` ra rỗng khi edit). `Evaluate` deserialize case-insensitive → row cũ PascalCase vẫn đọc được.
+- **Keep-hash khi password trống**: `HashBasicAuthPassword` — password rỗng + có sẵn `passwordHash` → giữ hash cũ (trước hash chuỗi rỗng → mất password khi edit để trống).
+- **FE rule-form policy selector**: `formPolicyId` + `accessPolicies` fetch + payload `accessPolicyId` + `policyOptions` filter theo `formAccess` (basicAuth → chỉ basicAuth policies) + select hiện khi `restricted`/`basicAuth` — Restricted/BasicAuth giờ save được.
+- Versions: styles 0.51.1 / frontend 0.79.0 / Namorix.Core 0.53.3 / Namorix.Server 0.69.1 / frontgate 1.7.0.
+
 ### 2026-08-08 — SignalR realtime CRUD — Beacon + Frontgate (rule/dry-run/cert)
 
 - **Pattern realtime CRUD (frontgate-style)**: backend notifier push `{id, action}` lowercase-string event (group `beacon`/`frontgate`) → frontend `useServerSignalREvent` subscribe → đóng info/edit dialog nếu item bị xóa ngoài + toast → refetch list.

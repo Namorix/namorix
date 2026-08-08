@@ -1,5 +1,15 @@
 # Version History — August 2026
 
+## 2026-08-08 — Frontgate access control fixes: ::ffff: IP normalize + BasicAuth camelCase + policy selector
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/styles | 0.51.0 → 0.51.1 | MODIFIED: `base/shell/addon/frontgate.scss` — thêm `__name-wrap` vào selector flex chung (AccessPolicy name cell). |
+| frontend | 0.78.0 → 0.79.0 | MODIFIED: `addons/Frontgate/FrontgateReverseProxy.tsx` — **policy selector trong rule form** (`formPolicyId` + `accessPolicies` state + fetch `listAccessPolicies()`, `policyOptions` filter theo `formAccess` basicAuth vs khác, select hiện khi `restricted`/`basicAuth`, `handleAccessChange` reset policy khi đổi mode); `frontgate.controller.ts` — `CreateReverseProxyRulePayload` +`accessPolicyId?`; `FrontgateAccessPolicy.tsx` — name cell `__name-wrap` + `usernamePrint`/`createdTime`; `i18n/locales/en.json` (+`accessPolicy`/`selectPolicy`/`usernamePrint`/`createdTime`). |
+| Namorix.Core | 0.53.2 → 0.53.3 | NEW: `Helpers/NetworkHelper.ToDisplayString` (normalize IPv4-mapped IPv6 → hiển thị không còn `::ffff:`). MODIFIED: `Filters/TrafficMonitorFilter.cs` — `Ip = NetworkHelper.ToDisplayString(...)`. |
+| Namorix.Server | 0.69.0 → 0.69.1 | FIXED: **access control không block IP public** — `FrontgateAccessService.Evaluate` đầu method `MapToIPv4()` (mapped `::ffff:` không bao giờ match `IpMatches` string/byte-length) → denylist/allowlist/Private hoạt động đúng. **BasicAuth `rulesJson` camelCase**: +`SerializerOptions` (CamelCase + case-insensitive), `AccessPolicyController.HashBasicAuthPassword` serialize `FgBasicAuthPolicy` bằng options đó (trước lưu PascalCase → FE đọc username rỗng), `Evaluate` deserialize case-insensitive. **Keep-hash khi password trống** (trước hash chuỗi rỗng → mất password). MODIFIED: `ProxyTrafficMiddleware`/`TrustedProxyMiddleware` dùng `ToDisplayString`, `AccessControlMiddleware` bỏ debug `Console.WriteLine`. |
+| frontgate addon | 1.6.0 → 1.7.0 | `version.ts` `NmxAddonVersions` — MINOR bump (policy selector + access control fix). |
+
 ## 2026-08-08 — SignalR realtime CRUD — Beacon + Frontgate (rule/dry-run/cert)
 
 | Package | Version | Changes |
