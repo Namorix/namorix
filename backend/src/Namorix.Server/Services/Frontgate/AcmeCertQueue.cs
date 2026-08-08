@@ -120,7 +120,7 @@ public class AcmeCertQueue(IServiceScopeFactory scopeFactory, ILogger<AcmeCertQu
                 domains[0], expiresAt);
             
             var notifier = scope.ServiceProvider.GetRequiredService<IFrontgateNotifier>();
-            await notifier.NotifyCertStatusChanged(certId, "active", x509.Issuer, expiresAt);
+            await notifier.NotifyCertStatusChanged(certId, FgCertificateStatus.Active, x509.Issuer, expiresAt);
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
@@ -146,7 +146,7 @@ public class AcmeCertQueue(IServiceScopeFactory scopeFactory, ILogger<AcmeCertQu
                     .SetProperty(c => c.Status, FgCertificateStatus.Error));
             
             var notifier = scope.ServiceProvider.GetRequiredService<IFrontgateNotifier>();
-            await notifier.NotifyCertStatusChanged(certId, "error", null, null);
+            await notifier.NotifyCertStatusChanged(certId, FgCertificateStatus.Error, null, null);
         }
         catch (Exception ex)
         {

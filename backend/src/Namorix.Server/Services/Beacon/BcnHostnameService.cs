@@ -271,7 +271,7 @@ public sealed class BcnHostnameService(AppDbContext db, BcnProviderResolver reso
         host.Status == prevStatus
             ? Task.CompletedTask
             : beaconNotifier.NotifyHostnameStatusChanged(host.Id, host.DisplayName,
-                host.Status.ToString().ToLowerInvariant());
+                host.Status);
     
     private async Task<BcnActivityLog> LogAndNotifyAsync(BcnLogLevel level, string? code,
         Dictionary<string, object?>? @params, string? hostnameId, string? hostname)

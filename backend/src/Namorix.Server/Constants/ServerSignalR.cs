@@ -18,5 +18,9 @@ public static class ServerSignalREvent
     public const string BeaconHostnameStatusChanged = $"{ServerSignalRGroups.Beacon}:hostname-status-changed";
     public const string BeaconActivityCreated = $"{ServerSignalRGroups.Beacon}:activity-created";
     public const string BeaconHostnamesRefreshed = $"{ServerSignalRGroups.Beacon}:hostnames-refreshed";
+    public const string BeaconHostnameChanged = $"{ServerSignalRGroups.Beacon}:hostname-changed";
     public const string FrontgateCertStatusChanged = $"{ServerSignalRGroups.Frontgate}:cert-status-changed";
+    public const string FrontgateRuleChanged = $"{ServerSignalRGroups.Frontgate}:rule-changed";
+    public const string FrontgateDryRunChanged = $"{ServerSignalRGroups.Frontgate}:dry-run-changed";
+    public const string FrontgateCertChanged = $"{ServerSignalRGroups.Frontgate}:cert-changed";
 }

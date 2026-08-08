@@ -8,13 +8,13 @@ namespace Namorix.Server.Hubs;
 
 public class SignalRBeaconNotifier(IHubContext<MainHub> hubContext) : IBeaconNotifier
 {
-    public async Task NotifyHostnameStatusChanged(string hostnameId, string hostname, string status)
+    public async Task NotifyHostnameStatusChanged(string hostnameId, string hostname, BcnHostnameStatus status)
     {
         await hubContext.Clients.Group(ServerSignalRGroups.Beacon).SendAsync(ServerSignalREvent.BeaconHostnameStatusChanged, new
         {
             hostnameId,
             hostname,
-            status
+            status = status.ToString().ToLowerInvariant()
         });
     }
     
@@ -36,6 +36,16 @@ public class SignalRBeaconNotifier(IHubContext<MainHub> hubContext) : IBeaconNot
         await hubContext.Clients.Group(ServerSignalRGroups.Beacon).SendAsync(ServerSignalREvent.BeaconHostnamesRefreshed, new
         {
             updated
+        });
+    }
+    
+    public async Task NotifyHostnameChanged(string hostnameId, string hostname, BcnHostnameAction action)
+    {
+        await hubContext.Clients.Group(ServerSignalRGroups.Beacon).SendAsync(ServerSignalREvent.BeaconHostnameChanged, new
+        {
+            hostnameId,
+            hostname,
+            action = action.ToString().ToLowerInvariant()
         });
     }
 }

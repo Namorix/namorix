@@ -111,7 +111,7 @@ public sealed class BcnUpdateQueue(IServiceScopeFactory scopeFactory, ILogger<Bc
                 ParamsJson = JsonSerializer.Serialize(new { provider = host.ProviderId }),
             });
             await db.SaveChangesAsync();
-            await notifier.NotifyHostnameStatusChanged(hostnameId, host.DisplayName, "error");
+            await notifier.NotifyHostnameStatusChanged(hostnameId, host.DisplayName, BcnHostnameStatus.Error);
         }
         catch (Exception ex)
         {

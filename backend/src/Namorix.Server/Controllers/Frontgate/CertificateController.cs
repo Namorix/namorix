@@ -8,6 +8,7 @@ using Namorix.Core.Middleware;
 using Namorix.Core.Responses;
 using Namorix.Core.Validation;
 using Namorix.Server.Constants;
+using Namorix.Server.Infrastructure;
 using Namorix.Server.Models.Frontgate;
 using Namorix.Server.Persistence;
 using Namorix.Server.Services.Frontgate;
@@ -19,7 +20,7 @@ namespace Namorix.Server.Controllers.Frontgate;
 [RequireAdmin]
 [Route("api/frontgate/certificates")]
 public class CertificateController(AppDbContext db, DataDirectory dataDir, AcmeCertQueue certQueue,
-    DnsLookupChecker dnsLookupChecker, AcmeDryRunService acmeDryRunService) : ControllerBase
+    DnsLookupChecker dnsLookupChecker, AcmeDryRunService acmeDryRunService, IFrontgateNotifier notifier) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> ListCertificates(
@@ -89,6 +90,7 @@ public class CertificateController(AppDbContext db, DataDirectory dataDir, AcmeC
 
         db.FgCertificates.Remove(cert);
         await db.SaveChangesAsync();
+        await notifier.NotifyCertChanged(cert.Id, FgCertAction.Deleted);
         return Ok(ApiResponse.Ok());
 
     }
@@ -161,6 +163,7 @@ public class CertificateController(AppDbContext db, DataDirectory dataDir, AcmeC
         
         db.FgCertificates.Add(cert);
         await db.SaveChangesAsync();
+        await notifier.NotifyCertChanged(cert.Id, FgCertAction.Created);
         await certQueue.EnqueueAsync(cert.Id);
         return Ok(ApiResponse.Ok(cert));
     }
@@ -232,6 +235,7 @@ public class CertificateController(AppDbContext db, DataDirectory dataDir, AcmeC
         
         db.FgCertificates.Add(cert);
         await db.SaveChangesAsync();
+        await notifier.NotifyCertChanged(cert.Id, FgCertAction.Created);
         return Ok(ApiResponse.Ok(cert));
     }
     

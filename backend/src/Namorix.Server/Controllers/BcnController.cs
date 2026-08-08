@@ -21,7 +21,7 @@ namespace Namorix.Server.Controllers;
 [RequireAdmin]
 [Route("api/beacon")]
 public class BcnController(AppDbContext db, BcnProviderRegistry registry, BcnSecretProtector protector,
-    BcnUpdateQueue queue) : ControllerBase
+    BcnUpdateQueue queue, IBeaconNotifier notifier) : ControllerBase
 {
     private static readonly JsonSerializerOptions ConfigWriteOptions =
         new()
@@ -68,6 +68,7 @@ public class BcnController(AppDbContext db, BcnProviderRegistry registry, BcnSec
         };
         db.BcnHostnames.Add(host);
         await db.SaveChangesAsync();
+        await notifier.NotifyHostnameChanged(host.Id, host.DisplayName, BcnHostnameAction.Created);
         await queue.EnqueueAsync(host.Id);
         return Ok(ApiResponse.Ok(host));
     }
@@ -113,6 +114,7 @@ public class BcnController(AppDbContext db, BcnProviderRegistry registry, BcnSec
         host.CurrentIpv6 = null;
 
         await db.SaveChangesAsync();
+        await notifier.NotifyHostnameChanged(host.Id, host.DisplayName, BcnHostnameAction.Updated);
         await queue.EnqueueAsync(host.Id);
         return Ok(ApiResponse.Ok(host));
     }
@@ -123,9 +125,12 @@ public class BcnController(AppDbContext db, BcnProviderRegistry registry, BcnSec
         var host = await db.BcnHostnames.FindAsync(id);
         if (host == null)
             return NotFound(ApiResponse.Fail(BcnErrorCodes.HostnameNotFound));
-        
+
+        var displayName = host.DisplayName;
+
         db.BcnHostnames.Remove(host);   // FK SetNull → activity.HostnameId null
         await db.SaveChangesAsync();
+        await notifier.NotifyHostnameChanged(host.Id, displayName, BcnHostnameAction.Deleted);
         return Ok(ApiResponse.Ok());
     }
 

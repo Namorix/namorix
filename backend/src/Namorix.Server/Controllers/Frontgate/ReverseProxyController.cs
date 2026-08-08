@@ -7,6 +7,7 @@ using Namorix.Core.Middleware;
 using Namorix.Core.Responses;
 using Namorix.Core.Validation;
 using Namorix.Server.Constants;
+using Namorix.Server.Infrastructure;
 using Namorix.Server.Models.Frontgate;
 using Namorix.Server.Persistence;
 using Namorix.Server.Services.Frontgate;
@@ -18,10 +19,8 @@ namespace Namorix.Server.Controllers.Frontgate;
 [RequireAdmin]
 [Route("api/frontgate/reverse-proxy")]
 public class ReverseProxyController(AppDbContext db, AcmeCertQueue certQueue,
-    FrontgateAccessService accessService, IConfiguration config) : ControllerBase
+    FrontgateAccessService accessService, IFrontgateNotifier notifier) : ControllerBase
 {
-    private readonly int _dryRunSeconds = config.GetValue<int>("Frontgate:DryRunSeconds", 60);
-    
     [HttpGet]
     public async Task<IActionResult> ListRules([FromQuery] int page = 1, [FromQuery] int size = 20)
     {
@@ -157,7 +156,7 @@ public class ReverseProxyController(AppDbContext db, AcmeCertQueue certQueue,
             await certQueue.EnqueueAsync(cert.Id);
 
         await proxyProvider.UpdateAsync();
-        
+        await notifier.NotifyRuleChanged(rule.Id, FgRuleAction.Created);
         return Ok(ApiResponse.Ok(rule));
     }
     
@@ -247,6 +246,7 @@ public class ReverseProxyController(AppDbContext db, AcmeCertQueue certQueue,
             await certQueue.EnqueueAsync(newCertForUpdate.Id);
         
         await proxyProvider.UpdateAsync();
+        await notifier.NotifyRuleChanged(id, FgRuleAction.Updated);
         return Ok(ApiResponse.Ok(rule));
     }
     
@@ -262,6 +262,7 @@ public class ReverseProxyController(AppDbContext db, AcmeCertQueue certQueue,
         db.FgReverseProxyRules.Remove(rule);
         await db.SaveChangesAsync();
         await proxyProvider.UpdateAsync();
+        await notifier.NotifyRuleChanged(id, FgRuleAction.Deleted);
         return Ok(ApiResponse.Ok());
     }
     
@@ -279,6 +280,7 @@ public class ReverseProxyController(AppDbContext db, AcmeCertQueue certQueue,
         rule.DryRunSnapshotJson = null;
         
         await db.SaveChangesAsync();
+        await notifier.NotifyDryRunChanged(id, FgDryRunAction.Confirm);
         return Ok(ApiResponse.Ok());
     }
 
@@ -305,6 +307,7 @@ public class ReverseProxyController(AppDbContext db, AcmeCertQueue certQueue,
         
         await db.SaveChangesAsync();
         await proxyProvider.UpdateAsync();
+        await notifier.NotifyDryRunChanged(id, FgDryRunAction.Cancel);
         return Ok(ApiResponse.Ok());
     }
     

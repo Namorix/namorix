@@ -69,3 +69,5 @@ public static class BcnCredentialParam
     public const string ApiSecret = "apiSecret";
     public const string Zone = "zone";
 }
+
+public enum BcnHostnameAction { Created, Updated, Deleted }

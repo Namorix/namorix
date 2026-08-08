@@ -1,5 +1,7 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Namorix.Server.Constants;
+using Namorix.Server.Infrastructure;
 using Namorix.Server.Models.Frontgate;
 using Namorix.Server.Persistence;
 using Namorix.Server.Services.Frontgate;
@@ -18,6 +20,7 @@ public class FgDryRunRollbackWorker(IServiceScopeFactory scopeFactory,
             {
                 using var scope = scopeFactory.CreateScope();
                 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var notifier = scope.ServiceProvider.GetRequiredService<IFrontgateNotifier>();
                 var expired = await db.FgReverseProxyRules
                     .Include(r => r.Locations)
                     .Where(r => r.DryRunExpiresAt != null && r.DryRunExpiresAt < DateTime.UtcNow)
@@ -39,6 +42,9 @@ public class FgDryRunRollbackWorker(IServiceScopeFactory scopeFactory,
 
                 await db.SaveChangesAsync(ct);
                 await proxyProvider.UpdateAsync();
+                
+                foreach (var rule in expired)
+                    await notifier.NotifyDryRunChanged(rule.Id, FgDryRunAction.Expire);
             }
             catch (Exception ex)
             {

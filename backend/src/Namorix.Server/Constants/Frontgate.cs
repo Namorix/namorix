@@ -20,3 +20,7 @@ public static class FgErrorCodes
     public const string PolicyLocksOutAdmin = "FG_POLICY_LOCKS_OUT_ADMIN";
     public const string DryRunNotPending = "FG_DRY_RUN_NOT_PENDING";
 }
+
+public enum FgRuleAction { Created, Updated, Deleted }
+public enum FgDryRunAction { Confirm, Cancel, Expire }
+public enum FgCertAction { Created, Updated, Deleted }
