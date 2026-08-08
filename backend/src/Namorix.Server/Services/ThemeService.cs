@@ -13,14 +13,12 @@ public class ThemeService()
                 {
                     Id = "light",
                     Name = "Light",
-                    CssPath = "/theme.css",
                     IsBuiltIn = true
                 },
                 new ThemeManifest
                 {
                     Id = "dark",
                     Name = "Dark",
-                    CssPath = "/theme.css",
                     IsBuiltIn = true
                 },
             ]);

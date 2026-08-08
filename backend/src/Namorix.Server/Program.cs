@@ -49,7 +49,7 @@ builder.Services.Configure<FrontendConfig>(builder.Configuration.GetSection("Fro
 
 using var loggerFactory = LoggerFactory.Create(b => b.AddConsole());
 var sniLogger = loggerFactory.CreateLogger("SniCert");
-List<SslApplicationProtocol> AppProtocols =
+List<SslApplicationProtocol> appProtocols =
     [SslApplicationProtocol.Http2, SslApplicationProtocol.Http11];
 
 builder.WebHost.ConfigureKestrel(options =>
@@ -77,26 +77,26 @@ builder.WebHost.ConfigureKestrel(options =>
         {
             var sni = clientHelloInfo.ServerName;
             if (string.IsNullOrEmpty(sni))
-                return ValueTask.FromResult(new SslServerAuthenticationOptions { ServerCertificate = fallbackCert, ApplicationProtocols = AppProtocols});
+                return ValueTask.FromResult(new SslServerAuthenticationOptions { ServerCertificate = fallbackCert, ApplicationProtocols = appProtocols});
 
             var name = sni.Replace('*', '_');
             var fullchainPath = Path.Combine(certDir, name, DataDirectory.FullChainFile);
             var privatekeyPath = Path.Combine(certDir, name, DataDirectory.PrivateKeyFile);
 
             if (!File.Exists(fullchainPath) || !File.Exists(privatekeyPath))
-                return ValueTask.FromResult(new SslServerAuthenticationOptions { ServerCertificate = fallbackCert, ApplicationProtocols = AppProtocols });
+                return ValueTask.FromResult(new SslServerAuthenticationOptions { ServerCertificate = fallbackCert, ApplicationProtocols = appProtocols });
 
             try
             {
                 var cert = X509Certificate2.CreateFromPemFile(fullchainPath, privatekeyPath);
-                return ValueTask.FromResult(new SslServerAuthenticationOptions { ServerCertificate = cert, ApplicationProtocols = AppProtocols });
+                return ValueTask.FromResult(new SslServerAuthenticationOptions { ServerCertificate = cert, ApplicationProtocols = appProtocols });
             }
             catch (Exception ex)
             {
                 sniLogger.LogWarning(ex, "Failed to load SNI cert for {Sni}", sni);
             }
 
-            return ValueTask.FromResult(new SslServerAuthenticationOptions { ServerCertificate = fallbackCert, ApplicationProtocols = AppProtocols });
+            return ValueTask.FromResult(new SslServerAuthenticationOptions { ServerCertificate = fallbackCert, ApplicationProtocols = appProtocols });
         }, null!);
     });
 
@@ -193,7 +193,19 @@ var memoryCache = app.Services.GetRequiredService<IMemoryCache>();
 var appConfig = app.Services.GetRequiredService<IOptions<AppConfig>>().Value;
 var configOrigins = appConfig.AllowedOrigins
     .Split(",", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+var pathPublic = app.Environment.IsDevelopment()
+    ? Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "frontend", "dist")
+    : Path.Combine(Directory.GetCurrentDirectory(), "public");
 
+if (app.Environment.IsProduction())
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    app.Logger.LogInformation("Applying pending database migrations");
+    db.Database.Migrate();
+}
+
+app.Logger.LogInformation("Serving static files from: {PathPublic}", pathPublic);
 await app.Services.GetRequiredService<FrontgateProxyConfigProvider>().UpdateAsync();
 
 // API port (backendConfig.Port = 5001): full pipeline
@@ -201,6 +213,12 @@ app.UseWhen(ctx => ctx.Connection.LocalPort == backendConfig.Port, api =>
 {
     api.UseApiErrorHandling();
     api.UseSecurityHeaders();
+    
+    api.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(pathPublic)
+    });
+    
     api.UseCors(policy =>
     {
         policy.SetIsOriginAllowed(origin =>
@@ -233,6 +251,10 @@ app.UseWhen(ctx => ctx.Connection.LocalPort == backendConfig.Port, api =>
     api.UseRateLimiter();
     api.UseEndpoints(endpoints =>
     {
+        endpoints.MapFallbackToFile("index.html", new StaticFileOptions
+        {
+            FileProvider = new PhysicalFileProvider(pathPublic)
+        });
         endpoints.MapControllers();
         endpoints.MapHub<MainHub>(SignalRPath.HubMain);
         endpoints.MapReverseProxy();
@@ -248,8 +270,6 @@ if (proxyPorts.Length > 0)
 {
     app.UseWhen(ctx => proxyPorts.Contains(ctx.Connection.LocalPort), proxy =>
     {
-        var pathPublic = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "frontend", "public");
-        
         proxy.UseMiddleware<ProxyTrafficMiddleware>();
         proxy.UseMiddleware<AcmeChallengeMiddleware>(); // LE HTTP call → serve token before redirect
         proxy.UseMiddleware<AccessControlMiddleware>();

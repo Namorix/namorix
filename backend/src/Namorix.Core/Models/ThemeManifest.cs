@@ -21,10 +21,7 @@ public class ThemeManifest
     
     [MaxLength(500)]
     public string? Preview { get; init; } = string.Empty;
-    
-    [MaxLength(250)]
-    public string CssPath { get; init; } = string.Empty;
-    
+
     public List<string>? Tags { get; init; } = [];
     public bool IsBuiltIn { get; init; } = true;
 }
