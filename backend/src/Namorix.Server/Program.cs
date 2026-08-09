@@ -26,6 +26,7 @@ using Namorix.Server.Services.Beacon;
 using Namorix.Server.Services.Beacon.Providers;
 using Namorix.Server.Services.Frontgate;
 using Namorix.Server.Services.Grpc;
+using Namorix.Server.Services.Warden;
 using Namorix.Server.Workers;
 using Namorix.Server.Workers.Beacon;
 using Namorix.Server.Workers.Frontgate;
@@ -179,6 +180,7 @@ builder.Services.AddSingleton<DnsLookupChecker>();
 builder.Services.AddSingleton<AcmeDryRunService>();
 builder.Services.AddSingleton<FrontgateAccessService>();
 builder.Services.AddSingleton<GeoIpService>();
+builder.Services.AddSingleton<WdFirewallService>();
 
 builder.Services.AddSingleton<BcnUpdateQueue>();
 builder.Services.AddHostedService<BcnUpdateQueue>(sp => sp.GetRequiredService<BcnUpdateQueue>());
