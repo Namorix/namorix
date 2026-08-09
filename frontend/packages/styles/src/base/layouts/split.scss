@@ -27,12 +27,28 @@
   color: var(--nmx-color-on-primary);
 }
 
+.nmx-split-panel__hero-description {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nmx-spacing-xs);
+}
+
 .nmx-split-panel__hero-text {
   margin: 0;
   max-width: 32rem;
   font-size: var(--nmx-font-size-sm);
   line-height: var(--nmx-line-height-base);
   color: var(--nmx-color-on-surface-variant);
+}
+
+.nmx-split-panel__hero-link {
+  text-decoration: none;
+
+  &:hover,
+  &:hover .nmx-split-panel__hero-text {
+    color: var(--nmx-color-on-surface);
+    text-decoration: underline;
+  }
 }
 
 .nmx-split-panel__content {
