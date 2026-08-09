@@ -19,6 +19,7 @@ import {
   NmxSlider,
   NmxStatCard,
   NmxToggle,
+  useActiveTab,
 } from "@namorix/ui"
 import {
   ServerSignalREvent,
@@ -26,11 +27,13 @@ import {
   useServerSignalREvent,
   useServerSignalRGroup,
 } from "../../signalr"
+import type { WardenTab } from "./Warden"
 
 const ProfileOptions: WdSecurityProfile[] = ["low", "medium", "high", "custom"]
 
 export const WardenOverview: React.FC = () => {
   const { t } = useTranslation()
+  const activeTab = useActiveTab<WardenTab>()
   const [stats, setStats] = useState<WdStats | null>(null)
   const [settingsUpdating, setSettingsUpdating] = useState(false)
   const [settings, setSettings] = useState<WdSettings | null>(null)
@@ -60,12 +63,13 @@ export const WardenOverview: React.FC = () => {
   }, [settings])
 
   useEffect(() => {
+    if (activeTab !== "overview") return
     const timeout = setTimeout(() => {
       fetchStats()
       fetchSettings()
     }, 0)
     return () => clearTimeout(timeout)
-  }, [fetchSettings, fetchStats])
+  }, [activeTab, fetchSettings, fetchStats])
 
   useEffect(() => {
     const id = setInterval(fetchStats, 30_000)

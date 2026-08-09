@@ -12,6 +12,7 @@ import {
   NmxMetaList,
   NmxPagination,
   type NmxSemanticColor,
+  useActiveTab,
 } from "@namorix/ui"
 import { useTranslation } from "react-i18next"
 import type { WdSecurityEvent, WdSeverity } from "./Warden.types"
@@ -23,6 +24,7 @@ import {
   useServerSignalREvent,
   useServerSignalRGroup,
 } from "../../signalr"
+import type { WardenTab } from "./Warden"
 
 const SeveritySemantic: Record<WdSeverity, NmxSemanticColor> = {
   info: "info",
@@ -32,6 +34,7 @@ const SeveritySemantic: Record<WdSeverity, NmxSemanticColor> = {
 
 export const WardenActivity: React.FC = () => {
   const { t } = useTranslation()
+  const activeTab = useActiveTab<WardenTab>()
   const [events, setEvents] = useState<WdSecurityEvent[]>([])
   const [eventsLoading, setEventsLoading] = useState(true)
   const { dateTime } = useDateTimeFormat()
@@ -39,6 +42,8 @@ export const WardenActivity: React.FC = () => {
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
   const [selected, setSelected] = useState<WdSecurityEvent | null>(null)
+  const [confirmClear, setConfirmClear] = useState(false)
+  const [clearing, setClearing] = useState(false)
 
   const fetchEvents = useCallback(
     (pg: number, size: number) => {
@@ -66,14 +71,34 @@ export const WardenActivity: React.FC = () => {
   }))
 
   useEffect(() => {
+    if (activeTab !== "activity") return
     const timeout = setTimeout(() => fetchEvents(page, pageSize), 0)
     return () => clearTimeout(timeout)
-  }, [page, pageSize, fetchEvents])
+  }, [page, pageSize, fetchEvents, activeTab])
 
   useServerSignalRGroup(ServerSignalRGroups.Warden, true)
   useServerSignalREvent(ServerSignalREvent.WardenNewEvent, () => {
     fetchEvents(page, pageSize)
   })
+
+  const handleClearConfirm = useCallback(() => {
+    setClearing(true)
+    wardenController
+      .clearEvents()
+      .then((res) => {
+        nmxToast.success(
+          t("addon.warden.pages.activity.feedback.clearSuccess", {
+            count: res.deleted,
+          }),
+        )
+        setConfirmClear(false)
+        return fetchEvents(1, pageSize)
+      })
+      .catch(() =>
+        nmxToast.error(t("addon.warden.pages.activity.feedback.clearError")),
+      )
+      .finally(() => setClearing(false))
+  }, [fetchEvents, pageSize, t])
 
   const fallbackConditions: NmxFallback[] = [
     {
@@ -110,7 +135,7 @@ export const WardenActivity: React.FC = () => {
   return (
     <div className="nmx-addon-warden__page">
       <NmxAlign direction="row" justify="end">
-        <NmxButton onClick={() => {}} semantic="error">
+        <NmxButton onClick={() => setConfirmClear(true)} semantic="error">
           <NmxIconFont symbol={NmxIconFontSymbol.DELETE} />
           <span>{t("addon.warden.pages.activity.actions.clear")}</span>
         </NmxButton>
@@ -211,6 +236,18 @@ export const WardenActivity: React.FC = () => {
             </NmxMetaList>
           </div>
         )}
+      </NmxAlertDialog>
+
+      <NmxAlertDialog
+        open={confirmClear}
+        title={t("addon.warden.pages.activity.actions.clear")}
+        confirmLabel={t("addon.warden.pages.activity.actions.clear")}
+        confirmSemantic="error"
+        onClose={() => setConfirmClear(false)}
+        onConfirm={handleClearConfirm}
+        loading={clearing}
+      >
+        <p>{t("addon.warden.pages.activity.feedback.clearConfirm")}</p>
       </NmxAlertDialog>
     </div>
   )

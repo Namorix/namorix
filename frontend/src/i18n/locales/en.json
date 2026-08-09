@@ -1023,7 +1023,12 @@
           },
           "fallbacks": {
             "loading": "Loading activity...",
-            "empty": "No recent activity."
+            "empty": "No recent activity"
+          },
+          "feedback": {
+            "clearConfirm": "Clear all security events? This cannot be undone.",
+            "clearSuccess": "Cleared {{count}} events",
+            "clearError": "Failed to clear activity log"
           },
           "detail": {
             "fields": {

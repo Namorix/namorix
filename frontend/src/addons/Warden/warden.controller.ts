@@ -129,6 +129,15 @@ async function listEvents(
   return data.data
 }
 
+async function clearEvents(): Promise<{ deleted: number }> {
+  const data = await nmxHttp
+    .url(getApiBaseUrl() + ApiWardenRoutes.events)
+    .delete()
+    .json<{ deleted: number }>()
+  if (!data.success) throw ApiError.fromResponse(data)
+  return data.data
+}
+
 export const wardenController = {
   listRules,
   createRule,
@@ -139,4 +148,5 @@ export const wardenController = {
   updateSettings,
   getStats,
   listEvents,
+  clearEvents,
 }

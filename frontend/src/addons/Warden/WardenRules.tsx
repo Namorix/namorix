@@ -15,6 +15,7 @@ import {
   NmxMetaItem,
   NmxMetaList,
   type NmxSemanticColor,
+  useActiveTab,
 } from "@namorix/ui"
 import {
   WardenErrorCodes,
@@ -23,6 +24,7 @@ import {
 } from "./Warden.types"
 import { wardenController, type WdRulePayload } from "./warden.controller"
 import { WardenRuleDialog } from "./WardenRuleDialog"
+import type { WardenTab } from "./Warden"
 
 const ActionSemantic: Record<WdRuleAction, NmxSemanticColor> = {
   allow: "success",
@@ -31,6 +33,7 @@ const ActionSemantic: Record<WdRuleAction, NmxSemanticColor> = {
 
 export const WardenRules: React.FC = () => {
   const { t } = useTranslation()
+  const activeTab = useActiveTab<WardenTab>()
   const { dateTime } = useDateTimeFormat()
   const [rules, setRules] = useState<WdFirewallRule[]>([])
   const [rulesLoading, setRulesLoading] = useState(true)
@@ -42,18 +45,19 @@ export const WardenRules: React.FC = () => {
   const [detailTarget, setDetailTarget] = useState<WdFirewallRule | null>(null)
 
   const fetchRules = useCallback(() => {
-    setRulesLoading(true)
+    if (rules.length <= 0) setRulesLoading(true)
     wardenController
       .listRules()
       .then(setRules)
       .finally(() => setRulesLoading(false))
       .catch(nmxToast.error)
-  }, [])
+  }, [rules.length])
 
   useEffect(() => {
+    if (activeTab !== "rules") return
     const timeout = setTimeout(fetchRules, 0)
     return () => clearTimeout(timeout)
-  }, [fetchRules])
+  }, [activeTab, fetchRules])
 
   const handleAddRule = useCallback(() => {
     setEditing(null)
