@@ -1,4 +1,8 @@
 export const NMX_NAME = "Namorix"
+export const NMX_AUTHOR = "IzeroCs"
+export const NMX_GITHUB_REPOSITORY = "https://github.com/Namorix/namorix"
+export const NMX_GITHUB_REPOSITORY_ISSUES =
+  "https://github.com/Namorix/namorix/issues"
 
 export const NMX_COOKIE_ACCESS_KEY = "nmx_access_token"
 export const NMX_COOKIE_REFRESH_KEY = "nmx_refresh_token"
