@@ -242,7 +242,7 @@ backend/
         │   ├── AuthController.cs        # 7 auth endpoints (login, register, logout, session, refresh, status, logout-all)
         │   ├── Frontgate/               # ReverseProxyController (CRUD + dry-run confirm/cancel),
         │   │                            #   AccessPolicyController (CRUD), CertificateController (LE HTTP-01 + dry-run, retry/renew, custom, download),
-        │   │                            #   AuditLogController (audit list/clear)
+        │   │                            #   AuditLogController (audit list/clear), GeoIpController (GeoIP DB status/upload/rollback)
         │   ├── BcnController.cs         # Beacon DDNS (hostnames CRUD/toggle/check/test, activity, providers, settings)
         │   ├── HealthController.cs      # Health check endpoint
         │   ├── SettingsController.cs    # System settings + appearance defaults + options
@@ -376,6 +376,14 @@ backend/
 | POST | `/api/frontgate/certificates/{id}/renew` | Admin | Renew cert (SNI lookup + auto-renew qua `FgCertRenewWorker`) |
 | GET | `/api/frontgate/certificates/{id}/download` | Admin | Download cert — zip `privatekey.pem` + `fullchain.pem` (`{name}.zip`; 404 `CertificateFilesMissing` nếu file thiếu) |
 | DELETE | `/api/frontgate/certificates/{id}` | Admin | Delete cert |
+
+### Frontgate GeoIP (`/api/frontgate/geoip`)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/frontgate/geoip` | Admin | GeoIP DB status (file size, database type, build epoch, binary format version + backup meta: `hasBackup`, backup size/type/epoch) |
+| POST | `/api/frontgate/geoip` | Admin | Upload MaxMind GeoIP2 `.mmdb` (`[RequestSizeLimit(50MB)]`) — probe-validate rồi backup hiện tại thành `.bak` + overwrite |
+| POST | `/api/frontgate/geoip/rollback` | Admin | Rollback `.bak` về bản trước — copy back + **xóa `.bak`** (consumed — nút rollback ẩn sau khi dùng) |
 
 ### Frontgate Audit (`/api/frontgate/audit`)
 

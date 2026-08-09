@@ -1,5 +1,17 @@
 # Version History — August 2026
 
+## 2026-08-09 — Frontgate GeoIP database management + upload progress + traffic routes
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.61.0 → 0.62.0 | MODIFIED: `http/client.ts` — RequestBuilder +`formUpload<T>(body, onProgress)` (XHR `upload.onprogress` — **fetch không có upload progress**; giữ `withCredentials` + CSRF + fingerprint headers, network error → `apiHttpError`); `apiRoutes.ts` — +`geoIp` (`/api/frontgate/geoip`) + `geoIpRollback` (`/api/frontgate/geoip/rollback`); `config.ts` — +`isShellDesktop` config + `isShellDesktopEnv()`; `i18n/validation-messages.ts` — `formatCustomError` chạy `formatApiError` trước (fallback); `theme/loader.ts` — `loadTheme` +`elementId` param + `pendingLoads` dedup map. |
+| @namorix/ui | 0.42.1 → 0.43.0 | MODIFIED: `Primitives/NmxFileInput.tsx` — +`progress?: number \| null` prop (render % upload). |
+| @namorix/styles | 0.53.0 → 0.54.0 | MODIFIED: `base/components/file-input.scss` (+progress bar), `base/components/settings.scss`, `base/shell/addon/frontgate.scss`, `base/shell/addon/setting.scss`, `base/shell/components/launcher.scss`, `themes/dark/shell.scss` + `light/shell.scss`, `vite.config.ts` (+`light/shell` + `dark/shell` entries). Theme CSS rebuild. |
+| frontend | 0.81.1 → 0.82.0 | NEW: `addons/Frontgate/FrontgateSettings.tsx` (GeoIP Database tab — status, upload `progress`, rollback confirm dialog via NmxMetaList so sánh current vs backup). MODIFIED: `Frontgate.tsx` (+Settings tab), `Frontgate.types.ts` (+3 error codes `FG_GEOIP_*`), `frontgate.controller.ts` (+`GeoIpStatus`/`getGeoIpStatus`/`uploadGeoIp`/`rollbackGeoIp`), `en.json` (+52 keys); `pages/Register.tsx` (form initial state rỗng — bỏ hardcode); `addons/LogViewer/LogViewer.tsx` + `NetworkTraffic/NetworkTrafficLogs.tsx` (+`alignValue="end"` meta items); `Settings/SettingsAccount.tsx` (avatar icon class); `main.tsx` (DEV-only `import("./main.scss")`, `apiBaseUrl` simplify, +`isShellDesktop: true`). |
+| Namorix.Core | 0.55.0 → 0.56.0 | NEW: `Constants/TrafficRoutes.cs` (`TrafficRoutes.Base = "/api/traffic"`). MODIFIED: `Constants/ExemptPaths.cs` — `NonJsonBody` +`/api/frontgate/geoip` (fix 415 multipart upload); `Controllers/TrafficMonitorController.cs` — route qua `TrafficRoutes.Base` + bỏ `RegisterEndpointRequest` dead code. |
+| Namorix.Server | 0.71.1 → 0.72.0 | NEW: `Controllers/Frontgate/GeoIpController.cs` — `GET /api/frontgate/geoip` (status + backup meta), `POST /api/frontgate/geoip` (`[RequestSizeLimit(50_000_000)]` upload — probe-validate rồi backup `.bak` + overwrite), `POST /api/frontgate/geoip/rollback` (copy `.bak` back + **`File.Delete(bak)`** — consume backup); `Services/Frontgate/GeoIpService.cs` — `GetStatus` (`HasBackup` + backup metadata), `TryUpdateDatabase`, `RollbackDatabase` (xóa `.bak` trong lock). MODIFIED: `Constants/Frontgate.cs` +3 codes (`FG_GEOIP_FILE_REQUIRED`/`FG_GEOIP_INVALID`/`FG_GEOIP_ROLLBACK_FAILED`); `Middleware/Frontgate/ProxyTrafficMiddleware.cs` — skip `/api/traffic` (không đếm traffic nội bộ). |
+| frontgate addon | 1.9.0 → 1.10.0 | `version.ts` `NmxAddonVersions` — MINOR bump (GeoIP Database Management settings tab). |
+
 ## 2026-08-08 — Theme rework default→light + Docker deployment + RemoveThemeCssPath
 
 | Package | Version | Changes |

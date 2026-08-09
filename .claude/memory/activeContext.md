@@ -27,6 +27,14 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-08-2026.md](versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-08-09 — Frontgate GeoIP database management + upload progress + traffic routes
+
+- **GeoIP Database Management (Frontgate Settings tab)**: `FrontgateSettings.tsx` (new) — status (file size/database type/build epoch + backup meta), upload database với **progress bar** (XHR `upload.onprogress` — fetch không có progress; `NmxFileInput` +`progress` prop; `RequestBuilder` +`formUpload<T>` giữ withCredentials/CSRF/fingerprint), rollback với `NmxAlertDialog` + `NmxMetaList` so sánh current vs backup (nút rollback ẩn khi `!hasBackup`).
+- **Backend GeoIp**: `GeoIpController` (`GET /api/frontgate/geoip` status, `POST` upload `[RequestSizeLimit(50MB)]`, `POST /api/frontgate/geoip/rollback`); `GeoIpService.TryUpdateDatabase` probe-validate → `File.Copy` `.bak` → overwrite; `RollbackDatabase` copy `.bak` back + **`File.Delete(bak)`** (consume backup). `ExemptPaths.NonJsonBody` +`/api/frontgate/geoip` (fix 415 multipart). `Frontgate.cs` +3 codes.
+- **Traffic routes**: NEW `TrafficRoutes.cs` (`Base = "/api/traffic"`) — `TrafficMonitorController` route qua constant + bỏ `RegisterEndpointRequest` dead code; `ProxyTrafficMiddleware` skip `/api/traffic` (không đếm traffic nội bộ).
+- **Shell desktop config**: `config.ts` +`isShellDesktop`/`isShellDesktopEnv()`; `main.tsx` DEV-only import `main.scss`, `apiBaseUrl` simplify (`VITE_API_URL ?? window.location.origin`), `isShellDesktop: true`; `Register.tsx` bỏ hardcode form initial state; LogViewer/NetworkTrafficLogs meta items `alignValue="end"`.
+- Versions: core 0.62.0 / ui 0.43.0 / styles 0.54.0 / frontend 0.82.0 / Namorix.Core 0.56.0 / Namorix.Server 0.72.0 / frontgate 1.10.0.
+
 ### 2026-08-08 — Theme rework default→light + Docker deployment + RemoveThemeCssPath
 
 - **Theme rename**: folder `themes/default` → `themes/light` (index/shell/tokens); styles vite input `light/theme` → output `/themes/light/theme.css`. `shell.scss` forward `themes/light/shell`.
