@@ -4,7 +4,8 @@ public static class ExemptPaths
 {
     // Machine clients sending form-urlencoded bodies — skip JSON enforcement.
     public static readonly string[] NonJsonBody = [
-        "/api/oauth/token"
+        "/api/oauth/token",
+        "/api/frontgate/geoip"
     ];
 
     // Machine clients with no cookie session — skip CSRF check.

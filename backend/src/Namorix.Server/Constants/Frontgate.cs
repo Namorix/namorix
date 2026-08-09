@@ -20,6 +20,9 @@ public static class FgErrorCodes
     public const string PolicyLocksOutAdmin = "FG_POLICY_LOCKS_OUT_ADMIN";
     public const string DryRunNotPending = "FG_DRY_RUN_NOT_PENDING";
     public const string CertificateFilesMissing = "FG_CERTIFICATE_FILES_MISSING";
+    public const string GeoIpFileRequired = "FG_GEOIP_FILE_REQUIRED";
+    public const string GeoIpInvalid = "FG_GEOIP_INVALID";
+    public const string GeoIpRollbackFailed = "FG_GEOIP_ROLLBACK_FAILED";
 }
 
 public enum FgRuleAction { Created, Updated, Deleted }
