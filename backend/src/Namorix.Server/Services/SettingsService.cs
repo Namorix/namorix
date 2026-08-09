@@ -9,7 +9,8 @@ using Namorix.Server.Persistence;
 namespace Namorix.Server.Services;
 
 public class SettingsService(AppDbContext dbContext, IMemoryCache memoryCache,
-    ISystemNotifier systemNotifier, ILogger<SettingsService> logger)
+    ISystemNotifier systemNotifier, ILogger<SettingsService> logger,
+    UserSettingsService userSettingsService)
 {
     public async Task<(List<string> proxies, List<string> origins, bool registerEnabled)> GetAllAsync()
     {
@@ -150,5 +151,17 @@ public class SettingsService(AppDbContext dbContext, IMemoryCache memoryCache,
             }
             return result;
         }) ?? new Dictionary<string, string>();
+    }
+
+    public async Task<Dictionary<string, string>> GetMergedAppearanceAsync(int? userId)
+    {
+        var settings = await GetAppearanceDefaultsAsync();
+        if (userId.HasValue)
+        {
+            var userSettings = await userSettingsService.GetAllAsync(userId.Value);
+            foreach (var (key, value) in userSettings)
+                settings[key] = value;
+        }
+        return settings;
     }
 }

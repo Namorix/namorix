@@ -296,6 +296,7 @@ backend/
 | GET | `/api/settings/system` | Admin | System config (proxies, origins, register) |
 | PUT | `/api/settings/system` | Admin | Set system config |
 | GET | `/api/settings/appearance` | Public | System default appearance settings |
+| GET | `/api/settings/appearance/merged` | Public | Merged appearance (defaults + user overrides, userId from cookie) |
 | PUT | `/api/settings/appearance` | Admin | Set system default appearance (validated) |
 | GET | `/api/settings/appearance/options` | RequireAuth | Valid appearance options (accent colors, etc.) |
 

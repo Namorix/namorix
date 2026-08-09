@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Namorix.Core.Constants;
 using Namorix.Core.Data;
 using Namorix.Core.Middleware;
 using Namorix.Core.Responses;
@@ -56,6 +57,15 @@ public class SettingsController(SettingsService settingsService) : ControllerBas
     public async Task<IActionResult> GetAppearanceDefaults()
     {
         var settings = await settingsService.GetAppearanceDefaultsAsync();
+        return Ok(ApiResponse<Dictionary<string, string>>.Ok(settings));
+    }
+
+    [HttpGet("appearance/merged")]
+    public async Task<IActionResult> GetMergedAppearance()
+    {
+        var userIdClaim = User.FindFirst(JwtClaims.UserId)?.Value;
+        int? userId = userIdClaim != null && int.TryParse(userIdClaim, out var id) ? id : null;
+        var settings = await settingsService.GetMergedAppearanceAsync(userId);
         return Ok(ApiResponse<Dictionary<string, string>>.Ok(settings));
     }
 }
