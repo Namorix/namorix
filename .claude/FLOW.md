@@ -1112,11 +1112,11 @@ bỏ qua `register_enabled` setting — user đầu tiên luôn có thể regist
 | `NmxBadge` | Primitive | semantic, bgEnabled, uppercase, size |
 | `NmxMetaList` | Layout | grid (auto 1fr) |
 | `NmxMetaItem` | Layout | label, value, isBlockMessage, children |
-| `NmxChip`, `NmxChipFilter` | Primitive | semantic color |
+| `NmxChip`, `NmxChipFilter`, `NmxChipToggle` | Primitive | semantic color; toggle: checked/defaultChecked/onCheckedChanged (role="switch") |
 | `NmxToggle` | Primitive | checked, onChange |
 | `NmxRail` | Layout | sidebar with tabs |
 | `NmxToolbar` | Layout | toolbar with tabs |
-| `NmxSettingsSection`, `NmxSettingsCard`, `NmxSettingsRow` | Layout | settings layout |
+| `NmxSettingsSection`, `NmxSettingsCard`, `NmxSettingsRow`, `NmxSettingsWrap` | Layout | settings layout |
 
 ### frontend (app)
 

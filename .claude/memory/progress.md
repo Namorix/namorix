@@ -1,5 +1,14 @@
 # Version History — August 2026
 
+## 2026-08-09 — Warden dashboard tabs (Overview/Activity/Rules) + NmxChipToggle + NmxSettingsWrap
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/ui | 0.43.0 → 0.44.0 | NEW: `Primitives/NmxChip/NmxChipToggle.tsx` (role="switch", controlled/uncontrolled `checked`/`defaultChecked`/`onCheckedChanged`, `aria-checked`/`aria-disabled`, `cx/cxSemantic/cxSpacing`, classes `nmx-chip--toggle`/`--active`), `Components/NmxSettings/NmxSettingsWrap.tsx`. MODIFIED: `Primitives/NmxChip/index.ts` (+export), `Components/NmxSettings/index.ts` (+export), `Primitives/NmxIcon/NmxIconFont.types.ts` (+`TASK` icon). |
+| @namorix/styles | 0.54.0 → 0.55.0 | MODIFIED: `base/components/chip.scss` (+7 — `nmx-chip--toggle` active/disabled), `base/components/settings.scss`, `base/shell/addon/warden.scss` (+23 — `__setting-row` + dashboard), icomoon rebuild (`_font-face.scss`/`fonts.scss`/`selection.json`/`variables.scss` — +glyph TASK). Theme CSS rebuild. |
+| frontend | 0.83.0 → 0.84.0 | NEW: `addons/Warden/` restructure → tabs (`NmxToolbar` overview/activity/rules/settings) — `WardenOverview.tsx` (firewall master toggle + 3 `NmxStatCard` + profile `NmxSegmentedGroup`), `WardenActivity.tsx` (`NmxLogList` + `NmxPagination`/`usePageSize`, severity → info/warning/error), `WardenRules.tsx` (`NmxDataTable` + `NmxBadge` allow=success/deny=error + `NmxMenuButton` toggle/edit/delete + delete confirm). MODIFIED: `Warden.tsx` (tab host — content phải nằm trong `NmxToolbar` provider scope), `WardenRuleDialog.tsx` (ports → `NmxTagInput`), `i18n/locales/en.json` (warden namespace restructure `pages.overview`/`pages.activity`). DELETED: `WardenBlockLog.tsx`/`WardenProfile.tsx`/`WardenStats.tsx`/`WardenRules.tsx` (cũ — gộp vào Overview/Rules). |
+| warden addon | 0.2.0 → 0.3.0 | `version.ts` `NmxAddonVersions` — MINOR bump (tab restructure + Overview/Activity pages). |
+
 ## 2026-08-09 — Warden Phase 0 — host-level firewall foundation + dashboard
 
 | Package | Version | Changes |

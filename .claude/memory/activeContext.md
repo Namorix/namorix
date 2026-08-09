@@ -27,6 +27,16 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-08-2026.md](versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-08-09 — Warden dashboard tabs (Overview/Activity/Rules) + NmxChipToggle + NmxSettingsWrap
+
+- **Warden addon restructure → tabs**: `Warden.tsx` đổi từ single-page dashboard sang `NmxToolbar` tabs (overview/activity/rules/settings). **Fix `useNmxTabContext must be used within NmxTabProvider`**: content phải nằm TRONG `<NmxToolbar>` (provider scope) — `NmxToolbarContent` là sibling thì throw. `WardenOverview.tsx` (firewall master toggle `NmxToggle` + 3 `NmxStatCard` + profile `NmxSegmentedGroup`), `WardenActivity.tsx` (`NmxLogList` + `NmxPagination`/`usePageSize`, severity info/warning/critical → info/warning/error), `WardenRules.tsx` (`NmxDataTable` + `NmxBadge` allow=success/deny=error + `NmxMenuButton` toggle/edit/delete + delete confirm `NmxAlertDialog`). `WardenRuleDialog.tsx` ports → `NmxTagInput`. Đã xóa `WardenBlockLog`/`WardenProfile`/`WardenStats`/`WardenRules` cũ (gộp vào Overview/Rules). i18n warden namespace restructure `pages.*`.
+- **Fix NmxSegmentedGroup profile không chọn được**: `settings` chưa từng fetch (`settings === null` → `value` kẹt "medium" + guard `if (!settings) return`) — thêm `fetchSettings` + gọi trong useEffect.
+- **NEW UI primitive `NmxChipToggle`** (@namorix/ui 0.44.0): role="switch", controlled/uncontrolled (`checked`/`defaultChecked`/`onCheckedChanged` — pattern NmxToggle), `aria-checked`/`aria-disabled`, `cx/cxSemantic/cxSpacing`. NEW `NmxSettingsWrap` (Components/NmxSettings). +1 icon `TASK` (NmxIconFont.types + icomoon glyph).
+- **@namorix/styles 0.55.0**: chip.scss `--toggle` active/disabled, settings.scss, warden.scss mở rộng, icomoon rebuild.
+- **Cập nhật đè ghi chú Phase 0 cũ**: dòng "Không bump @namorix/ui, @namorix/styles" trong entry Phase 0 giờ đã lỗi thời — session này ui 0.43→0.44, styles 0.54→0.55.
+- **Pending (Phase 1-3)**: event publishing (AcmeChallenge/ProxyTraffic → WdSecurityEvent), SignalR `warden:new-event`, threshold engine + iptables/nftables execution (Phase 2), block log detail dialog + stats realtime (Phase 3), vi.json. `WdSettings.Profile` (custom) vẫn chỉ lưu không dùng — `WdFirewallService` là stub.
+- Versions: ui 0.44.0 / styles 0.55.0 / frontend 0.84.0 / warden 0.3.0 / core 0.63.0 / Namorix.Server 0.73.0.
+
 ### 2026-08-09 — Warden Phase 0 — host-level firewall foundation + dashboard
 
 - **Warden addon (Phase 0 foundation + dashboard)**: internal addon host-level firewall (dưới Frontgate HTTP layer), prefix `Wd`.

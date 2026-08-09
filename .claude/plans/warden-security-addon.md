@@ -13,9 +13,11 @@
 
 ---
 
-## Dashboard UI (Mock — 2026-08-09)
+## Dashboard UI (Mock — 2026-08-09, restructure → tabs 2026-08-09)
 
 Giao diện mẫu đã chốt: dashboard kiểu DSM (Synology), tông amber, đứng cùng Frontgate nhưng tầng host. Layout + mapping component sẵn có:
+
+> **Restructure (2026-08-09)**: đã đổi từ single-page dashboard sang **4 tabs** qua `NmxToolbar` — **Overview / Activity / Rules / Settings**. Content phải nằm TRONG `<NmxToolbar>` (provider scope — `NmxToolbarContent` là sibling thì throw `useNmxTabContext must be used within NmxTabProvider`). Tab `settings` hiện **chưa có `NmxToolbarContent`** → render rỗng (chưa có nội dung cần thiết).
 
 ### Component mapping (đã verify tồn tại trong `@namorix/ui`)
 
@@ -45,10 +47,11 @@ Giao diện mẫu đã chốt: dashboard kiểu DSM (Synology), tông amber, đ�
 - `SHIELD` (header/stat card) — hoặc dùng `SECURITY` sẵn có
 - `BAN` / `FORBIDDEN` (icon block log, "Đã chặn" stat)
 - `PORT` / `RULE` (tab/badge cổng) — optional
+- ✅ **`TASK` đã thêm (2026-08-09)** — dùng cho tab Rules (`NmxIconFontSymbol.TASK` + icomoon glyph)
 
 ### SCSS mới (`@namorix/styles`)
 
-- `base/shell/addon/warden.scss` — layout dashboard (stat grid 3-col, profile row, rule table, log list), tone amber (warning tokens)
+- `base/shell/addon/warden.scss` — ✅ **đã làm (2026-08-09)** — `.nmx-addon-warden__page` + `__setting-row` (border-radius 0), layout trang tabs; dùng tokens chung + tone amber qua warning tokens
 
 ---
 
@@ -89,21 +92,27 @@ Timestamp          ← thời gian event
 - [x] **WdFirewallService**: **stub Phase 0** (log-only apply/remove/applyAll) — render rule → `iptables`/`nftables` để dành Phase 2; registered `AddSingleton<WdFirewallService>()`
 - [x] **Constants**: `WdErrorCodes` (RuleNotFound, IpAlreadyBanned, InvalidCidr, InvalidPorts) + `WdEventTypes` (ACME_CHALLENGE_FAIL, SCAN_404, BRUTE_FORCE, EXPLOIT_ATTEMPT) + `WdSecurityProfile` enum (Low/Medium/High/Custom)
 
-### Frontend — ✅ hoàn tất (2026-08-09, `tsc -b` pass 0 errors)
+### Frontend — ✅ hoàn tất (2026-08-09, `tsc -b` pass 0 errors) — restructure tabs đợt 2
 
 - [x] **Core**: `apiRoutes.ts` — `ApiWardenRoutes` (`rules`, `ruleById(id)`, `ruleToggle(id)`, `settings`, `stats`, `events`)
-- [x] **Addon struct**: `Warden.addon.tsx` (registerAddon, `NmxAddonId.warden`, `UserRole.Admin`, icon `APP_WARDEN`) + `Warden.tsx` (dashboard `NmxAddonRoot scrolled`: firewall master toggle `NmxToggle` trong `NmxSettingsCard`, stats, profile `NmxSection`, rules, log `NmxSection`, dialog thêm/sửa + confirm delete)
-- [x] **Components**: `WardenStats.tsx` (3 `NmxStatCard`, "blockedToday" `semantic="error"`), `WardenProfile.tsx` (`NmxSegmentedGroup` Low/Medium/High/Custom), `WardenRules.tsx` (`NmxDataTable` + `NmxBadge` allow=success/deny=error + `NmxMenuButton` toggle/edit/delete), `WardenBlockLog.tsx` (`NmxLogList`, severity info/warning/critical → info/warning/error), `WardenRuleDialog.tsx` (add/edit rule: name/sourceCidr/ports/protocol/action/enabled, `confirmDisabled` khi name trống)
+- [x] **Addon struct**: `Warden.addon.tsx` (registerAddon, `NmxAddonId.warden`, `UserRole.Admin`, icon `APP_WARDEN`) + `Warden.tsx` (**tabs** `NmxToolbar<WardenTab>` defaultTab="overview", header `NmxToolbarList`, 3 `NmxToolbarContent`: overview/activity/rules; tab settings chưa có content)
+- [x] **Components** (đổi tên/ghép sau restructure — cũ `WardenStats`/`WardenProfile`/`WardenBlockLog`/`WardenRules` đã xóa):
+  - `WardenOverview.tsx` — firewall master toggle `NmxToggle` (`NmxSettingsRow`/`NmxSettingsCard`/`NmxSettingsWrap`, disabled khi `!settings`), 3 `NmxStatCard` (activeRules / blockedToday `semantic="error"` / openPorts) `NmxGrid cols={3}`, profile `NmxSegmentedGroup<WdSecurityProfile>` Low/Medium/High/**Custom**. Fetch cả `getStats` + `getSettings` (trước chỉ fetch stats → profile/toggle kẹt disabled — **fix**)
+  - `WardenActivity.tsx` — `NmxLogList` (severity info/warning/critical → info/warning/error), **`NmxPagination` + `usePageSize`** (page/pageSize/totalItems), Refresh button
+  - `WardenRules.tsx` — `NmxDataTable` (name/source/ports·protocol/action + menu col `btnIsMenu`) + `NmxBadge` allow=success/deny=error + `NmxMenuButton<"toggle"|"edit"|"delete">` (MENU_VERTICAL trigger, `arrowDisabled`) + delete confirm `NmxAlertDialog`
+  - `WardenRuleDialog.tsx` — add/edit rule: name (`confirmDisabled` khi name trống), sourceCidr, ports (**`NmxTagInput`** — thay textarea/input), protocol `NmxSelect`, action `NmxSelect`, enabled `NmxToggle`
 - [x] **Frontend controller**: `wardenController.{listRules, createRule, updateRule, deleteRule, toggleRule, getSettings, updateSettings, getStats, listEvents}` — `toggleFirewall`/`setProfile` gộp vào `updateSettings` (backend PUT nhận cả 2); `listEvents` build `Record<string, string|number|boolean>` tường minh (fix TS index signature)
 - [x] **Types**: `Warden.types.ts` — `WdFirewallRule`, `WdSecurityEvent`, `WdSettings`, `WdStats`, `WdEventQuery`, enums (`WdRuleAction`/`WdProtocol`/`WdSeverity`/`WdSecurityProfile`) + `WardenErrorCodes` map
-- [ ] **i18n**: en.json — warden namespace đầy đủ ✅; **vi.json — chưa làm (hoãn theo yêu cầu)**
+- [x] **i18n**: en.json — warden namespace restructure thành **`tabs.*` + `pages.overview.*` / `pages.activity.*` / `pages.rules.*`** (đã đầy đủ); **vi.json — chưa làm (hoãn theo yêu cầu)**
+- ⚠️ **Latent bug (chưa fix)**: `WardenOverview.tsx:86` — label firewall toggle dùng key `addon.warden.overview.fields.firewallDisabled` (thiếu `pages.` — fallback render raw key khi firewall tắt); nên đổi thành `addon.warden.pages.overview.fields.firewallDisabled`
+- ⚠️ **Custom profile chưa có nơi cấu hình**: backend `WdSettings.Profile` lưu enum nhưng **không đọc/apply ở đâu** (WdFirewallService là stub Phase 2); `ProfileOptions` vẫn expose "custom" nhưng không có config backing → nên ẩn cho tới khi backend hỗ trợ, hoặc giữ làm placeholder
 
 ### Addon registry
 
 - [x] `frontend/src/addons/index.ts` — import `./Warden/Warden.addon` (đã có sẵn)
-- [x] `frontend/src/addons/Warden/` — dashboard components thay scaffold rỗng
-- [x] @namorix/ui — **không thêm icon mới**; dùng `SECURITY`/`ERROR`/`NETWORK` sẵn có (SHIELD/BAN optional, defer)
-- [ ] @namorix/styles — `warden.scss` (tone amber) — chưa làm (UI hoạt động với tokens chung hiện tại)
+- [x] `frontend/src/addons/Warden/` — dashboard tabs thay scaffold rỗng
+- [x] @namorix/ui 0.44.0 — `NmxChipToggle` (role="switch") + `NmxSettingsWrap` + icon `TASK` (dùng `SECURITY`/`ERROR`/`NETWORK`/`STATS`/`ACTIVITY`/`TASK`/`SETTING`; SHIELD/BAN optional, defer)
+- [x] @namorix/styles 0.55.0 — `warden.scss` (`__page` + `__setting-row`) + chip-toggle SCSS + icomoon glyph TASK
 
 ---
 
