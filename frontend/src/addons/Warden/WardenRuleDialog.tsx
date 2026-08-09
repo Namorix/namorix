@@ -7,6 +7,7 @@ import {
   NmxFormInput,
   NmxSelect,
   type NmxSelectData,
+  NmxTagInput,
   NmxToggle,
 } from "@namorix/ui"
 import type { WdFirewallRule, WdProtocol, WdRuleAction } from "./Warden.types"
@@ -20,8 +21,8 @@ export interface WardenRuleDialogProps {
   onSubmit: (payload: WdRulePayload) => void
 }
 
-const PROTOCOLS: WdProtocol[] = ["any", "tcp", "udp", "icmp"]
-const ACTIONS: WdRuleAction[] = ["allow", "deny"]
+const Protocols: WdProtocol[] = ["any", "tcp", "udp", "icmp"]
+const Actions: WdRuleAction[] = ["allow", "deny"]
 
 export const WardenRuleDialog: React.FC<WardenRuleDialogProps> = ({
   open,
@@ -34,7 +35,7 @@ export const WardenRuleDialog: React.FC<WardenRuleDialogProps> = ({
 
   const [name, setName] = useState("")
   const [sourceCidr, setSourceCidr] = useState("")
-  const [ports, setPorts] = useState("")
+  const [portsTags, setPortsTags] = useState<string[]>([])
   const [protocol, setProtocol] = useState<WdProtocol>("any")
   const [action, setAction] = useState<WdRuleAction>("allow")
   const [enabled, setEnabled] = useState(true)
@@ -44,7 +45,12 @@ export const WardenRuleDialog: React.FC<WardenRuleDialogProps> = ({
     const timeout = setTimeout(() => {
       setName(editing?.name ?? "")
       setSourceCidr(editing?.sourceCidr ?? "")
-      setPorts(editing?.ports ?? "")
+      setPortsTags(
+        (editing?.ports ?? "")
+          .split(",")
+          .filter(Boolean)
+          .map((s) => s.trim()),
+      )
       setProtocol(editing?.protocol ?? "any")
       setAction(editing?.action ?? "allow")
       setEnabled(editing?.enabled ?? true)
@@ -52,20 +58,20 @@ export const WardenRuleDialog: React.FC<WardenRuleDialogProps> = ({
     return () => clearTimeout(timeout)
   }, [open, editing])
 
-  const protocolOptions: NmxSelectData<WdProtocol>[] = PROTOCOLS.map((p) => ({
+  const protocolOptions: NmxSelectData<WdProtocol>[] = Protocols.map((p) => ({
     value: p,
-    label: t(`addon.warden.protocol.${p}`),
+    label: t(`addon.warden.pages.rules.protocol.${p}`),
   }))
-  const actionOptions: NmxSelectData<WdRuleAction>[] = ACTIONS.map((a) => ({
+  const actionOptions: NmxSelectData<WdRuleAction>[] = Actions.map((a) => ({
     value: a,
-    label: t(`addon.warden.rules.action.${a}`),
+    label: t(`addon.warden.pages.rules.action.${a}`),
   }))
 
   const handleSubmit = () => {
     onSubmit({
       name: name.trim(),
       sourceCidr: sourceCidr.trim() || null,
-      ports: ports.trim() || null,
+      ports: portsTags.length > 0 ? portsTags.join(",") : null,
       protocol,
       action,
       enabled,
@@ -77,27 +83,30 @@ export const WardenRuleDialog: React.FC<WardenRuleDialogProps> = ({
       open={open}
       title={t(
         editing
-          ? "addon.warden.dialog.titleEdit"
-          : "addon.warden.dialog.titleAdd",
+          ? "addon.warden.pages.rules.dialog.titleEdit"
+          : "addon.warden.pages.rules.dialog.titleAdd",
       )}
       onClose={onClose}
       size="lg"
       onConfirm={handleSubmit}
       loading={submitting}
-      confirmLabel={t("addon.warden.dialog.save")}
+      confirmLabel={t("addon.warden.pages.rules.dialog.save")}
       confirmDisabled={!name.trim()}
     >
       <NmxForm>
-        <NmxFormField label={t("addon.warden.dialog.name")} required>
+        <NmxFormField
+          label={t("addon.warden.pages.rules.dialog.name")}
+          required
+        >
           <NmxFormInput
             value={name}
             onValueChange={setName}
-            placeholder={t("addon.warden.dialog.namePlaceholder")}
+            placeholder={t("addon.warden.pages.rules.dialog.namePlaceholder")}
           />
         </NmxFormField>
         <NmxFormField
-          label={t("addon.warden.dialog.sourceCidr")}
-          helper={t("addon.warden.dialog.sourceCidrHint")}
+          label={t("addon.warden.pages.rules.dialog.sourceCidr")}
+          helper={t("addon.warden.pages.rules.dialog.sourceCidrHint")}
         >
           <NmxFormInput
             value={sourceCidr}
@@ -106,30 +115,33 @@ export const WardenRuleDialog: React.FC<WardenRuleDialogProps> = ({
           />
         </NmxFormField>
         <NmxFormField
-          label={t("addon.warden.dialog.ports")}
-          helper={t("addon.warden.dialog.portsHint")}
+          label={t("addon.warden.pages.rules.dialog.ports")}
+          helper={t("addon.warden.pages.rules.dialog.portsHint")}
         >
-          <NmxFormInput
-            value={ports}
-            onValueChange={setPorts}
+          <NmxTagInput
+            value={portsTags}
+            onChange={setPortsTags}
             placeholder="80,443"
           />
         </NmxFormField>
-        <NmxFormField label={t("addon.warden.dialog.protocol")}>
+        <NmxFormField label={t("addon.warden.pages.rules.dialog.protocol")}>
           <NmxSelect
             value={protocol}
             options={protocolOptions}
             onChange={setProtocol}
           />
         </NmxFormField>
-        <NmxFormField label={t("addon.warden.dialog.action")}>
+        <NmxFormField label={t("addon.warden.pages.rules.dialog.action")}>
           <NmxSelect
             value={action}
             options={actionOptions}
             onChange={setAction}
           />
         </NmxFormField>
-        <NmxFormField label={t("addon.warden.dialog.enabled")}>
+        <NmxFormField
+          label={t("addon.warden.pages.rules.dialog.enabled")}
+          inline={true}
+        >
           <NmxToggle checked={enabled} onCheckedChanged={setEnabled} />
         </NmxFormField>
       </NmxForm>

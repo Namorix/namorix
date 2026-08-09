@@ -974,81 +974,94 @@
     "warden": {
       "title": "Warden",
       "description": "Host-level firewall and intrusion protection",
-      "firewallEnabled": "Firewall enabled",
-      "firewallDisabled": "Firewall disabled",
-      "stats": {
-        "activeRules": "Active rules",
-        "blockedToday": "Blocked today",
-        "openPorts": "Open ports"
+      "tabs": {
+        "overview": "Overview",
+        "activity": "Activity",
+        "rules": "Rules",
+        "settings": "Settings"
       },
-      "profile": {
-        "title": "Security profile",
-        "low": "Low",
-        "medium": "Medium",
-        "high": "High",
-        "custom": "Custom"
-      },
-      "rules": {
-        "title": "Rule list",
-        "add": "Add rule",
-        "sourceAny": "Any source",
-        "columns": {
-          "name": "Name",
-          "source": "Source",
-          "ports": "Port / Protocol",
-          "action": "Action"
+      "pages": {
+        "overview": {
+          "stats": "Stats",
+          "actions": {
+            "refresh": "Refresh"
+          },
+          "fields": {
+            "activeRules": "Active rules",
+            "blockedToday": "Blocked today",
+            "openPorts": "Open ports",
+            "firewallEnabled": "Firewall enabled",
+            "firewallDisabled": "Firewall disabled",
+            "firewallDescription": "Monitors and blocks unauthorized network traffic",
+            "profile": "Profile"
+          },
+          "profileOptions": {
+            "low": "Low",
+            "medium": "Medium",
+            "high": "High",
+            "custom": "Custom"
+          }
         },
-        "action": {
-          "allow": "Allow",
-          "deny": "Deny"
+        "activity": {
+          "eventTypes": {
+            "ACME_CHALLENGE_FAIL": "ACME challenge failed",
+            "SCAN_404": "404 scan detected",
+            "BRUTE_FORCE": "Brute-force attempt",
+            "EXPLOIT_ATTEMPT": "Exploit attempt"
+          },
+          "fallbacks": {
+            "loading": "Loading activity...",
+            "empty": "No recent activity."
+          }
         },
-        "menu": {
-          "enable": "Enable",
-          "disable": "Disable",
-          "edit": "Edit",
-          "delete": "Delete"
-        },
-        "fallbacks": {
-          "loading": "Loading rules...",
-          "empty": "No rules yet. Add your first rule."
+        "rules": {
+          "add": "Add rule",
+          "sourceAny": "Any source",
+          "columns": {
+            "name": "Name",
+            "source": "Source",
+            "ports": "Port / Protocol",
+            "action": "Action"
+          },
+          "action": {
+            "allow": "Allow",
+            "deny": "Deny"
+          },
+          "menu": {
+            "enable": "Enable",
+            "disable": "Disable",
+            "edit": "Edit",
+            "delete": "Delete"
+          },
+          "fallbacks": {
+            "loading": "Loading rules...",
+            "empty": "No rules yet. Add your first rule."
+          },
+          "dialog": {
+            "titleAdd": "Add rule",
+            "titleEdit": "Edit rule",
+            "name": "Name",
+            "namePlaceholder": "e.g. Block SSH",
+            "sourceCidr": "Source CIDR",
+            "sourceCidrHint": "Leave empty for any source. e.g. 203.0.113.0/24",
+            "ports": "Ports",
+            "portsHint": "e.g. 22 or 80,443 or 1-1024. Leave empty for all ports.",
+            "protocol": "Protocol",
+            "action": "Action",
+            "enabled": "Enabled",
+            "save": "Save",
+            "cancel": "Cancel",
+            "titleDelete": "Delete rule",
+            "delete": "Delete",
+            "deleteConfirm": "Delete rule \"{{name}}\"? This cannot be undone."
+          },
+          "protocol": {
+            "any": "Any",
+            "tcp": "TCP",
+            "udp": "UDP",
+            "icmp": "ICMP"
+          }
         }
-      },
-      "log": {
-        "title": "Recent activity",
-        "fallbacks": {
-          "loading": "Loading activity...",
-          "empty": "No recent activity."
-        }
-      },
-      "eventTypes": {
-        "ACME_CHALLENGE_FAIL": "ACME challenge failed",
-        "SCAN_404": "404 scan detected",
-        "BRUTE_FORCE": "Brute-force attempt",
-        "EXPLOIT_ATTEMPT": "Exploit attempt"
-      },
-      "dialog": {
-        "titleAdd": "Add rule",
-        "titleEdit": "Edit rule",
-        "name": "Name",
-        "namePlaceholder": "e.g. Block SSH",
-        "sourceCidr": "Source CIDR",
-        "sourceCidrHint": "Leave empty for any source. e.g. 203.0.113.0/24",
-        "ports": "Ports",
-        "portsHint": "e.g. 22 or 80,443 or 1-1024. Leave empty for all ports.",
-        "protocol": "Protocol",
-        "action": "Action",
-        "enabled": "Enabled",
-        "save": "Save",
-        "cancel": "Cancel",
-        "titleDelete": "Delete rule",
-        "delete": "Delete",
-        "deleteConfirm": "Delete rule \"{{name}}\"? This cannot be undone."
-      },
-      "protocol": {
-        "any": "Any",
-        "tcp": "TCP",
-        "udp": "UDP",
-        "icmp": "ICMP"
       },
       "errors": {
         "ruleNotFound": "Rule not found",
