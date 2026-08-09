@@ -40,7 +40,7 @@ export const NmxIconFontSymbol = {
   WARNING: "ic-warning",
   INFO: "ic-info",
   DENSITY_COMPACT: "ic-density-compact",
-  DENSITY_DEFAULT: "ic-density-light",
+  DENSITY_DEFAULT: "ic-density-default",
   DENSITY_SPACIOUS: "ic-density-spacious",
   MARK_ALL: "ic-mark-all",
   FILTER: "ic-filter",
@@ -69,6 +69,7 @@ export const NmxIconFontSymbol = {
   API: "ic-api",
   PROXY: "ic-proxy",
   TASK: "ic-task",
+  BLOCK: "ic-block",
 } as const
 
 export type NmxIconFontSymbol =
