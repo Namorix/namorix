@@ -978,22 +978,30 @@
         "overview": "Overview",
         "activity": "Activity",
         "rules": "Rules",
-        "settings": "Settings"
+        "bans": "Blocked IPs"
+      },
+      "errors": {
+        "ruleNotFound": "Rule not found",
+        "ipAlreadyBanned": "IP is already banned",
+        "invalidCidr": "Invalid IP or CIDR format",
+        "invalidPorts": "Invalid port or range format"
       },
       "pages": {
         "overview": {
           "stats": "Stats",
-          "actions": {
-            "refresh": "Refresh"
-          },
           "fields": {
             "activeRules": "Active rules",
             "blockedToday": "Blocked today",
+            "totalEvents": "Activity events",
             "openPorts": "Open ports",
             "firewallEnabled": "Firewall enabled",
             "firewallDisabled": "Firewall disabled",
             "firewallDescription": "Monitors and blocks unauthorized network traffic",
-            "profile": "Profile"
+            "profile": "Profile",
+            "customThresholdFactor": "Threshold multiplier",
+            "customThresholdFactorHint": "× on the base ban threshold (higher = more lenient)",
+            "customDurationFactor": "Ban duration multiplier",
+            "customDurationFactorHint": "× on the base ban duration (higher = stricter)"
           },
           "profileOptions": {
             "low": "Low",
@@ -1003,6 +1011,10 @@
           }
         },
         "activity": {
+          "actions": {
+            "clear": "Clear",
+            "refresh": "Refresh"
+          },
           "eventTypes": {
             "ACME_CHALLENGE_FAIL": "ACME challenge failed",
             "SCAN_404": "404 scan detected",
@@ -1012,6 +1024,20 @@
           "fallbacks": {
             "loading": "Loading activity...",
             "empty": "No recent activity."
+          },
+          "detail": {
+            "fields": {
+              "eventType": "Event type",
+              "severity": "Severity",
+              "sourceAddon": "Source addon",
+              "sourceIp": "Source IP",
+              "count": "Count",
+              "windowStart": "Window start",
+              "timestamp": "Timestamp"
+            },
+            "actions": {
+              "close": "Close"
+            }
           }
         },
         "rules": {
@@ -1060,14 +1086,32 @@
             "tcp": "TCP",
             "udp": "UDP",
             "icmp": "ICMP"
+          },
+          "detail": {
+            "title": "Rule detail",
+            "fields": {
+              "name": "Name",
+              "source": "Source",
+              "ports": "Port / Protocol",
+              "action": "Action",
+              "status": "Status",
+              "type": "Type",
+              "priority": "Priority",
+              "expiresAt": "Expires at",
+              "createdAt": "Created at"
+            },
+            "values": {
+              "enabled": "Enabled",
+              "disabled": "Disabled",
+              "auto": "Auto",
+              "manual": "Manual"
+            },
+            "actions": {
+              "edit": "Edit rule",
+              "close": "Close"
+            }
           }
         }
-      },
-      "errors": {
-        "ruleNotFound": "Rule not found",
-        "ipAlreadyBanned": "IP is already banned",
-        "invalidCidr": "Invalid IP or CIDR format",
-        "invalidPorts": "Invalid port or range format"
       }
     }
   }

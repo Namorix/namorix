@@ -40,12 +40,15 @@ export interface WdSettings {
   id: number
   firewallEnabled: boolean
   profile: WdSecurityProfile
+  customThresholdFactor: number
+  customDurationFactor: number
   updatedAt: string
 }
 
 export interface WdStats {
   activeRules: number
   blockedToday: number
+  totalEvents: number
   openPorts: number
 }
 

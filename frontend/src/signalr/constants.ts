@@ -3,6 +3,7 @@ export const ServerSignalRGroups = {
   Addon: "addon",
   Beacon: "beacon",
   Frontgate: "frontgate",
+  Warden: "warden",
 } as const
 
 export const ServerSignalREvent = {
@@ -21,6 +22,7 @@ export const ServerSignalREvent = {
   FrontgateDryRunChanged: ServerSignalRGroups.Frontgate + ":dry-run-changed",
   FrontgateCertChanged: ServerSignalRGroups.Frontgate + ":cert-changed",
   FrontgateAuditCreated: ServerSignalRGroups.Frontgate + ":audit-created",
+  WardenNewEvent: ServerSignalRGroups.Warden + ":new-event",
 }
 
 export type ServerSignalRGroupsType =

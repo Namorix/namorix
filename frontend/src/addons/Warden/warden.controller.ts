@@ -28,6 +28,8 @@ export interface WdRulePayload {
 export interface WdSettingsPayload {
   firewallEnabled: boolean
   profile: WdSecurityProfile
+  customThresholdFactor?: number
+  customDurationFactor?: number
 }
 
 export interface WdEventListResponse {

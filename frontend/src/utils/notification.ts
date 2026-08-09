@@ -16,6 +16,7 @@ export const NOTIFICATION_SOURCE_ICON: Record<string, NmxIconSvgSymbol> = {
   system: NmxIconSvgSymbol.APP_SYSTEM,
   settings: NmxIconSvgSymbol.APP_SETTINGS,
   beacon: NmxIconSvgSymbol.APP_BEACON,
+  warden: NmxIconSvgSymbol.APP_WARDEN,
 }
 
 type NotificationDescriptionRenderer = (

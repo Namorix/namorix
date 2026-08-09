@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { formatCustomError, nmxToast } from "@namorix/core"
+import { formatCustomError, nmxToast, useDateTimeFormat } from "@namorix/core"
 import {
   NmxAlertDialog,
   NmxAlign,
@@ -12,6 +12,8 @@ import {
   NmxIconFont,
   NmxIconFontSymbol,
   NmxMenuButton,
+  NmxMetaItem,
+  NmxMetaList,
   type NmxSemanticColor,
 } from "@namorix/ui"
 import {
@@ -29,6 +31,7 @@ const ActionSemantic: Record<WdRuleAction, NmxSemanticColor> = {
 
 export const WardenRules: React.FC = () => {
   const { t } = useTranslation()
+  const { dateTime } = useDateTimeFormat()
   const [rules, setRules] = useState<WdFirewallRule[]>([])
   const [rulesLoading, setRulesLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -36,6 +39,7 @@ export const WardenRules: React.FC = () => {
   const [submitting, setSubmitting] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<WdFirewallRule | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [detailTarget, setDetailTarget] = useState<WdFirewallRule | null>(null)
 
   const fetchRules = useCallback(() => {
     setRulesLoading(true)
@@ -124,11 +128,12 @@ export const WardenRules: React.FC = () => {
       renderCell: (rule) =>
         `${rule.ports ?? "*"} / ${rule.protocol.toUpperCase()}`,
       grow: 1,
+      hideBelow: "md",
     },
     {
       header: t("addon.warden.pages.rules.columns.action"),
       renderCell: (rule) => (
-        <NmxBadge semantic={ActionSemantic[rule.action]}>
+        <NmxBadge semantic={ActionSemantic[rule.action]} size="sm">
           {t(`addon.warden.pages.rules.action.${rule.action}`)}
         </NmxBadge>
       ),
@@ -139,6 +144,8 @@ export const WardenRules: React.FC = () => {
       alignCell: "end",
       renderCell: (rule) => (
         <NmxMenuButton<"toggle" | "edit" | "delete">
+          variant="ghost"
+          semantic="trace"
           arrowDisabled
           options={[
             {
@@ -156,6 +163,7 @@ export const WardenRules: React.FC = () => {
               semantic: "error",
             },
           ]}
+          dividerIndexes={[{ value: "delete", position: "top" }]}
           onSelect={(v) => {
             if (v === "toggle") handleToggleRule(rule)
             else if (v === "edit") handleEditRule(rule)
@@ -193,6 +201,8 @@ export const WardenRules: React.FC = () => {
       <NmxDataTable
         columns={columns}
         rows={rules}
+        clickableRows
+        onRowClick={(rule) => setDetailTarget(rule)}
         fallbackConditions={fallbackConditions}
         className="nmx-addon-page__data-table"
       />
@@ -204,6 +214,88 @@ export const WardenRules: React.FC = () => {
         onClose={() => setDialogOpen(false)}
         onSubmit={handleSubmitRule}
       />
+
+      <NmxAlertDialog
+        open={detailTarget != null}
+        title={t("addon.warden.pages.rules.detail.title")}
+        closeLabel={t("addon.warden.pages.rules.detail.actions.close")}
+        extraActionLabel={t("addon.warden.pages.rules.detail.actions.edit")}
+        onExtraAction={() => {
+          if (!detailTarget) return
+          setDetailTarget(null)
+          handleEditRule(detailTarget)
+        }}
+        onClose={() => setDetailTarget(null)}
+      >
+        {detailTarget && (
+          <NmxMetaList>
+            <NmxMetaItem
+              label={t("addon.warden.pages.rules.detail.fields.name")}
+              value={detailTarget.name}
+              alignValue="end"
+            />
+            <NmxMetaItem
+              label={t("addon.warden.pages.rules.detail.fields.source")}
+              value={
+                detailTarget.sourceCidr ??
+                t("addon.warden.pages.rules.sourceAny")
+              }
+              alignValue="end"
+            />
+            <NmxMetaItem
+              label={t("addon.warden.pages.rules.detail.fields.ports")}
+              value={`${detailTarget.ports ?? "*"} / ${detailTarget.protocol.toUpperCase()}`}
+              alignValue="end"
+            />
+            <NmxMetaItem
+              label={t("addon.warden.pages.rules.detail.fields.action")}
+              value={t(
+                `addon.warden.pages.rules.action.${detailTarget.action}`,
+              )}
+              semantic={ActionSemantic[detailTarget.action]}
+              alignValue="end"
+            />
+            <NmxMetaItem
+              label={t("addon.warden.pages.rules.detail.fields.status")}
+              value={
+                detailTarget.enabled
+                  ? t("addon.warden.pages.rules.detail.values.enabled")
+                  : t("addon.warden.pages.rules.detail.values.disabled")
+              }
+              semantic={detailTarget.enabled ? "success" : "error"}
+              alignValue="end"
+            />
+            <NmxMetaItem
+              label={t("addon.warden.pages.rules.detail.fields.type")}
+              value={
+                detailTarget.auto
+                  ? t("addon.warden.pages.rules.detail.values.auto")
+                  : t("addon.warden.pages.rules.detail.values.manual")
+              }
+              alignValue="end"
+            />
+            {detailTarget.priority != null && (
+              <NmxMetaItem
+                label={t("addon.warden.pages.rules.detail.fields.priority")}
+                value={String(detailTarget.priority)}
+                alignValue="end"
+              />
+            )}
+            {detailTarget.expiresAt && (
+              <NmxMetaItem
+                label={t("addon.warden.pages.rules.detail.fields.expiresAt")}
+                value={dateTime(detailTarget.expiresAt)}
+                alignValue="end"
+              />
+            )}
+            <NmxMetaItem
+              label={t("addon.warden.pages.rules.detail.fields.createdAt")}
+              value={dateTime(detailTarget.createdAt)}
+              alignValue="end"
+            />
+          </NmxMetaList>
+        )}
+      </NmxAlertDialog>
 
       <NmxAlertDialog
         open={deleteTarget != null}

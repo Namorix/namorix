@@ -9,5 +9,9 @@
   "beacon": {
     "hostnameError": "Hostname **{{hostname}}** failed to update: [color:error]{{error}}[/color]",
     "hostnameRecovered": "Hostname **{{hostname}}** is back online"
+  },
+  "warden": {
+    "ruleApplied": "IP **{{sourceCidr}}** has been blocked",
+    "ruleRemoved": "IP **{{sourceCidr}}** is unblocked"
   }
 }

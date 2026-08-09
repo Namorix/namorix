@@ -13,7 +13,7 @@ import { WardenOverview } from "./WardenOverview"
 import { WardenActivity } from "./WardenActivity"
 import { WardenRules } from "./WardenRules"
 
-export type WardenTab = "overview" | "activity" | "rules" | "settings"
+export type WardenTab = "overview" | "activity" | "bans" | "rules"
 
 const TABS: NmxToolbarItemData<WardenTab>[] = [
   {
@@ -30,11 +30,6 @@ const TABS: NmxToolbarItemData<WardenTab>[] = [
     key: "rules",
     label: "addon.warden.tabs.rules",
     icon: NmxIconFontSymbol.TASK,
-  },
-  {
-    key: "settings",
-    label: "addon.warden.tabs.settings",
-    icon: NmxIconFontSymbol.SETTING,
   },
 ]
 
