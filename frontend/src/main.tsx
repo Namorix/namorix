@@ -1,4 +1,6 @@
-import "./main.scss"
+if (import.meta.env.DEV) {
+  import("./main.scss")
+}
 
 import { createRoot } from "react-dom/client"
 import { BrowserRouter } from "react-router-dom"
@@ -8,11 +10,8 @@ import "./i18n"
 import "./addons"
 
 configureCore({
-  apiBaseUrl:
-    import.meta.env.VITE_API_URL ??
-    (window.location.host === "izerocs.space"
-      ? "https://api.izerocs.space"
-      : window.location.origin),
+  apiBaseUrl: import.meta.env.VITE_API_URL ?? window.location.origin,
+  isShellDesktop: true,
 })
 
 generateFingerprint().catch(console.error)

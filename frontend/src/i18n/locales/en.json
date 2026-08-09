@@ -379,7 +379,8 @@
         "reverseProxy": "Reverse Proxy",
         "certificate": "Certificate",
         "accessPolicy": "Access Policy",
-        "audit": "Audit Log"
+        "audit": "Audit Log",
+        "settings": "Settings"
       },
       "errors": {
         "ruleNotFound": "Rule not found",
@@ -400,7 +401,10 @@
         "policyLocksOutAdmin": "This policy would block your own IP address. Adjust the rule before saving",
         "dryRunNotPending": "No dry-run is currently pending for this rule",
         "certificateFilesMissing": "Certificate files are missing on disk",
-        "downloadError": "Failed to download certificate"
+        "downloadError": "Failed to download certificate",
+        "geoIpFileRequired": "GeoIP database file is required",
+        "geoIpInvalid": "Uploaded file is not a valid GeoLite2 database",
+        "geoIpRollbackFailed": "Failed to restore previous database"
       },
       "pages": {
         "reverseProxy": {
@@ -691,6 +695,50 @@
             "clearSuccess": "Audit log cleared ({{count}} entries)",
             "clearError": "Failed to clear audit log",
             "clearConfirm": "This will permanently delete all audit entries. Continue?"
+          }
+        },
+        "settings": {
+          "sections": {
+            "geoIp": "GeoIP Database",
+            "upload": "Upload Database"
+          },
+          "fields": {
+            "exists": "Database installed",
+            "existsDesc": "GeoLite2-Country.mmdb present and loadable",
+            "databaseType": "Database type",
+            "buildEpoch": "Build date",
+            "fileSize": "File size",
+            "upload": "Replace database",
+            "uploadDesc": "Upload a new GeoLite2-Country.mmdb file"
+          },
+          "actions": {
+            "upload": "Upload",
+            "rollback": "Rollback"
+          },
+          "statusValues": {
+            "exists": "Installed",
+            "missing": "Missing"
+          },
+          "errors": {
+            "loadFailed": "Failed to load GeoIP status",
+            "uploadFailed": "Upload failed",
+            "rollbackFailed": "Failed to restore previous database"
+          },
+          "feedback": {
+            "uploadSuccess": "GeoIP database updated",
+            "rollbackSuccess": "Previous database restored"
+          },
+          "rollbackDialog": {
+            "title": "Restore previous database?",
+            "description": "This will replace the current database with the backup version.",
+            "confirm": "Rollback",
+            "cancel": "Cancel",
+            "currentVersion": "Current version",
+            "currentBuild": "Current build",
+            "currentSize": "Current size",
+            "backupVersion": "Backup version",
+            "backupBuild": "Backup build",
+            "backupSize": "Backup size"
           }
         }
       }

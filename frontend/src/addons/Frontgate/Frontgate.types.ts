@@ -25,6 +25,9 @@ export const FrontgateErrorCodes: Record<string, string> = {
   FG_POLICY_IN_USE: "addon.frontgate.errors.policyInUse",
   FG_POLICY_LOCKS_OUT_ADMIN: "addon.frontgate.errors.policyLocksOutAdmin",
   FG_DRY_RUN_NOT_PENDING: "addon.frontgate.errors.dryRunNotPending",
+  FG_GEOIP_FILE_REQUIRED: "addon.frontgate.errors.geoIpFileRequired",
+  FG_GEOIP_INVALID: "addon.frontgate.errors.geoIpInvalid",
+  FG_GEOIP_ROLLBACK_FAILED: "addon.frontgate.errors.geoIpRollbackFailed",
 }
 
 export type FrontgateCertificateKeyType = "rsa" | "ecdsa"

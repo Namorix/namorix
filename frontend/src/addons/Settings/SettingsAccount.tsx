@@ -106,7 +106,10 @@ export const SettingsAccount: React.FC = () => {
         <NmxSettingsCard>
           <div className="nmx-addon-setting__profile-header">
             <div className="nmx-addon-setting__avatar">
-              <NmxIconFont symbol={NmxIconFontSymbol.USER} />
+              <NmxIconFont
+                symbol={NmxIconFontSymbol.USER}
+                className="nmx-addon-setting__avatar-icon"
+              />
             </div>
             <NmxMetaList className="nmx-addon-setting__meta-list">
               <NmxMetaItem

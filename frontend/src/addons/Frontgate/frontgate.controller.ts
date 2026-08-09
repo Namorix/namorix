@@ -194,6 +194,19 @@ export interface FgTrafficLogResponse {
   elapsedMs: number
 }
 
+export interface GeoIpStatus {
+  exists: boolean
+  fileSize: number
+  modifiedAt?: string | null
+  databaseType?: string | null
+  buildEpoch?: string | null
+  binaryFormatMajorVersion?: number | null
+  hasBackup: boolean
+  backupFileSize?: number | null
+  backupDatabaseType?: string | null
+  backupBuildEpoch?: string | null
+}
+
 async function listRules(
   page: number,
   size: number,
@@ -410,6 +423,35 @@ async function downloadCert(id: string): Promise<void> {
   a.click()
 }
 
+async function getGeoIpStatus(): Promise<GeoIpStatus> {
+  const data = await nmxHttp
+    .url(getApiBaseUrl() + ApiFrontgateRoutes.geoIp)
+    .get()
+    .json<GeoIpStatus>()
+  if (!data.success) throw ApiError.fromResponse(data)
+  return data.data
+}
+
+async function uploadGeoIp(
+  formData: FormData,
+  onProgress?: (progress: number) => void,
+): Promise<GeoIpStatus> {
+  const data = await nmxHttp
+    .url(getApiBaseUrl() + ApiFrontgateRoutes.geoIp)
+    .formUpload<GeoIpStatus>(formData, onProgress)
+  if (!data.success) throw ApiError.fromResponse(data)
+  return data.data
+}
+
+async function rollbackGeoIp(): Promise<GeoIpStatus> {
+  const data = await nmxHttp
+    .url(getApiBaseUrl() + ApiFrontgateRoutes.geoIpRollback)
+    .post()
+    .json<GeoIpStatus>()
+  if (!data.success) throw ApiError.fromResponse(data)
+  return data.data
+}
+
 export const frontgateController = {
   listRules,
   createRule,
@@ -433,4 +475,7 @@ export const frontgateController = {
   listAudit,
   clearAudit,
   downloadCert,
+  getGeoIpStatus,
+  uploadGeoIp,
+  rollbackGeoIp,
 }

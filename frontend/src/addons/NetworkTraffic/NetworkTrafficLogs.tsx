@@ -86,7 +86,6 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
   }, [filterSearch, page, live, pageSize, refreshKey, fetchLogs, source])
 
   useSignalRGroup(SignalRGroups.Traffic, !!live)
-
   useSignalREvent(SignalREvent.TrafficNewLogs, () => {
     if (live) {
       fetchLogs(1, filterSearch, pageSize).catch(setError)
@@ -201,6 +200,7 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
           <NmxMetaList>
             <NmxMetaItem
               label={t("addon.networkTraffic.logs.fields.statusCode")}
+              alignValue="end"
             >
               <NmxBadge
                 semantic={statusToSemantic(selectedLog.statusCode)}
@@ -210,7 +210,10 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
                 {selectedLog.statusCode}
               </NmxBadge>
             </NmxMetaItem>
-            <NmxMetaItem label={t("addon.networkTraffic.logs.fields.method")}>
+            <NmxMetaItem
+              label={t("addon.networkTraffic.logs.fields.method")}
+              alignValue="end"
+            >
               <NmxBadge
                 semantic={methodToSemantic(selectedLog.method)}
                 size="sm"
@@ -222,19 +225,23 @@ export const NetworkTrafficLogs: React.FC<NetworkTrafficLogsProps> = ({
               label={t("addon.networkTraffic.logs.fields.path")}
               value={selectedLog.path}
               useSelectEnabled={true}
+              alignValue="end"
             />
             <NmxMetaItem
               label={t("addon.networkTraffic.logs.fields.duration")}
               value={formatDuration(selectedLog.durationMs)}
+              alignValue="end"
             />
             <NmxMetaItem
               label={t("addon.networkTraffic.logs.fields.size")}
               value={formatSize(selectedLog.responseSizeBytes)}
+              alignValue="end"
             />
             <NmxMetaItem
               label={t("addon.networkTraffic.logs.fields.ip")}
               value={selectedLog.ip ?? "-"}
               useSelectEnabled={true}
+              alignValue="end"
             />
           </NmxMetaList>
         )}

@@ -28,11 +28,11 @@ import {
 
 export const Register: React.FC = () => {
   const { t } = useTranslation()
-  const [username, setUsername] = useState("IzeroCs")
-  const [password, setPassword] = useState("12345678")
-  const [confirmPassword, setConfirmPassword] = useState("12345678")
-  const [email, setEmail] = useState("izero.cs@gmail.com")
-  const [name, setName] = useState("Nguyễn Danh Nam")
+  const [username, setUsername] = useState("")
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [email, setEmail] = useState("")
+  const [name, setName] = useState("")
   const [busy, setBusy] = useState(false)
   const needsRegister = useNeedsRegisterStore()
   const navigate = useNavigate()

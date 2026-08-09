@@ -99,7 +99,7 @@ const tabs: NmxTab<FrontgateTabDialog>[] = [
 
 const initialForm: CreateReverseProxyRulePayload = {
   source: "",
-  destinationScheme: "htp",
+  destinationScheme: "http",
   destinationHost: "",
   destinationPort: 80,
   http2Support: false,
