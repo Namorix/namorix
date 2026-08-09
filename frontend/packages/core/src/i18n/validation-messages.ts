@@ -234,6 +234,10 @@ export function formatCustomError(
   codeMap: Record<string, string>,
 ): string | ApiError {
   if (!err.code) return err
+
+  const standard = formatApiError(t, err)
+  if (standard) return standard
+
   const i18nKey = codeMap[err.code] ?? err.code
   const result = t(i18nKey, { field: err.field, ...(err.meta ?? {}) })
   return result !== i18nKey ? result : err

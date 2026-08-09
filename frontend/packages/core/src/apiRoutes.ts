@@ -106,6 +106,8 @@ export const ApiFrontgateRoutes = {
     `${API_FRONTGATE_BASE}/access-policies/${id}`,
 
   audit: API_FRONTGATE_BASE + "/audit",
+  geoIp: API_FRONTGATE_BASE + "/geoip",
+  geoIpRollback: API_FRONTGATE_BASE + "/geoip/rollback",
 } as const
 
 export const ApiBeaconRoutes = {

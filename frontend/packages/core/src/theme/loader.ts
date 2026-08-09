@@ -6,17 +6,26 @@ import {
 } from "../constants"
 import { sanitizePath } from "../utils"
 import type { AppearanceSettings } from "../types"
+import { isShellDesktopEnv } from "../config"
+
+interface ThemeLoadRecord {
+  key: string
+  promise: Promise<void>
+}
+
+const pendingLoads = new Map<string, ThemeLoadRecord>()
 
 function appendStylesheet(
   id: string,
   path: string,
   callback?: (element: HTMLLinkElement) => void,
+  elementId: string = NMX_THEME_CSS_ID,
 ) {
   const safeSaveId = sanitizePath(id)
   const safeSavePath = sanitizePath(path)
 
   const link = document.createElement("link")
-  link.id = NMX_THEME_CSS_ID
+  link.id = elementId
   link.rel = "stylesheet"
   link.href = ThemeRoutes.themes
     .replace("{id}", safeSaveId)
@@ -34,18 +43,56 @@ export function restoreTheme(): void {
   appendStylesheet(saveId, savePath)
 }
 
-export async function loadTheme(cssId: string, cssPath: string): Promise<void> {
-  document.querySelector(`#${NMX_THEME_CSS_ID}`)?.remove()
-  return new Promise((resolve, reject) => {
-    appendStylesheet(cssId, cssPath, (element: HTMLLinkElement) => {
-      element.onload = () => resolve()
-      element.onerror = () => reject()
-    })
+export async function loadTheme(
+  cssId: string,
+  cssPath: string,
+  elementId: string = NMX_THEME_CSS_ID,
+): Promise<void> {
+  const key = `${cssId}::${cssPath}`
+  const existing = pendingLoads.get(elementId)
+
+  if (existing && existing.key === key) {
+    return existing.promise
+  }
+
+  const promise = new Promise<void>((resolve, reject) => {
+    document.querySelector(`#${elementId}`)?.remove()
+    appendStylesheet(
+      cssId,
+      cssPath,
+      (element: HTMLLinkElement) => {
+        element.onload = () => resolve()
+        element.onerror = () => reject()
+      },
+      elementId,
+    )
   })
+
+  pendingLoads.set(elementId, { key, promise })
+  promise.catch(() => {
+    if (pendingLoads.get(elementId)?.key === key) {
+      pendingLoads.delete(elementId)
+    }
+  })
+
+  return promise
 }
 
-export function applyTheme(themeId: string): Promise<void> {
-  return loadTheme(themeId, "theme.css")
+export async function applyTheme(themeId: string): Promise<void> {
+  const targets: Array<{ path: string; elementId?: string }> = [
+    { path: "theme.css" },
+  ]
+
+  if (isShellDesktopEnv()) {
+    targets.push({
+      path: "shell.css",
+      elementId: `${NMX_THEME_CSS_ID}-shell`,
+    })
+  }
+
+  await Promise.all(
+    targets.map(({ path, elementId }) => loadTheme(themeId, path, elementId)),
+  )
 }
 
 export function applyAppearanceTokens(settings: AppearanceSettings) {

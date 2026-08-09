@@ -84,6 +84,16 @@ class RequestBuilder {
     return this
   }
 
+  form(body: FormData) {
+    this._options.method = "POST"
+    this._options.body = body
+    const csrfToken = this._readCsrfToken()
+    if (csrfToken) {
+      this._headers["x-csrf-token"] = csrfToken
+    }
+    return this
+  }
+
   async json<T>(): Promise<ApiResponse<T>> {
     try {
       const fingerprint = getFingerprint()
@@ -130,6 +140,59 @@ class RequestBuilder {
         HttpErrorCodes.INTERNAL_ERROR,
       ) as ApiResponse<T>
     }
+  }
+
+  formUpload<T>(
+    body: FormData,
+    onProgress?: (progress: number) => void,
+  ): Promise<ApiResponse<T>> {
+    return new Promise((resolve) => {
+      const xhr = new XMLHttpRequest()
+      xhr.open("POST", this._url)
+      xhr.withCredentials = true
+
+      const csrfToken = this._readCsrfToken()
+      if (csrfToken) {
+        this._headers["x-csrf-token"] = csrfToken
+      }
+      const fingerprint = getFingerprint()
+      if (fingerprint) {
+        this._headers["x-device-fingerprint"] = fingerprint
+      }
+      for (const [key, value] of Object.entries(this._headers)) {
+        xhr.setRequestHeader(key, value)
+      }
+
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable && onProgress) {
+          onProgress(Math.round((e.loaded / e.total) * 100))
+        }
+      }
+
+      xhr.onload = () => {
+        try {
+          const data = JSON.parse(xhr.responseText) as ApiResponse<T>
+          resolve(data)
+        } catch {
+          resolve(
+            apiHttpError(
+              "Network error",
+              HttpErrorCodes.INTERNAL_ERROR,
+            ) as ApiResponse<T>,
+          )
+        }
+      }
+      xhr.onerror = () => {
+        resolve(
+          apiHttpError(
+            "Network error",
+            HttpErrorCodes.INTERNAL_ERROR,
+          ) as ApiResponse<T>,
+        )
+      }
+
+      xhr.send(body)
+    })
   }
 }
 
