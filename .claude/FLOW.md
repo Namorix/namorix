@@ -440,6 +440,7 @@ On disconnect
 | `frontgate:dry-run-changed` | Server → Client | `{ ruleId: string, action: string }` | FrontgateReverseProxy (dry-run confirm/cancel/expire — group `frontgate`) |
 | `frontgate:cert-changed` | Server → Client | `{ certId: string, action: string }` | FrontgateCertificate (realtime CRUD — group `frontgate`) |
 | `frontgate:audit-created` | Server → Client | `{ targetType: string, targetId: string, action: string }` (lowercase enum — FgAuditTargetType/FgAuditAction) | FrontgateAudit (realtime log — `FrontgateAudit.NotifyAuditCreated`; group `frontgate`) |
+| `warden:new-event` | Server → Client | `{ id, eventType, severity, sourceAddon, sourceIp, count, timestamp }` | WardenOverview (stats realtime — `SignalRWardenNotifier.NotifyNewEvent`; group `warden`) |
 
 ### Hooks
 
@@ -470,7 +471,10 @@ NmxHub (IHubContext)
        ├── NotifyDryRunChanged(ruleId, action)
        ├── NotifyRuleChanged(ruleId, action)
        └── NotifyCertChanged(certId, action)
+  └── IWardenNotifier → NotifyNewEvent(evt)         // warden:new-event → group warden
 ```
+
+**Herald (scoped) — từ singleton `WdFirewallService`**: resolve `IHeraldNotifier` qua `IServiceScopeFactory` (scoped — phụ thuộc `NotificationService`). `HeraldNotifier` — `warden:ruleApplied` (Warning) / `warden:ruleRemoved` (Info), **chỉ khi `Action == Deny`**, params `name`/`sourceCidr`/`expiresAt`. `WdFirewallService.ApplyAllAsync(notify:false)` khi restart → không spam notify toàn bộ rules.
 
 ### Key files
 
@@ -912,6 +916,55 @@ Hostname status: `updating | active | disabled | error` (create/edit-save + togg
 | `backend/src/Namorix.Server/Models/Bcn*.cs` | BcnHostname/Settings/ActivityLog/ProviderConfig/ProviderInfo |
 | `frontend/src/addons/Beacon/` | BeaconHostnames/BeaconActivity/BeaconSettings + beacon.controller |
 | `frontend/packages/core/src/apiRoutes.ts` | ApiBeaconRoutes |
+
+### Warden Addon (M4 — internal)
+
+Host-level firewall (dưới Frontgate HTTP layer): rules CIDR + iptables/nftables enforcement, security event log, auto-ban theo threshold profile, Herald notifications. Route `/api/warden`, controllers `WdController`/`WdEventController`, entity prefix `Wd`. Đứng dưới Frontgate — chặn ở layer mạng thay vì HTTP.
+
+**Event publishing → `WdSecurityEvent` (`WdEventService.PublishAsync` — save DB + push SignalR):**
+```
+WdEventService.PublishAsync(eventType, severity, sourceAddon, sourceIp, count, detailJson)
+  ├── new WdSecurityEvent → db.WdSecurityEvents.Add → SaveChangesAsync
+  └── IWardenNotifier.NotifyNewEvent(evt) → SignalRWardenNotifier (group warden, event warden:new-event)
+```
+Call sites:
+- `AcmeChallengeMiddleware` — ACME challenge fail → `WdEventTypes.AcmeChallengeFail` (severity Warning)
+- `ProxyTrafficMiddleware` — 404 scan → `WdEventTypes.Scan404` (severity Info) — **debounce 1 event/IP/5-min** qua `ScanWindow` ConcurrentDictionary (chống DB flood khi bot scan hàng trăm req/s)
+
+**Threshold engine (Phase 2):** `WdThresholdRules.For(eventType, thresholdFactor, durationFactor)` — base config theo event type:
+| Event | Threshold | Lookback | BanDuration |
+|-------|-----------|----------|-------------|
+| `AcmeChallengeFail` | 20 | 5 min | 1 h |
+| `Scan404` | 10 | 1 h | 30 min |
+| `BruteForce` | 10 | 5 min | 1 h |
+
+`WdThresholdFactors.For(profile, settings)` — Low (×2 / ×0.5), Medium (×1 / ×1), High (×0.5 / ×2), Custom (`CustomThresholdFactor`/`CustomDurationFactor`). Vượt threshold → auto tạo ban rule (WdThresholdWorker). `WdBanCleanupWorker` — gỡ rule hết hạn (`ExpiresAt`).
+
+**Herald notifications (`IHeraldNotifier` — scoped, resolve từ singleton `WdFirewallService` qua `IServiceScopeFactory`):**
+- `NotifyRuleAppliedAsync(rule)` — `warden:ruleApplied` (NotificationType.Warning), params `name`/`sourceCidr`/`expiresAt`
+- `NotifyRuleRemovedAsync(rule)` — `warden:ruleRemoved` (NotificationType.Info), params `name`/`sourceCidr`
+- **Chỉ notify khi `Action == Deny`** (allow rules im lặng). `ApplyAllAsync(notify:false)` khi restart — không spam notify toàn bộ rules.
+
+**Notification keys:** `NotificationKeys.Warden.RuleApplied`/`RuleRemoved` = `warden:ruleApplied`/`warden:ruleRemoved` (camelCase — align FE template `warden.ruleApplied` "IP **{{sourceCidr}}** has been blocked"). `AddonSourceId.Warden` (`Namorix.Core/Constants/Addon.cs`).
+
+**Frontend (`frontend/src/addons/Warden/`):** `Warden.tsx` — `NmxToolbar` tabs (overview/activity/rules/settings, content TRONG provider scope). `WardenOverview.tsx` — firewall master toggle + 3 `NmxStatCard` + profile `NmxSegmentedGroup` + **stats realtime** (SignalR group `warden` `warden:new-event` + 30s poll fallback). `WardenActivity.tsx` — `NmxLogList` + pagination + detail dialog (click row → `NmxAlertDialog` + `NmxMetaList`, severity info/warning/error). `WardenRules.tsx` — `NmxDataTable` + `NmxBadge` allow=success/deny=error + `NmxMenuButton` + detail dialog. `WardenRuleDialog.tsx` — ports `NmxTagInput`. Notification icon: `warden` → `APP_WARDEN`.
+
+### Key files (Warden)
+
+| File | Role |
+|------|------|
+| `backend/src/Namorix.Server/Controllers/Warden/WdController.cs` | Rules CRUD + toggle + settings + stats (`/api/warden`, `[RequireAdmin]`) |
+| `backend/src/Namorix.Server/Controllers/Warden/WdEventController.cs` | Security events (paginated, filter IP/type/severity) |
+| `backend/src/Namorix.Server/Services/Warden/WdFirewallService.cs` | iptables/nftables enforcement engine + Herald qua `IServiceScopeFactory` (singleton → scoped) |
+| `backend/src/Namorix.Server/Services/Warden/WdEventService.cs` | Publish WdSecurityEvent + notify |
+| `backend/src/Namorix.Server/Services/Warden/HeraldNotifier.cs` | `IHeraldNotifier` — ruleApplied/ruleRemoved admin notifications |
+| `backend/src/Namorix.Server/Hubs/SignalRWardenNotifier.cs` | `IWardenNotifier` — `warden:new-event` → group `warden` |
+| `backend/src/Namorix.Server/Workers/Warden/WdThresholdWorker.cs` | Threshold engine — auto-ban theo profile |
+| `backend/src/Namorix.Server/Workers/Warden/WdBanCleanupWorker.cs` | Gỡ ban rule hết hạn |
+| `backend/src/Namorix.Server/Constants/Warden.cs` | `WdErrorCodes`/`WdEventTypes`/`WdSecurityProfile`/`WdThresholdFactors`/`WdThresholdRules` |
+| `backend/src/Namorix.Server/Models/Warden/` | WdFirewallRule/WdSecurityEvent/WdSettings |
+| `frontend/src/addons/Warden/` | Warden/WardenOverview/WardenActivity/WardenRules + warden.controller |
+| `frontend/packages/core/src/apiRoutes.ts` | ApiWardenRoutes |
 
 ### Addon Catalog Sync (M4 — PackageCenter)
 

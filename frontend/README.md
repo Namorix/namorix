@@ -51,7 +51,7 @@ frontend/
 │   │   │
 │   │   ├── Frontgate/               # Reverse proxy management (YARP integration, CRUD UI, routing rules, access control, dry-run, audit log, cert download, GeoIP database settings)
 │   │   ├── Beacon/                  # DDNS updater — updates DNS when IP changes (provider multi-host, activity, settings)
-│   │   └── Warden/                  # Host-level firewall — rules, security events, block log (Phase 0)
+│   │   └── Warden/                  # Host-level firewall — Overview/Activity/Rules tabs, stats realtime, Herald notifications
 │   │
 │   ├── components/
 │   │   ├── AuthView.tsx             # Two-column layout (hero + form panel)
@@ -207,7 +207,7 @@ Built-in addons use the same contract as external addons (M4):
 - **NmxAddonManifest**: id, name, description?, localeKey?, icon?, defaultWidth?, defaultHeight?, preferFullSize?, role?, instanceMode?
 - **AddonContext**: addonId, nmxStore?, store?, isExternal?, sendCommand?
 
-Eleven built-in addons: About, LogViewer, NetworkTraffic, SystemMonitor, Settings, FileManager (scaffold), Terminal (scaffold), PackageCenter, Frontgate, Beacon, Warden (Phase 0 — host-level firewall).
+Eleven built-in addons: About, LogViewer, NetworkTraffic, SystemMonitor, Settings, FileManager (scaffold), Terminal (scaffold), PackageCenter, Frontgate, Beacon, Warden (host-level firewall — rules, security events, auto-ban threshold, Herald notifications, realtime stats).
 
 ### External Addons (Docker-based)
 
@@ -230,4 +230,5 @@ External addons integrate via two modes:
 - **M4** — External addon system: Docker lifecycle, OAuth2 (PKCE + client_credentials), gRPC, addon catalog, standalone mode ✅
     - **Frontgate addon**: YARP reverse proxy with runtime config reload, CRUD API and management UI (Phase 1 ✅), certificate management (Phase 2 ✅ — LE HTTP-01 + dry-run, custom cert; DNS-01 dropped), access control (Phase 3 ✅ — Access Policy CRUD, IP allowlist/denylist, Geo blocking, BasicAuth, dry-run), audit log + rate limit + backend health (Phase 4 ✅), GeoIP database management (upload/rollback với backup `.bak` + progress)
     - **NetworkTraffic**: source filter API/Proxy — tách traffic từ API port vs proxy ports (cùng buffer, lọc theo `source` query param)
+    - **Warden**: host-level firewall — Overview/Activity/Rules dashboard tabs, rules CRUD, security events + detail dialog, stats realtime (`warden:new-event` + 30s poll), Herald notification templates (`warden.ruleApplied`/`ruleRemoved`)
 - **M5** — `@namorix/core` publish npm + addon integration guide

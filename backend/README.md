@@ -181,8 +181,8 @@ backend/
         │   ├── Addon.cs              # Addon task phase constants, error codes
         │   ├── Beacon.cs             # Beacon codes (BcnErrorCodes/BcnActivityCodes/BcnParam/BcnCredentialParam/BcnHttpClientNames/BcnHeaderKey)
         │   ├── Frontgate.cs          # Frontgate error codes (FgErrorCodes)
-        │   ├── Warden.cs             # Warden codes (WdErrorCodes/WdEventTypes/WdSecurityProfile)
-        │   └── ServerSignalR.cs      # Server-specific SignalR event names + groups (incl. beacon, frontgate)
+        │   ├── Warden.cs             # Warden codes (WdErrorCodes/WdEventTypes/WdSecurityProfile/WdThresholdFactors/WdThresholdRules)
+        │   └── ServerSignalR.cs      # Server-specific SignalR event names + groups (incl. beacon, frontgate, warden)
         ├── Extensions/
         │   └── ApplicationBuilderExtensions.cs  # Server middleware pipeline wrapper
         ├── Middleware/
@@ -201,15 +201,18 @@ backend/
         │       ├── RateLimitMiddleware.cs            # Per-rule rate limiting trên proxy port
         │       └── RewriteRedirectLocationMiddleware.cs  # Rewrite Location header trên proxy redirect
         ├── Hubs/
-        │   ├── MainHub.cs               # Real-time events (system stats, addon, notifications, beacon, frontgate groups)
+        │   ├── MainHub.cs               # Real-time events (system stats, addon, notifications, beacon, frontgate, warden groups)
         │   ├── SignalRAddonNotifier.cs
         │   ├── SignalRSystemMonitorNotifier.cs
         │   ├── SignalRBeaconNotifier.cs # IBeaconNotifier (activity-created / hostname-status-changed / refreshed / hostname-changed)
-        │   └── SignalRFrontgateNotifier.cs # IFrontgateNotifier (cert-status-changed / rule-changed / dry-run-changed / cert-changed, group frontgate)
+        │   ├── SignalRFrontgateNotifier.cs # IFrontgateNotifier (cert-status-changed / rule-changed / dry-run-changed / cert-changed, group frontgate)
+        │   └── SignalRWardenNotifier.cs # IWardenNotifier (new-event → group warden)
         ├── Infrastructure/
         │   ├── IAddonNotifier.cs
         │   ├── ISystemMonitorNotifier.cs
-        │   └── IFrontgateNotifier.cs   # Frontgate notifier (cert status, rule/dry-run/cert changed)
+        │   ├── IFrontgateNotifier.cs   # Frontgate notifier (cert status, rule/dry-run/cert changed)
+        │   ├── IWardenNotifier.cs      # Warden notifier (new-event)
+        │   └── IHeraldNotifier.cs      # Warden Herald notifications (ruleApplied/ruleRemoved — scoped, resolve từ singleton qua IServiceScopeFactory)
         ├── Models/                  # Grouped theo addon domain
         │   ├── Addon/               # AddonCatalogEntry, AddonInstallation, AddonTask
         │   ├── Beacon/              # BcnHostname, BcnSettings, BcnActivityLog, BcnProviderConfig, BcnProviderInfo
@@ -238,7 +241,8 @@ backend/
         │   │                            #   AcmeChallengeStore, AcmeDryRunService, DnsLookupChecker,
         │   │                            #   FrontgateAccessService (access policy eval), GeoIpService (MaxMind.GeoIP2),
         │   │                            #   FrontgateAudit (audit log write + push), SniCertProvider (SNI cert lookup)
-        │   ├── Warden/                  # WdFirewallService (stub Phase 0 — log-only apply/remove/applyAll; iptables/nftables Phase 2)
+        │   ├── Warden/                  # WdFirewallService (iptables/nftables enforcement + Herald), WdEventService (publish WdSecurityEvent + notify),
+        │   │                            #   HeraldNotifier (ruleApplied/ruleRemoved admin notifications)
         │   └── Grpc/
         │       └── AddonChannelService.cs  # gRPC bidirectional stream handler + interceptor auth
         ├── Controllers/
@@ -246,7 +250,7 @@ backend/
         │   ├── Frontgate/               # ReverseProxyController (CRUD + dry-run confirm/cancel),
         │   │                            #   AccessPolicyController (CRUD), CertificateController (LE HTTP-01 + dry-run, retry/renew, custom, download),
         │   │                            #   AuditLogController (audit list/clear), GeoIpController (GeoIP DB status/upload/rollback)
-        │   ├── Warden/                  # WdController (rules CRUD/toggle + settings + stats), WdEventController (events list)
+        │   ├── Warden/                  # WdController (rules CRUD/toggle + settings + stats), WdEventController (events list, filter IP/type/severity)
         │   ├── BcnController.cs         # Beacon DDNS (hostnames CRUD/toggle/check/test, activity, providers, settings)
         │   ├── HealthController.cs      # Health check endpoint
         │   ├── SettingsController.cs    # System settings + appearance defaults + options
@@ -265,9 +269,10 @@ backend/
             ├── CatalogSyncWorker.cs               # Background catalog sync with retry
             ├── Beacon/                           # BcnCheckWorker (DDNS loop → BcnHostnameService),
             │                                     #   BcnActivityCleanupWorker (activity pruning)
-            └── Frontgate/                        # FgCertPendingResetWorker (Pending → Error on startup),
-                                                  #   FgCertRenewWorker (auto-renew), FgDryRunRollbackWorker (dry-run rollback),
-                                                  #   FgAuditCleanupWorker (audit pruning), FgBackendHealthWorker (upstream health)
+            ├── Frontgate/                        # FgCertPendingResetWorker (Pending → Error on startup),
+            │                                     #   FgCertRenewWorker (auto-renew), FgDryRunRollbackWorker (dry-run rollback),
+            │                                     #   FgAuditCleanupWorker (audit pruning), FgBackendHealthWorker (upstream health)
+            └── Warden/                           # WdThresholdWorker (auto-ban theo security profile), WdBanCleanupWorker (gỡ ban hết hạn)
 ```
 
 ## API Endpoints
@@ -423,7 +428,7 @@ backend/
 | PUT | `/api/warden/rules/{id}` | Admin | Update rule |
 | DELETE | `/api/warden/rules/{id}` | Admin | Delete rule |
 | POST | `/api/warden/rules/{id}/toggle` | Admin | Enable/Disable rule |
-| GET/PUT | `/api/warden/settings` | Admin | Firewall settings (firewallEnabled, securityProfile) |
+| GET/PUT | `/api/warden/settings` | Admin | Firewall settings (firewallEnabled, securityProfile, customThresholdFactor, customDurationFactor) |
 | GET | `/api/warden/stats` | Admin | Stats (activeRules, blockedToday, openPorts) |
 | GET | `/api/warden/events` | Admin | Security events (paginated, filter IP/type/severity) |
 
@@ -540,7 +545,7 @@ SQLite database file (`namorix.db`), tạo tự động khi chạy migrations.
 - **BcnActivityLog** — `id`, `timestamp`, `level`, `code`, `paramsJson`, `hostnameId` (FK, SetNull on delete)
 - **WdFirewallRule** — `id`, `name`, `sourceCidr`, `ports`, `protocol` (any/tcp/udp/icmp), `action` (allow/deny), `enabled`, `auto`, `expiresAt`, `createdAt`
 - **WdSecurityEvent** — `id`, `eventType`, `severity` (info/warning/critical), `sourceAddon`, `sourceIp`, `count`, `windowStart`, `detail?` (JSON), `timestamp` (index Ip + Timestamp)
-- **WdSettings** — `id` (=1), `firewallEnabled`, `securityProfile` (low/medium/high/custom)
+- **WdSettings** — `id` (=1), `firewallEnabled`, `securityProfile` (low/medium/high/custom), `customThresholdFactor`, `customDurationFactor`
 
 ### Migrations
 
@@ -598,6 +603,7 @@ SignalR hub tại `/hubs/main`:
 | `frontgate:dry-run-changed` | Server → Client | Frontgate dry-run confirm/cancel/expire |
 | `frontgate:cert-changed` | Server → Client | Frontgate cert CRUD |
 | `frontgate:audit-created` | Server → Client | Frontgate audit log entry |
+| `warden:new-event` | Server → Client | Warden security event push (id/eventType/severity/sourceAddon/sourceIp/count/timestamp — group `warden`) |
 
 SignalR client auto-reconnects with exponential backoff (5s → 30s cap, infinite retry).
 

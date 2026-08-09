@@ -186,7 +186,7 @@ namorix/
 │       │   ├── Settings/       # Appearance, System, Account tabs
 │       │   ├── SystemMonitor/
 │       │   ├── Terminal/       # Terminal emulator scaffold
-│       │   └── Warden/         # Host-level firewall — rules, security events, block log (Phase 0)
+│       │   └── Warden/         # Host-level firewall — rules, security events, auto-ban threshold, Herald notifications
 │       ├── components/
 │       │   ├── AuthView.tsx  # Hero + form panel layout
 │       │   ├── DesktopArea/  # Desktop icon shortcuts, grid layout
@@ -351,4 +351,5 @@ Addon có 2 mode tích hợp:
 3. **M3** — System Addons (Built-in): addon contract + registry, About, Log Viewer, NetworkTraffic (SignalR + flat file storage, API/Proxy source filter), SystemMonitor, Settings (Appearance/System/Account), theme system (hot swap CSS, server-driven), File Manager, Terminal, Package Center
 4. **M4** — External addon system: Docker lifecycle, OAuth2 (client_credentials + private_key_jwt + authorization_code + PKCE), gRPC bidirectional streaming, addon catalog sync, standalone mode, web UI ✅
     - **Frontgate addon**: YARP reverse proxy with runtime config reload, CRUD API and management UI (Phase 1 ✅), certificate management (Phase 2 ✅ — LE HTTP-01 + dry-run test, custom cert upload/download, auto-renew/SNI; DNS-01 dropped), access control (Phase 3 ✅ — Access Policy CRUD, IP allowlist/denylist, Geo blocking, BasicAuth, dry-run), audit log + rate limiting + backend health (Phase 4 ✅), GeoIP database management (✅ — upload/rollback với backup `.bak` + progress)
+    - **Warden addon**: host-level firewall — rules CRUD + iptables/nftables enforcement (Phase 1-2 ✅ — event publishing từ AcmeChallenge/Scan404, threshold engine + auto-ban theo security profile Low/Medium/High/Custom), Herald notifications (Phase 4 ✅ — `warden:ruleApplied`/`ruleRemoved` cho admin), Overview/Activity/Rules dashboard tabs + stats realtime qua SignalR (Phase 3 ✅)
 5. **M5** — @namorix/core publish npm + addon integration guide
