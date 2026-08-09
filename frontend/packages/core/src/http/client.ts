@@ -1,17 +1,15 @@
-import { getApiBaseUrl } from "../config"
 import { getFingerprint } from "../fingerprint"
 import { NMX_COOKIE_CSRF_KEY } from "../constants"
 import {
   type ApiResponse,
   apiHttpError,
+  AuthErrorCodes,
   HttpStatus,
   HttpErrorCodes,
+  apiAuthError,
 } from "../types"
 import { ApiAuthRoutes } from "../apiRoutes"
-
-type UnauthorizedHandler = () => void
-let onUnauthorized: UnauthorizedHandler | null = null
-let refreshPromise: Promise<ApiResponse<unknown>> | null = null
+import { refreshAccessToken } from "./authRefresh"
 
 class RequestBuilder {
   private _url: string
@@ -110,27 +108,17 @@ class RequestBuilder {
         !this._retried &&
         !this._url.includes(ApiAuthRoutes.refresh)
       ) {
-        if (!refreshPromise) {
-          refreshPromise = nmxHttp
-            .url(getApiBaseUrl() + ApiAuthRoutes.refresh)
-            .post()
-            .json()
-            .finally(() => {
-              refreshPromise = null
-            })
-        }
+        const refreshResult = await refreshAccessToken()
 
-        const refreshResponse = await refreshPromise
-
-        if (!refreshResponse.success) {
-          onUnauthorized?.()
-          return refreshResponse as unknown as ApiResponse<T>
-        }
-
-        if (refreshResponse.success) {
+        if (refreshResult === "success") {
           this._retried = true
           return await this.json<T>()
         }
+
+        return apiAuthError(
+          "Unauthorized",
+          AuthErrorCodes.UNAUTHORIZED,
+        ) as ApiResponse<T>
       }
 
       return (await result.json()) as Promise<ApiResponse<T>>
@@ -217,8 +205,4 @@ export const nmxHttp = {
       ) as ApiResponse<T>
     }
   },
-}
-
-export function setOnUnauthorized(handler: UnauthorizedHandler) {
-  onUnauthorized = handler
 }

@@ -6,6 +6,7 @@ import {
 } from "@microsoft/signalr"
 import { getApiBaseUrl } from "../config"
 import { HUB_MAIN } from "../apiRoutes"
+import { refreshAccessToken } from "../http"
 import type { SignalRStatus } from "./types"
 
 let connection: HubConnection | null = null
@@ -95,12 +96,21 @@ function scheduleReconnect() {
   reconnectTimer = setTimeout(async () => {
     reconnectTimer = null
     reconnectDelay = Math.min(reconnectDelay * 2, 30000)
-    try {
-      emitStatus("reconnecting")
-      await startConnection()
-    } catch {
-      scheduleReconnect()
+    emitStatus("reconnecting")
+
+    const refreshResult = await refreshAccessToken()
+    if (refreshResult === "expired") return
+
+    if (refreshResult === "success") {
+      try {
+        await startConnection()
+        return
+      } catch {
+        // fall through to retry with backoff
+      }
     }
+
+    scheduleReconnect()
   }, reconnectDelay)
 }
 
