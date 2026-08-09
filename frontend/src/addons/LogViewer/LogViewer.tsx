@@ -123,8 +123,17 @@ export const LogViewer: React.FC = () => {
 
   useSignalREvent<LogEntry[]>(SignalREvent.LogsNewEntry, (newEntries) => {
     if (!live) return
-    setEntries((prev) => [...newEntries, ...prev].slice(0, pageSize))
-    setTotal((prev) => prev + newEntries.length)
+    const filtered = newEntries.filter((entry) => {
+      const levelMatch =
+        levels.length === 0 || levels.includes(String(entry.level))
+      const sourceMatch =
+        !source || entry.source.toLowerCase().includes(source.toLowerCase())
+      return levelMatch && sourceMatch
+    })
+
+    if (filtered.length === 0) return
+    setEntries((prev) => [...filtered, ...prev].slice(0, pageSize))
+    setTotal((prev) => prev + filtered.length)
   })
 
   const columns: NmxDataTableColumn<LogEntry>[] = [
