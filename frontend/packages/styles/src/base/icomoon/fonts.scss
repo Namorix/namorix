@@ -16,6 +16,11 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.ic-block {
+  &:before {
+    content: $ic-block; 
+  }
+}
 .ic-task {
   &:before {
     content: $ic-task; 

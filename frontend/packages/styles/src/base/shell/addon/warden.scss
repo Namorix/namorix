@@ -21,4 +21,10 @@
     flex: 1;
     min-height: 0;
   }
+
+  &__activity-meta-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--nmx-spacing-xl);
+  }
 }
