@@ -6,5 +6,6 @@
 **/.vite
 **/*.log
 **/data
+!**/data/GeoLite2-Country.mmdb
 frontend/public/themes
 backend/src/Namorix.Server/public

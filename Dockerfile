@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1
-
 # ---------- Stage 1: Frontend build ----------
 FROM --platform=$BUILDPLATFORM node:22-alpine AS frontend
 WORKDIR /repo
@@ -34,6 +32,10 @@ ENV ASPNETCORE_ENVIRONMENT=Production
 COPY --from=build /publish .
 # Built SPA goes next to the app DLL; Program.cs serves it from ./public
 COPY --from=frontend /repo/frontend/dist /app/public
+# GeoLite2 database — must exist in backend data dir; build fails if missing
+COPY backend/src/Namorix.Server/data/GeoLite2-Country.mmdb /app/GeoLite2-Country.mmdb
+RUN test -s /app/GeoLite2-Country.mmdb \
+    || (echo "ERROR: backend/src/Namorix.Server/data/GeoLite2-Country.mmdb missing or empty — run backend once to generate it" >&2 && exit 1)
 
 EXPOSE 5001 5002 80 443
 ENTRYPOINT ["dotnet", "Namorix.Server.dll"]
