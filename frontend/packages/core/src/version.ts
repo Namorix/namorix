@@ -9,5 +9,5 @@ export const NmxAddonVersions = {
   beacon: "1.1.0",
   fileManager: "0.1.0",
   terminal: "0.1.0",
-  warden: "0.3.0",
+  warden: "0.4.0",
 } as const
