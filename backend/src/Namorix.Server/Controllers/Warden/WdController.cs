@@ -28,22 +28,22 @@ public class WdController(AppDbContext db, WdFirewallService firewall) : Control
 
     [HttpPost("rules")]
     [Validate(typeof(WdRuleSchema))]
-    public async Task<IActionResult> CreateRule([FromBody] WdRuleRequest req)
+    public async Task<IActionResult> CreateRule([FromBody] WdRuleRequest request)
     {
-        if (!IsValidCidr(req.SourceCidr, out var cidrError))
+        if (!IsValidCidr(request.SourceCidr, out var cidrError))
             return BadRequest(ApiResponse.Fail(WdErrorCodes.InvalidCidr, cidrError));
-        if (!IsValidPorts(req.Ports, out var portsError))
+        if (!IsValidPorts(request.Ports, out var portsError))
             return BadRequest(ApiResponse.Fail(WdErrorCodes.InvalidPorts, portsError));
 
         var rule = new WdFirewallRule
         {
-            Name = req.Name,
-            SourceCidr = string.IsNullOrWhiteSpace(req.SourceCidr) ? null : req.SourceCidr.Trim(),
-            Ports = string.IsNullOrWhiteSpace(req.Ports) ? null : req.Ports.Trim(),
-            Protocol = req.Protocol,
-            Action = req.Action,
-            Enabled = req.Enabled,
-            Priority = req.Priority,
+            Name = request.Name,
+            SourceCidr = string.IsNullOrWhiteSpace(request.SourceCidr) ? null : request.SourceCidr.Trim(),
+            Ports = string.IsNullOrWhiteSpace(request.Ports) ? null : request.Ports.Trim(),
+            Protocol = request.Protocol,
+            Action = request.Action,
+            Enabled = request.Enabled,
+            Priority = request.Priority,
         };
 
         db.WdFirewallRules.Add(rule);
@@ -62,15 +62,15 @@ public class WdController(AppDbContext db, WdFirewallService firewall) : Control
 
     [HttpPut("rules/{id:int}")]
     [Validate(typeof(WdRuleSchema))]
-    public async Task<IActionResult> UpdateRule(int id, [FromBody] WdRuleRequest req)
+    public async Task<IActionResult> UpdateRule(int id, [FromBody] WdRuleRequest request)
     {
         var rule = await db.WdFirewallRules.FindAsync(id);
         if (rule is null)
             return NotFound(ApiResponse.Fail(WdErrorCodes.RuleNotFound));
 
-        if (!IsValidCidr(req.SourceCidr, out var cidrError))
+        if (!IsValidCidr(request.SourceCidr, out var cidrError))
             return BadRequest(ApiResponse.Fail(WdErrorCodes.InvalidCidr, cidrError));
-        if (!IsValidPorts(req.Ports, out var portsError))
+        if (!IsValidPorts(request.Ports, out var portsError))
             return BadRequest(ApiResponse.Fail(WdErrorCodes.InvalidPorts, portsError));
 
         // Snapshot before mutating so we can revert if enforcement fails
@@ -80,31 +80,30 @@ public class WdController(AppDbContext db, WdFirewallService firewall) : Control
             rule.Action, rule.Enabled, rule.Priority
         };
 
-        rule.Name = req.Name;
-        rule.SourceCidr = string.IsNullOrWhiteSpace(req.SourceCidr) ? null : req.SourceCidr.Trim();
-        rule.Ports = string.IsNullOrWhiteSpace(req.Ports) ? null : req.Ports.Trim();
-        rule.Protocol = req.Protocol;
-        rule.Action = req.Action;
-        rule.Enabled = req.Enabled;
-        rule.Priority = req.Priority;
+        rule.Name = request.Name;
+        rule.SourceCidr = string.IsNullOrWhiteSpace(request.SourceCidr) ? null : request.SourceCidr.Trim();
+        rule.Ports = string.IsNullOrWhiteSpace(request.Ports) ? null : request.Ports.Trim();
+        rule.Protocol = request.Protocol;
+        rule.Action = request.Action;
+        rule.Enabled = request.Enabled;
+        rule.Priority = request.Priority;
 
         await db.SaveChangesAsync();
 
-        if (!await firewall.ApplyRuleAsync(rule))
-        {
-            rule.Name = snapshot.Name;
-            rule.SourceCidr = snapshot.SourceCidr;
-            rule.Ports = snapshot.Ports;
-            rule.Protocol = snapshot.Protocol;
-            rule.Action = snapshot.Action;
-            rule.Enabled = snapshot.Enabled;
-            rule.Priority = snapshot.Priority;
-            await db.SaveChangesAsync();
-            return Ok(ApiResponse.Fail(WdErrorCodes.EnforcementFailed,
-                "Rule update could not be enforced — changes reverted"));
-        }
+        if (await firewall.ApplyRuleAsync(rule))
+            return Ok(ApiResponse.Ok(rule));
+        
+        rule.Name = snapshot.Name;
+        rule.SourceCidr = snapshot.SourceCidr;
+        rule.Ports = snapshot.Ports;
+        rule.Protocol = snapshot.Protocol;
+        rule.Action = snapshot.Action;
+        rule.Enabled = snapshot.Enabled;
+        rule.Priority = snapshot.Priority;
+        await db.SaveChangesAsync();
+        return Ok(ApiResponse.Fail(WdErrorCodes.EnforcementFailed,
+            "Rule update could not be enforced — changes reverted"));
 
-        return Ok(ApiResponse.Ok(rule));
     }
 
     [HttpDelete("rules/{id:int}")]
@@ -149,18 +148,18 @@ public class WdController(AppDbContext db, WdFirewallService firewall) : Control
         Ok(ApiResponse.Ok(await GetOrCreateSettingsAsync()));
 
     [HttpPut("settings")]
-    public async Task<IActionResult> UpdateSettings([FromBody] WdSettingsRequest req)
+    public async Task<IActionResult> UpdateSettings([FromBody] WdSettingsRequest request)
     {
         var settings = await GetOrCreateSettingsAsync();
-        settings.FirewallEnabled = req.FirewallEnabled;
-        settings.Profile = req.Profile;
-        settings.CustomThresholdFactor = req.CustomThresholdFactor ?? settings.CustomThresholdFactor;
-        settings.CustomDurationFactor = req.CustomDurationFactor ?? settings.CustomDurationFactor;
+        settings.FirewallEnabled = request.FirewallEnabled;
+        settings.Profile = request.Profile;
+        settings.CustomThresholdFactor = request.CustomThresholdFactor ?? settings.CustomThresholdFactor;
+        settings.CustomDurationFactor = request.CustomDurationFactor ?? settings.CustomDurationFactor;
         settings.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
 
         var enabled = await db.WdFirewallRules.Where(r => r.Enabled).ToListAsync();
-        if (req.FirewallEnabled)
+        if (request.FirewallEnabled)
             await firewall.ApplyAllAsync(enabled);
         else
             foreach (var rule in enabled)
