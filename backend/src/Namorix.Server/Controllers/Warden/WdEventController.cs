@@ -44,4 +44,11 @@ public class WdEventController(AppDbContext db) : ControllerBase
 
         return Ok(ApiResponse.Ok(new { items, total }));
     }
+    
+    [HttpDelete]
+    public async Task<IActionResult> Clear()
+    {
+        var deleted = await db.WdSecurityEvents.ExecuteDeleteAsync();
+        return Ok(ApiResponse.Ok(new { deleted }));
+    }
 }
