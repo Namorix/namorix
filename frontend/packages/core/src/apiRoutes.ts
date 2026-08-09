@@ -51,6 +51,7 @@ export const ApiSettingsRoutes = {
   system: API_SETTINGS_BASE + "/system",
   appearanceOptions: API_SETTINGS_BASE + "/appearance/options",
   appearanceSystem: API_SETTINGS_BASE + "/appearance",
+  appearanceMerged: API_SETTINGS_BASE + "/appearance/merged",
 }
 
 export const ApiNotificationRoutes = {
