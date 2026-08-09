@@ -100,7 +100,7 @@ App → Guard → isAuthenticated()
 
 | File | Role |
 |------|------|
-| `frontend/src/controllers/auth.controller.ts` | `login()`, `register()`, `logout()`, `loadAppearance()`, `loadSystemDefaults()` |
+| `frontend/src/controllers/auth.controller.ts` | `login()`, `register()`, `logout()`, `loadAppearance()` (1 call merged endpoint) |
 | `frontend/packages/core/src/auth/auth.service.ts` | `isAuthenticated()`, `checkHasUsers()`, `isRegistrationOpen()` |
 | `backend/src/Namorix.Server/Controllers/AuthController.cs` | Login, register, refresh, logout, session |
 | `backend/src/Namorix.Server/Services/AuthService.cs` | Token logic, fingerprint, refresh rotation |
@@ -128,17 +128,13 @@ Hardcoded defaults (AppearanceDefaults)
 ### Load flow
 
 ```
-Page load (chưa login)
+Page load (chưa login hoặc đã login)
   └── Root → useAppearanceSync()
-        ├── user null → loadSystemDefaults()
-        │     └── GET /api/settings/appearance (public)
-        │           ├── setAppearanceStore(data)
-        │           ├── applyAppearanceTokens(data)
-        │           └── applyTheme(data.appearance_theme)
-        └── user có → loadAppearance()
-              └── GET /api/user/settings
+        └── loadAppearance()
+              └── GET /api/settings/appearance/merged (public — userId derive từ JWT cookie nếu có)
                     ├── setAppearanceStore(data)
                     ├── applyAppearanceTokens(data)
+                    ├── changeLanguage(data.appearance_language)
                     └── applyTheme(data.appearance_theme)
 
 User change settings
@@ -147,7 +143,7 @@ User change settings
 
 Admin change system defaults
   └── SignalR: system:config-changed { key: "appearance_defaults" }
-        └── useAppearanceSync() → loadSystemDefaults() nếu user null
+        └── useAppearanceSync() → loadAppearance() (re-fetch merged)
 ```
 
 ### applyTheme mechanism
@@ -182,6 +178,7 @@ applyTheme(themeId)
 | Method | Endpoint | Auth | Returns |
 |--------|----------|------|---------|
 | GET | `/api/settings/appearance` | Public | System default settings |
+| GET | `/api/settings/appearance/merged` | Public | Merged 3-layer appearance (code ← system ← user) — userId từ cookie nếu có |
 | GET | `/api/user/settings` | RequireAuth | User's settings |
 | PUT | `/api/user/settings` | RequireAuth | Save user settings (validated) |
 | PUT | `/api/settings/appearance` | RequireAdmin | Save system defaults (validated) |
@@ -195,8 +192,8 @@ applyTheme(themeId)
 | `frontend/packages/core/src/store/accessors.ts` | `setAppearanceStore()`, `useAppearanceStore()` |
 | `frontend/packages/core/src/types/appearance.ts` | `AppearanceSettings` interface, `AppearanceDefaults` |
 | `frontend/src/hooks/useAppearanceSync.ts` | Hook gắn appearance + SignalR listener |
-| `frontend/src/controllers/auth.controller.ts` | `loadAppearance()`, `loadSystemDefaults()` |
-| `backend/src/Namorix.Server/Services/SettingsService.cs` | `GetAppearanceDefaultsAsync()` + cache |
+| `frontend/src/controllers/auth.controller.ts` | `loadAppearance()` — 1 call `GET /api/settings/appearance/merged` |
+| `backend/src/Namorix.Server/Services/SettingsService.cs` | `GetAppearanceDefaultsAsync()`, `GetMergedAppearanceAsync()` + cache |
 | `backend/src/Namorix.Server/Services/UserSettingsService.cs` | `GetAllAsync()`, `SetBatchAsync()` + cache |
 | `backend/src/Namorix.Core/Constants/Settings.cs` | `AppearanceSettingKeys`, `AppearanceDefaults` |
 | `backend/src/Namorix.Core/Data/AppearanceOptionsData.cs` | Valid options for each key |
@@ -412,9 +409,12 @@ Desktop mount (authenticated)
                     └── Emit handshake
 
 On disconnect
-  └── scheduleReconnect() exponential backoff
-        ├── 5s → 10s → 20s → 30s cap
-        └── Reset delay on successful reconnect
+  └── scheduleReconnect()
+        ├── refreshAccessToken() (single-flight — dùng chung REST + SignalR)
+        │     ├── "expired" (401) → dừng retry → onUnauthorized (redirect login)
+        │     └── "success" → startConnection() (lỗi thì backoff tiếp)
+        └── exponential backoff 5s → 10s → 20s → 30s cap
+              └── Reset delay on successful reconnect
 ```
 
 ### Events

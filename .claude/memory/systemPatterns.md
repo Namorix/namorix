@@ -75,6 +75,12 @@
 - Addon containers trên `namorix_net` bridge network
 - **Why:** Secure addon isolation, native Docker management
 
+### 7. Beacon Kind denormalize (DB column + ConfigJson) — có chủ đích
+- `BcnHostname.Kind` (DB column) và `BcnProviderConfig.Kind` (trong ConfigJson blob) cùng chứa `get`/`rest` — **không phải bug**, denormalize có chủ đích.
+- `config.Kind` (blob) là nguồn dùng lúc chạy — `BcnProviderResolver` dựa vào nó chọn `BcnRestJsonProvider` (rest) vs `BcnSimpleGetProvider` (get) cho custom provider; blob phải tự mô tả được kind (kể cả luồng `TestProvider` không có host row).
+- `host.Kind` (column) là bản sao plaintext — vì `ConfigJson` bị `protector.Protect()` (secret mã hoá) nên FE không đọc được kind từ blob → API trả `host.kind` cho FE `setFormKind(host.kind)`.
+- Cả 2 ghi đồng bộ từ cùng `request.Kind` → không lệch nhau. Giữ cả 2, không gỡ.
+
 ## Package Boundary (STRICT)
 
 | Package | Can Import |

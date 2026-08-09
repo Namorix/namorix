@@ -4,7 +4,7 @@
 
 **Context**: Khi DB backend bị reset (migration, xoá bảng), `AddonInstallations` mất record OAuth → `IssueClientCredentialsTokenAsync` trả về `400 invalid_client`. Addon retry vô hạn mỗi 5 giây vì `_cached` không bao giờ được set → spam DB query + log.
 
-**Approach**: 
+**Approach**:
 - `NmxOAuth2Client.GetAccessTokenAsync()` hoặc `EnsureSuccessAsync()` — detect `invalid_client` error, re-throw dạng permanent (không retry được) thay vì transient
 - `AddonHostedServiceBase.ConnectWithRetryAsync()` — phân biệt `NmxOAuthException` permanent vs transient:
   - Permanent (invalid_client, không tìm thấy addon trong DB): dừng retry, set `_initialized = false`, log fatal, không retry nữa
@@ -16,50 +16,6 @@
 - `backend/src/Namorix.Core/Grpc/AddonHostedServiceBase.cs` — phân biệt permanent/transient error
 
 **Note**: Cả `Namorix.Core` (OAuth client SDK) và `AddonHostedServiceBase` đều là shared code cho addon, không phải backend.
-
----
-
-## SignalR — Token refresh before reconnect
-
-**Context**: `signalr.service.ts` có `scheduleReconnect()` với exponential backoff nhưng chưa refresh access token trước khi reconnect. Khi cookie access token hết hạn, reconnect thất bại.
-
-**Approach**: Gọi `POST /api/auth/refresh` trong `scheduleReconnect()` trước `startConnection()` để server set cookie mới.
-
-**Files**:
-- `frontend/packages/core/src/signalr/signalr.service.ts` — thêm `refreshAccessToken()` + gọi trong `scheduleReconnect()`
-
-**Related**: Liên quan tới addon external (SignalR groups), xử lý sau khi làm M4.
-
-## SignalR — Dialog loading overlay khi mất kết nối
-
-**Context**: Khi SignalR mất kết nối (reconnecting state), dialog (NmxAlertDialog, NmxDialog) bị loading overlay che mất nội dung. Cần phân biệt SignalR loading state với dialog loading state.
-
-**Approach**:
-- Nguyên nhân: SignalR reconnecting state propagate qua global store/context, dialog `loading` prop bị ảnh hưởng
-- Fix: tách biệt dialog loading state (form submitting) khỏi global SignalR connection state
-
-**Files**:
-- `frontend/src/App.tsx` — kiểm tra `shouldShowReconnecting` và các effect liên quan
-- `frontend/packages/ui/src/Components/NmxDialog/NmxDialog.tsx` — kiểm tra `loading` prop propagation
-
----
-
-## SignalR — Auth check when reconnect fails
-
-**Context**: `scheduleReconnect()` retry vô hạn, nếu JWT expired → loading/reconnect mãi. Cần check session auth sau N lần failed, nếu expired thì redirect về login, không retry tiếp.
-
-**Approach**: 
-- Thêm `"auth-expired"` vào `SignalRStatus`
-- Trong `scheduleReconnect()`, sau 3 attempts (~35s), gọi `GET /api/auth/session` bằng fetch với `credentials: "include"`
-- Nếu session expired → `emitStatus("auth-expired")` → App.tsx redirect `window.location.href = DefaultPaths.LOGIN`
-- Reset `reconnectAttempts` khi connect thành công
-
-**Files**:
-- `frontend/packages/core/src/signalr/types.ts` — thêm `"auth-expired"`
-- `frontend/packages/core/src/signalr/signalr.service.ts` — `reconnectAttempts`, `isSessionExpired()`, auth check trong `scheduleReconnect()`
-- `frontend/src/App.tsx` — effect redirect + sửa `shouldShowReconnecting`
-
-**Note**: Không dùng `nmxHttp` để tránh circular dependency, dùng `fetch` trực tiếp.
 
 ---
 
@@ -81,36 +37,6 @@
 
 **Note**: Không urgent — current backend paginates at 50/200 items.
 
----
-
-## Email encryption
-
-**Context**: Email trong DB đang lưu plaintext, cần mã hóa trước khi persist.
-
-**Approach**: Dùng AES-256 encryption ở service layer — encrypt khi write `User.Email`, decrypt khi read. Hoặc dùng hashing nếu chỉ cần check uniqueness + không cần đọc lại email gốc.
-
-**Files**:
-- `backend/src/Namorix.Adapters/Services/AuthService.cs` — encrypt trước `SaveChangesAsync`
-- `backend/src/Namorix.Adapters/Services/UserService.cs` — decrypt khi read email
-- Có thể tạo helper class `EmailEncryption` ở `Namorix.Core/Helpers/`
-
-**Note**: Không urgent — làm khi cần compliance hoặc user request.
-
----
-
-## Appearance — Backend endpoint merge 3-layer
-
-**Context**: Hiện tại `loadAppearance()` gọi 2 API song song từ frontend (`GET /api/settings/appearance` + `GET /api/user/settings`) rồi merge. Gọn hơn nếu backend có 1 endpoint trả về luôn kết quả đã merge.
-
-**Approach**: Thêm `GET /api/user/appearance` (hoặc tương tự) — backend merge code defaults ← system defaults ← user overrides, frontend chỉ cần gọi 1 endpoint.
-
-**Files**:
-- `Namorix.Server/Controllers/UserController.cs` hoặc `SettingsController.cs` — endpoint mới
-- `Namorix.Adapters/Services/UserSettingsService.cs` — thêm `GetMergedAppearanceAsync()`
-- `frontend/src/controllers/auth.controller.ts` — sửa `loadAppearance()` gọi 1 endpoint thay 2
-- `frontend/packages/core/src/apiRoutes.ts` — thêm route mới
-
-**Note**: Không urgent — frontend đã merge ổn. Làm khi rảnh hoặc cần tối ưu.
 ---
 
 **Context**: Hiện tại `AuthService.Login()` chỉ check `Username`. Cần cho phép login bằng email.
@@ -231,34 +157,3 @@
 - **`bcnErrorDetail`** ✅ (`Beacon.types.ts:88-102`) — thứ tự ưu tiên `detail` → `httpStatus > 0` → `reason` (fix path exception hiện "HTTP 0" thay vì `ex.Message`).
 
 **Files**: `Services/BcnProviders/NamecheapProvider.cs`, `Services/BcnProviders/NoIpProvider.cs`, `frontend/src/addons/Beacon/Beacon.types.ts`
-
----
-
-## Beacon — Toggle Enable không chạy update ✅ Resolved (2026-08-05)
-
-**Context**: Enable hostname đang `Disabled` → set thẳng `Active` mà không chạy update → record lệch (IP đổi lúc disable) vẫn báo active.
-
-**Đã fix**: `BcnController.ToggleHostname` (BcnController.cs:182-201) — Enable → `Status = Updating` + `queue.EnqueueAsync(host.Id)` (đi qua `BcnUpdateQueue` như Create/Update): success → `Active`, fail → `Error`, rate-limit → fallback `Active` + `BackoffUntil`. Disable → set `Disabled` như cũ.
-
-**Files**: `Controllers/BcnController.cs`
-
----
-
-## Beacon — Kind lưu trùng (DB column vs ConfigJson)
-
-**Context**: `BcnHostname.Kind` (DB column) và `BcnProviderConfig.Kind` (trong `ConfigJson` blob) cùng chứa giá trị `get`/`rest`.
-
-**Approach** — denormalize có chủ đích, không phải bug:
-- `config.Kind` (trong ConfigJson) là nguồn dùng lúc chạy — `BcnProviderResolver.cs:12` dựa vào nó để chọn `BcnRestJsonProvider` (rest) vs `BcnSimpleGetProvider` (get) cho custom provider. Blob phải tự mô tả được kind, đặc biệt luồng `TestProvider` không có host row.
-- `host.Kind` (column) là bản sao plaintext — vì `ConfigJson` được `protector.Protect()` (secret mã hoá), FE không đọc được kind từ blob → API trả `host.kind` để FE `setFormKind(host.kind)` (BeaconHostnames.tsx:246).
-- Cả 2 ghi đồng bộ từ cùng `request.Kind` (BcnController.cs:52, 63, 107) → không lệch nhau.
-
-**Files** (nếu muốn bỏ 1 nơi — không khuyến khích):
-- `backend/src/Namorix.Server/Models/BcnHostname.cs` — bỏ `Kind` column
-- `backend/src/Namorix.Server/Models/BcnProviderConfig.cs` — bỏ `Kind` property
-- `backend/src/Namorix.Server/Services/BcnProviders/BcnProviderResolver.cs` — đổi signature nhận kind riêng
-- `frontend/src/addons/Beacon/BeaconHostnames.tsx` — thay vì đọc `host.kind`, parse từ `configJson`
-
-**Note**: Giữ nguyên 2 nơi là hợp lý hiện tại. Ghi lại để khỏi thắc mắc lại.
-
-	

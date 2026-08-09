@@ -1,5 +1,15 @@
 # Version History — August 2026
 
+## 2026-08-09 — Appearance endpoint merge + SignalR refresh-based reconnect + Frontgate DryRunCountdown extract
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.63.0 → 0.64.0 | NEW: `http/authRefresh.ts` — single-flight refresh dùng chung REST + SignalR (`refreshAccessToken()` tri-state `"success" \| "expired" \| "network"`: 401 → `onUnauthorized` + dừng retry, network/server-down → retry; kèm header `x-csrf-token` + `x-device-fingerprint` — thiếu CSRF → refresh 403; `setOnUnauthorized` re-export qua barrel `http/index.ts`). MODIFIED: `http/client.ts` — RequestBuilder bỏ `refreshPromise`/`setOnUnauthorized` cục bộ → dùng `refreshAccessToken()`, non-success → `apiAuthError` `AuthErrorCodes.UNAUTHORIZED`; `signalr/signalr.service.ts` — `scheduleReconnect` gọi `refreshAccessToken()` trước `startConnection()` (fix reconnect 401 vô hạn khi server down + access token expired); `apiRoutes.ts` — +`appearanceMerged` (`GET /api/settings/appearance/merged`). |
+| frontend | 0.86.0 → 0.87.0 | MODIFIED: `controllers/auth.controller.ts` — `loadAppearance()` đổi 2 call (`ApiUserRoutes.settings` + `appearanceSystem`) → 1 call `appearanceMerged`, bỏ merge logic + bỏ import `ApiUserRoutes`/`AppearanceDefaults`; `addons/Frontgate/FrontgateReverseProxy.tsx` — extract countdown (NEW `DryRunCountdown.tsx` + `useDryRunActive.ts` — self-tick 1s, parent không re-render mỗi giây); `addons/LogViewer/LogViewer.tsx` — fix stream entries không qua filter level/source (trước chỉ list cũ được filter); `index.html` (+`<noscript>`). |
+| Namorix.Server | 0.75.0 → 0.76.0 | NEW: `GET /api/settings/appearance/merged` (`SettingsController.GetMergedAppearance` — public, `userId` derive từ JWT claim khi có cookie auth — anonymous-safe vì `loadAppearance()` chạy cả trên trang login). MODIFIED: `Services/SettingsService.cs` — +`GetMergedAppearanceAsync(int? userId)` compose `GetAppearanceDefaultsAsync()` (cache `appearance_defaults`) + `userSettingsService.GetAllAsync(userId)` (cache `user_settings_{userId}`) — merge 3 tầng code ← system ← user về 1 call; thêm `UserSettingsService` vào constructor (không vòng DI); `Controllers/Warden/WdController.cs` — refactor `req` → `request` (rename behavior-preserving). |
+| frontgate addon | 1.10.0 → 1.11.0 | `version.ts` `NmxAddonVersions` — MINOR bump (DryRunCountdown extract + useDryRunActive hook). |
+| logViewer addon | 1.1.1 → 1.1.2 | `version.ts` `NmxAddonVersions` — PATCH bump (stream filter bug fix). |
+
 ## 2026-08-09 — Warden activity Clear + useActiveTab tab guards
 
 | Package | Version | Changes |

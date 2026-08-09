@@ -27,6 +27,19 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-08-2026.md](versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-08-09 — SignalR reconnect refresh-based + Frontgate DryRunCountdown extract (uncommitted)
+
+- **SignalR reconnect fix**: `scheduleReconnect()` giờ gọi `refreshAccessToken()` trước mỗi lần `startConnection()` — trước đây khi server down + access token hết hạn, reconnect thất bại 401 vô hạn. NEW `http/authRefresh.ts` — single-flight refresh dùng chung REST + SignalR, tri-state `"success" | "expired" | "network"`: `"expired"` (401) dừng retry + trigger `onUnauthorized` (App.tsx → closeAllWindows + stopConnection + redirect login), `"network"` (server down) giữ exponential backoff. Kèm header `x-csrf-token` + `x-device-fingerprint` (thiếu CSRF → refresh bị 403). `setOnUnauthorized` re-export qua barrel `http/index.ts`. Lưu ý: KHÔNG dùng `res.ok` làm điều kiện auth-chết vì network error cũng `!ok`.
+- **Frontgate DryRunCountdown**: tách countdown self-ticking ra `DryRunCountdown.tsx` + hook `useDryRunActive.ts` (isDryRunActive + useDryRunClock — tự interval 1s) — parent không re-render mỗi giây nữa.
+- Chưa commit — sẽ ghi vào progress.md khi commit.
+
+### 2026-08-09 — Appearance — Backend endpoint merge 3-layer (uncommitted)
+
+- **Backend**: thêm `GET /api/settings/appearance/merged` public (`SettingsController.GetMergedAppearance`) — gộp 3 tầng code defaults ← system defaults ← user overrides về 1 call, thay vì frontend tự merge 2 API. `SettingsService.GetMergedAppearanceAsync(int? userId)` compose `GetAppearanceDefaultsAsync()` (cache `appearance_defaults`) + `userSettingsService.GetAllAsync(userId)` (cache `user_settings_{userId}`) — thêm `UserSettingsService` vào constructor, không vòng DI.
+- **Anonymous-safe**: endpoint public (SettingsController không có `[RequireAuth]` class-level), `userId` derive từ JWT claim khi có cookie auth — quan trọng vì `loadAppearance()` chạy cả trên trang login (chưa đăng nhập). Không đặt dưới `/api/user/*` vì `UserController` có class-level `[RequireAuth]` (ActionFilterAttribute không tôn trọng `[AllowAnonymous]`).
+- **Frontend**: `auth.controller.ts` `loadAppearance()` đổi từ 2 call (`ApiUserRoutes.settings` + `ApiSettingsRoutes.appearanceSystem`) sang 1 call `ApiSettingsRoutes.appearanceMerged`, bỏ logic merge + bỏ import `ApiUserRoutes`/`AppearanceDefaults`. `apiRoutes.ts` +`appearanceMerged` route. Settings addon vẫn dùng `appearanceSystem` cũ (không đụng).
+- Chưa commit — sẽ ghi vào progress.md khi commit.
+
 ### 2026-08-09 — Warden activity Clear + useActiveTab tab guards
 
 - **Clear activity (Warden)**: nút Clear trong `WardenActivity.tsx` hoạt động — `confirmClear`/`clearing` state + `handleClearConfirm` gọi `wardenController.clearEvents()` → toast `clearSuccess`/`clearError`, `NmxAlertDialog` confirm `confirmSemantic="error"` `loading={clearing}`. Backend thêm `DELETE /api/warden/events` (`WdEventController.Clear` — `ExecuteDeleteAsync` → `{ deleted }`, pattern Beacon `DELETE /activity`).
