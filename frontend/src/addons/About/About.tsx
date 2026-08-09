@@ -8,7 +8,12 @@ import {
   NmxAddonRoot,
 } from "@namorix/ui"
 import { useTranslation } from "react-i18next"
-import { NMX_NAME } from "@namorix/core"
+import {
+  NMX_AUTHOR,
+  NMX_GITHUB_REPOSITORY,
+  NMX_GITHUB_REPOSITORY_ISSUES,
+  NMX_NAME,
+} from "@namorix/core"
 
 declare const __APP_VERSION__: string
 declare const __CORE_VERSION__: string
@@ -105,9 +110,7 @@ export const About: React.FC = () => {
           <NmxButton
             variant="outline"
             fullWidth
-            onClick={() =>
-              window.open("https://github.com/Namorix/namorix", "_blank")
-            }
+            onClick={() => window.open(NMX_GITHUB_REPOSITORY, "_blank")}
             className="nmx-addon-about__button"
           >
             {t("addon.about.links.github")}
@@ -115,16 +118,14 @@ export const About: React.FC = () => {
           <NmxButton
             variant="outline"
             fullWidth
-            onClick={() =>
-              window.open("https://github.com/Namorix/namorix/issues", "_blank")
-            }
+            onClick={() => window.open(NMX_GITHUB_REPOSITORY_ISSUES, "_blank")}
             className="nmx-addon-about__button"
           >
             {t("addon.about.links.issues")}
           </NmxButton>
         </div>
 
-        <div className="nmx-addon-about__copyright">© 2026 IzeroCs</div>
+        <div className="nmx-addon-about__copyright">© 2026 {NMX_AUTHOR}</div>
       </div>
     </NmxAddonRoot>
   )

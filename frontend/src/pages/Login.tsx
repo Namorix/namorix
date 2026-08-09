@@ -31,8 +31,8 @@ import { authController } from "../controllers"
 
 export const Login: React.FC = () => {
   const { t } = useTranslation()
-  const [username, setUsername] = useState("IzeroCs")
-  const [password, setPassword] = useState("12345678")
+  const [username, setUsername] = useState("")
+  const [password, setPassword] = useState("")
   const [rememberMe, setRememberMe] = useState(false)
   const [busy, setBusy] = useState(false)
   const [searchParams] = useSearchParams()

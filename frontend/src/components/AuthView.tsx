@@ -1,4 +1,5 @@
 import React from "react"
+import { NMX_GITHUB_REPOSITORY } from "@namorix/core"
 
 interface AuthPageProps {
   // Hero section
@@ -34,7 +35,18 @@ export const AuthView: React.FC<AuthPageProps> = ({
             </h1>
           )}
           {heroDescription && (
-            <p className="nmx-split-panel__hero-text">{heroDescription}</p>
+            <div className="nmx-split-panel__hero-description">
+              <p className="nmx-split-panel__hero-text">{heroDescription}</p>
+              <a
+                href={NMX_GITHUB_REPOSITORY}
+                className="nmx-split-panel__hero-link"
+                target="_blank"
+              >
+                <p className="nmx-split-panel__hero-text">
+                  {NMX_GITHUB_REPOSITORY}
+                </p>
+              </a>
+            </div>
           )}
         </section>
         <section className="nmx-split-panel__content">{children}</section>
