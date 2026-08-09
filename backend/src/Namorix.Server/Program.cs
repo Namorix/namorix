@@ -18,7 +18,6 @@ using Namorix.Server.Config;
 using Namorix.Server.Extensions;
 using Namorix.Server.Hubs;
 using Namorix.Server.Infrastructure;
-using Namorix.Server.Middleware;
 using Namorix.Server.Middleware.Frontgate;
 using Namorix.Server.Persistence;
 using Namorix.Server.Services;
@@ -30,17 +29,13 @@ using Namorix.Server.Services.Warden;
 using Namorix.Server.Workers;
 using Namorix.Server.Workers.Beacon;
 using Namorix.Server.Workers.Frontgate;
+using Namorix.Server.Workers.Warden;
 using Yarp.ReverseProxy.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 var backendConfig = builder.Configuration.GetSection("Backend").Get<BackendConfig>() ?? new BackendConfig();
 var dataBasePath = builder.Configuration.GetValue<string>("DataBasePath") ?? "data";
 var dbPath = Path.Combine(dataBasePath, "namorix.db");
-
-// if (backendConfig.HttpsPort > 0 && string.IsNullOrEmpty(backendConfig.SslCertPath))
-// {
-//     SelfSignedCertificateProvider.Ensure(ref backendConfig, new DataDirectory(dataBasePath));
-// }
 
 builder.Services.Configure<AppConfig>(builder.Configuration);
 builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("Jwt"));
@@ -119,6 +114,7 @@ builder.Services.AddScoped<OAuthService>();
 builder.Services.AddScoped<BcnHostnameService>();
 builder.Services.AddSingleton<FrontgateProxyConfigProvider>();
 builder.Services.AddBcnProviders();
+builder.Services.AddScoped<WdEventService>();
 
 builder.Services.AddDataProtection()
     .SetApplicationName("Namorix")
@@ -141,6 +137,8 @@ builder.Services.AddScoped<ISystemMonitorNotifier, SignalRSystemMonitorNotifier>
 builder.Services.AddScoped<IAddonNotifier, SignalRAddonNotifier>();
 builder.Services.AddScoped<IBeaconNotifier, SignalRBeaconNotifier>();
 builder.Services.AddScoped<IFrontgateNotifier, SignalRFrontgateNotifier>();
+builder.Services.AddScoped<IWardenNotifier, SignalRWardenNotifier>();
+builder.Services.AddScoped<IHeraldNotifier, HeraldNotifier>();
 
 builder.Services.AddHttpClient<CatalogService>(client =>
 {
@@ -166,6 +164,8 @@ builder.Services.AddHostedService<FgAuditCleanupWorker>();
 builder.Services.AddHostedService<FgBackendHealthWorker>();
 builder.Services.AddHostedService<BcnCheckWorker>();
 builder.Services.AddHostedService<BcnActivityCleanupWorker>();
+builder.Services.AddHostedService<WdThresholdWorker>();
+builder.Services.AddHostedService<WdBanCleanupWorker>();
 
 builder.Services.AddSingleton<AddonTaskQueue>();
 builder.Services.AddSingleton<AcmeCertQueue>();
@@ -216,6 +216,16 @@ app.UseWhen(ctx => ctx.Connection.LocalPort == backendConfig.Port, api =>
     api.UseApiErrorHandling();
     api.UseSecurityHeaders();
     
+    api.Use(async (context, next) =>
+    {
+        if (context.Request.Path.Equals("/frontgate.html", StringComparison.OrdinalIgnoreCase))
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
+        await next();
+    });
+    
     api.UseStaticFiles(new StaticFileOptions
     {
         FileProvider = new PhysicalFileProvider(pathPublic)
@@ -264,7 +274,7 @@ app.UseWhen(ctx => ctx.Connection.LocalPort == backendConfig.Port, api =>
 });
 
 // Proxy ports (HttpPort, HttpsPort): ForceSsl + YARP only
-var proxyPorts = new[] { backendConfig.HttpPort, backendConfig.HttpsPort }
+var proxyPorts = new[] {backendConfig.HttpPort, backendConfig.HttpsPort }
     .Where(p => p > 0)
     .ToArray();
 
@@ -281,6 +291,16 @@ if (proxyPorts.Length > 0)
         proxy.UseMiddleware<RateLimitMiddleware>();
         proxy.UseMiddleware<ForceSslMiddleware>();
         proxy.UseMiddleware<HstsMiddleware>();
+        
+        proxy.Use(async (context, next) =>
+        {
+            if (context.Request.Path.Equals("/frontgate.html", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                return;
+            }
+            await next();
+        });
         
         proxy.UseStaticFiles(new StaticFileOptions
         {

@@ -10,6 +10,9 @@ public class WdSettings
 
     public bool FirewallEnabled { get; set; } = true;
     public WdSecurityProfile Profile { get; set; } = WdSecurityProfile.Medium;
-
+    
+    public double CustomThresholdFactor { get; set; } = 1.0;   // × threshold
+    public double CustomDurationFactor { get; set; } = 1.0;    // × ban duration
+    
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

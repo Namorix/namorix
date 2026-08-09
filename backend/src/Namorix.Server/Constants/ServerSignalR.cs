@@ -6,6 +6,7 @@ public static class ServerSignalRGroups
     public const string Addon = "addon";
     public const string Beacon = "beacon";
     public const string Frontgate = "frontgate";
+    public const string Warden = "warden"; 
 }
 
 public static class ServerSignalREvent
@@ -24,4 +25,5 @@ public static class ServerSignalREvent
     public const string FrontgateDryRunChanged = $"{ServerSignalRGroups.Frontgate}:dry-run-changed";
     public const string FrontgateCertChanged = $"{ServerSignalRGroups.Frontgate}:cert-changed";
     public const string FrontgateAuditCreated = $"{ServerSignalRGroups.Frontgate}:audit-created";
+    public const string WardenNewEvent = $"{ServerSignalRGroups.Warden}:new-event";
 }

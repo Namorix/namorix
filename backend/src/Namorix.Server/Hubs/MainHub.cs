@@ -41,4 +41,10 @@ public class MainHub(TrafficMonitorService monitorService, ILogger<MainHub> logg
     {
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, ServerSignalRGroups.Frontgate);
     }
+    
+    public async Task SubscribeWarden()
+        => await Groups.AddToGroupAsync(Context.ConnectionId, ServerSignalRGroups.Warden);
+
+    public async Task UnsubscribeWarden()
+        => await Groups.RemoveFromGroupAsync(Context.ConnectionId, ServerSignalRGroups.Warden);
 }

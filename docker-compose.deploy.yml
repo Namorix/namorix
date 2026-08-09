@@ -17,6 +17,7 @@ services:
       - Frontgate__GeoIpDatabasePath=/app/GeoLite2-Country.mmdb
     cap_add:
       - NET_BIND_SERVICE
+      - NET_ADMIN
 
 volumes:
   namorix-data:

@@ -1,11 +1,18 @@
 using System.Net.Mime;
+using System.Text.Json;
+using Namorix.Core.Constants;
+using Namorix.Core.Helpers;
+using Namorix.Server.Constants;
+using Namorix.Server.Models.Warden;
 using Namorix.Server.Services.Frontgate;
+using Namorix.Server.Services.Warden;
 
 namespace Namorix.Server.Middleware.Frontgate;
 
 public class AcmeChallengeMiddleware(
     RequestDelegate next,
     AcmeChallengeStore store,
+    IServiceScopeFactory scopeFactory, 
     ILogger<AcmeChallengeMiddleware> logger)
 {
     public static readonly PathString ChallengePrefix = "/.well-known/acme-challenge";
@@ -25,6 +32,12 @@ public class AcmeChallengeMiddleware(
                 await context.Response.WriteAsync(store.TryGet(token!, out var k) ? k : "");
                 return;
             }
+            
+            using var scope = scopeFactory.CreateScope();
+            await scope.ServiceProvider.GetRequiredService<WdEventService>()
+                .PublishAsync(WdEventTypes.AcmeChallengeFail, WdSeverity.Warning, AddonSourceId.Frontgate,
+                    NetworkHelper.ToDisplayString(context.Connection.RemoteIpAddress),
+                    detailJson: JsonSerializer.Serialize(new { path = context.Request.Path.Value }));
             
             context.Response.StatusCode = StatusCodes.Status404NotFound;
             return;

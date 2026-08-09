@@ -12,7 +12,7 @@ public class WdSecurityEvent
     public WdSeverity Severity { get; init; } = WdSeverity.Info;
 
     [MaxLength(32)] public string SourceAddon { get; init; } = string.Empty;  // "frontgate", "auth"
-    [MaxLength(64)] public string SourceIp { get; init; } = string.Empty;
+    [MaxLength(64)] public string? SourceIp { get; init; } = string.Empty;
 
     public int Count { get; init; } = 1;
     public DateTime WindowStart { get; init; } = DateTime.UtcNow;

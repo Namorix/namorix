@@ -48,7 +48,15 @@ public class WdController(AppDbContext db, WdFirewallService firewall) : Control
 
         db.WdFirewallRules.Add(rule);
         await db.SaveChangesAsync();
-        await firewall.ApplyRuleAsync(rule);
+
+        if (!await firewall.ApplyRuleAsync(rule))
+        {
+            db.WdFirewallRules.Remove(rule);
+            await db.SaveChangesAsync();
+            return Ok(ApiResponse.Fail(WdErrorCodes.EnforcementFailed,
+                "Rule saved but could not be enforced — check NET_ADMIN/iptables on the namorix container"));
+        }
+
         return Ok(ApiResponse.Ok(rule));
     }
 
@@ -65,6 +73,13 @@ public class WdController(AppDbContext db, WdFirewallService firewall) : Control
         if (!IsValidPorts(req.Ports, out var portsError))
             return BadRequest(ApiResponse.Fail(WdErrorCodes.InvalidPorts, portsError));
 
+        // Snapshot before mutating so we can revert if enforcement fails
+        var snapshot = new
+        {
+            rule.Name, rule.SourceCidr, rule.Ports, rule.Protocol,
+            rule.Action, rule.Enabled, rule.Priority
+        };
+
         rule.Name = req.Name;
         rule.SourceCidr = string.IsNullOrWhiteSpace(req.SourceCidr) ? null : req.SourceCidr.Trim();
         rule.Ports = string.IsNullOrWhiteSpace(req.Ports) ? null : req.Ports.Trim();
@@ -74,7 +89,21 @@ public class WdController(AppDbContext db, WdFirewallService firewall) : Control
         rule.Priority = req.Priority;
 
         await db.SaveChangesAsync();
-        await firewall.ApplyRuleAsync(rule);
+
+        if (!await firewall.ApplyRuleAsync(rule))
+        {
+            rule.Name = snapshot.Name;
+            rule.SourceCidr = snapshot.SourceCidr;
+            rule.Ports = snapshot.Ports;
+            rule.Protocol = snapshot.Protocol;
+            rule.Action = snapshot.Action;
+            rule.Enabled = snapshot.Enabled;
+            rule.Priority = snapshot.Priority;
+            await db.SaveChangesAsync();
+            return Ok(ApiResponse.Fail(WdErrorCodes.EnforcementFailed,
+                "Rule update could not be enforced — changes reverted"));
+        }
+
         return Ok(ApiResponse.Ok(rule));
     }
 
@@ -100,9 +129,18 @@ public class WdController(AppDbContext db, WdFirewallService firewall) : Control
 
         rule.Enabled = !rule.Enabled;
         await db.SaveChangesAsync();
-        await (rule.Enabled
-            ? firewall.ApplyRuleAsync(rule)
-            : firewall.RemoveRuleAsync(rule));
+
+        var applied = rule.Enabled
+            ? await firewall.ApplyRuleAsync(rule)
+            : await firewall.RemoveRuleAsync(rule);
+        if (!applied)
+        {
+            rule.Enabled = !rule.Enabled; // revert
+            await db.SaveChangesAsync();
+            return Ok(ApiResponse.Fail(WdErrorCodes.EnforcementFailed,
+                "Rule toggle could not be enforced — reverted"));
+        }
+
         return Ok(ApiResponse.Ok(rule));
     }
 
@@ -116,6 +154,8 @@ public class WdController(AppDbContext db, WdFirewallService firewall) : Control
         var settings = await GetOrCreateSettingsAsync();
         settings.FirewallEnabled = req.FirewallEnabled;
         settings.Profile = req.Profile;
+        settings.CustomThresholdFactor = req.CustomThresholdFactor ?? settings.CustomThresholdFactor;
+        settings.CustomDurationFactor = req.CustomDurationFactor ?? settings.CustomDurationFactor;
         settings.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
 
@@ -135,10 +175,17 @@ public class WdController(AppDbContext db, WdFirewallService firewall) : Control
         var now = DateTime.UtcNow;
         var activeRules = await db.WdFirewallRules
             .CountAsync(r => r.Enabled && (r.ExpiresAt == null || r.ExpiresAt > now));
-        var blockedToday = await db.WdSecurityEvents
-            .CountAsync(e => e.Timestamp >= now.Date);   // Today's events
+        var blockedToday = await db.WdFirewallRules
+            .CountAsync(r => r.Auto && r.CreatedAt >= now.Date);   // Today's events
+        var totalEvents = await db.WdSecurityEvents.CountAsync(); 
         var openPorts = await OpenPortsAsync();
-        return Ok(ApiResponse.Ok(new { activeRules, blockedToday, openPorts }));
+        return Ok(ApiResponse.Ok(new
+        {
+            activeRules,
+            blockedToday,
+            totalEvents,
+            openPorts
+        }));
     }
 
     private async Task<WdSettings> GetOrCreateSettingsAsync()
@@ -238,4 +285,5 @@ public class WdController(AppDbContext db, WdFirewallService firewall) : Control
 public record WdRuleRequest(string Name, string? SourceCidr, string? Ports,
     WdProtocol Protocol, WdRuleAction Action, bool Enabled = true, int? Priority = null);
 
-public record WdSettingsRequest(bool FirewallEnabled, WdSecurityProfile Profile);
+public record WdSettingsRequest(bool FirewallEnabled, WdSecurityProfile Profile,
+    double? CustomThresholdFactor = null, double? CustomDurationFactor = null);

@@ -28,6 +28,10 @@ RUN dotnet publish backend/src/Namorix.Server/Namorix.Server.csproj \
 # ---------- Stage 3: Runtime ----------
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
+# iptables — Warden firewall (thao tác trên container netns, cần NET_ADMIN ở compose)
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends iptables \
+    && rm -rf /var/lib/apt/lists/*
 ENV ASPNETCORE_ENVIRONMENT=Production
 COPY --from=build /publish .
 # Built SPA goes next to the app DLL; Program.cs serves it from ./public

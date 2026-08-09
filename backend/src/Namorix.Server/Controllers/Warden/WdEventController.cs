@@ -23,7 +23,7 @@ public class WdEventController(AppDbContext db) : ControllerBase
         var query = db.WdSecurityEvents.AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(ip))
-            query = query.Where(e => e.SourceIp.Contains(ip.Trim()));
+            query = query.Where(e => e.SourceIp != null && e.SourceIp.Contains(ip.Trim()));
         
         if (!string.IsNullOrWhiteSpace(type))
             query = query.Where(e => e.EventType == type.Trim());

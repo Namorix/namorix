@@ -9,7 +9,6 @@ using Namorix.Server.Models.Beacon;
 using Namorix.Server.Persistence;
 using Namorix.Server.Services.Beacon.Providers;
 using NotificationKeys = Namorix.Server.Constants.NotificationKeys;
-using NotificationSource = Namorix.Server.Constants.NotificationSource;
 
 namespace Namorix.Server.Services.Beacon;
 
@@ -260,9 +259,9 @@ public sealed class BcnHostnameService(AppDbContext db, BcnProviderResolver reso
     private Task NotifyHostnameAsync(BcnHostname host, string? detail = null, bool recovered = false) =>
         recovered
             ? notifications.CreateForAdminsAsync(NotificationType.Success, NotificationKeys.Beacon.BeaconHostnameRecovered,
-                NotificationSource.Beacon, new { hostname = host.DisplayName })
+                AddonSourceId.Beacon, new { hostname = host.DisplayName })
             : notifications.CreateForAdminsAsync(NotificationType.Error, NotificationKeys.Beacon.BeaconHostnameError,
-                NotificationSource.Beacon, new
+                AddonSourceId.Beacon, new
                 {
                     hostname = host.DisplayName, provider = host.ProviderId, error = host.LastError, detail
                 });

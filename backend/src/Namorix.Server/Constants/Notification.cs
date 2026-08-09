@@ -7,9 +7,10 @@ public static class NotificationKeys
         public const string BeaconHostnameError = "beacon:hostnameError";
         public const string BeaconHostnameRecovered = "beacon:hostnameRecovered";
     }
-}
-
-public static class NotificationSource
-{
-    public const string Beacon = "beacon";
+    
+    public static class Warden
+    {
+        public const string RuleApplied = "warden:ruleApplied";
+        public const string RuleRemoved = "warden:ruleRemoved";
+    }
 }
