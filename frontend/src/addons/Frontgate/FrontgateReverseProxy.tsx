@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
-  cx,
   NmxAlertDialog,
   NmxAlign,
   NmxBadge,
@@ -45,6 +44,8 @@ import {
   type ReverseProxyRuleAccess,
   type ReverseProxyRuleStatus,
 } from "./frontgate.controller"
+import { DryRunCountdown } from "./DryRunCountdown"
+import { useDryRunActive } from "./useDryRunActive"
 import {
   type FrontgateDryRunChangedPayload,
   FrontgateErrorCodes,
@@ -114,21 +115,6 @@ const initialForm: CreateReverseProxyRulePayload = {
   blockCommonExploits: false,
   rateLimit: RATE_LIMIT_DEFAULT,
   rateLimitWindowSec: RATE_LIMIT_WINDOW_DEFAULT,
-}
-
-function formatDryRunRemaining(expiresAt: string, now: number): string {
-  const seconds = Math.max(
-    0,
-    Math.floor((new Date(expiresAt).getTime() - now) / 1000),
-  )
-  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`
-}
-
-function isDryRunActive(
-  expiresAt: string | null | undefined,
-  now: number,
-): boolean {
-  return expiresAt != null && new Date(expiresAt).getTime() > now
 }
 
 function resolveDryRunMinutes(
@@ -275,7 +261,6 @@ export const FrontgateReverseProxy: React.FC = () => {
   const [accessPolicies, setAccessPolicies] = useState<AccessPolicy[]>([])
 
   const [formDryRunMinutes, setFormDryRunMinutes] = useState(0)
-  const [now, setNow] = useState(() => Date.now())
 
   const fetchRules = useCallback(
     async (pg: number, size: number): Promise<ReverseProxyRule[]> => {
@@ -366,11 +351,7 @@ export const FrontgateReverseProxy: React.FC = () => {
       .catch(nmxToast.error)
   }, [activeTab, dateOnly, t])
 
-  useEffect(() => {
-    if (activeTab !== "reverseProxy") return
-    const id = setInterval(() => setNow(Date.now()), 1000)
-    return () => clearInterval(id)
-  }, [activeTab])
+  const infoDryRunActive = useDryRunActive(infoRule?.dryRunExpiresAt)
 
   useServerSignalRGroup(ServerSignalRGroups.Frontgate, true)
   useServerSignalREvent<{ certId: string }>(
@@ -456,58 +437,53 @@ export const FrontgateReverseProxy: React.FC = () => {
     setFormPolicyId("")
   }, [])
 
-  const fillForm = useCallback(
-    (rule: ReverseProxyRule) => {
-      setFormSource(rule.source)
-      setFormScheme(rule.destinationScheme)
-      setFormHost(rule.destinationHost)
-      setFormPort(rule.destinationPort)
-      setFormCertificateId(rule.certificateId ?? "")
-      setFormForceSsl(rule.forceSsl)
-      setFormDryRunMinutes(resolveDryRunMinutes(rule.dryRunExpiresAt, now))
-      setFormStatus(rule.status)
-      setFormWebSockets(rule.webSocketsSupport)
-      setFormCacheAssets(rule.cacheAssets)
-      setFormHttp2(rule.http2Support)
-      setFormHsts(rule.hstsEnabled)
-      setFormHstsSub(rule.hstsSubdomains)
-      setFormTrustForwardedProto(rule.trustForwardedProtoHeaders)
-      setFormBlockExploits(rule.blockCommonExploits)
-      setFormRateLimitEnabled(!!rule.rateLimit)
-      setFormRateLimit(rule.rateLimit ?? RATE_LIMIT_DEFAULT)
-      setFormRateLimitWindow(
-        rule.rateLimitWindowSec ?? RATE_LIMIT_WINDOW_DEFAULT,
-      )
-      setFormAccess(rule.access)
-      setFormPolicyId(rule.accessPolicyId ?? "")
+  const fillForm = useCallback((rule: ReverseProxyRule) => {
+    setFormSource(rule.source)
+    setFormScheme(rule.destinationScheme)
+    setFormHost(rule.destinationHost)
+    setFormPort(rule.destinationPort)
+    setFormCertificateId(rule.certificateId ?? "")
+    setFormForceSsl(rule.forceSsl)
+    setFormDryRunMinutes(resolveDryRunMinutes(rule.dryRunExpiresAt, Date.now()))
+    setFormStatus(rule.status)
+    setFormWebSockets(rule.webSocketsSupport)
+    setFormCacheAssets(rule.cacheAssets)
+    setFormHttp2(rule.http2Support)
+    setFormHsts(rule.hstsEnabled)
+    setFormHstsSub(rule.hstsSubdomains)
+    setFormTrustForwardedProto(rule.trustForwardedProtoHeaders)
+    setFormBlockExploits(rule.blockCommonExploits)
+    setFormRateLimitEnabled(!!rule.rateLimit)
+    setFormRateLimit(rule.rateLimit ?? RATE_LIMIT_DEFAULT)
+    setFormRateLimitWindow(rule.rateLimitWindowSec ?? RATE_LIMIT_WINDOW_DEFAULT)
+    setFormAccess(rule.access)
+    setFormPolicyId(rule.accessPolicyId ?? "")
 
-      if (rule.additionalHeadersJson) {
-        try {
-          const parsed = JSON.parse(rule.additionalHeadersJson) as Record<
-            string,
-            string
-          >
-          setFormHeaders(
-            Object.entries(parsed).map(([key, value]) => ({ key, value })),
-          )
-        } catch {
-          setFormHeaders([])
-        }
-      } else {
+    if (rule.additionalHeadersJson) {
+      try {
+        const parsed = JSON.parse(rule.additionalHeadersJson) as Record<
+          string,
+          string
+        >
+        setFormHeaders(
+          Object.entries(parsed).map(([key, value]) => ({ key, value })),
+        )
+      } catch {
         setFormHeaders([])
       }
+    } else {
+      setFormHeaders([])
+    }
 
-      setFormLocations(
-        rule.locations?.map((loc) => ({
-          path: loc.path,
-          scheme: loc.scheme,
-          forwardHost: loc.forwardHost,
-          forwardPort: loc.forwardPort,
-        })) ?? [],
-      )
-    },
-    [now],
-  )
+    setFormLocations(
+      rule.locations?.map((loc) => ({
+        path: loc.path,
+        scheme: loc.scheme,
+        forwardHost: loc.forwardHost,
+        forwardPort: loc.forwardPort,
+      })) ?? [],
+    )
+  }, [])
 
   const handleDialogOpen = useCallback(() => {
     setEditingRule(null)
@@ -758,53 +734,6 @@ export const FrontgateReverseProxy: React.FC = () => {
     }
   }
 
-  const renderDryRun = useCallback(
-    (row: ReverseProxyRule, flexEnd?: boolean) => {
-      return (
-        <div
-          className={cx("nmx-addon-frontgate__dry-run", {
-            "nmx-addon-frontgate__dry-run--flex-end": flexEnd === true,
-          })}
-        >
-          {!isDryRunActive(row.dryRunExpiresAt, now) ? (
-            <span>—</span>
-          ) : (
-            <>
-              <NmxBadge semantic="warning" size="sm">
-                {formatDryRunRemaining(row.dryRunExpiresAt ?? "", now)}
-              </NmxBadge>
-              <div className="nmx-addon-frontgate__btn-wrap">
-                <NmxButton
-                  semantic="success"
-                  className="nmx-addon-frontgate__dry-run__btn"
-                  data-row-action
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleDryRunConfirm(row.id)
-                  }}
-                >
-                  <NmxIconFont symbol={NmxIconFontSymbol.CHECK} size="xs" />
-                </NmxButton>
-                <NmxButton
-                  semantic="error"
-                  className="nmx-addon-frontgate__dry-run__btn"
-                  data-row-action
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleDryRunCancel(row.id)
-                  }}
-                >
-                  <NmxIconFont symbol={NmxIconFontSymbol.UNDO} size="xs" />
-                </NmxButton>
-              </div>
-            </>
-          )}
-        </div>
-      )
-    },
-    [handleDryRunCancel, handleDryRunConfirm, now],
-  )
-
   const columns: NmxDataTableColumn<ReverseProxyRule>[] = [
     {
       header: t("addon.frontgate.pages.reverseProxy.fields.source"),
@@ -869,7 +798,13 @@ export const FrontgateReverseProxy: React.FC = () => {
     },
     {
       header: t("addon.frontgate.pages.reverseProxy.fields.dryRun"),
-      renderCell: (row) => renderDryRun(row),
+      renderCell: (row) => (
+        <DryRunCountdown
+          expiresAt={row.dryRunExpiresAt}
+          onConfirm={() => handleDryRunConfirm(row.id)}
+          onCancel={() => handleDryRunCancel(row.id)}
+        />
+      ),
       grow: 2,
       alignHeader: "center",
       alignCell: "center",
@@ -1082,7 +1017,7 @@ export const FrontgateReverseProxy: React.FC = () => {
           }
           setInfoRule(null)
         }}
-        confirmShouldRender={isDryRunActive(infoRule?.dryRunExpiresAt, now)}
+        confirmShouldRender={infoDryRunActive}
         onClose={() => setInfoRule(null)}
         size="md"
       >
@@ -1140,12 +1075,17 @@ export const FrontgateReverseProxy: React.FC = () => {
                 value={dateTime(infoRule.createdAt)}
                 alignValue="end"
               />
-              {isDryRunActive(infoRule.dryRunExpiresAt, now) && (
+              {infoDryRunActive && (
                 <NmxMetaItem
                   label={t("addon.frontgate.pages.reverseProxy.fields.dryRun")}
                   alignValue="end"
                 >
-                  {renderDryRun(infoRule, true)}
+                  <DryRunCountdown
+                    expiresAt={infoRule.dryRunExpiresAt}
+                    flexEnd
+                    onConfirm={() => handleDryRunConfirm(infoRule.id)}
+                    onCancel={() => handleDryRunCancel(infoRule.id)}
+                  />
                 </NmxMetaItem>
               )}
             </NmxMetaList>
