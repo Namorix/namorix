@@ -1,5 +1,24 @@
+@use "../../abstract/mixins" as *;
+
 .nmx-addon-warden {
-  &__setting-row {
-    border-radius: 0;
+  &__page {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  &__overview {
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: var(--nmx-spacing-3xl) var(--nmx-spacing-md);
+
+    @include scrollbar;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
   }
 }
