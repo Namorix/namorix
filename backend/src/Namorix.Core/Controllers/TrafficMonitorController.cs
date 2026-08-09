@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Namorix.Core.Constants;
 using Namorix.Core.FlatFile;
 using Namorix.Core.Middleware;
 using Namorix.Core.Responses;
@@ -8,7 +9,7 @@ namespace Namorix.Core.Controllers;
 
 [ApiController]
 [RequireAdmin]
-[Route("api/traffic/logs")]
+[Route(TrafficRoutes.Base + "/logs")]
 public class TrafficMonitorController(TrafficMonitorService trafficMonitorService): ControllerBase
 {
     [HttpGet]
@@ -31,11 +32,4 @@ public class TrafficMonitorController(TrafficMonitorService trafficMonitorServic
         await trafficMonitorService.ClearLogs(before);
         return Ok(ApiResponse.Ok());
     }
-}
-
-public class RegisterEndpointRequest
-{
-    public string Method { get; init; } = string.Empty;
-    public string Path { get; init; } = string.Empty;
-    public string? Label { get; init; }
 }

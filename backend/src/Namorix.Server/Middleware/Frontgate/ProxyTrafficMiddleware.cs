@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Namorix.Core.Constants;
 using Namorix.Core.FlatFile;
 using Namorix.Core.Helpers;
 using Namorix.Core.Infrastructure;
@@ -9,6 +10,12 @@ public class ProxyTrafficMiddleware(RequestDelegate next)
 {
     public async Task InvokeAsync(HttpContext context)
     {
+        if (context.Request.Path.StartsWithSegments(TrafficRoutes.Base))
+        {
+            await next(context);
+            return;
+        }
+        
         var originalBody = context.Response.Body;
         var countingStream = new CountingStream(originalBody);
         context.Response.Body = countingStream;
