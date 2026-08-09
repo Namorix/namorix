@@ -1,7 +1,6 @@
 import {
   ApiAuthRoutes,
   ApiError,
-  ApiUserRoutes,
   getApiBaseUrl,
   nmxHttp,
   stopConnection,
@@ -12,7 +11,6 @@ import {
   ApiSettingsRoutes,
   applyTheme,
   applyAppearanceTokens,
-  AppearanceDefaults,
 } from "@namorix/core"
 import i18next from "i18next"
 
@@ -53,35 +51,22 @@ async function logout(): Promise<void> {
 }
 
 async function loadAppearance() {
-  const [sysRes] = await Promise.all([
-    nmxHttp
-      .url(ApiSettingsRoutes.appearanceSystem)
-      .get()
-      .json<AppearanceSettings>(),
-  ])
-
-  if (!sysRes.success) return
-
-  const merged = { ...AppearanceDefaults, ...sysRes.data }
-
-  const userRes = await nmxHttp
-    .url(ApiUserRoutes.settings)
+  const res = await nmxHttp
+    .url(getApiBaseUrl() + ApiSettingsRoutes.appearanceMerged)
     .get()
     .json<AppearanceSettings>()
 
-  if (userRes.success) {
-    Object.assign(merged, userRes.data)
+  if (!res.success) return
+
+  setAppearanceStore(res.data)
+  applyAppearanceTokens(res.data)
+
+  if (i18next.language !== res.data.appearance_language) {
+    await i18next.changeLanguage(res.data.appearance_language)
   }
 
-  setAppearanceStore(merged)
-  applyAppearanceTokens(merged)
-
-  if (i18next.language !== merged.appearance_language) {
-    await i18next.changeLanguage(merged.appearance_language)
-  }
-
-  if (merged.appearance_theme) {
-    await applyTheme(merged.appearance_theme)
+  if (res.data.appearance_theme) {
+    await applyTheme(res.data.appearance_theme)
   }
 }
 
