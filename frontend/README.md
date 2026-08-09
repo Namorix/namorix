@@ -230,5 +230,5 @@ External addons integrate via two modes:
 - **M4** — External addon system: Docker lifecycle, OAuth2 (PKCE + client_credentials), gRPC, addon catalog, standalone mode ✅
     - **Frontgate addon**: YARP reverse proxy with runtime config reload, CRUD API and management UI (Phase 1 ✅), certificate management (Phase 2 ✅ — LE HTTP-01 + dry-run, custom cert; DNS-01 dropped), access control (Phase 3 ✅ — Access Policy CRUD, IP allowlist/denylist, Geo blocking, BasicAuth, dry-run), audit log + rate limit + backend health (Phase 4 ✅), GeoIP database management (upload/rollback với backup `.bak` + progress)
     - **NetworkTraffic**: source filter API/Proxy — tách traffic từ API port vs proxy ports (cùng buffer, lọc theo `source` query param)
-    - **Warden**: host-level firewall — Overview/Activity/Rules dashboard tabs, rules CRUD, security events + detail dialog, stats realtime (`warden:new-event` + 30s poll), Herald notification templates (`warden.ruleApplied`/`ruleRemoved`)
+    - **Warden**: host-level firewall — Overview/Activity/Rules dashboard tabs, rules CRUD, security events + detail dialog + **Clear activity** (confirm dialog → xóa toàn bộ events), stats realtime (`warden:new-event` + 30s poll), Herald notification templates (`warden.ruleApplied`/`ruleRemoved`)
 - **M5** — `@namorix/core` publish npm + addon integration guide

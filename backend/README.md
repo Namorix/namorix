@@ -250,7 +250,7 @@ backend/
         │   ├── Frontgate/               # ReverseProxyController (CRUD + dry-run confirm/cancel),
         │   │                            #   AccessPolicyController (CRUD), CertificateController (LE HTTP-01 + dry-run, retry/renew, custom, download),
         │   │                            #   AuditLogController (audit list/clear), GeoIpController (GeoIP DB status/upload/rollback)
-        │   ├── Warden/                  # WdController (rules CRUD/toggle + settings + stats), WdEventController (events list, filter IP/type/severity)
+        │   ├── Warden/                  # WdController (rules CRUD/toggle + settings + stats), WdEventController (events list filter IP/type/severity + clear)
         │   ├── BcnController.cs         # Beacon DDNS (hostnames CRUD/toggle/check/test, activity, providers, settings)
         │   ├── HealthController.cs      # Health check endpoint
         │   ├── SettingsController.cs    # System settings + appearance defaults + options
@@ -431,6 +431,7 @@ backend/
 | GET/PUT | `/api/warden/settings` | Admin | Firewall settings (firewallEnabled, securityProfile, customThresholdFactor, customDurationFactor) |
 | GET | `/api/warden/stats` | Admin | Stats (activeRules, blockedToday, openPorts) |
 | GET | `/api/warden/events` | Admin | Security events (paginated, filter IP/type/severity) |
+| DELETE | `/api/warden/events` | Admin | Clear all security events (returns `{ deleted }`) |
 
 > All endpoints except health, login, register, status, and some OAuth paths require authentication.
 

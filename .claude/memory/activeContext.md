@@ -27,6 +27,12 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-08-2026.md](versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-08-09 — Warden activity Clear + useActiveTab tab guards
+
+- **Clear activity (Warden)**: nút Clear trong `WardenActivity.tsx` hoạt động — `confirmClear`/`clearing` state + `handleClearConfirm` gọi `wardenController.clearEvents()` → toast `clearSuccess`/`clearError`, `NmxAlertDialog` confirm `confirmSemantic="error"` `loading={clearing}`. Backend thêm `DELETE /api/warden/events` (`WdEventController.Clear` — `ExecuteDeleteAsync` → `{ deleted }`, pattern Beacon `DELETE /activity`).
+- **`useActiveTab` guards**: cả 3 page Warden (Overview/Activity/Rules) giờ chỉ fetch khi tab đang active (`useActiveTab<WardenTab>` + `if (activeTab !== "...") return`) — tránh fetch khi tab không mở. `WardenRules` loading chỉ khi list rỗng (`rules.length <= 0`).
+- Versions: frontend 0.86.0 / warden 0.5.0 / Namorix.Server 0.75.0 (core/ui/styles/Namorix.Core không bump).
+
 ### 2026-08-09 — Warden Phase 1-4: event publishing + Herald notifications + realtime + Frontgate security fixes
 
 - **Warden backend Phase 1-4 (Namorix.Server 0.74.0)**: `WdEventService.PublishAsync` (save `WdSecurityEvent` + push SignalR `warden:new-event`), `SignalRWardenNotifier` (group `warden`), `WdFirewallService` +180 (iptables/nftables enforcement engine, `WdThresholdRules.For` + `WdThresholdFactors.For`), `WdThresholdWorker` (threshold engine — AcmeChallengeFail/Scan404/BruteForce), `WdBanCleanupWorker` (hết hạn rule). **Herald**: `IHeraldNotifier` + `HeraldNotifier` — `warden:ruleApplied` (Warning) / `warden:ruleRemoved` (Info), **chỉ khi `Action == Deny`**, params `name`/`sourceCidr`/`expiresAt`. `WdSettings` +`CustomThresholdFactor`/`CustomDurationFactor` (migration `AddWdCustomProfileFactors`).

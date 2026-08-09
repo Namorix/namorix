@@ -947,14 +947,14 @@ Call sites:
 
 **Notification keys:** `NotificationKeys.Warden.RuleApplied`/`RuleRemoved` = `warden:ruleApplied`/`warden:ruleRemoved` (camelCase — align FE template `warden.ruleApplied` "IP **{{sourceCidr}}** has been blocked"). `AddonSourceId.Warden` (`Namorix.Core/Constants/Addon.cs`).
 
-**Frontend (`frontend/src/addons/Warden/`):** `Warden.tsx` — `NmxToolbar` tabs (overview/activity/rules/settings, content TRONG provider scope). `WardenOverview.tsx` — firewall master toggle + 3 `NmxStatCard` + profile `NmxSegmentedGroup` + **stats realtime** (SignalR group `warden` `warden:new-event` + 30s poll fallback). `WardenActivity.tsx` — `NmxLogList` + pagination + detail dialog (click row → `NmxAlertDialog` + `NmxMetaList`, severity info/warning/error). `WardenRules.tsx` — `NmxDataTable` + `NmxBadge` allow=success/deny=error + `NmxMenuButton` + detail dialog. `WardenRuleDialog.tsx` — ports `NmxTagInput`. Notification icon: `warden` → `APP_WARDEN`.
+**Frontend (`frontend/src/addons/Warden/`):** `Warden.tsx` — `NmxToolbar` tabs (overview/activity/rules/settings, content TRONG provider scope). Cả 3 page dùng `useActiveTab<WardenTab>` guard — chỉ fetch khi tab đang active. `WardenOverview.tsx` — firewall master toggle + 3 `NmxStatCard` + profile `NmxSegmentedGroup` + **stats realtime** (SignalR group `warden` `warden:new-event` + 30s poll fallback). `WardenActivity.tsx` — `NmxLogList` + pagination + detail dialog (click row → `NmxAlertDialog` + `NmxMetaList`, severity info/warning/error) + **Clear activity** (nút Clear → `NmxAlertDialog` confirm `confirmSemantic="error"` → `wardenController.clearEvents()` = `DELETE /api/warden/events`). `WardenRules.tsx` — `NmxDataTable` + `NmxBadge` allow=success/deny=error + `NmxMenuButton` + detail dialog. `WardenRuleDialog.tsx` — ports `NmxTagInput`. Notification icon: `warden` → `APP_WARDEN`.
 
 ### Key files (Warden)
 
 | File | Role |
 |------|------|
 | `backend/src/Namorix.Server/Controllers/Warden/WdController.cs` | Rules CRUD + toggle + settings + stats (`/api/warden`, `[RequireAdmin]`) |
-| `backend/src/Namorix.Server/Controllers/Warden/WdEventController.cs` | Security events (paginated, filter IP/type/severity) |
+| `backend/src/Namorix.Server/Controllers/Warden/WdEventController.cs` | Security events (paginated, filter IP/type/severity; `DELETE` clear all) |
 | `backend/src/Namorix.Server/Services/Warden/WdFirewallService.cs` | iptables/nftables enforcement engine + Herald qua `IServiceScopeFactory` (singleton → scoped) |
 | `backend/src/Namorix.Server/Services/Warden/WdEventService.cs` | Publish WdSecurityEvent + notify |
 | `backend/src/Namorix.Server/Services/Warden/HeraldNotifier.cs` | `IHeraldNotifier` — ruleApplied/ruleRemoved admin notifications |

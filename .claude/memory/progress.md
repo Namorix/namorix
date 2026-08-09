@@ -1,5 +1,13 @@
 # Version History — August 2026
 
+## 2026-08-09 — Warden activity Clear + useActiveTab tab guards
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| frontend | 0.85.0 → 0.86.0 | MODIFIED: `addons/Warden/WardenActivity.tsx` (+41 — **Clear activity**: `confirmClear`/`clearing` state, `handleClearConfirm` → `wardenController.clearEvents()` + toast `clearSuccess`/`clearError`, nút Clear `onClick={() => setConfirmClear(true)}`, `NmxAlertDialog` confirm `confirmSemantic="error"` `loading={clearing}`; +`useActiveTab` guard — chỉ fetch khi tab active), `addons/Warden/WardenOverview.tsx` (+`useActiveTab` guard overview), `addons/Warden/WardenRules.tsx` (+`useActiveTab` guard rules + loading chỉ khi `rules.length <= 0`), `addons/Warden/warden.controller.ts` (+`clearEvents()` — `DELETE /api/warden/events` → `{ deleted }`); `i18n/locales/en.json` (+`feedback` block `clearConfirm`/`clearSuccess`/`clearError`, bỏ dấu chấm cuối "No recent activity." → "No recent activity"). |
+| warden addon | 0.4.0 → 0.5.0 | `version.ts` `NmxAddonVersions` — MINOR bump (Clear activity + confirm dialog + tab guards). |
+| Namorix.Server | 0.74.0 → 0.75.0 | MODIFIED: `Controllers/Warden/WdEventController.cs` — +`[HttpDelete] Clear()` — `ExecuteDeleteAsync()` xóa toàn bộ `WdSecurityEvent` → `{ deleted }` (pattern Beacon `DELETE /activity`). |
+
 ## 2026-08-09 — Warden Phase 1-4: event publishing + Herald notifications + realtime + Frontgate security fixes
 
 | Package | Version | Changes |
