@@ -27,6 +27,16 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-08-2026.md](versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-08-09 — Warden Phase 0 — host-level firewall foundation + dashboard
+
+- **Warden addon (Phase 0 foundation + dashboard)**: internal addon host-level firewall (dưới Frontgate HTTP layer), prefix `Wd`.
+- **Backend (Namorix.Server 0.73.0)**: `Models/Warden/` — `WdFirewallRule` (Name, SourceCidr, Ports, Protocol, Action Allow/Deny, Enabled, Auto, ExpiresAt), `WdSecurityEvent` (EventType, Severity, SourceAddon, SourceIp, Count, WindowStart, Detail, Timestamp), `WdSettings` (FirewallEnabled, SecurityProfile — single-row Id=1); migration `AddWdTables` (index Ip + Timestamp); `Controllers/Warden/` — `WdController` (CRUD rules + toggle + settings + stats `/api/warden`), `WdEventController` (events paginated, filter IP/type/severity `/api/warden/events`), cả 2 `[RequireAdmin]`; `Services/Warden/WdFirewallService.cs` (stub Phase 0 — log-only apply/remove/applyAll, `AddSingleton`); `Constants/Warden.cs` (`WdErrorCodes` + `WdEventTypes` + `WdSecurityProfile`); `Validation/Warden/WdRuleSchema.cs` (CIDR/ports format check). `AppDbContext` refactor `OnModelCreating` → `Configure*` methods + `ConfigureWarden`.
+- **Frontend (0.83.0)**: `addons/Warden/` — `Warden.tsx` (dashboard `NmxAddonRoot scrolled`: firewall master toggle `NmxToggle`, `WardenStats`, profile, rules, block log, add/edit dialog + confirm delete `NmxAlertDialog`), `WardenStats.tsx` (3 `NmxStatCard`, blockedToday `semantic="error"`), `WardenProfile.tsx` (`NmxSegmentedGroup` Low/Medium/High/Custom), `WardenRules.tsx` (`NmxDataTable` + `NmxBadge` allow=success/deny=error + `NmxMenuButton` toggle/edit/delete), `WardenBlockLog.tsx` (`NmxLogList`, severity → info/warning/error), `WardenRuleDialog.tsx` (add/edit rule), `Warden.types.ts`, `warden.controller.ts` (`updateSettings` gộp firewallEnabled + profile; `listEvents` build Record tường minh fix TS). `en.json` +warden namespace (vi.json hoãn).
+- **@namorix/core 0.63.0**: `apiRoutes.ts` +`ApiWardenRoutes`; `version.ts` `NmxAddonVersions.warden` 0.1.0→0.2.0.
+- **Không bump**: @namorix/ui, @namorix/styles, Namorix.Core (không có file thay đổi).
+- **Pending (Phase 1-3)**: event publishing (AcmeChallenge/ProxyTraffic → WdSecurityEvent), SignalR `warden:new-event`, threshold engine + iptables/nftables execution (Phase 2), block log detail dialog + stats realtime (Phase 3), vi.json.
+- Versions: core 0.63.0 / frontend 0.83.0 / Namorix.Server 0.73.0 / warden 0.2.0.
+
 ### 2026-08-09 — Frontgate GeoIP database management + upload progress + traffic routes
 
 - **GeoIP Database Management (Frontgate Settings tab)**: `FrontgateSettings.tsx` (new) — status (file size/database type/build epoch + backup meta), upload database với **progress bar** (XHR `upload.onprogress` — fetch không có progress; `NmxFileInput` +`progress` prop; `RequestBuilder` +`formUpload<T>` giữ withCredentials/CSRF/fingerprint), rollback với `NmxAlertDialog` + `NmxMetaList` so sánh current vs backup (nút rollback ẩn khi `!hasBackup`).

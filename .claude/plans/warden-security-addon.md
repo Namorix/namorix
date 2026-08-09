@@ -23,9 +23,9 @@ Giao diện mẫu đã chốt: dashboard kiểu DSM (Synology), tông amber, đ�
 |------------------|-----------|---------|
 | Header icon shield-check + "Warden / Tường lửa cấp host" | `NmxIconFont` symbol `SECURITY` (có sẵn) trong `NmxIconBox` bg warning | tone amber, hoặc thêm `SHIELD` |
 | Firewall master toggle ("Đang bật") | `NmxToggle` (`checked`, `onCheckedChanged`) | |
-| 3 metric card: Quy tắc đang hoạt động / Đã chặn hôm nay / Cổng đang mở | `NmxStatCard` × 3 (`label`, `value`, `semantic`, `icon`) | "Đã chặn hôm nay" dùng `semantic="danger"` |
+| 3 metric card: Quy tắc đang hoạt động / Đã chặn hôm nay / Cổng đang mở | `NmxStatCard` × 3 (`label`, `value`, `semantic`, `icon`) | "Đã chặn hôm nay" dùng `semantic="error"` (codebase không có "danger") |
 | Hồ sơ bảo mật (Trung bình/Thấp/Cao/Tùy chỉnh) | `NmxSegmentedGroup` (`options`, `value`, `onChange`) | DSM-style, active warning tone |
-| Danh sách quy tắc (Tên / Nguồn / Cổng-Giao thức / Hành động / edit) | `NmxDataTable` (`columns`, `rows`, `rowCellSpacing`, `onRowClick`) + `NmxBadge` semantic success/danger cho Cho phép/Từ chối + `NmxMenuButton` cho edit | |
+| Danh sách quy tắc (Tên / Nguồn / Cổng-Giao thức / Hành động / edit) | `NmxDataTable` (`columns`, `rows`, `rowCellSpacing`, `onRowClick`) + `NmxBadge` semantic success/error cho Cho phép/Từ chối + `NmxMenuButton` cho edit | |
 | Hoạt động gần đây (block log) | `NmxLogList` (`items: NmxLogEntry[]`, `semantic`) | icon `ERROR`/`BAN`, time relative |
 
 ### Component đã xác nhận sẵn có
@@ -78,31 +78,32 @@ Timestamp          ← thời gian event
 
 ## Phase 0 — Foundation
 
-### Backend
+### Backend — ✅ hoàn tất (2026-08-09, build pass 0 errors)
 
-- [ ] **Models**: `WdFirewallRule` (Id, Name, SourceCidr, Ports, Protocol, Action: Allow/Deny, Enabled, Priority?, CreatedAt) + `WdSecurityEvent` (Id, EventType, Severity, SourceAddon, SourceIp, Count, WindowStart, Detail?, Timestamp) + `WdSettings` (FirewallEnabled, SecurityProfile)
-- [ ] **Migration**: `AddWdTables` — bảng rule + event + settings với index trên Ip + Timestamp
-- [ ] **AppDbContext**: DbSet + relationships
-- [ ] **WdController**: CRUD firewall rules (list/create/update/delete/toggle) + get/set settings (firewall enabled, profile) + stats (activeRules, blockedToday, openPorts) — `[RequireAdmin]`, route `/api/warden`
-- [ ] **WdEventController**: list security events paginated, filter theo IP/type/severity — route `/api/warden/events`
-- [ ] **WdFirewallService**: render rule list → `iptables`/`nftables` (`Process.Start()`) — add/remove rule trên apply
-- [ ] **Constants**: `WdErrorCodes` (RuleNotFound, IpAlreadyBanned, etc.) + `WdEventTypes` + `WdSecurityProfile` enum (Low/Medium/High/Custom)
+- [x] **Models**: `WdFirewallRule` (Id, Name, SourceCidr, Ports, Protocol, Action: Allow/Deny, Enabled, **Auto**, Priority?, **ExpiresAt**, CreatedAt) + `WdSecurityEvent` (Id, EventType, **Severity**, SourceAddon, SourceIp, Count, WindowStart, Detail?, Timestamp) + `WdSettings` (FirewallEnabled, SecurityProfile — **single-row, Id = 1**) — tại `Namorix.Server/Models/Warden/`
+- [x] **Migration**: `AddWdTables` — bảng rule + event + settings với index trên Ip + Timestamp
+- [x] **AppDbContext**: DbSet + relationships (refactor `OnModelCreating` → `Configure*` methods, thêm `ConfigureWarden`)
+- [x] **WdController**: CRUD firewall rules (list/create/update/delete/toggle) + get/set settings (firewall enabled, profile) + stats (activeRules, blockedToday, openPorts) — `[RequireAdmin]`, route `/api/warden`
+- [x] **WdEventController**: list security events paginated, filter theo IP/type/severity — route `/api/warden/events`
+- [x] **WdRuleSchema** (validation `[Validate]`): name required 1-64, SourceCidr/Ports optional, enum protocol/action — CIDR/ports format check qua `WdErrorCodes.InvalidCidr`/`InvalidPorts`
+- [x] **WdFirewallService**: **stub Phase 0** (log-only apply/remove/applyAll) — render rule → `iptables`/`nftables` để dành Phase 2; registered `AddSingleton<WdFirewallService>()`
+- [x] **Constants**: `WdErrorCodes` (RuleNotFound, IpAlreadyBanned, InvalidCidr, InvalidPorts) + `WdEventTypes` (ACME_CHALLENGE_FAIL, SCAN_404, BRUTE_FORCE, EXPLOIT_ATTEMPT) + `WdSecurityProfile` enum (Low/Medium/High/Custom)
 
-### Frontend
+### Frontend — ✅ hoàn tất (2026-08-09, `tsc -b` pass 0 errors)
 
-- [ ] **Core**: `apiRoutes.ts` — `ApiWardenRoutes`
-- [ ] **Addon struct**: `warden.addon.ts` + `Warden.tsx` (dashboard layout theo mock)
-- [ ] **Components**: `WardenStats.tsx` (3 `NmxStatCard`), `WardenProfile.tsx` (`NmxSegmentedGroup` Low/Medium/High/Custom), `WardenRules.tsx` (`NmxDataTable` + `NmxBadge` allow/deny + `NmxMenuButton` edit), `WardenBlockLog.tsx` (`NmxLogList`), `WardenRuleDialog.tsx` (add/edit rule)
-- [ ] **Frontend controller**: `wardenController.{listRules, createRule, updateRule, deleteRule, toggleFirewall, setProfile, getStats, listEvents}`
-- [ ] **Types**: `Warden.types.ts` — interfaces + `WardenErrorCodes`
-- [ ] **i18n**: en.json + vi.json — warden namespace (dashboard, profile, rule fields, actions, errors)
+- [x] **Core**: `apiRoutes.ts` — `ApiWardenRoutes` (`rules`, `ruleById(id)`, `ruleToggle(id)`, `settings`, `stats`, `events`)
+- [x] **Addon struct**: `Warden.addon.tsx` (registerAddon, `NmxAddonId.warden`, `UserRole.Admin`, icon `APP_WARDEN`) + `Warden.tsx` (dashboard `NmxAddonRoot scrolled`: firewall master toggle `NmxToggle` trong `NmxSettingsCard`, stats, profile `NmxSection`, rules, log `NmxSection`, dialog thêm/sửa + confirm delete)
+- [x] **Components**: `WardenStats.tsx` (3 `NmxStatCard`, "blockedToday" `semantic="error"`), `WardenProfile.tsx` (`NmxSegmentedGroup` Low/Medium/High/Custom), `WardenRules.tsx` (`NmxDataTable` + `NmxBadge` allow=success/deny=error + `NmxMenuButton` toggle/edit/delete), `WardenBlockLog.tsx` (`NmxLogList`, severity info/warning/critical → info/warning/error), `WardenRuleDialog.tsx` (add/edit rule: name/sourceCidr/ports/protocol/action/enabled, `confirmDisabled` khi name trống)
+- [x] **Frontend controller**: `wardenController.{listRules, createRule, updateRule, deleteRule, toggleRule, getSettings, updateSettings, getStats, listEvents}` — `toggleFirewall`/`setProfile` gộp vào `updateSettings` (backend PUT nhận cả 2); `listEvents` build `Record<string, string|number|boolean>` tường minh (fix TS index signature)
+- [x] **Types**: `Warden.types.ts` — `WdFirewallRule`, `WdSecurityEvent`, `WdSettings`, `WdStats`, `WdEventQuery`, enums (`WdRuleAction`/`WdProtocol`/`WdSeverity`/`WdSecurityProfile`) + `WardenErrorCodes` map
+- [ ] **i18n**: en.json — warden namespace đầy đủ ✅; **vi.json — chưa làm (hoãn theo yêu cầu)**
 
 ### Addon registry
 
-- [ ] `frontend/src/addons/index.ts` — import Warden addon
-- [ ] `frontend/src/addons/Warden/` — dashboard components (thay scaffold rỗng hiện tại)
-- [ ] @namorix/ui — thêm icon `SHIELD`/`BAN` (hoặc dùng `SECURITY` sẵn có)
-- [ ] @namorix/styles — thêm icon token + `warden.scss`
+- [x] `frontend/src/addons/index.ts` — import `./Warden/Warden.addon` (đã có sẵn)
+- [x] `frontend/src/addons/Warden/` — dashboard components thay scaffold rỗng
+- [x] @namorix/ui — **không thêm icon mới**; dùng `SECURITY`/`ERROR`/`NETWORK` sẵn có (SHIELD/BAN optional, defer)
+- [ ] @namorix/styles — `warden.scss` (tone amber) — chưa làm (UI hoạt động với tokens chung hiện tại)
 
 ---
 
@@ -151,11 +152,14 @@ Internal addon dùng **SignalR group** để nhận event — giống pattern Be
 
 ## Phase 3 — Management UI (Dashboard)
 
-- [ ] **Firewall master toggle**: header `NmxToggle` → `toggleFirewall()` (on/off toàn bộ rule)
-- [ ] **Hồ sơ bảo mật**: `NmxSegmentedGroup` Thấp/Trung bình/Cao/Tùy chỉnh → `setProfile()` (mỗi profile = preset rule set)
-- [ ] **Rule CRUD**: `NmxDataTable` (Tên/Nguồn/Cổng-Giao thức/Hành động) + `NmxMenuButton` edit/delete + `NmxAlertDialog` confirm delete; nút "Thêm quy tắc" mở `NmxRuleDialog` (tên, source CIDR, cổng, protocol, action allow/deny)
-- [ ] **Block log**: `NmxLogList` — event deny gần đây (ip, lý do, time relative), click → detail dialog
-- [ ] **Stats**: `NmxStatCard` × 3 (active rules / blocked today / open ports) — refresh theo SignalR + interval
+> Dashboard đã xây toàn bộ trong **Phase 0 frontend**. Phase này còn lại: detail dialog + realtime refresh.
+
+- [x] **Firewall master toggle**: `NmxToggle` → `updateSettings({ firewallEnabled })` — **đã xây Phase 0**
+- [x] **Hồ sơ bảo mật**: `NmxSegmentedGroup` → `updateSettings({ profile })` — **đã xây Phase 0**
+- [x] **Rule CRUD**: `NmxDataTable` + `NmxMenuButton` + `NmxAlertDialog` confirm delete + `WardenRuleDialog` — **đã xây Phase 0**
+- [x] **Block log**: `NmxLogList` hiện event recent — **đã xây Phase 0** (dùng `dateTime()`, không "time relative")
+- [ ] **Block log detail dialog**: click item → dialog xem chi tiết event (`detailJson`)
+- [ ] **Stats realtime**: refresh `NmxStatCard` theo SignalR (`warden:new-event`) + interval
 
 ---
 

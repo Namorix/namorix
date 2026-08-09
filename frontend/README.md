@@ -51,7 +51,7 @@ frontend/
 │   │   │
 │   │   ├── Frontgate/               # Reverse proxy management (YARP integration, CRUD UI, routing rules, access control, dry-run, audit log, cert download, GeoIP database settings)
 │   │   ├── Beacon/                  # DDNS updater — updates DNS when IP changes (provider multi-host, activity, settings)
-│   │   └── Warden/                  # Security — ban IP (scaffold)
+│   │   └── Warden/                  # Host-level firewall — rules, security events, block log (Phase 0)
 │   │
 │   ├── components/
 │   │   ├── AuthView.tsx             # Two-column layout (hero + form panel)
@@ -84,6 +84,7 @@ frontend/
 │   │   └── addon.controller.ts      # Addon install/start/stop/uninstall/list/catalog
 │   │   └── frontgate.controller.ts  # Frontgate reverse proxy CRUD + audit + cert download (listRules, createRule, updateRule, deleteRule, listAudit, clearAudit, downloadCert)
 │   │   └── beacon.controller.ts     # Beacon DDNS (hostnames, activity, settings, providers, dry-run check)
+│   │   └── warden.controller.ts     # Warden firewall (rules CRUD, toggle, settings, stats, events)
 │   │
 │   ├── hooks/
 │   │   ├── useTaskbarClock.ts       # Live clock for taskbar (uses appearance date/time format)
@@ -206,7 +207,7 @@ Built-in addons use the same contract as external addons (M4):
 - **NmxAddonManifest**: id, name, description?, localeKey?, icon?, defaultWidth?, defaultHeight?, preferFullSize?, role?, instanceMode?
 - **AddonContext**: addonId, nmxStore?, store?, isExternal?, sendCommand?
 
-Eleven built-in addons: About, LogViewer, NetworkTraffic, SystemMonitor, Settings, FileManager (scaffold), Terminal (scaffold), PackageCenter, Frontgate, Beacon, Warden (scaffold).
+Eleven built-in addons: About, LogViewer, NetworkTraffic, SystemMonitor, Settings, FileManager (scaffold), Terminal (scaffold), PackageCenter, Frontgate, Beacon, Warden (Phase 0 — host-level firewall).
 
 ### External Addons (Docker-based)
 

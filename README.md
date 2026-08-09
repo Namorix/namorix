@@ -186,7 +186,7 @@ namorix/
 │       │   ├── Settings/       # Appearance, System, Account tabs
 │       │   ├── SystemMonitor/
 │       │   ├── Terminal/       # Terminal emulator scaffold
-│       │   └── Warden/         # Security — ban IP (scaffold)
+│       │   └── Warden/         # Host-level firewall — rules, security events, block log (Phase 0)
 │       ├── components/
 │       │   ├── AuthView.tsx  # Hero + form panel layout
 │       │   ├── DesktopArea/  # Desktop icon shortcuts, grid layout

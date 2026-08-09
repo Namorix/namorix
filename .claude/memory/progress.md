@@ -1,5 +1,14 @@
 # Version History — August 2026
 
+## 2026-08-09 — Warden Phase 0 — host-level firewall foundation + dashboard
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.62.0 → 0.63.0 | MODIFIED: `apiRoutes.ts` — +`ApiWardenRoutes` (`rules`, `ruleById(id)`, `ruleToggle(id)`, `settings`, `stats`, `events`); `version.ts` — `NmxAddonVersions`: warden 0.1.0→0.2.0. |
+| frontend | 0.82.0 → 0.83.0 | NEW: `addons/Warden/` Phase 0 dashboard — `Warden.tsx` (NmxAddonRoot scrolled: firewall master toggle `NmxToggle`, `WardenStats`, profile, rules, block log, add/edit dialog + confirm delete), `WardenStats.tsx` (3 `NmxStatCard` — activeRules/blockedToday `semantic="error"`/openPorts), `WardenProfile.tsx` (`NmxSegmentedGroup` Low/Medium/High/Custom), `WardenRules.tsx` (`NmxDataTable` + `NmxBadge` allow=success/deny=error + `NmxMenuButton` toggle/edit/delete), `WardenBlockLog.tsx` (`NmxLogList`, severity info/warning/critical → info/warning/error), `WardenRuleDialog.tsx` (add/edit rule: name/sourceCidr/ports/protocol/action/enabled), `Warden.types.ts` (WdFirewallRule/WdSecurityEvent/WdSettings/WdStats + enums `WdRuleAction`/`WdProtocol`/`WdSeverity`/`WdSecurityProfile` + `WardenErrorCodes`), `warden.controller.ts` (listRules/createRule/updateRule/deleteRule/toggleRule/getSettings/updateSettings/getStats/listEvents — `updateSettings` gộp firewallEnabled + profile; `listEvents` build `Record<string, string\|number\|boolean>` tường minh fix TS index signature). MODIFIED: `i18n/locales/en.json` (+warden namespace đầy đủ; vi.json hoãn). |
+| Namorix.Server | 0.72.0 → 0.73.0 | NEW: `Models/Warden/` — `WdFirewallRule` (Name, SourceCidr, Ports, Protocol, Action Allow/Deny, Enabled, Auto, ExpiresAt), `WdSecurityEvent` (EventType, Severity, SourceAddon, SourceIp, Count, WindowStart, Detail, Timestamp), `WdSettings` (FirewallEnabled, SecurityProfile — single-row Id=1); migration `AddWdTables` (index Ip + Timestamp); `Controllers/Warden/` — `WdController` (CRUD rules + toggle + settings + stats `/api/warden`, `[RequireAdmin]`), `WdEventController` (events paginated, filter IP/type/severity `/api/warden/events`); `Services/Warden/WdFirewallService.cs` (stub Phase 0 — log-only apply/remove/applyAll); `Constants/Warden.cs` (`WdErrorCodes` RuleNotFound/IpAlreadyBanned/InvalidCidr/InvalidPorts + `WdEventTypes` ACME_CHALLENGE_FAIL/SCAN_404/BRUTE_FORCE/EXPLOIT_ATTEMPT + `WdSecurityProfile` enum); `Validation/Warden/WdRuleSchema.cs` (CIDR/ports format check). MODIFIED: `Persistence/AppDbContext.cs` (DbSet + `ConfigureWarden`, refactor `OnModelCreating` → `Configure*` methods), `Program.cs` (DI `AddSingleton<WdFirewallService>()`). |
+| warden addon | 0.1.0 → 0.2.0 | `version.ts` `NmxAddonVersions` — MINOR bump (Phase 0 foundation + dashboard). |
+
 ## 2026-08-09 — Frontgate GeoIP database management + upload progress + traffic routes
 
 | Package | Version | Changes |

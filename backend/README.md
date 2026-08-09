@@ -181,6 +181,7 @@ backend/
         │   ├── Addon.cs              # Addon task phase constants, error codes
         │   ├── Beacon.cs             # Beacon codes (BcnErrorCodes/BcnActivityCodes/BcnParam/BcnCredentialParam/BcnHttpClientNames/BcnHeaderKey)
         │   ├── Frontgate.cs          # Frontgate error codes (FgErrorCodes)
+        │   ├── Warden.cs             # Warden codes (WdErrorCodes/WdEventTypes/WdSecurityProfile)
         │   └── ServerSignalR.cs      # Server-specific SignalR event names + groups (incl. beacon, frontgate)
         ├── Extensions/
         │   └── ApplicationBuilderExtensions.cs  # Server middleware pipeline wrapper
@@ -213,6 +214,7 @@ backend/
         │   ├── Addon/               # AddonCatalogEntry, AddonInstallation, AddonTask
         │   ├── Beacon/              # BcnHostname, BcnSettings, BcnActivityLog, BcnProviderConfig, BcnProviderInfo
         │   ├── Frontgate/           # FgReverseProxyRule, FgCertificate(+Domain), FgAccessPolicy, FgReverseProxyLocation, FgAuditLog, FgRuleSnapshot (runtime — dry-run rollback)
+        │   ├── Warden/              # WdFirewallRule, WdSecurityEvent, WdSettings
         │   └── Catalog/             # Catalog DTOs (AddonManifestDto, CatalogIndex, PortDto)
         ├── Services/
         │   ├── AuthService.cs               # Login, Register, RefreshToken, RevokeToken, VerifyAccessToken
@@ -236,6 +238,7 @@ backend/
         │   │                            #   AcmeChallengeStore, AcmeDryRunService, DnsLookupChecker,
         │   │                            #   FrontgateAccessService (access policy eval), GeoIpService (MaxMind.GeoIP2),
         │   │                            #   FrontgateAudit (audit log write + push), SniCertProvider (SNI cert lookup)
+        │   ├── Warden/                  # WdFirewallService (stub Phase 0 — log-only apply/remove/applyAll; iptables/nftables Phase 2)
         │   └── Grpc/
         │       └── AddonChannelService.cs  # gRPC bidirectional stream handler + interceptor auth
         ├── Controllers/
@@ -243,6 +246,7 @@ backend/
         │   ├── Frontgate/               # ReverseProxyController (CRUD + dry-run confirm/cancel),
         │   │                            #   AccessPolicyController (CRUD), CertificateController (LE HTTP-01 + dry-run, retry/renew, custom, download),
         │   │                            #   AuditLogController (audit list/clear), GeoIpController (GeoIP DB status/upload/rollback)
+        │   ├── Warden/                  # WdController (rules CRUD/toggle + settings + stats), WdEventController (events list)
         │   ├── BcnController.cs         # Beacon DDNS (hostnames CRUD/toggle/check/test, activity, providers, settings)
         │   ├── HealthController.cs      # Health check endpoint
         │   ├── SettingsController.cs    # System settings + appearance defaults + options
@@ -410,6 +414,19 @@ backend/
 | GET | `/api/beacon/status` | Admin | Status summary (healthy count, last check) |
 | POST | `/api/beacon/refresh` | Admin | Probe all hostnames (authoritative DNS) |
 
+### Warden (`/api/warden`) — Host-level Firewall
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/warden/rules` | Admin | List firewall rules |
+| POST | `/api/warden/rules` | Admin | Create rule (name, sourceCidr, ports, protocol, action, enabled) |
+| PUT | `/api/warden/rules/{id}` | Admin | Update rule |
+| DELETE | `/api/warden/rules/{id}` | Admin | Delete rule |
+| POST | `/api/warden/rules/{id}/toggle` | Admin | Enable/Disable rule |
+| GET/PUT | `/api/warden/settings` | Admin | Firewall settings (firewallEnabled, securityProfile) |
+| GET | `/api/warden/stats` | Admin | Stats (activeRules, blockedToday, openPorts) |
+| GET | `/api/warden/events` | Admin | Security events (paginated, filter IP/type/severity) |
+
 > All endpoints except health, login, register, status, and some OAuth paths require authentication.
 
 ## Middleware Pipeline
@@ -521,6 +538,9 @@ SQLite database file (`namorix.db`), tạo tự động khi chạy migrations.
 - **BcnHostname** — `id`, `host` (multi-tag comma: `@`, `www`, `*.example.com`), `domain` (FQDN), `providerId`, `kind`, `configJson` (encrypted secrets), `status` (updating/active/disabled/error), `currentIpv4/6`, `lastCheckedAt`, `lastUpdatedAt`, `lastError`, `backoffUntil`
 - **BcnSettings** — `id` (=1), `checkIntervalMinutes`, `heartbeatIntervalHours`, `ipDetectionService`, `updateIpv6`
 - **BcnActivityLog** — `id`, `timestamp`, `level`, `code`, `paramsJson`, `hostnameId` (FK, SetNull on delete)
+- **WdFirewallRule** — `id`, `name`, `sourceCidr`, `ports`, `protocol` (any/tcp/udp/icmp), `action` (allow/deny), `enabled`, `auto`, `expiresAt`, `createdAt`
+- **WdSecurityEvent** — `id`, `eventType`, `severity` (info/warning/critical), `sourceAddon`, `sourceIp`, `count`, `windowStart`, `detail?` (JSON), `timestamp` (index Ip + Timestamp)
+- **WdSettings** — `id` (=1), `firewallEnabled`, `securityProfile` (low/medium/high/custom)
 
 ### Migrations
 
