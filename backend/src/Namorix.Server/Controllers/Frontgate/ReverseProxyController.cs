@@ -11,7 +11,6 @@ using Namorix.Server.Infrastructure;
 using Namorix.Server.Models.Frontgate;
 using Namorix.Server.Persistence;
 using Namorix.Server.Services.Frontgate;
-using Namorix.Server.Validation;
 using Namorix.Server.Validation.Frontgate;
 
 namespace Namorix.Server.Controllers.Frontgate;
