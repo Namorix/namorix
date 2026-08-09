@@ -10,6 +10,7 @@ export const API_ADDON_BASE = API_BASE + "/addons"
 export const API_OAUTH_BASE = API_BASE + "/oauth"
 export const API_FRONTGATE_BASE = API_BASE + "/frontgate"
 export const API_BEACON_BASE = API_BASE + "/beacon"
+export const API_WARDEN_BASE = API_BASE + "/warden"
 
 export const ApiAuthRoutes = {
   status: API_AUTH_BASE + "/status",
@@ -122,3 +123,12 @@ export const ApiBeaconRoutes = {
   hostnameToggle: (id: string) => `${API_BEACON_BASE}/hostnames/${id}/toggle`,
   hostnameCheck: (id: string) => `${API_BEACON_BASE}/hostnames/${id}/check`,
 }
+
+export const ApiWardenRoutes = {
+  rules: API_WARDEN_BASE + "/rules",
+  ruleById: (id: number) => `${API_WARDEN_BASE}/rules/${id}`,
+  ruleToggle: (id: number) => `${API_WARDEN_BASE}/rules/${id}/toggle`,
+  settings: API_WARDEN_BASE + "/settings",
+  stats: API_WARDEN_BASE + "/stats",
+  events: API_WARDEN_BASE + "/events",
+} as const
