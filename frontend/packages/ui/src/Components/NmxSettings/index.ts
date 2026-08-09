@@ -1,3 +1,4 @@
+export * from "./NmxSettingsWrap"
 export * from "./NmxSettingsSection"
 export * from "./NmxSettingsCard"
 export * from "./NmxSettingsRow"

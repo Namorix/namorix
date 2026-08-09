@@ -68,6 +68,7 @@ export const NmxIconFontSymbol = {
   SNOOZE: "ic-snooze",
   API: "ic-api",
   PROXY: "ic-proxy",
+  TASK: "ic-task",
 } as const
 
 export type NmxIconFontSymbol =
