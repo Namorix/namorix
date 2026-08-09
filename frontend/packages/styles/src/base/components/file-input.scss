@@ -12,10 +12,34 @@
     border-radius: var(--nmx-radius-md);
     background: var(--nmx-color-surface-lowest);
     cursor: pointer;
+    position: relative;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset-block: 0;
+      inset-inline-start: 0;
+      width: var(--nmx-file-input-progress, 0%);
+      background: var(--nmx-color-primary);
+      border-radius: var(--nmx-radius-md);
+      opacity: 0.55;
+      z-index: 0;
+      transition: width 0.15s ease-out;
+      pointer-events: none;
+    }
+
+    &--uploading {
+      cursor: wait;
+    }
   }
 
   &__area:hover:not(:has(&__clear:hover)) {
     background: var(--nmx-color-surface-mid);
+  }
+
+  &__area:hover:not(:has(&__clear:hover)) &__filename,
+  &__area:hover:not(:has(&__clear:hover)) &__placeholder {
+    color: var(--nmx-color-on-surface);
   }
 
   &__info {
@@ -30,6 +54,10 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  &__placeholder {
+    color: var(--nmx-color-on-surface-variant);
   }
 
   &__size {

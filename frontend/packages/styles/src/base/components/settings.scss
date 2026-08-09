@@ -46,6 +46,7 @@
   }
 
   &__control {
+    color: var(--nmx-color-on-surface);
     flex: 0 0 var(--nmx-settings-row-control-basis);
     display: flex;
     justify-content: flex-end;

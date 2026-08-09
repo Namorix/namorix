@@ -9,7 +9,9 @@ export default defineConfig(() => {
     rolldownOptions: {
       input: {
         "light/theme": resolve(__dirname, "src/themes/light/index.scss"),
+        "light/shell": resolve(__dirname, "src/themes/light/shell.scss"),
         "dark/theme": resolve(__dirname, "src/themes/dark/index.scss"),
+        "dark/shell": resolve(__dirname, "src/themes/dark/shell.scss"),
       },
       output: {
         assetFileNames: "[name].css",

@@ -131,4 +131,12 @@
     white-space: pre-wrap;
     word-break: break-word;
   }
+
+  &__page-settings {
+    padding: var(--nmx-spacing-2xl) var(--nmx-spacing-md);
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    @include scrollbar;
+  }
 }
