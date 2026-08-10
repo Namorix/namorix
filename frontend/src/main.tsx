@@ -11,6 +11,7 @@ import "./addons"
 
 configureCore({
   apiBaseUrl: import.meta.env.VITE_API_URL ?? window.location.origin,
+  hubsPath: "/hubs/main",
   isShellDesktop: true,
 })
 
