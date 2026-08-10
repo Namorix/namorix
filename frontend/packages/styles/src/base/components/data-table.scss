@@ -24,6 +24,10 @@
     contain: layout paint style;
   }
 
+  &--radius {
+    border-radius: var(--nmx-spacing-md);
+  }
+
   &__header-row {
     display: contents;
   }

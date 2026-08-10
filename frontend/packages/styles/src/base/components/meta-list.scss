@@ -14,6 +14,10 @@
     padding: var(--nmx-spacing-md);
   }
 
+  &--align-item--end &__item-value {
+    text-align: end;
+  }
+
   &__item {
     display: contents;
     font-family: var(--nmx-font-mono), serif;
