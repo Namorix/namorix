@@ -27,7 +27,7 @@ public class WdFirewallService(
         {
             var (ok, inserted) = await UpsertRuleAsync(rule, ct);
             if (ok && inserted && notify)
-                await NotifyRuleAppliedAsync(rule);   // ngoài lock
+                await NotifyRuleAppliedAsync(rule);
             return ok;
         }
 
