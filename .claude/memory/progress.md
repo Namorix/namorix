@@ -1,5 +1,14 @@
 # Version History — August 2026
 
+## 2026-08-10 — Warden rules add/update feedback toasts + NmxCard restructure (Container/Section + spacing)
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/ui | 0.45.0 → 0.46.0 | NEW: `Components/NmxCard/NmxCardContainer.tsx` (nmx-card__container — container-type inline-size) + `NmxCardSection.tsx` (nmx-card-section + `title` uppercase, max-width 960px qua container query `@card-container (min-width: $nmx-breakpoint-lg)`). MODIFIED: `NmxCard.tsx` — +`spacing?: "none" \| NmxSpacing` prop (`nmx-card-spacing--none` / `cxSpacing`); `NmxDataTable.tsx` + `NmxDataTable.type.ts` — +`radiusEnabled` (modifier `nmx-data-table--radius`); `NmxMetaList.tsx` — +`alignItem?: "start" \| "end"` (`nmx-meta-list--align-item--end`); `NmxIconFont.tsx` — `size` default `"sm"` → `null` (không add size class khi không set); `types/base.ts` — +`WithSpacing` interface + `NmxSpacing` import. |
+| @namorix/styles | 0.56.0 → 0.57.0 | MODIFIED: `base/components/card.scss` (+42 — `--nmx-card-spacing` variable fallback `--nmx-spacing-3xl`, `spacings()` mixin, `nmx-card-spacing--none`, `.nmx-card__container` container-type, `.nmx-card-section` + `__title` + container query max-width 960px); `data-table.scss` (+4 — `--radius` border-radius `--nmx-spacing-md`); `meta-list.scss` (+4 — `--align-item--end` text-align end). |
+| frontend | 0.87.0 → 0.88.0 | MODIFIED: `addons/Warden/WardenRules.tsx` — **rule add/update feedback**: `handleSubmitRule` +`nmxToast.success` (`feedback.addSuccess`/`updateSuccess` kèm `{{name}}`), error giữ `formatCustomError(t, err, WardenErrorCodes)` + fallback locale `addError`/`updateError` qua tham số `fallbackMessage` của `nmxToast.error`; delete dialog keys chuyển `addon.warden.dialog.*` → `addon.warden.pages.rules.dialog.*` + `markupToHtmlEnabled` cho `deleteConfirm` markup `[color:warning]**{{name}}**[/color]`; `i18n/locales/en.json` (+`pages.rules.feedback` block `addSuccess`/`addError`/`updateSuccess`/`updateError`). |
+| warden addon | 0.5.0 → 0.6.0 | `version.ts` `NmxAddonVersions` — MINOR bump (rule add/update success/error feedback + delete confirm markup). |
+
 ## 2026-08-09 — Appearance endpoint merge + SignalR refresh-based reconnect + Frontgate DryRunCountdown extract
 
 | Package | Version | Changes |
