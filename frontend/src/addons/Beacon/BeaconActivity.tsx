@@ -21,7 +21,7 @@ import {
   type BcnActivityLogDto,
   bcnErrorDetail,
 } from "./Beacon.types"
-import { ServerSignalREvent, useServerSignalREvent } from "../../signalr"
+import { ServerSignalREvents, useServerSignalREvent } from "../../signalr"
 import type { BeaconTab } from "./Beacon"
 
 const ACTIVITY_CODES = { ...BeaconActivityCodes, ...BeaconErrorCodes }
@@ -76,14 +76,14 @@ export const BeaconActivity: React.FC = () => {
   }, [page, pageSize, fetchActivity, activeTab])
 
   useServerSignalREvent(
-    ServerSignalREvent.BeaconActivityCreated,
+    ServerSignalREvents.BeaconActivityCreated,
     useCallback(() => {
       fetchActivity(page, pageSize).catch(nmxToast.error)
     }, [fetchActivity, page, pageSize]),
   )
 
   useServerSignalREvent(
-    ServerSignalREvent.BeaconHostnamesRefreshed,
+    ServerSignalREvents.BeaconHostnamesRefreshed,
     useCallback(() => {
       fetchActivity(page, pageSize).catch(nmxToast.error)
     }, [fetchActivity, page, pageSize]),

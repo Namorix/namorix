@@ -22,7 +22,7 @@ import {
   useActiveTab,
 } from "@namorix/ui"
 import {
-  ServerSignalREvent,
+  ServerSignalREvents,
   ServerSignalRGroups,
   useServerSignalREvent,
   useServerSignalRGroup,
@@ -77,7 +77,7 @@ export const WardenOverview: React.FC = () => {
   }, [fetchStats])
 
   useServerSignalRGroup(ServerSignalRGroups.Warden, true)
-  useServerSignalREvent(ServerSignalREvent.WardenNewEvent, fetchStats)
+  useServerSignalREvent(ServerSignalREvents.WardenNewEvent, fetchStats)
 
   const handleToggleFirewall = useCallback(
     (firewallEnabled: boolean) => {

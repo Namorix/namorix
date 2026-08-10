@@ -46,7 +46,7 @@ import {
   getStatusSemantic,
 } from "./Frontgate.types"
 import {
-  ServerSignalREvent,
+  ServerSignalREvents,
   ServerSignalRGroups,
   useServerSignalREvent,
   useServerSignalRGroup,
@@ -186,14 +186,14 @@ export const FrontgateCertificate: React.FC = () => {
 
   useServerSignalRGroup(ServerSignalRGroups.Frontgate, true)
   useServerSignalREvent<{ certId: string; status: string }>(
-    ServerSignalREvent.FrontgateCertStatusChanged,
+    ServerSignalREvents.FrontgateCertStatusChanged,
     useCallback(() => {
       fetchCerts(page, pageSize).catch(nmxToast.error)
     }, [fetchCerts, page, pageSize]),
   )
 
   useServerSignalREvent<FrontgateCertChangedPayload>(
-    ServerSignalREvent.FrontgateCertChanged,
+    ServerSignalREvents.FrontgateCertChanged,
     useCallback(
       (payload) => {
         const deleted = payload?.action === "deleted"

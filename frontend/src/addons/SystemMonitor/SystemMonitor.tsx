@@ -12,7 +12,7 @@ import {
   type DiskUsageItemData,
 } from "@namorix/ui"
 import {
-  ServerSignalREvent,
+  ServerSignalREvents,
   ServerSignalRGroups,
   useServerSignalREvent,
   useServerSignalRGroup,
@@ -67,7 +67,7 @@ export const SystemMonitor: React.FC = () => {
 
   useServerSignalRGroup(ServerSignalRGroups.SystemMonitor, true)
   useServerSignalREvent<SystemStats>(
-    ServerSignalREvent.SystemMonitorStatsUpdate,
+    ServerSignalREvents.SystemMonitorStatsUpdate,
     setStats,
   )
 

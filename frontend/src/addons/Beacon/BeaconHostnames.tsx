@@ -36,7 +36,7 @@ import {
   type BcnHostnameStatusChangePayload,
   type BcnHostnamesRefreshPayload,
 } from "./Beacon.types"
-import { ServerSignalREvent, useServerSignalREvent } from "../../signalr"
+import { ServerSignalREvents, useServerSignalREvent } from "../../signalr"
 import type { TFunction } from "i18next"
 import type { BeaconTab } from "./Beacon"
 
@@ -141,7 +141,7 @@ export const BeaconHostnames: React.FC = () => {
   }, [page, pageSize, fetchHosts, activityTab])
 
   useServerSignalREvent<BcnHostnameStatusChangePayload>(
-    ServerSignalREvent.BeaconHostnameStatusChanged,
+    ServerSignalREvents.BeaconHostnameStatusChanged,
     useCallback(
       (payload) => {
         fetchHosts(page, pageSize).catch(nmxToast.error)
@@ -158,7 +158,7 @@ export const BeaconHostnames: React.FC = () => {
   )
 
   useServerSignalREvent<BcnHostnamesRefreshPayload>(
-    ServerSignalREvent.BeaconHostnamesRefreshed,
+    ServerSignalREvents.BeaconHostnamesRefreshed,
     useCallback(() => {
       fetchHosts(page, pageSize).catch(nmxToast.error)
       setRefreshing(false)
@@ -731,7 +731,7 @@ export const BeaconHostnames: React.FC = () => {
   const totalPages = Math.ceil(total / pageSize)
 
   useServerSignalREvent<BcnHostnameChangedPayload>(
-    ServerSignalREvent.BeaconHostnameChanged,
+    ServerSignalREvents.BeaconHostnameChanged,
     useCallback(
       (payload) => {
         const deleted = payload?.action === "deleted"

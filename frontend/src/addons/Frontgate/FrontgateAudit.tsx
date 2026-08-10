@@ -23,7 +23,7 @@ import {
 } from "./frontgate.controller"
 import type { FrontgateTab } from "./Frontgate"
 import {
-  ServerSignalREvent,
+  ServerSignalREvents,
   ServerSignalRGroups,
   useServerSignalREvent,
   useServerSignalRGroup,
@@ -104,7 +104,7 @@ export const FrontgateAudit: React.FC = () => {
 
   useServerSignalRGroup(ServerSignalRGroups.Frontgate, true)
   useServerSignalREvent<FrontgateAuditCreatedPayload>(
-    ServerSignalREvent.FrontgateAuditCreated,
+    ServerSignalREvents.FrontgateAuditCreated,
     useCallback(() => {
       fetchAudit(page, pageSize).catch(nmxToast.error)
     }, [fetchAudit, page, pageSize]),

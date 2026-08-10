@@ -19,7 +19,7 @@ import type { WdSecurityEvent, WdSeverity } from "./Warden.types"
 import { nmxToast, useDateTimeFormat, usePageSize } from "@namorix/core"
 import { wardenController } from "./warden.controller"
 import {
-  ServerSignalREvent,
+  ServerSignalREvents,
   ServerSignalRGroups,
   useServerSignalREvent,
   useServerSignalRGroup,
@@ -77,7 +77,7 @@ export const WardenActivity: React.FC = () => {
   }, [page, pageSize, fetchEvents, activeTab])
 
   useServerSignalRGroup(ServerSignalRGroups.Warden, true)
-  useServerSignalREvent(ServerSignalREvent.WardenNewEvent, () => {
+  useServerSignalREvent(ServerSignalREvents.WardenNewEvent, () => {
     fetchEvents(page, pageSize)
   })
 

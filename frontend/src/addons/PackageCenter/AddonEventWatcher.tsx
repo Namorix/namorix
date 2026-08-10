@@ -12,7 +12,7 @@ import {
   useAppSelector,
 } from "../../store"
 import { nmxToast } from "@namorix/core"
-import { ServerSignalREvent, useServerSignalREvent } from "../../signalr"
+import { ServerSignalREvents, useServerSignalREvent } from "../../signalr"
 import { formatAddonErrorCode } from "./addonError"
 import type { AddonStatusPayload } from "../types"
 import { addonController, mapDtoToManifest } from "../../controllers"
@@ -35,7 +35,7 @@ export const AddonEventWatcher: React.FC = () => {
   }, [catalogMap])
 
   useServerSignalREvent<AddonStatusPayload>(
-    ServerSignalREvent.AddonStatusChanged,
+    ServerSignalREvents.AddonStatusChanged,
     useCallback(
       async (data: AddonStatusPayload) => {
         const addon = addonMapRef.current[data.addonId]
@@ -70,7 +70,7 @@ export const AddonEventWatcher: React.FC = () => {
   )
 
   useServerSignalREvent<{ addonId: string }>(
-    ServerSignalREvent.AddonUninstalled,
+    ServerSignalREvents.AddonUninstalled,
     useCallback(
       (data) => {
         const name =

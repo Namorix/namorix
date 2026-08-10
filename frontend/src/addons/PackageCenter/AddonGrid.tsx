@@ -41,7 +41,7 @@ import {
   useActiveTab,
 } from "@namorix/ui"
 import { resolveAddonError } from "./addonError"
-import { ServerSignalREvent, useServerSignalREvent } from "../../signalr"
+import { ServerSignalREvents, useServerSignalREvent } from "../../signalr"
 import type {
   AddonContainerStatus,
   AddonPendingPhase,
@@ -176,7 +176,7 @@ export const AddonGrid: React.FC = () => {
   }, [loadData])
 
   useServerSignalREvent<{ addonId: string; taskPhase: string | null }>(
-    ServerSignalREvent.AddonPendingTaskChanged,
+    ServerSignalREvents.AddonPendingTaskChanged,
     (data) => {
       if (data.taskPhase) {
         setPending(data.addonId, data.taskPhase as AddonPendingPhase)

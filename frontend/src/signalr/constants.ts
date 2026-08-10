@@ -6,7 +6,7 @@ export const ServerSignalRGroups = {
   Warden: "warden",
 } as const
 
-export const ServerSignalREvent = {
+export const ServerSignalREvents = {
   SystemMonitorStatsUpdate: ServerSignalRGroups.SystemMonitor + ":stats-update",
   AddonStatusChanged: ServerSignalRGroups.Addon + ":status-changed",
   AddonPendingTaskChanged: ServerSignalRGroups.Addon + ":pending-task-changed",
@@ -28,4 +28,4 @@ export const ServerSignalREvent = {
 export type ServerSignalRGroupsType =
   (typeof ServerSignalRGroups)[keyof typeof ServerSignalRGroups]
 export type ServerSignalREventType =
-  (typeof ServerSignalREvent)[keyof typeof ServerSignalREvent]
+  (typeof ServerSignalREvents)[keyof typeof ServerSignalREvents]

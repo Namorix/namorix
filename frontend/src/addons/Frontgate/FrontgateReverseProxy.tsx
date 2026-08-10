@@ -54,7 +54,7 @@ import {
 } from "./Frontgate.types"
 import type { FrontgateTab } from "./Frontgate"
 import {
-  ServerSignalREvent,
+  ServerSignalREvents,
   ServerSignalRGroups,
   useServerSignalREvent,
   useServerSignalRGroup,
@@ -355,17 +355,17 @@ export const FrontgateReverseProxy: React.FC = () => {
 
   useServerSignalRGroup(ServerSignalRGroups.Frontgate, true)
   useServerSignalREvent<{ certId: string }>(
-    ServerSignalREvent.FrontgateCertStatusChanged,
+    ServerSignalREvents.FrontgateCertStatusChanged,
     useCallback(() => refresh(), [refresh]),
   )
 
   useServerSignalREvent<FrontgateDryRunChangedPayload>(
-    ServerSignalREvent.FrontgateDryRunChanged,
+    ServerSignalREvents.FrontgateDryRunChanged,
     useCallback(() => refresh(), [refresh]),
   )
 
   useServerSignalREvent<FrontgateRuleChangedPayload>(
-    ServerSignalREvent.FrontgateRuleChanged,
+    ServerSignalREvents.FrontgateRuleChanged,
     useCallback(
       (data) => {
         const deleted = data.action === "deleted"
