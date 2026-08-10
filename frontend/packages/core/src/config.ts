@@ -11,7 +11,7 @@ export interface NmxCoreClient {
 }
 
 const DEFAULT_API_BASE_URL = "http://localhost:3000"
-const DEFAULT_HUBS_PATH = "/hubs/main"
+const DEFAULT_HUBS_PATH = "/hubs/namorix"
 
 export function createNmxCore(config: CoreConfig = {}): NmxCoreClient {
   const state = {

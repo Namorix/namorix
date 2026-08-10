@@ -1,4 +1,4 @@
-export const HUB_MAIN = "/hubs/main"
+export const HUB_MAIN = "/hubs/namorix"
 
 export const API_BASE = "/api"
 export const API_AUTH_BASE = API_BASE + "/auth"
