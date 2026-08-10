@@ -31,7 +31,7 @@ pnpm preview      # Preview production build
 ```
 frontend/
 ├── src/
-│   ├── main.tsx                     # Entry: imports styles, configureCore, ThemeProvider, i18n, addons
+│   ├── main.tsx                     # Entry: imports styles, coreConfig, ThemeProvider, i18n, addons
 │   ├── main.scss                    # Forwards @namorix/styles + @namorix/styles/shell
 │   ├── App.tsx                      # Router: blocked check, /login, /register, / (guarded)
 │   ├── Root.tsx                     # Provider (Redux + NmxHostContext) wrapping App
@@ -158,23 +158,29 @@ frontend (namespace "notification") →  notification.* (content keys for notifi
 ```
 
 ### SignalR Realtime
-```typescript
-import { useSignalR, useSignalREvent, useSignalRStatus, useSignalRGroup } from "@namorix/core"
+Core hooks nhận `signalr: SignalrService` làm param đầu (factory/instance pattern — không giữ global state). App bind sẵn qua `src/config/coreConfig.ts` (instance duy nhất + `createSignalRHooks`) và shim `src/signalr/useSignalR.ts` — consumer chỉ cần import từ shim, không cần truyền config:
 
-const connection = useSignalR()           // Get connection instance
-const status = useSignalRStatus()         // "connected" | "disconnected" | "reconnecting"
-useSignalREvent(eventName, handler)       // Subscribe to event (deferred registration support)
+```typescript
+// frontend/src/signalr/useSignalR.ts (shim — re-export pre-bound hooks)
+import { useSignalR, useSignalRStatus, useSignalREvent, useSignalRGroup } from "../config/coreConfig"
+
+// Trong component
+const connection = useSignalR(true)        // Mount/unmount connection lifecycle
+const status = useSignalRStatus()          // "connected" | "disconnected" | "reconnecting"
+useSignalREvent(eventName, handler)        // Subscribe to event (deferred registration support)
+useSignalRGroup(groupName, active)         // Join/leave group
 ```
 
 Auto-reconnects with exponential backoff (5s → 30s cap, infinite retry).
 
 ### Controller Pattern
 ```typescript
-import { nmxHttp, getApiBaseUrl } from "@namorix/core"
+import { ApiError } from "@namorix/core"
+import { coreConfig } from "../config/coreConfig"
 
 export const addonController = {
   list: async () => {
-    const data = await nmxHttp.url(getApiBaseUrl() + "/api/addon").get().json()
+    const data = await coreConfig.http.url(coreConfig.getApiBaseUrl() + "/api/addon").get().json()
     if (!data.success) throw ApiError.fromResponse(data)
     return data.data
   },

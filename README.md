@@ -237,7 +237,7 @@ namorix/
 
 | Package | Purpose | Importable By |
 |---------|---------|---------------|
-| `@namorix/core` | Types, auth guards, http client with auto-refresh + CSRF, `ApiError`, i18n (NmxI18n, ValidationRunner), SignalR hooks (useSignalR, useSignalREvent, useSignalRGroup, useSignalRStatus), store (nmxStore), theme, fingerprint, cache (useTabCache, Show), hooks (usePageSize, useLocalStorage), toast (NmxToastBus), notification (NmxNotificationDto, SignalR events, API routes), oauth (PKCE browser client — authorizeRedirect, handleRedirectCallback, getAccessToken), mount (createMount, AddonModeProvider, useIsStandalone, useIsWidget) | frontend, @namorix/ui, external addons |
+| `@namorix/core` | Types, auth guards, **factory/instance pattern** (chỉ export factory thuần — `createNmxCore`, `createAuthRefresh`, `createHttpClient`, `createAuthService`, `createOauth`, `createThemeLoader`, `createSignalrService`, `createSignalRHooks`; state nằm trong instance closure riêng từng app — chống xung đột qua Module Federation), http client auto-refresh + CSRF, `ApiError`, i18n (NmxI18n, ValidationRunner), SignalR hooks (useSignalR, useSignalREvent, useSignalRGroup, useSignalRStatus), store (nmxStore), theme, fingerprint, cache (useTabCache, Show), hooks (usePageSize, useLocalStorage), toast (NmxToastBus), notification (NmxNotificationDto, SignalR events, API routes), oauth (PKCE browser client), mount (createMount, AddonModeProvider, useIsStandalone, useIsWidget) | frontend, @namorix/ui, external addons |
 | `@namorix/styles` | SCSS tokens, reset, fonts, icomoon icons, component/layout SCSS (shared by all themes), shell-specific SCSS | frontend, @namorix/ui, external addons |
 | `@namorix/ui` | Primitives (NmxButton, NmxForm {NmxFormField.rowFlex}, NmxIcon, NmxInlineAlert, NmxToggle, NmxSelect, NmxSelectMultiple, NmxSlider, NmxSegmentedGroup, NmxBadge, NmxChip, NmxLoadingOverlay, NmxSpinner, NmxPagination, NmxPulseDot, NmxSearchInput, NmxStatCard, NmxTagInput) + Composite (NmxCard, NmxDataTable, NmxMetaList, NmxRail, NmxSettings, NmxToolbar, NmxAddon, NmxDialog, NmxAlertDialog {noSpacingBody}, NmxToastProvider, NmxTabContext, NmxTabProvider, NmxTabs, NmxFormRow) + NmxHostContext + Layouts (NmxHorizontalWrap, NmxGrid) | frontend |
 | `backend` | ASP.NET Core 10 API server: OAuth2 authorization server (authorization_code + PKCE, client_credentials + private_key_jwt), Docker addon lifecycle, gRPC bidirectional streaming, SignalR realtime, SQLite + EF Core, flat file traffic + logs, validation filter, CORS | - |
@@ -250,13 +250,35 @@ namorix/
 Frontend uses controller pattern for API calls:
 
 ```typescript
+// frontend/src/config/coreConfig.ts — instance duy nhất (factory/instance pattern, như i18n)
+import {
+  createNmxCore, createAuthRefresh, createHttpClient,
+  createAuthService, createThemeLoader, createSignalrService, createSignalRHooks,
+} from "@namorix/core"
+
+const config = createNmxCore({
+  apiBaseUrl: import.meta.env.VITE_API_URL ?? window.location.origin,
+  hubsPath: "/hubs/main",
+  isShellDesktop: true,
+})
+const authRefresh = createAuthRefresh(config)
+const http = createHttpClient(authRefresh)
+export const coreConfig = {
+  ...config, http, authRefresh,
+  auth: createAuthService({ core: config, http }),
+  theme: createThemeLoader(config),
+  signalr: createSignalrService({ core: config, authRefresh }),
+  ...createSignalRHooks(...),
+}
+
 // frontend/src/controllers/auth.controller.ts
-import { nmxHttp, getApiBaseUrl, ApiError, ApiAuthRoutes } from "@namorix/core"
+import { ApiError, ApiAuthRoutes } from "@namorix/core"
+import { coreConfig } from "../config/coreConfig"
 
 export const authController = {
   login: async (username: string, password: string, rememberMe?: boolean) => {
-    const data = await nmxHttp
-      .url(getApiBaseUrl() + ApiAuthRoutes.login)
+    const data = await coreConfig.http
+      .url(coreConfig.getApiBaseUrl() + ApiAuthRoutes.login)
       .post({ username, password, rememberMe })
       .json()
     if (!data.success) throw ApiError.fromResponse(data)

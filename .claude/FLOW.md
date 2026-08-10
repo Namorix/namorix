@@ -23,7 +23,7 @@ Toàn bộ luồng dữ liệu trong project. Dùng cho external addon dev biế
 
 ```
 main.tsx
-  ├── configureCore({ baseUrl })
+  ├── import "./config/coreConfig"   ← instance duy nhất (createNmxCore + factories)
   ├── generateFingerprint()
   ├── ReactDOM.createRoot → <Root />
   └── Root.tsx
@@ -399,11 +399,18 @@ formatApiError(t, err)
 ### Connection lifecycle
 
 ```
+core-instance (src/config/coreConfig.ts)
+  └── createNmxCore({ apiBaseUrl, hubsPath: "/hubs/main", isShellDesktop })
+  └── createAuthRefresh(core) → createHttpClient(authRefresh)
+  └── createSignalrService({ core, authRefresh })     // SignalrService
+  └── createSignalRHooks(signalr)                     // 4 hook pre-bound
+        └── frontend/src/signalr/useSignalR.ts → shim (re-export + ServerSignalR type wrappers)
+
 Desktop mount (authenticated)
-  └── useSignalR(true)
-        └── SignalrClient (per hubPath — default resolveHubPath() → getHubsPath() ?? HUB_MAIN)
+  └── useSignalR(true)   // pre-bound shim — core param đã bind sẵn
+        └── SignalrClient (per hubPath — default resolveHubPath() → core.getHubsPath() ?? HUB_MAIN)
               └── HubConnectionBuilder
-                    ├── .withUrl(getApiBaseUrl() + hubPath)
+                    ├── .withUrl(core.getApiBaseUrl() + hubPath)
                     ├── .withAutomaticReconnect()
                     └── build().start()
                           ├── Flush pendingHandlers (registered via client.on trước start)
@@ -412,7 +419,7 @@ Desktop mount (authenticated)
 
 On disconnect
   └── scheduleReconnect()
-        ├── refreshAccessToken() (single-flight — dùng chung REST + SignalR)
+        ├── authRefresh.refreshAccessToken() (single-flight — dùng chung REST + SignalR)
         │     ├── "expired" (401) → dừng retry → onUnauthorized (redirect login)
         │     └── "success" → startConnection() (lỗi thì backoff tiếp)
         └── exponential backoff 5s → 10s → 20s → 30s cap
@@ -446,13 +453,17 @@ On disconnect
 
 ### Hooks
 
+**2 lớp** — core hooks nhận `signalr: SignalrService` làm param đầu (federated, không giữ state); frontend app bind sẵn qua `createSignalRHooks(coreConfig.signalr)` + shim trong `src/signalr/useSignalR.ts` (không cần truyền param khi dùng).
+
 | Hook | Usage |
 |------|-------|
-| `useSignalR(enabled, hubPath?)` | Mount/unmount connection lifecycle (per hubPath) |
-| `useSignalREvent<T>(event, handler, hubPath?)` | Subscribe event with cleanup. If connection not ready, buffers via `client.on` → `pendingHandlers` flushed on `start()`. useRef handler, `[eventName, hubPath]` deps. |
-| `useSignalRGroup(group, active, hubPath?)` | Join/leave group with reconnect handler |
-| `useServerSignalREvent(event, handler)` | Typed wrapper for ServerSignalREvent |
-| `useServerSignalRGroup(group)` | Typed wrapper for ServerSignalRGroups |
+| `useSignalR(signalr, active, hubPath?)` | Mount/unmount connection lifecycle (per hubPath). Core hook nhận `signalr` param đầu; app dùng pre-bound shim `useSignalR(active, hubPath?)`. |
+| `useSignalREvent<T>(signalr, event, handler, hubPath?)` | Subscribe event with cleanup. If connection not ready, buffers via `client.on` → `pendingHandlers` flushed on `start()`. useRef handler, `[eventName, hubPath]` deps. |
+| `useSignalRGroup<SG>(signalr, group, active, hubPath?)` | Join/leave group with reconnect handler |
+| `useSignalRStatus(signalr, hubPath?)` | Get connection state per hubPath |
+| `createSignalRHooks(signalr)` | Factory trả 4 hook pre-bound (dùng trong `coreConfig.ts`) |
+| `useServerSignalREvent(event, handler)` | App shim — typed wrapper cho ServerSignalREvent (ép `ServerSignalREventType`) |
+| `useServerSignalRGroup(group)` | App shim — typed wrapper cho ServerSignalRGroups (ép `ServerSignalRGroupsType`) |
 
 ### Backend
 
@@ -482,11 +493,16 @@ NmxHub (IHubContext)
 
 | File | Role |
 |------|------|
-| `frontend/packages/core/src/signalr/signalr.service.ts` | `SignalrClient` class per hubPath (cached in `clients` Map), `pendingHandlers` buffer flushed on start, reconnect logic, `resolveHubPath()`/`getSignalrClient()` |
-| `frontend/packages/core/src/signalr/useSignalR.ts` | Hook: mount/unmount connection |
+| `frontend/packages/core/src/config.ts` | `createNmxCore(config)` — `NmxCoreClient` (`getApiBaseUrl`/`getHubsPath`/`isShellDesktopEnv`); bỏ `configureCore` global |
+| `frontend/packages/core/src/signalr/signalr.service.ts` | `createSignalrService({core, authRefresh})` — `SignalrClient` class per hubPath (cached in `clients` Map inside closure), `pendingHandlers` buffer flushed on start, reconnect logic, `resolveHubPath()`/`getSignalrClient()` |
+| `frontend/packages/core/src/signalr/createSignalRHooks.ts` | `createSignalRHooks(signalr)` — 4 hook pre-bound từ SignalrService |
+| `frontend/packages/core/src/signalr/useSignalR.ts` | Hook: mount/unmount connection (nhận `signalr` param đầu) |
 | `frontend/packages/core/src/signalr/useSignalREvent.ts` | Hook: subscribe typed events |
 | `frontend/packages/core/src/signalr/useSignalRGroup.ts` | Hook: group subscribe |
+| `frontend/packages/core/src/signalr/useSignalRStatus.ts` | Hook: connection state |
 | `frontend/packages/core/src/signalr/constants.ts` | Event names + types |
+| `frontend/src/config/coreConfig.ts` | Instance duy nhất — compose factories + re-export alias + pre-bound hooks |
+| `frontend/src/signalr/useSignalR.ts` | App shim — pre-bound hook + `useServerSignalRGroup`/`useServerSignalREvent` type wrappers |
 | `backend/src/Namorix.Server/Hubs/NmxHub.cs` | SignalR hub |
 | `backend/src/Namorix.Core/Hubs/` | Notifiers |
 

@@ -27,6 +27,14 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-08-2026.md](versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-08-10 — Core factory/instance pattern + frontend pre-bound shim (@namorix/core 0.66.0 / frontend 0.89.0)
+
+- **Core — module-level global state → factory/instance pattern** (như i18n — chống xung đột state khi `@namorix/core` share qua Module Federation M4/M5). Core chỉ export factory thuần: `createNmxCore(config)` (bỏ `configureCore`), `createAuthRefresh(core)`, `createHttpClient(authRefresh)` (bỏ singleton `nmxHttp`), `createAuthService({core, http})`, `createOauth(core)`, `createThemeLoader(core)`, `createSignalrService({core, authRefresh})`, `createSignalRHooks(signalr)`. 4 signalr hooks đổi thành nhận `signalr` làm param đầu. `createMount` +`deps.oauth`.
+- **Frontend — pre-bound shim 2 lớp**: `src/config/coreConfig.ts` = instance duy nhất (compose factories + re-export alias cũ để consumer không đổi API) + `src/signalr/useSignalR.ts` = pre-bound hook wrapper (ép type `ServerSignalRGroupsType`/`ServerSignalREventType`). ~22 consumer files chỉ đổi import nguồn.
+- **Fix LogViewer crash**: `log.controller.ts` route sai `ApiTrafficRoutes.logs` → `ApiLogRoutes.logs`.
+- **Lưu ý**: backend 3 file đang rename `HubMain`→`HubNamorix` (`/hubs/main`→`/hubs/namorix`) chưa commit — nếu commit chung sẽ lệch với frontend `coreConfig` `hubsPath: "/hubs/main"`. Addon internal (LogViewer/NetworkTraffic/...) KHÔNG bump — plumbing-only import change.
+- Versions: core 0.66.0 / frontend 0.89.0 (backend/addon không bump).
+
 ### 2026-08-10 — SignalR multi-hub refactor (@namorix/core 0.65.0)
 
 - **Multi-hub `SignalrClient`**: module-level singleton → class per `hubPath` (cached trong `clients` Map). NEW API: `resolveHubPath(hubPath?)` (default `getHubsPath() ?? HUB_MAIN`), `getSignalrClient(hubPath?)`. Mọi hàm export +`hubPath` param (`getConnection`/`startConnection`/`stopConnection`/`addStatusHandler`/...).
