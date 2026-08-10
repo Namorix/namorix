@@ -30,7 +30,7 @@ public static class ApplicationBuilderExtensions
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapHub<THub>(SignalRPath.HubMain);
+                endpoints.MapHub<THub>(SignalRPath.HubNamorix);
                 configureEndpoints?.Invoke(endpoints);
             });
     

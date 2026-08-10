@@ -268,7 +268,7 @@ app.UseWhen(ctx => ctx.Connection.LocalPort == backendConfig.Port, api =>
             FileProvider = new PhysicalFileProvider(pathPublic)
         });
         endpoints.MapControllers();
-        endpoints.MapHub<MainHub>(SignalRPath.HubMain);
+        endpoints.MapHub<MainHub>(SignalRPath.HubNamorix);
         endpoints.MapReverseProxy();
     });
 });
