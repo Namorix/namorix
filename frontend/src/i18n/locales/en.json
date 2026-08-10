@@ -1068,6 +1068,12 @@
             "loading": "Loading rules...",
             "empty": "No rules yet. Add your first rule."
           },
+          "feedback": {
+            "addSuccess": "Added rule \"{{name}}\"",
+            "addError": "Failed to add rule",
+            "updateSuccess": "Updated rule \"{{name}}\"",
+            "updateError": "Failed to update rule"
+          },
           "dialog": {
             "titleAdd": "Add rule",
             "titleEdit": "Edit rule",
@@ -1084,7 +1090,7 @@
             "cancel": "Cancel",
             "titleDelete": "Delete rule",
             "delete": "Delete",
-            "deleteConfirm": "Delete rule \"{{name}}\"? This cannot be undone."
+            "deleteConfirm": "Delete rule [color:warning]**{{name}}**[/color]? This cannot be undone."
           },
           "protocol": {
             "any": "Any",

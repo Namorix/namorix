@@ -72,16 +72,32 @@ export const WardenRules: React.FC = () => {
   const handleSubmitRule = useCallback(
     (payload: WdRulePayload) => {
       setSubmitting(true)
-      const request = editing
+      const isEdit = editing != null
+      const request = isEdit
         ? wardenController.updateRule(editing.id, payload)
         : wardenController.createRule(payload)
       request
         .then(() => {
           setDialogOpen(false)
+          nmxToast.success(
+            t(
+              isEdit
+                ? "addon.warden.pages.rules.feedback.updateSuccess"
+                : "addon.warden.pages.rules.feedback.addSuccess",
+              { name: payload.name },
+            ),
+          )
           return fetchRules()
         })
         .catch((err) =>
-          nmxToast.error(formatCustomError(t, err, WardenErrorCodes)),
+          nmxToast.error(
+            formatCustomError(t, err, WardenErrorCodes),
+            t(
+              isEdit
+                ? "addon.warden.pages.rules.feedback.updateError"
+                : "addon.warden.pages.rules.feedback.addError",
+            ),
+          ),
         )
         .finally(() => setSubmitting(false))
     },
@@ -303,15 +319,16 @@ export const WardenRules: React.FC = () => {
 
       <NmxAlertDialog
         open={deleteTarget != null}
-        title={t("addon.warden.dialog.titleDelete")}
-        confirmLabel={t("addon.warden.dialog.delete")}
+        title={t("addon.warden.pages.rules.dialog.titleDelete")}
+        confirmLabel={t("addon.warden.pages.rules.dialog.delete")}
         confirmSemantic="error"
         loading={deleting}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDeleteRule}
+        markupToHtmlEnabled={true}
       >
         <p>
-          {t("addon.warden.dialog.deleteConfirm", {
+          {t("addon.warden.pages.rules.dialog.deleteConfirm", {
             name: deleteTarget?.name ?? "",
           })}
         </p>
