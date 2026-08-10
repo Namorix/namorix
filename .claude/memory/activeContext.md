@@ -27,7 +27,15 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-08-2026.md](versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
-### 2026-08-10 — Warden rules add/update feedback toasts + NmxCard restructure (uncommitted)
+### 2026-08-10 — SignalR multi-hub refactor (@namorix/core 0.65.0)
+
+- **Multi-hub `SignalrClient`**: module-level singleton → class per `hubPath` (cached trong `clients` Map). NEW API: `resolveHubPath(hubPath?)` (default `getHubsPath() ?? HUB_MAIN`), `getSignalrClient(hubPath?)`. Mọi hàm export +`hubPath` param (`getConnection`/`startConnection`/`stopConnection`/`addStatusHandler`/...).
+- **`pendingHandlers` buffer**: `client.on()` trước khi connection tồn tại → buffer trong `pendingHandlers`, flush khi `start()` build connection (survives reconnect). Bỏ cơ chế defer `addStatusHandler` cũ trong `useSignalREvent`.
+- **Config**: `CoreConfig` +`hubsPath?: string` (default `"/hubs/main"`), `main.tsx` wiring `hubsPath: "/hubs/main"`. Backend `SignalR.cs` `HubMain = $"{HubPrefix}/main"`.
+- **Hooks**: `useSignalR(active, hubPath?)`/`useSignalREvent(event, handler, hubPath?)`/`useSignalRGroup(group, active, hubPath?)`/`useSignalRStatus(hubPath?)`.
+- Versions: core 0.65.0 / frontend 0.88.1 / Namorix.Core 0.57.1.
+
+### 2026-08-10 — Warden rules add/update feedback toasts + NmxCard restructure (committed)
 
 - **Warden rule add/update feedback (frontend 0.88.0)**: `WardenRules.tsx` `handleSubmitRule` giờ hiện `nmxToast.success` (`pages.rules.feedback.addSuccess`/`updateSuccess` kèm `{{name}}`); error giữ `formatCustomError(t, err, WardenErrorCodes)` + fallback locale `addError`/`updateError` qua tham số `fallbackMessage` của `nmxToast.error`. Delete dialog keys chuyển `addon.warden.dialog.*` → `addon.warden.pages.rules.dialog.*`, `deleteConfirm` dùng markup `[color:warning]**{{name}}**[/color]` + `markupToHtmlEnabled` trên NmxAlertDialog.
 - **NmxCard restructure (@namorix/ui 0.46.0 / styles 0.57.0)**: NEW `NmxCardContainer` (nmx-card__container — container-type inline-size) + `NmxCardSection` (`title` uppercase, max-width 960px qua container query ≥lg). `NmxCard` +`spacing` prop (`none` \| NmxSpacing), `NmxDataTable` +`radiusEnabled`, `NmxMetaList` +`alignItem`, `NmxIconFont` size default `sm` → `null`, `types/base.ts` +`WithSpacing`.

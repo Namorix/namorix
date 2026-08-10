@@ -1,5 +1,13 @@
 # Version History — August 2026
 
+## 2026-08-10 — SignalR multi-hub refactor (SignalrClient per hubPath + pendingHandlers buffer)
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.64.0 → 0.65.0 | MODIFIED: `signalr/signalr.service.ts` — **module-level singleton → `SignalrClient` class** (khóa theo `hubPath` trong `clients` Map; mỗi hub có connection/reconnect/status riêng). NEW public API: `resolveHubPath(hubPath?)` (default `getHubsPath() ?? HUB_MAIN`), `getSignalrClient(hubPath?)` — mọi hàm export +`hubPath` param default `resolveHubPath()` (`getConnection`/`startConnection`/`stopConnection`/`addOnCloseHandler`/`addStatusHandler`/`isHasBeenConnected`/`setHasBeenConnected`/`getConnectionState`). **`pendingHandlers` buffer** — `client.on()` trước khi connection tồn tại (register vào `pendingHandlers`, flush vào hub khi `start()` build connection + survives reconnect); bỏ cơ chế defer `addStatusHandler` cũ. `config.ts` — `CoreConfig` +`hubsPath?: string` (`configureCore` set, `getHubsPath()` trả default `"/hubs/main"`). MODIFIED: `signalr/useSignalR.ts` (`useSignalR(active, hubPath?)` — start/stop theo hubPath), `useSignalREvent.ts` (`client.on`/`client.off` trực tiếp — buffer qua pendingHandlers; bỏ defer manual; deps `[eventName, hubPath]`), `useSignalRGroup.ts` (`getSignalrClient(hubPath).getConnection()`), `useSignalRStatus.ts` (`getConnectionState(hubPath)` + status handler theo hubPath). |
+| frontend | 0.88.0 → 0.88.1 | MODIFIED: `main.tsx` — `configureCore({ ..., hubsPath: "/hubs/main" })` (wiring config `hubsPath`). |
+| Namorix.Core | 0.57.0 → 0.57.1 | MODIFIED: `Constants/SignalR.cs` — `HubMain = $"{HubPrefix}/main"` (thay hardcode `"/hubs/main"` — dùng `HubPrefix` chung, FE `getHubsPath()` sync). |
+
 ## 2026-08-10 — Warden rules add/update feedback toasts + NmxCard restructure (Container/Section + spacing)
 
 | Package | Version | Changes |

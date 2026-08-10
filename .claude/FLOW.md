@@ -401,12 +401,14 @@ formatApiError(t, err)
 ```
 Desktop mount (authenticated)
   └── useSignalR(true)
-        └── HubConnectionBuilder
-              ├── .withUrl("/hubs/main")
-              ├── .withAutomaticReconnect()
-              └── build().start()
-                    ├── Subscribe groups: traffic, logs
-                    └── Emit handshake
+        └── SignalrClient (per hubPath — default resolveHubPath() → getHubsPath() ?? HUB_MAIN)
+              └── HubConnectionBuilder
+                    ├── .withUrl(getApiBaseUrl() + hubPath)
+                    ├── .withAutomaticReconnect()
+                    └── build().start()
+                          ├── Flush pendingHandlers (registered via client.on trước start)
+                          ├── Subscribe groups: traffic, logs
+                          └── Emit handshake
 
 On disconnect
   └── scheduleReconnect()
@@ -446,9 +448,9 @@ On disconnect
 
 | Hook | Usage |
 |------|-------|
-| `useSignalR(enabled)` | Mount/unmount connection lifecycle |
-| `useSignalREvent<T>(event, handler)` | Subscribe event with cleanup. If connection not ready, defers via `addStatusHandler`/`removeStatusHandler`. useRef handler, `[eventName]` deps. |
-| `useSignalRGroup(group)` | Join/leave group with reconnect handler |
+| `useSignalR(enabled, hubPath?)` | Mount/unmount connection lifecycle (per hubPath) |
+| `useSignalREvent<T>(event, handler, hubPath?)` | Subscribe event with cleanup. If connection not ready, buffers via `client.on` → `pendingHandlers` flushed on `start()`. useRef handler, `[eventName, hubPath]` deps. |
+| `useSignalRGroup(group, active, hubPath?)` | Join/leave group with reconnect handler |
 | `useServerSignalREvent(event, handler)` | Typed wrapper for ServerSignalREvent |
 | `useServerSignalRGroup(group)` | Typed wrapper for ServerSignalRGroups |
 
@@ -480,7 +482,7 @@ NmxHub (IHubContext)
 
 | File | Role |
 |------|------|
-| `frontend/packages/core/src/signalr/signalr.service.ts` | Connection singleton, reconnect logic |
+| `frontend/packages/core/src/signalr/signalr.service.ts` | `SignalrClient` class per hubPath (cached in `clients` Map), `pendingHandlers` buffer flushed on start, reconnect logic, `resolveHubPath()`/`getSignalrClient()` |
 | `frontend/packages/core/src/signalr/useSignalR.ts` | Hook: mount/unmount connection |
 | `frontend/packages/core/src/signalr/useSignalREvent.ts` | Hook: subscribe typed events |
 | `frontend/packages/core/src/signalr/useSignalRGroup.ts` | Hook: group subscribe |
