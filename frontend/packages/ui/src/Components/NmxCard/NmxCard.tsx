@@ -1,11 +1,14 @@
 import React from "react"
-import type { WithBaseProps, WithOnClick } from "../../types"
-import { cx } from "../../utils"
+import type { NmxSpacing, WithBaseProps, WithOnClick } from "../../types"
+import { cx, cxSpacing } from "../../utils"
 
-type NmxCardProps = WithBaseProps & WithOnClick
+interface NmxCardProps extends WithBaseProps, WithOnClick {
+  spacing?: "none" | NmxSpacing
+}
 
 export const NmxCard: React.FC<NmxCardProps> = ({
   onClick,
+  spacing = null,
   shouldRender = true,
   children,
   className,
@@ -16,7 +19,16 @@ export const NmxCard: React.FC<NmxCardProps> = ({
   }
 
   return (
-    <div {...rest} className={cx("nmx-card", className)} onClick={onClick}>
+    <div
+      {...rest}
+      className={cx(
+        "nmx-card",
+        spacing === "none" && "nmx-card-spacing--none",
+        spacing && spacing !== "none" && cxSpacing("nmx-card", spacing),
+        className,
+      )}
+      onClick={onClick}
+    >
       {children}
     </div>
   )

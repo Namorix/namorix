@@ -53,6 +53,7 @@ export const NmxDataTable = <T extends object>({
   headerClass,
   rowClass,
   rowCellSpacing = "md",
+  radiusEnabled = false,
   className,
   ...rest
 }: NmxDataTableProps<T>) => {
@@ -74,7 +75,15 @@ export const NmxDataTable = <T extends object>({
 
   const colCount = columns.length
   if (colCount === 0) {
-    return <div className="nmx-data-table nmx-data-table--no-columns" />
+    return (
+      <div
+        className={cx(
+          "nmx-data-table",
+          { "nmx-data-table--radius": radiusEnabled },
+          "nmx-data-table--no-columns",
+        )}
+      />
+    )
   }
 
   const fallbackEntry = fallbackConditions?.find(
@@ -98,7 +107,15 @@ export const NmxDataTable = <T extends object>({
       } as React.CSSProperties)
 
   return (
-    <div {...rest} ref={wrapRef} className={cx("nmx-data-table", className)}>
+    <div
+      {...rest}
+      ref={wrapRef}
+      className={cx(
+        "nmx-data-table",
+        { "nmx-data-table--radius": radiusEnabled },
+        className,
+      )}
+    >
       <div className="nmx-data-table__wrap" role="table" style={columnVars}>
         <div className="nmx-data-table__header-row" role="row">
           {visibleColumns.map((col, index) => (

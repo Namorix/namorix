@@ -30,4 +30,5 @@ export interface NmxDataTableProps<T = unknown> extends WithBaseProps {
   headerClass?: string
   rowClass?: string
   rowCellSpacing?: NmxSpacing
+  radiusEnabled?: boolean
 }

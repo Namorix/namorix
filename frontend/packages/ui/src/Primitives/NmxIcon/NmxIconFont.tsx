@@ -13,7 +13,7 @@ interface NmxIconFontProps extends WithBaseProps {
 export const NmxIconFont: React.FC<NmxIconFontProps> = ({
   symbol,
   onClick,
-  size = "sm",
+  size = null,
   semantic = null,
   shouldRender = true,
   className,
@@ -27,9 +27,9 @@ export const NmxIconFont: React.FC<NmxIconFontProps> = ({
     <span
       {...rest}
       className={cx(
-        "nmx-icon-font",
+        size && "nmx-icon-font",
         symbol,
-        cxSize("nmx-icon-font", size),
+        size && cxSize("nmx-icon-font", size),
         semantic ? cxSemantic("nmx-icon-font", semantic) : "",
         { "nmx-icon-font--color": semantic !== null },
         className,

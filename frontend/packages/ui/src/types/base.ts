@@ -1,5 +1,9 @@
 import React from "react"
-import type { NmxButtonVariant, NmxSemanticColor } from "./primitives"
+import type {
+  NmxButtonVariant,
+  NmxSemanticColor,
+  NmxSpacing,
+} from "./primitives"
 
 export interface NmxFallback {
   condition: boolean | undefined | null | unknown
@@ -38,4 +42,8 @@ export interface WithUppercase {
 
 export interface WithOnClick {
   onClick?: React.MouseEventHandler<HTMLDivElement>
+}
+
+export interface WithSpacing {
+  spacing?: NmxSpacing
 }

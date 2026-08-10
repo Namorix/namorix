@@ -1,5 +1,7 @@
 export * from "./NmxCard"
+export * from "./NmxCardSection"
 export * from "./NmxCardContent"
 export * from "./NmxCardHeader"
 export * from "./NmxCardBody"
 export * from "./NmxCardFooter"
+export * from "./NmxCardContainer"
