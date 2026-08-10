@@ -583,7 +583,7 @@ make db_reset
 
 ## Realtime Events (SignalR)
 
-SignalR hub tại `/hubs/main`:
+SignalR hub tại `/hubs/namorix` (HubNamorix):
 
 | Event | Direction | Description |
 |-------|-----------|-------------|

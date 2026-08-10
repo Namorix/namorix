@@ -1,5 +1,11 @@
 # Version History — August 2026
 
+## 2026-08-10 — Core default hub path sync: /hubs/main → /hubs/namorix
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.66.0 → 0.66.1 | FIXED: `apiRoutes.ts` — `HUB_MAIN = "/hubs/namorix"` (thay `/hubs/main`); `config.ts` — `DEFAULT_HUBS_PATH = "/hubs/namorix"` (fallback khi `createNmxCore()` không truyền `hubsPath`). Sync với backend `feat(backend): rename HubMain to HubNamorix` (`/hubs/namorix`) — external addon tạo core không truyền `hubsPath` không rơi vào hub path cũ. |
+
 ## 2026-08-10 — Core factory/instance pattern (config + http + auth + oauth + theme + signalr) + frontend pre-bound shim
 
 | Package | Version | Changes |

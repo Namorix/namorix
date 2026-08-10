@@ -27,6 +27,12 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-08-2026.md](versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-08-10 — Core default hub path sync: /hubs/namorix (@namorix/core 0.66.1)
+
+- **Sync default hub path**: `HUB_MAIN` (`apiRoutes.ts`) + `DEFAULT_HUBS_PATH` (`config.ts`) đổi `/hubs/main` → `/hubs/namorix` — khớp backend `feat(backend): rename HubMain to HubNamorix` (`07e64bb`). App frontend đã truyền tường minh `hubsPath: "/hubs/namorix"` trong `coreConfig`; fix này bảo vệ external addon tạo `createNmxCore()` không truyền `hubsPath` (fallback đúng thay vì hub path cũ).
+- **Docs sync**: README.md (controller example), backend/README.md (SignalR hub), FLOW.md (connection lifecycle + App Init) → `/hubs/namorix`.
+- Versions: core 0.66.1 (frontend/backend/addon không bump — không có file thay đổi).
+
 ### 2026-08-10 — Core factory/instance pattern + frontend pre-bound shim (@namorix/core 0.66.0 / frontend 0.89.0)
 
 - **Core — module-level global state → factory/instance pattern** (như i18n — chống xung đột state khi `@namorix/core` share qua Module Federation M4/M5). Core chỉ export factory thuần: `createNmxCore(config)` (bỏ `configureCore`), `createAuthRefresh(core)`, `createHttpClient(authRefresh)` (bỏ singleton `nmxHttp`), `createAuthService({core, http})`, `createOauth(core)`, `createThemeLoader(core)`, `createSignalrService({core, authRefresh})`, `createSignalRHooks(signalr)`. 4 signalr hooks đổi thành nhận `signalr` làm param đầu. `createMount` +`deps.oauth`.

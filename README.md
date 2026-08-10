@@ -258,7 +258,7 @@ import {
 
 const config = createNmxCore({
   apiBaseUrl: import.meta.env.VITE_API_URL ?? window.location.origin,
-  hubsPath: "/hubs/main",
+  hubsPath: "/hubs/namorix",
   isShellDesktop: true,
 })
 const authRefresh = createAuthRefresh(config)

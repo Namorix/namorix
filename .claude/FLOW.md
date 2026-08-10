@@ -400,7 +400,7 @@ formatApiError(t, err)
 
 ```
 core-instance (src/config/coreConfig.ts)
-  └── createNmxCore({ apiBaseUrl, hubsPath: "/hubs/main", isShellDesktop })
+  └── createNmxCore({ apiBaseUrl, hubsPath: "/hubs/namorix", isShellDesktop })
   └── createAuthRefresh(core) → createHttpClient(authRefresh)
   └── createSignalrService({ core, authRefresh })     // SignalrService
   └── createSignalRHooks(signalr)                     // 4 hook pre-bound
