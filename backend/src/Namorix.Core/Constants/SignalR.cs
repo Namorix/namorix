@@ -3,7 +3,7 @@ namespace Namorix.Core.Constants;
 public static class SignalRPath
 {
     public const string HubPrefix = "/hubs";
-    public const string HubMain = "/hubs/main";
+    public const string HubMain = $"{HubPrefix}/main";
 }
 
 public static class SignalRGroups
