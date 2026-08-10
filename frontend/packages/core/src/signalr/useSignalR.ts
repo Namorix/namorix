@@ -1,26 +1,26 @@
 import { useEffect, useState } from "react"
-import { startConnection, stopConnection } from "./signalr.service"
+import { resolveHubPath, startConnection, stopConnection } from "./signalr.service"
 import type { SignalRStatus } from "./types"
 
-export function useSignalR(active: boolean) {
+export function useSignalR(active: boolean, hubPath: string = resolveHubPath()) {
   const [status, setStatus] = useState<SignalRStatus>("disconnected")
 
   useEffect(() => {
     if (!active) return
     let mounted = true
 
-    startConnection().then(() => {
+    startConnection(hubPath).then(() => {
       if (!mounted) return
       setStatus("connected")
     })
 
     return () => {
       mounted = false
-      stopConnection().catch(() => {
+      stopConnection(hubPath).catch(() => {
         if (mounted) setStatus("disconnected")
       })
     }
-  }, [active])
+  }, [active, hubPath])
 
   return status
 }

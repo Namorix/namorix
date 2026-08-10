@@ -4,131 +4,251 @@ import {
   HubConnectionState,
   LogLevel,
 } from "@microsoft/signalr"
-import { getApiBaseUrl } from "../config"
+import { getApiBaseUrl, getHubsPath } from "../config"
 import { HUB_MAIN } from "../apiRoutes"
 import { refreshAccessToken } from "../http"
 import type { SignalRStatus } from "./types"
 
-let connection: HubConnection | null = null
-let hasBeenConnected: boolean = false
-let onCloseHandlers: Array<(error?: Error) => void> = []
-let statusHandlers: Array<(status: SignalRStatus) => void> = []
-let reconnectTimer: ReturnType<typeof setTimeout> | null = null
-let reconnectDelay = 5000
-let intentionalStop = false
+class SignalrClient {
+  readonly hubPath: string
 
-export function getConnection(): HubConnection | null {
-  return connection
-}
+  private connection: HubConnection | null = null
+  private hasBeenConnected: boolean = false
+  private onCloseHandlers: Array<(error?: Error) => void> = []
+  private statusHandlers: Array<(status: SignalRStatus) => void> = []
+  private pendingHandlers = new Map<string, Array<(...args: any[]) => void>>()
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null
+  private reconnectDelay = 5000
+  private intentionalStop = false
 
-export function isHasBeenConnected(): boolean {
-  return hasBeenConnected
-}
+  constructor(hubPath: string) {
+    this.hubPath = hubPath
+  }
 
-export function setHasBeenConnected(hasBeen: boolean) {
-  hasBeenConnected = hasBeen
-}
+  getConnection(): HubConnection | null {
+    return this.connection
+  }
 
-export function getConnectionState(): HubConnectionState {
-  return connection?.state ?? HubConnectionState.Disconnected
-}
+  isHasBeenConnected(): boolean {
+    return this.hasBeenConnected
+  }
 
-export async function startConnection(): Promise<void> {
-  if (connection?.state === HubConnectionState.Connected) return
-  if (connection?.state === HubConnectionState.Connecting) return
+  setHasBeenConnected(hasBeen: boolean) {
+    this.hasBeenConnected = hasBeen
+  }
 
-  if (!connection) {
-    connection = new HubConnectionBuilder()
-      .withUrl(getApiBaseUrl() + HUB_MAIN)
-      .configureLogging(LogLevel.Warning)
-      .build()
+  getConnectionState(): HubConnectionState {
+    return this.connection?.state ?? HubConnectionState.Disconnected
+  }
 
-    connection.onreconnecting((error) => {
-      console.warn("[signalr] reconnecting...", error?.message)
-      emitStatus("reconnecting")
-    })
+  // Register a handler before the connection exists; it is flushed to the
+  // hub once the connection is built and survives reconnects (same object).
+  on(eventName: string, handler: (...args: any[]) => void) {
+    const conn = this.connection
+    if (conn) {
+      conn.on(eventName, handler)
+      return
+    }
+    const handlers = this.pendingHandlers.get(eventName) ?? []
+    handlers.push(handler)
+    this.pendingHandlers.set(eventName, handlers)
+  }
 
-    connection.onreconnected(() => {
-      console.info("[signalr] reconnected")
-      reconnectDelay = 5000
-      emitStatus("connected")
-    })
+  off(eventName: string, handler: (...args: any[]) => void) {
+    const conn = this.connection
+    if (conn) conn.off(eventName, handler)
+    const pending = this.pendingHandlers
+      .get(eventName)
+      ?.filter((h) => h !== handler)
+    if (!pending) return
+    if (pending.length) this.pendingHandlers.set(eventName, pending)
+    else this.pendingHandlers.delete(eventName)
+  }
 
-    connection.onclose((error) => {
-      console.warn("[signalr] disconnected", error?.message)
-      emitStatus("disconnected")
-      onCloseHandlers.forEach((handler) => handler(error ?? undefined))
-      if (!intentionalStop) {
-        scheduleReconnect()
+  async start(): Promise<void> {
+    if (this.connection?.state === HubConnectionState.Connected) return
+    if (this.connection?.state === HubConnectionState.Connecting) return
+
+    // A fresh start begins a new lifecycle: a previous stop() set this flag
+    // to suppress reconnect during teardown; clear it so later drops reconnect.
+    this.intentionalStop = false
+
+    if (!this.connection) {
+      this.connection = new HubConnectionBuilder()
+        .withUrl(getApiBaseUrl() + this.hubPath)
+        .configureLogging(LogLevel.Warning)
+        .build()
+
+      for (const [eventName, handlers] of this.pendingHandlers) {
+        for (const handler of handlers) this.connection.on(eventName, handler)
       }
-    })
-  }
 
-  await connection.start().then(() => {
-    if (connection?.state === HubConnectionState.Connected)
-      hasBeenConnected = true
-  })
+      this.connection.onreconnecting((error) => {
+        console.warn(`[signalr]${this.hubPath} reconnecting...`, error?.message)
+        this.emitStatus("reconnecting")
+      })
 
-  reconnectDelay = 5000
-  if (reconnectTimer) {
-    clearTimeout(reconnectTimer)
-    reconnectTimer = null
-  }
+      this.connection.onreconnected(() => {
+        console.info(`[signalr]${this.hubPath} reconnected`)
+        this.reconnectDelay = 5000
+        this.emitStatus("connected")
+      })
 
-  emitStatus("connected")
-}
-
-export async function stopConnection(): Promise<void> {
-  if (reconnectTimer) {
-    clearTimeout(reconnectTimer)
-    reconnectTimer = null
-  }
-
-  if (!connection) return
-  intentionalStop = true
-  hasBeenConnected = false
-  await connection.stop()
-  connection = null
-}
-
-function scheduleReconnect() {
-  if (reconnectTimer) return
-  reconnectTimer = setTimeout(async () => {
-    reconnectTimer = null
-    reconnectDelay = Math.min(reconnectDelay * 2, 30000)
-    emitStatus("reconnecting")
-
-    const refreshResult = await refreshAccessToken()
-    if (refreshResult === "expired") return
-
-    if (refreshResult === "success") {
-      try {
-        await startConnection()
-        return
-      } catch {
-        // fall through to retry with backoff
-      }
+      this.connection.onclose((error) => {
+        console.warn(`[signalr]${this.hubPath} disconnected`, error?.message)
+        this.emitStatus("disconnected")
+        this.onCloseHandlers.forEach((handler) => handler(error ?? undefined))
+        if (!this.intentionalStop) {
+          this.scheduleReconnect()
+        }
+      })
     }
 
-    scheduleReconnect()
-  }, reconnectDelay)
+    await this.connection.start().then(() => {
+      if (this.connection?.state === HubConnectionState.Connected)
+        this.hasBeenConnected = true
+    })
+
+    this.reconnectDelay = 5000
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer)
+      this.reconnectTimer = null
+    }
+
+    this.emitStatus("connected")
+  }
+
+  async stop(): Promise<void> {
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer)
+      this.reconnectTimer = null
+    }
+
+    if (!this.connection) return
+    this.intentionalStop = true
+    this.hasBeenConnected = false
+    await this.connection.stop()
+    this.connection = null
+  }
+
+  addOnCloseHandler(handler: (error?: Error) => void) {
+    this.onCloseHandlers.push(handler)
+  }
+
+  removeOnCloseHandler(handler: (error?: Error) => void) {
+    this.onCloseHandlers = this.onCloseHandlers.filter((h) => h !== handler)
+  }
+
+  addStatusHandler(handler: (status: SignalRStatus) => void) {
+    this.statusHandlers.push(handler)
+  }
+
+  removeStatusHandler(handler: (status: SignalRStatus) => void) {
+    this.statusHandlers = this.statusHandlers.filter((h) => h !== handler)
+  }
+
+  private scheduleReconnect() {
+    if (this.reconnectTimer) return
+    this.reconnectTimer = setTimeout(async () => {
+      this.reconnectTimer = null
+      this.reconnectDelay = Math.min(this.reconnectDelay * 2, 30000)
+      this.emitStatus("reconnecting")
+
+      const refreshResult = await refreshAccessToken()
+      if (refreshResult === "expired") return
+
+      if (refreshResult === "success") {
+        try {
+          await this.start()
+          return
+        } catch {
+          // fall through to retry with backoff
+        }
+      }
+
+      this.scheduleReconnect()
+    }, this.reconnectDelay)
+  }
+
+  private emitStatus(status: SignalRStatus) {
+    this.statusHandlers.forEach((h) => h(status))
+  }
 }
 
-export function addOnCloseHandler(handler: (error?: Error) => void) {
-  onCloseHandlers.push(handler)
-}
-export function removeOnCloseHandler(handler: (error?: Error) => void) {
-  onCloseHandlers = onCloseHandlers.filter((h) => h !== handler)
+export function resolveHubPath(hubPath?: string): string {
+  return hubPath ?? getHubsPath() ?? HUB_MAIN
 }
 
-export function addStatusHandler(handler: (status: SignalRStatus) => void) {
-  statusHandlers.push(handler)
+const clients = new Map<string, SignalrClient>()
+
+export function getSignalrClient(hubPath: string = resolveHubPath()): SignalrClient {
+  let client = clients.get(hubPath)
+  if (!client) {
+    client = new SignalrClient(hubPath)
+    clients.set(hubPath, client)
+  }
+  return client
 }
 
-export function removeStatusHandler(handler: (status: SignalRStatus) => void) {
-  statusHandlers = statusHandlers.filter((h) => h !== handler)
+export function getConnection(
+  hubPath: string = resolveHubPath(),
+): HubConnection | null {
+  return getSignalrClient(hubPath).getConnection()
 }
 
-function emitStatus(status: SignalRStatus) {
-  statusHandlers.forEach((h) => h(status))
+export function isHasBeenConnected(hubPath: string = resolveHubPath()): boolean {
+  return getSignalrClient(hubPath).isHasBeenConnected()
+}
+
+export function setHasBeenConnected(
+  hasBeen: boolean,
+  hubPath: string = resolveHubPath(),
+) {
+  getSignalrClient(hubPath).setHasBeenConnected(hasBeen)
+}
+
+export function getConnectionState(
+  hubPath: string = resolveHubPath(),
+): HubConnectionState {
+  return getSignalrClient(hubPath).getConnectionState()
+}
+
+export async function startConnection(
+  hubPath: string = resolveHubPath(),
+): Promise<void> {
+  await getSignalrClient(hubPath).start()
+}
+
+export async function stopConnection(
+  hubPath: string = resolveHubPath(),
+): Promise<void> {
+  await getSignalrClient(hubPath).stop()
+}
+
+export function addOnCloseHandler(
+  handler: (error?: Error) => void,
+  hubPath: string = resolveHubPath(),
+) {
+  getSignalrClient(hubPath).addOnCloseHandler(handler)
+}
+
+export function removeOnCloseHandler(
+  handler: (error?: Error) => void,
+  hubPath: string = resolveHubPath(),
+) {
+  getSignalrClient(hubPath).removeOnCloseHandler(handler)
+}
+
+export function addStatusHandler(
+  handler: (status: SignalRStatus) => void,
+  hubPath: string = resolveHubPath(),
+) {
+  getSignalrClient(hubPath).addStatusHandler(handler)
+}
+
+export function removeStatusHandler(
+  handler: (status: SignalRStatus) => void,
+  hubPath: string = resolveHubPath(),
+) {
+  getSignalrClient(hubPath).removeStatusHandler(handler)
 }
