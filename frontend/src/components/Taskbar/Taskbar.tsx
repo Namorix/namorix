@@ -13,7 +13,7 @@ import {
   useAppDispatch,
   useAppSelector,
 } from "../../store"
-import { useSignalRStatus } from "@namorix/core"
+import { useSignalRStatus } from "../../signalr"
 
 export const Taskbar: React.FC = () => {
   const dispatch = useAppDispatch()

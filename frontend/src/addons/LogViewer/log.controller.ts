@@ -1,4 +1,5 @@
-import { ApiError, getApiBaseUrl, type LogEntry, nmxHttp } from "@namorix/core"
+import { ApiError, ApiLogRoutes, type LogEntry } from "@namorix/core"
+import { coreConfig } from "../../config/coreConfig"
 
 export interface LogResponse {
   entries: LogEntry[]
@@ -19,8 +20,8 @@ export const logController = {
     if (levels && levels.length > 0) params.levels = levels.join(",")
     if (source) params.source = source
 
-    const data = await nmxHttp
-      .url(getApiBaseUrl() + "/api/logs")
+    const data = await coreConfig.http
+      .url(coreConfig.getApiBaseUrl() + ApiLogRoutes.logs)
       .query(params)
       .get()
       .json<LogResponse>()

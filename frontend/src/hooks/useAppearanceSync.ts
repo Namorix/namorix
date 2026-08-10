@@ -5,10 +5,10 @@ import {
   nmxToast,
   SignalREvent,
   type UserSettingsChanged,
-  useSignalREvent,
   useUserStore,
 } from "@namorix/core"
 import { authController } from "../controllers"
+import { useSignalREvent } from "../signalr"
 
 export function useAppearanceSync() {
   const user = useUserStore()

@@ -4,9 +4,8 @@ import {
   SignalREvent,
   SignalRGroups,
   type TrafficLogsFlushed,
-  useSignalREvent,
-  useSignalRGroup,
 } from "@namorix/core"
+import { useSignalREvent, useSignalRGroup } from "../../signalr"
 
 export function useTrafficStatsPolling() {
   const [stats, setStats] = useState<TrafficLogsFlushed | null>(null)

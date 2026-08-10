@@ -1,19 +1,11 @@
 import {
-  addOnCloseHandler,
   type ApiErrorCode,
-  authService,
   createAuthGuard,
   createLoginGuard,
   createRegisterGuard,
   DefaultPaths,
   GuardedRoute,
-  isHasBeenConnected,
   nmxToast,
-  removeOnCloseHandler,
-  setHasBeenConnected,
-  setOnUnauthorized,
-  stopConnection,
-  useSignalRStatus,
 } from "@namorix/core"
 import React, { useEffect, useState } from "react"
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom"
@@ -21,10 +13,12 @@ import { Desktop, Register, Login, Blocked } from "./pages"
 import { healthController } from "./controllers"
 import { NmxLoadingOverlay } from "@namorix/ui"
 import { closeAllWindows, useAppDispatch } from "./store"
+import { coreConfig } from "./config/coreConfig"
+import { useSignalRStatus } from "./signalr"
 
-const authGuard = createAuthGuard(authService)
-const loginGuard = createLoginGuard(authService)
-const registerGuard = createRegisterGuard(authService)
+const authGuard = createAuthGuard(coreConfig.auth)
+const loginGuard = createLoginGuard(coreConfig.auth)
+const registerGuard = createRegisterGuard(coreConfig.auth)
 
 export const App: React.FC = () => {
   const [blocked, setBlocked] = useState<ApiErrorCode | null | undefined>(null)
@@ -33,7 +27,7 @@ export const App: React.FC = () => {
   const navigate = useNavigate()
   const signalStatus = useSignalRStatus()
   const shouldShowReconnecting =
-    isHasBeenConnected() && signalStatus !== "connected"
+    coreConfig.signalr.isHasBeenConnected() && signalStatus !== "connected"
 
   useEffect(() => {
     const handler = () => {
@@ -46,16 +40,16 @@ export const App: React.FC = () => {
         if (!result.success) {
           return setBlocked(result.code)
         }
-        addOnCloseHandler(handler)
+        coreConfig.signalr.addOnCloseHandler(handler)
       })
       .catch(nmxToast.error)
       .finally(() => setChecking(false))
 
-    return () => removeOnCloseHandler(handler)
+    return () => coreConfig.signalr.removeOnCloseHandler(handler)
   }, [])
 
   useEffect(() => {
-    setOnUnauthorized(async () => {
+    coreConfig.authRefresh.setOnUnauthorized(async () => {
       if (
         window.location.pathname === DefaultPaths.LOGIN ||
         window.location.pathname === DefaultPaths.REGISTER
@@ -64,8 +58,8 @@ export const App: React.FC = () => {
       }
 
       dispatch(closeAllWindows())
-      setHasBeenConnected(false)
-      await stopConnection()
+      coreConfig.signalr.setHasBeenConnected(false)
+      await coreConfig.signalr.stopConnection()
       navigate(DefaultPaths.LOGIN, { replace: true })
     })
   }, [dispatch, navigate])

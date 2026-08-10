@@ -3,8 +3,6 @@ import { useTranslation } from "react-i18next"
 import {
   SignalRGroups,
   SignalREvent,
-  useSignalRGroup,
-  useSignalREvent,
   usePageSize,
   type LogEntry,
   type LogLevel,
@@ -30,6 +28,7 @@ import {
   type NmxFallback,
 } from "@namorix/ui"
 import { logController } from "./log.controller"
+import { useSignalREvent, useSignalRGroup } from "../../signalr"
 
 const LEVEL_CHIPS: Array<{
   value: string
@@ -120,7 +119,6 @@ export const LogViewer: React.FC = () => {
   }, [source, page, pageSize, levels, live, refreshKey, fetchLogs])
 
   useSignalRGroup(SignalRGroups.Logs, live)
-
   useSignalREvent<LogEntry[]>(SignalREvent.LogsNewEntry, (newEntries) => {
     if (!live) return
     const filtered = newEntries.filter((entry) => {

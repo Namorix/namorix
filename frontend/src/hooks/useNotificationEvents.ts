@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { useSignalREvent, SignalREvent } from "@namorix/core"
+import { SignalREvent } from "@namorix/core"
 import type { NmxNotificationDto } from "@namorix/core"
 import {
   addNotification,
@@ -8,6 +8,7 @@ import {
   useAppDispatch,
 } from "../store"
 import { fetchUnreadCount } from "../controllers"
+import { useSignalREvent } from "../signalr"
 
 export const useNotificationEvents = () => {
   const dispatch = useAppDispatch()

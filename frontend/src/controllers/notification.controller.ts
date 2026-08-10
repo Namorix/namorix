@@ -1,10 +1,6 @@
-import {
-  nmxHttp,
-  getApiBaseUrl,
-  ApiNotificationRoutes,
-  ApiError,
-} from "@namorix/core"
+import { ApiNotificationRoutes, ApiError } from "@namorix/core"
 import type { NmxNotificationDto } from "@namorix/core"
+import { coreConfig } from "../config/coreConfig"
 
 interface PaginatedResult {
   items: NmxNotificationDto[]
@@ -18,8 +14,8 @@ export async function fetchNotifications(
   page: number,
   pageSize: number = 20,
 ): Promise<PaginatedResult> {
-  const res = await nmxHttp
-    .url(getApiBaseUrl() + ApiNotificationRoutes.base)
+  const res = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiNotificationRoutes.base)
     .query({ page, pageSize })
     .get()
     .json<PaginatedResult>()
@@ -28,8 +24,8 @@ export async function fetchNotifications(
 }
 
 export async function fetchUnreadCount(): Promise<number> {
-  const res = await nmxHttp
-    .url(getApiBaseUrl() + ApiNotificationRoutes.unreadCount)
+  const res = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiNotificationRoutes.unreadCount)
     .get()
     .json<number>()
 
@@ -38,8 +34,10 @@ export async function fetchUnreadCount(): Promise<number> {
 }
 
 export async function markAsRead(id: number): Promise<void> {
-  const res = await nmxHttp
-    .url(getApiBaseUrl() + ApiNotificationRoutes.base + `/${id}/read`)
+  const res = await coreConfig.http
+    .url(
+      coreConfig.getApiBaseUrl() + ApiNotificationRoutes.base + `/${id}/read`,
+    )
     .post()
     .json()
 
@@ -47,8 +45,8 @@ export async function markAsRead(id: number): Promise<void> {
 }
 
 export async function markAllAsRead(): Promise<number> {
-  const res = await nmxHttp
-    .url(getApiBaseUrl() + ApiNotificationRoutes.readAll)
+  const res = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiNotificationRoutes.readAll)
     .post()
     .json<number>()
 
@@ -57,8 +55,8 @@ export async function markAllAsRead(): Promise<number> {
 }
 
 export async function deleteRead(): Promise<void> {
-  const res = await nmxHttp
-    .url(getApiBaseUrl() + ApiNotificationRoutes.deleteRead)
+  const res = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiNotificationRoutes.deleteRead)
     .delete()
     .json()
   if (!res.success) throw ApiError.fromResponse(res)

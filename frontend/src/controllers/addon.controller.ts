@@ -1,10 +1,11 @@
-import { ApiAddonRoutes, ApiError, nmxHttp } from "@namorix/core"
+import { ApiAddonRoutes, ApiError } from "@namorix/core"
 import type {
   AddonCatalogEntry,
   AddonContainerStatus,
   AddonPendingPhase,
   ExternalAddonManifest,
 } from "../addons"
+import { coreConfig } from "../config/coreConfig"
 
 export interface AddonManifestDto {
   id: string
@@ -29,7 +30,7 @@ export interface InstallAddonDto {
 
 export const addonController = {
   async list() {
-    const res = await nmxHttp
+    const res = await coreConfig.http
       .url(ApiAddonRoutes.list)
       .get()
       .json<AddonManifestDto[]>()
@@ -38,7 +39,7 @@ export const addonController = {
   },
 
   async install(request: InstallAddonDto) {
-    const res = await nmxHttp
+    const res = await coreConfig.http
       .url(ApiAddonRoutes.install)
       .post(request)
       .json<AddonManifestDto>()
@@ -47,22 +48,28 @@ export const addonController = {
   },
 
   async start(id: string) {
-    const res = await nmxHttp.url(ApiAddonRoutes.start(id)).post().json()
+    const res = await coreConfig.http
+      .url(ApiAddonRoutes.start(id))
+      .post()
+      .json()
     if (!res.success) throw ApiError.fromResponse(res)
   },
 
   async stop(id: string) {
-    const res = await nmxHttp.url(ApiAddonRoutes.stop(id)).post().json()
+    const res = await coreConfig.http.url(ApiAddonRoutes.stop(id)).post().json()
     if (!res.success) throw ApiError.fromResponse(res)
   },
 
   async remove(id: string) {
-    const res = await nmxHttp.url(ApiAddonRoutes.remove(id)).delete().json()
+    const res = await coreConfig.http
+      .url(ApiAddonRoutes.remove(id))
+      .delete()
+      .json()
     if (!res.success) throw ApiError.fromResponse(res)
   },
 
   async refreshCatalog(): Promise<AddonCatalogEntry[]> {
-    const res = await nmxHttp
+    const res = await coreConfig.http
       .url(ApiAddonRoutes.syncCatalog)
       .post()
       .json<AddonCatalogEntry[]>()

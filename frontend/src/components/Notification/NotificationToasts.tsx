@@ -2,12 +2,12 @@ import React, { useCallback, useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import {
   SignalREvent,
-  useSignalREvent,
   type NmxNotificationDto,
   useAppearanceStore,
 } from "@namorix/core"
 import { cx } from "@namorix/ui"
 import { NotificationItem } from "./NotificationItem"
+import { useSignalREvent } from "../../signalr"
 
 const MAX_TOASTS = 2
 const TOAST_DURATION_MS = 5000

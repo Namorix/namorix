@@ -1,11 +1,6 @@
-import {
-  ApiError,
-  ApiFrontgateRoutes,
-  getApiBaseUrl,
-  type HttpMethods,
-  nmxHttp,
-} from "@namorix/core"
+import { ApiError, ApiFrontgateRoutes, type HttpMethods } from "@namorix/core"
 import type { FrontgateCertificateKeyType } from "./Frontgate.types"
+import { coreConfig } from "../../config/coreConfig"
 
 export type ReverseProxyRuleAccess =
   | "public"
@@ -188,6 +183,7 @@ export interface FgTrafficLog {
   userId?: number
   timestamp: string
 }
+
 export interface FgTrafficLogResponse {
   items: FgTrafficLog[]
   total: number
@@ -211,8 +207,8 @@ async function listRules(
   page: number,
   size: number,
 ): Promise<ReverseProxyRuleResponse> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiFrontgateRoutes.reverseProxy)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiFrontgateRoutes.reverseProxy)
     .query({ page, size })
     .get()
     .json<ReverseProxyRuleResponse>()
@@ -223,8 +219,8 @@ async function listRules(
 async function createRule(
   payload: CreateReverseProxyRulePayload,
 ): Promise<ReverseProxyRule> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiFrontgateRoutes.reverseProxy)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiFrontgateRoutes.reverseProxy)
     .post(payload)
     .json<ReverseProxyRule>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -235,8 +231,8 @@ async function updateRule(
   id: string,
   payload: CreateReverseProxyRulePayload,
 ): Promise<ReverseProxyRule> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiFrontgateRoutes.reverseProxyById(id))
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiFrontgateRoutes.reverseProxyById(id))
     .put(payload)
     .json<ReverseProxyRule>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -244,23 +240,29 @@ async function updateRule(
 }
 
 async function deleteRule(id: string): Promise<void> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiFrontgateRoutes.reverseProxyById(id))
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiFrontgateRoutes.reverseProxyById(id))
     .delete()
     .json()
   if (!data.success) throw ApiError.fromResponse(data)
 }
 
 async function confirmDryRun(id: string): Promise<void> {
-  await nmxHttp
-    .url(getApiBaseUrl() + ApiFrontgateRoutes.reverseProxyDryRunConfirm(id))
+  await coreConfig.http
+    .url(
+      coreConfig.getApiBaseUrl() +
+        ApiFrontgateRoutes.reverseProxyDryRunConfirm(id),
+    )
     .post()
     .json()
 }
 
 async function cancelDryRun(id: string): Promise<void> {
-  await nmxHttp
-    .url(getApiBaseUrl() + ApiFrontgateRoutes.reverseProxyDryRunCancel(id))
+  await coreConfig.http
+    .url(
+      coreConfig.getApiBaseUrl() +
+        ApiFrontgateRoutes.reverseProxyDryRunCancel(id),
+    )
     .post()
     .json()
 }
@@ -269,8 +271,8 @@ async function listCertificates(
   page: number,
   size: number,
 ): Promise<CertificateResponse> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiFrontgateRoutes.certificates)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiFrontgateRoutes.certificates)
     .query({ page, size })
     .get()
     .json<CertificateResponse>()
@@ -279,8 +281,8 @@ async function listCertificates(
 }
 
 async function listAllCertificates(): Promise<CertificateResponse> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiFrontgateRoutes.certificatesAll)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiFrontgateRoutes.certificatesAll)
     .get()
     .json<CertificateResponse>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -288,8 +290,10 @@ async function listAllCertificates(): Promise<CertificateResponse> {
 }
 
 async function listUnusedDomains(): Promise<string[]> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiFrontgateRoutes.certificateUnusedDomains)
+  const data = await coreConfig.http
+    .url(
+      coreConfig.getApiBaseUrl() + ApiFrontgateRoutes.certificateUnusedDomains,
+    )
     .get()
     .json<string[]>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -297,23 +301,23 @@ async function listUnusedDomains(): Promise<string[]> {
 }
 
 async function deleteCertificate(id: string): Promise<void> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiFrontgateRoutes.certificateById(id))
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiFrontgateRoutes.certificateById(id))
     .delete()
     .json()
   if (!data.success) throw ApiError.fromResponse(data)
 }
 
 async function retryCertificate(id: string): Promise<void> {
-  await nmxHttp
-    .url(getApiBaseUrl() + ApiFrontgateRoutes.certificateRetry(id))
+  await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiFrontgateRoutes.certificateRetry(id))
     .post()
     .json()
 }
 
 async function renewCertificate(id: string): Promise<void> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiFrontgateRoutes.certificateRenew(id))
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiFrontgateRoutes.certificateRenew(id))
     .post()
     .json()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -322,8 +326,11 @@ async function renewCertificate(id: string): Promise<void> {
 async function createLetsEncryptCert(
   payload: CreateLetsEncryptCertPayload,
 ): Promise<CertificateItem> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiFrontgateRoutes.certificatesLetsEncryptHttp)
+  const data = await coreConfig.http
+    .url(
+      coreConfig.getApiBaseUrl() +
+        ApiFrontgateRoutes.certificatesLetsEncryptHttp,
+    )
     .post(payload)
     .json<CertificateItem>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -333,8 +340,8 @@ async function createLetsEncryptCert(
 async function createCustomCert(
   payload: CreateCustomCertPayload,
 ): Promise<CertificateItem> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiFrontgateRoutes.certificatesCustom)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiFrontgateRoutes.certificatesCustom)
     .post(payload)
     .json<CertificateItem>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -344,8 +351,11 @@ async function createCustomCert(
 async function testLetsEncryptHttp(
   domains: string[],
 ): Promise<LetsEncryptDryRunResult> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiFrontgateRoutes.certificatesLetsEncryptHttpDryRun)
+  const data = await coreConfig.http
+    .url(
+      coreConfig.getApiBaseUrl() +
+        ApiFrontgateRoutes.certificatesLetsEncryptHttpDryRun,
+    )
     .post({ domains })
     .json<LetsEncryptDryRunResult>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -353,8 +363,8 @@ async function testLetsEncryptHttp(
 }
 
 async function listAccessPolicies(): Promise<AccessPolicy[]> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiFrontgateRoutes.accessPolicies)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiFrontgateRoutes.accessPolicies)
     .get()
     .json<AccessPolicy[]>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -364,8 +374,8 @@ async function listAccessPolicies(): Promise<AccessPolicy[]> {
 async function createAccessPolicy(
   payload: CreateAccessPolicyPayload,
 ): Promise<AccessPolicy> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiFrontgateRoutes.accessPolicies)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiFrontgateRoutes.accessPolicies)
     .post(payload)
     .json<AccessPolicy>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -376,8 +386,8 @@ async function updateAccessPolicy(
   id: string,
   payload: CreateAccessPolicyPayload,
 ): Promise<AccessPolicy> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiFrontgateRoutes.accessPolicyById(id))
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiFrontgateRoutes.accessPolicyById(id))
     .put(payload)
     .json<AccessPolicy>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -385,8 +395,8 @@ async function updateAccessPolicy(
 }
 
 async function deleteAccessPolicy(id: string): Promise<void> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiFrontgateRoutes.accessPolicyById(id))
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiFrontgateRoutes.accessPolicyById(id))
     .delete()
     .json()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -396,8 +406,8 @@ async function listAudit(
   page: number,
   size: number,
 ): Promise<AuditLogResponse> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiFrontgateRoutes.audit)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiFrontgateRoutes.audit)
     .query({ page, size })
     .get()
     .json<AuditLogResponse>()
@@ -406,8 +416,8 @@ async function listAudit(
 }
 
 async function clearAudit(): Promise<{ deleted: number }> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiFrontgateRoutes.audit)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiFrontgateRoutes.audit)
     .delete()
     .json<{ deleted: number }>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -415,7 +425,8 @@ async function clearAudit(): Promise<{ deleted: number }> {
 }
 
 async function downloadCert(id: string): Promise<void> {
-  const url = getApiBaseUrl() + ApiFrontgateRoutes.certificateDownload(id)
+  const url =
+    coreConfig.getApiBaseUrl() + ApiFrontgateRoutes.certificateDownload(id)
   const a = document.createElement("a")
   a.href = url
   a.target = "_blank"
@@ -424,8 +435,8 @@ async function downloadCert(id: string): Promise<void> {
 }
 
 async function getGeoIpStatus(): Promise<GeoIpStatus> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiFrontgateRoutes.geoIp)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiFrontgateRoutes.geoIp)
     .get()
     .json<GeoIpStatus>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -436,16 +447,16 @@ async function uploadGeoIp(
   formData: FormData,
   onProgress?: (progress: number) => void,
 ): Promise<GeoIpStatus> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiFrontgateRoutes.geoIp)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiFrontgateRoutes.geoIp)
     .formUpload<GeoIpStatus>(formData, onProgress)
   if (!data.success) throw ApiError.fromResponse(data)
   return data.data
 }
 
 async function rollbackGeoIp(): Promise<GeoIpStatus> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiFrontgateRoutes.geoIpRollback)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiFrontgateRoutes.geoIpRollback)
     .post()
     .json<GeoIpStatus>()
   if (!data.success) throw ApiError.fromResponse(data)

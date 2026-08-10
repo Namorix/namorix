@@ -1,8 +1,9 @@
-import { ApiMiddlewareRoutes, getApiBaseUrl, nmxHttp } from "@namorix/core"
+import { ApiMiddlewareRoutes } from "@namorix/core"
+import { coreConfig } from "../config/coreConfig"
 
 async function checkUntrustedProxy() {
-  return await nmxHttp
-    .url(getApiBaseUrl() + ApiMiddlewareRoutes.health)
+  return await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiMiddlewareRoutes.health)
     .get()
     .json()
 }

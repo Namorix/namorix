@@ -4,16 +4,11 @@ if (import.meta.env.DEV) {
 
 import { createRoot } from "react-dom/client"
 import { BrowserRouter } from "react-router-dom"
-import { configureCore, generateFingerprint } from "@namorix/core"
+import { generateFingerprint } from "@namorix/core"
 import { Root } from "./Root"
 import "./i18n"
 import "./addons"
-
-configureCore({
-  apiBaseUrl: import.meta.env.VITE_API_URL ?? window.location.origin,
-  hubsPath: "/hubs/main",
-  isShellDesktop: true,
-})
+import "./config/coreConfig"
 
 generateFingerprint().catch(console.error)
 

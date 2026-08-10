@@ -1,10 +1,5 @@
-import {
-  ApiError,
-  ApiTrafficRoutes,
-  getApiBaseUrl,
-  type HttpMethods,
-  nmxHttp,
-} from "@namorix/core"
+import { ApiError, ApiTrafficRoutes, type HttpMethods } from "@namorix/core"
+import { coreConfig } from "../../config/coreConfig"
 
 export type TrafficSource = "api" | "proxy"
 
@@ -32,8 +27,8 @@ async function listLogs(
   search?: string,
   source?: TrafficSource,
 ): Promise<TrafficLogResponse> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiTrafficRoutes.logs)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiTrafficRoutes.logs)
     .query({ page, size, search, source })
     .get()
     .json<TrafficLogResponse>()

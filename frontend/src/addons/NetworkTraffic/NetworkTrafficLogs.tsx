@@ -19,10 +19,9 @@ import {
   SignalRGroups,
   useDateTimeFormat,
   usePageSize,
-  useSignalREvent,
-  useSignalRGroup,
 } from "@namorix/core"
 import type { NetworkTrafficSource } from "./NetworkTraffic"
+import { useSignalREvent, useSignalRGroup } from "../../signalr"
 
 interface NetworkTrafficLogsProps {
   filterSearch?: string

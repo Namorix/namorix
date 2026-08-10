@@ -1,9 +1,4 @@
-import {
-  ApiError,
-  ApiBeaconRoutes,
-  getApiBaseUrl,
-  nmxHttp,
-} from "@namorix/core"
+import { ApiError, ApiBeaconRoutes } from "@namorix/core"
 import type {
   BcnActivityPage,
   BcnHostnameDto,
@@ -13,6 +8,7 @@ import type {
   BcnStatusDto,
 } from "./Beacon.types"
 import type { BcnProviderKind } from "./Beacon.types"
+import { coreConfig } from "../../config/coreConfig"
 
 export interface CreateHostnamePayload {
   host: string
@@ -45,8 +41,8 @@ async function listHostnames(
   page: number,
   size: number,
 ): Promise<BcnHostnamePage> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiBeaconRoutes.hostnames)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiBeaconRoutes.hostnames)
     .query({ page, size })
     .get()
     .json<BcnHostnamePage>()
@@ -57,8 +53,8 @@ async function listHostnames(
 async function createHostname(
   payload: CreateHostnamePayload,
 ): Promise<BcnHostnameDto> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiBeaconRoutes.hostnames)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiBeaconRoutes.hostnames)
     .post(payload)
     .json<BcnHostnameDto>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -69,8 +65,8 @@ async function updateHostname(
   id: string,
   payload: CreateHostnamePayload,
 ): Promise<BcnHostnameDto> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiBeaconRoutes.hostnameById(id))
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiBeaconRoutes.hostnameById(id))
     .put(payload)
     .json<BcnHostnameDto>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -78,8 +74,8 @@ async function updateHostname(
 }
 
 async function deleteHostname(id: string): Promise<void> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiBeaconRoutes.hostnameById(id))
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiBeaconRoutes.hostnameById(id))
     .delete()
     .json()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -88,8 +84,8 @@ async function deleteHostname(id: string): Promise<void> {
 async function testProvider(
   payload: CreateHostnamePayload,
 ): Promise<TestProviderResult> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiBeaconRoutes.hostnameTest)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiBeaconRoutes.hostnameTest)
     .post(payload)
     .json<TestProviderResult>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -100,8 +96,8 @@ async function listActivity(
   page: number,
   size: number,
 ): Promise<BcnActivityPage> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiBeaconRoutes.activity)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiBeaconRoutes.activity)
     .query({ page, size })
     .get()
     .json<BcnActivityPage>()
@@ -110,8 +106,8 @@ async function listActivity(
 }
 
 async function clearActivity(): Promise<{ deleted: number }> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiBeaconRoutes.activity)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiBeaconRoutes.activity)
     .delete()
     .json<{ deleted: number }>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -119,8 +115,8 @@ async function clearActivity(): Promise<{ deleted: number }> {
 }
 
 async function listProviders(): Promise<BcnProviderInfo[]> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiBeaconRoutes.providers)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiBeaconRoutes.providers)
     .get()
     .json<BcnProviderInfo[]>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -128,8 +124,8 @@ async function listProviders(): Promise<BcnProviderInfo[]> {
 }
 
 async function getSettings(): Promise<BcnSettingsDto> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiBeaconRoutes.settings)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiBeaconRoutes.settings)
     .get()
     .json<BcnSettingsDto>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -139,8 +135,8 @@ async function getSettings(): Promise<BcnSettingsDto> {
 async function updateSettings(
   payload: UpdateSettingsPayload,
 ): Promise<BcnSettingsDto> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiBeaconRoutes.settings)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiBeaconRoutes.settings)
     .put(payload)
     .json<BcnSettingsDto>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -148,8 +144,8 @@ async function updateSettings(
 }
 
 async function getStatus(): Promise<BcnStatusDto> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiBeaconRoutes.status)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiBeaconRoutes.status)
     .get()
     .json<BcnStatusDto>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -157,8 +153,8 @@ async function getStatus(): Promise<BcnStatusDto> {
 }
 
 async function toggleHostname(id: string): Promise<BcnHostnameDto> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiBeaconRoutes.hostnameToggle(id))
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiBeaconRoutes.hostnameToggle(id))
     .post()
     .json<BcnHostnameDto>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -166,8 +162,8 @@ async function toggleHostname(id: string): Promise<BcnHostnameDto> {
 }
 
 async function checkHostname(id: string): Promise<CheckHostnameResult> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiBeaconRoutes.hostnameCheck(id))
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiBeaconRoutes.hostnameCheck(id))
     .post()
     .json<CheckHostnameResult>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -175,8 +171,8 @@ async function checkHostname(id: string): Promise<CheckHostnameResult> {
 }
 
 async function refreshHostnames(): Promise<void> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiBeaconRoutes.refresh)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiBeaconRoutes.refresh)
     .post()
     .json()
   if (!data.success) throw ApiError.fromResponse(data)

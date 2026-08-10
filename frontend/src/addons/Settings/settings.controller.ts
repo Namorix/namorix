@@ -4,8 +4,6 @@ import {
   ApiThemeRoutes,
   ApiUserRoutes,
   type AppearanceSettings,
-  getApiBaseUrl,
-  nmxHttp,
   type ThemeManifest,
 } from "@namorix/core"
 import type {
@@ -13,6 +11,7 @@ import type {
   NmxSegmentedGroupData,
   NmxSelectData,
 } from "@namorix/ui"
+import { coreConfig } from "../../config/coreConfig"
 
 export interface AppearanceOptionsResponse {
   accentColors: NmxAccentColorData[]
@@ -26,24 +25,24 @@ export interface AppearanceOptionsResponse {
 
 export const settingsController = {
   async getUserSettings(): Promise<Record<string, string>> {
-    const res = await nmxHttp
-      .url(getApiBaseUrl() + ApiUserRoutes.settings)
+    const res = await coreConfig.http
+      .url(coreConfig.getApiBaseUrl() + ApiUserRoutes.settings)
       .get()
       .json<Record<string, string>>()
     return res.success ? res.data : {}
   },
 
   async saveUserSettings(settings: AppearanceSettings): Promise<void> {
-    const res = await nmxHttp
-      .url(getApiBaseUrl() + ApiUserRoutes.settings)
+    const res = await coreConfig.http
+      .url(coreConfig.getApiBaseUrl() + ApiUserRoutes.settings)
       .put(settings)
       .json()
     if (!res.success) throw ApiError.fromResponse(res)
   },
 
   async setAppearanceDefaults(settings: AppearanceSettings): Promise<void> {
-    const res = await nmxHttp
-      .url(getApiBaseUrl() + ApiSettingsRoutes.appearanceSystem)
+    const res = await coreConfig.http
+      .url(coreConfig.getApiBaseUrl() + ApiSettingsRoutes.appearanceSystem)
       .put(settings)
       .json()
     if (!res.success) throw ApiError.fromResponse(res)
@@ -54,8 +53,8 @@ export const settingsController = {
     origins: string[]
     registerEnabled: boolean
   }> {
-    const res = await nmxHttp
-      .url(getApiBaseUrl() + ApiSettingsRoutes.system)
+    const res = await coreConfig.http
+      .url(coreConfig.getApiBaseUrl() + ApiSettingsRoutes.system)
       .get()
       .json<{
         proxies: string[]
@@ -72,24 +71,24 @@ export const settingsController = {
     origins: string[]
     registerEnabled: boolean
   }): Promise<boolean> {
-    const res = await nmxHttp
-      .url(getApiBaseUrl() + ApiSettingsRoutes.system)
+    const res = await coreConfig.http
+      .url(coreConfig.getApiBaseUrl() + ApiSettingsRoutes.system)
       .put(data)
       .json()
     return res.success
   },
 
   async getAppearanceOptions(): Promise<AppearanceOptionsResponse | null> {
-    const res = await nmxHttp
-      .url(getApiBaseUrl() + ApiSettingsRoutes.appearanceOptions)
+    const res = await coreConfig.http
+      .url(coreConfig.getApiBaseUrl() + ApiSettingsRoutes.appearanceOptions)
       .get()
       .json<AppearanceOptionsResponse>()
     return res.success ? res.data : null
   },
 
   async updateProfile(email: string, name: string): Promise<void> {
-    const res = await nmxHttp
-      .url(getApiBaseUrl() + ApiUserRoutes.profile)
+    const res = await coreConfig.http
+      .url(coreConfig.getApiBaseUrl() + ApiUserRoutes.profile)
       .put({ email, name })
       .json()
     if (!res.success) throw ApiError.fromResponse(res)
@@ -99,16 +98,16 @@ export const settingsController = {
     currentPassword: string,
     newPassword: string,
   ): Promise<void> {
-    const res = await nmxHttp
-      .url(getApiBaseUrl() + ApiUserRoutes.password)
+    const res = await coreConfig.http
+      .url(coreConfig.getApiBaseUrl() + ApiUserRoutes.password)
       .put({ currentPassword, newPassword })
       .json()
     if (!res.success) throw ApiError.fromResponse(res)
   },
 
   async getThemes(): Promise<ThemeManifest[]> {
-    const res = await nmxHttp
-      .url(getApiBaseUrl() + ApiThemeRoutes.themes)
+    const res = await coreConfig.http
+      .url(coreConfig.getApiBaseUrl() + ApiThemeRoutes.themes)
       .get()
       .json<ThemeManifest[]>()
 

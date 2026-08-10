@@ -1,9 +1,4 @@
-import {
-  ApiError,
-  ApiWardenRoutes,
-  getApiBaseUrl,
-  nmxHttp,
-} from "@namorix/core"
+import { ApiError, ApiWardenRoutes } from "@namorix/core"
 import type {
   WdEventQuery,
   WdFirewallRule,
@@ -14,6 +9,7 @@ import type {
   WdProtocol,
   WdRuleAction,
 } from "./Warden.types"
+import { coreConfig } from "../../config/coreConfig"
 
 export interface WdRulePayload {
   name: string
@@ -38,8 +34,8 @@ export interface WdEventListResponse {
 }
 
 async function listRules(): Promise<WdFirewallRule[]> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiWardenRoutes.rules)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiWardenRoutes.rules)
     .get()
     .json<WdFirewallRule[]>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -47,8 +43,8 @@ async function listRules(): Promise<WdFirewallRule[]> {
 }
 
 async function createRule(payload: WdRulePayload): Promise<WdFirewallRule> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiWardenRoutes.rules)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiWardenRoutes.rules)
     .post(payload)
     .json<WdFirewallRule>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -59,8 +55,8 @@ async function updateRule(
   id: number,
   payload: WdRulePayload,
 ): Promise<WdFirewallRule> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiWardenRoutes.ruleById(id))
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiWardenRoutes.ruleById(id))
     .put(payload)
     .json<WdFirewallRule>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -68,16 +64,16 @@ async function updateRule(
 }
 
 async function deleteRule(id: number): Promise<void> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiWardenRoutes.ruleById(id))
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiWardenRoutes.ruleById(id))
     .delete()
     .json()
   if (!data.success) throw ApiError.fromResponse(data)
 }
 
 async function toggleRule(id: number): Promise<WdFirewallRule> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiWardenRoutes.ruleToggle(id))
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiWardenRoutes.ruleToggle(id))
     .post()
     .json<WdFirewallRule>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -85,8 +81,8 @@ async function toggleRule(id: number): Promise<WdFirewallRule> {
 }
 
 async function getSettings(): Promise<WdSettings> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiWardenRoutes.settings)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiWardenRoutes.settings)
     .get()
     .json<WdSettings>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -94,8 +90,8 @@ async function getSettings(): Promise<WdSettings> {
 }
 
 async function updateSettings(payload: WdSettingsPayload): Promise<WdSettings> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiWardenRoutes.settings)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiWardenRoutes.settings)
     .put(payload)
     .json<WdSettings>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -103,8 +99,8 @@ async function updateSettings(payload: WdSettingsPayload): Promise<WdSettings> {
 }
 
 async function getStats(): Promise<WdStats> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiWardenRoutes.stats)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiWardenRoutes.stats)
     .get()
     .json<WdStats>()
   if (!data.success) throw ApiError.fromResponse(data)
@@ -120,8 +116,8 @@ async function listEvents(
   if (query.ip) params.ip = query.ip
   if (query.type) params.type = query.type
   if (query.severity) params.severity = query.severity
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiWardenRoutes.events)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiWardenRoutes.events)
     .query(params)
     .get()
     .json<WdEventListResponse>()
@@ -130,8 +126,8 @@ async function listEvents(
 }
 
 async function clearEvents(): Promise<{ deleted: number }> {
-  const data = await nmxHttp
-    .url(getApiBaseUrl() + ApiWardenRoutes.events)
+  const data = await coreConfig.http
+    .url(coreConfig.getApiBaseUrl() + ApiWardenRoutes.events)
     .delete()
     .json<{ deleted: number }>()
   if (!data.success) throw ApiError.fromResponse(data)

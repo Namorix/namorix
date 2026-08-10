@@ -20,7 +20,6 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import {
   AuthConstraints,
   DefaultPaths,
-  getApiBaseUrl,
   nmxToast,
   resolveError,
   useRegisterEnabledStore,
@@ -28,6 +27,7 @@ import {
   ValidationFields,
 } from "@namorix/core"
 import { authController } from "../controllers"
+import { coreConfig } from "../config/coreConfig"
 
 export const Login: React.FC = () => {
   const { t } = useTranslation()
@@ -75,7 +75,7 @@ export const Login: React.FC = () => {
       if (returnUrl) {
         nmxToast.success(t("auth.login.successRedirect"))
         setTimeout(() => {
-          window.location.href = getApiBaseUrl() + returnUrl
+          window.location.href = coreConfig.getApiBaseUrl() + returnUrl
         }, 1000)
       } else {
         nmxToast.success(t("auth.login.success"))

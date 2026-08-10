@@ -7,8 +7,8 @@ import {
   WindowManager,
 } from "../components"
 import { defocusAll, useAppDispatch } from "../store"
-import { useSignalR } from "@namorix/core"
 import { useNotificationEvents } from "../hooks"
+import { useSignalR } from "../signalr"
 
 export const Desktop: React.FC = () => {
   const dispatch = useAppDispatch()

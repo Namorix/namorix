@@ -13,9 +13,10 @@ import {
 } from "../../store"
 import { authController } from "../../controllers"
 import { useNavigate } from "react-router-dom"
-import { nmxToast, stopConnection, useUserStore } from "@namorix/core"
+import { nmxToast, useUserStore } from "@namorix/core"
 import { useTranslation } from "react-i18next"
 import { NmxAlertDialog } from "@namorix/ui"
+import { coreConfig } from "../../config/coreConfig"
 
 export const Launcher: React.FC = () => {
   const { t } = useTranslation()
@@ -61,7 +62,7 @@ export const Launcher: React.FC = () => {
     setConfirmLogout(false)
     await authController.logout()
     nmxToast.success(t("auth.logout.success"))
-    await stopConnection()
+    await coreConfig.signalr.stopConnection()
     navigate("/login")
   }
 
