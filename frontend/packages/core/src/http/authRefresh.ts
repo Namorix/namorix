@@ -1,13 +1,14 @@
-import { getApiBaseUrl } from "../config"
+import type { NmxCoreClient } from "../config"
 import { getFingerprint } from "../fingerprint"
 import { NMX_COOKIE_CSRF_KEY } from "../constants"
 import { ApiAuthRoutes } from "../apiRoutes"
 
 export type AuthRefreshResult = "success" | "expired" | "network"
 
-type UnauthorizedHandler = () => void
-let onUnauthorized: UnauthorizedHandler | null = null
-let refreshPromise: Promise<AuthRefreshResult> | null = null
+export interface AuthRefreshService {
+  refreshAccessToken(): Promise<AuthRefreshResult>
+  setOnUnauthorized(handler: () => void): void
+}
 
 function readCsrfToken(): string | null {
   const regex = new RegExp(`(?:^|;\\s*)${NMX_COOKIE_CSRF_KEY}=([^;]*)`)
@@ -15,41 +16,47 @@ function readCsrfToken(): string | null {
   return match?.[1] ?? null
 }
 
-async function doRefresh(): Promise<AuthRefreshResult> {
-  const headers: Record<string, string> = {}
-  const csrfToken = readCsrfToken()
-  if (csrfToken) headers["x-csrf-token"] = csrfToken
-  const fingerprint = getFingerprint()
-  if (fingerprint) headers["x-device-fingerprint"] = fingerprint
+export function createAuthRefresh(core: NmxCoreClient): AuthRefreshService {
+  let onUnauthorized: (() => void) | null = null
+  let refreshPromise: Promise<AuthRefreshResult> | null = null
 
-  let res: Response
-  try {
-    res = await fetch(getApiBaseUrl() + ApiAuthRoutes.refresh, {
-      method: "POST",
-      credentials: "include",
-      headers,
-    })
-  } catch {
-    return "network"
+  async function doRefresh(): Promise<AuthRefreshResult> {
+    const headers: Record<string, string> = {}
+    const csrfToken = readCsrfToken()
+    if (csrfToken) headers["x-csrf-token"] = csrfToken
+    const fingerprint = getFingerprint()
+    if (fingerprint) headers["x-device-fingerprint"] = fingerprint
+
+    let res: Response
+    try {
+      res = await fetch(core.getApiBaseUrl() + ApiAuthRoutes.refresh, {
+        method: "POST",
+        credentials: "include",
+        headers,
+      })
+    } catch {
+      return "network"
+    }
+
+    if (res.status === 401) {
+      onUnauthorized?.()
+      return "expired"
+    }
+
+    return res.ok ? "success" : "network"
   }
 
-  if (res.status === 401) {
-    onUnauthorized?.()
-    return "expired"
+  return {
+    refreshAccessToken(): Promise<AuthRefreshResult> {
+      if (!refreshPromise) {
+        refreshPromise = doRefresh().finally(() => {
+          refreshPromise = null
+        })
+      }
+      return refreshPromise
+    },
+    setOnUnauthorized(handler: () => void) {
+      onUnauthorized = handler
+    },
   }
-
-  return res.ok ? "success" : "network"
-}
-
-export function refreshAccessToken(): Promise<AuthRefreshResult> {
-  if (!refreshPromise) {
-    refreshPromise = doRefresh().finally(() => {
-      refreshPromise = null
-    })
-  }
-  return refreshPromise
-}
-
-export function setOnUnauthorized(handler: UnauthorizedHandler) {
-  onUnauthorized = handler
 }

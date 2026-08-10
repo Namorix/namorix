@@ -1,14 +1,14 @@
 import { HubConnectionState } from "@microsoft/signalr"
 import { useEffect, useRef } from "react"
-import { getSignalrClient, resolveHubPath } from "./signalr.service"
+import type { SignalrService } from "./signalr.service"
 import type { SignalRGroups } from "./constants"
 import { groupMethod } from "./utils"
 
 export function useSignalRGroup<
   SG extends SignalRGroups | (string & {}) = SignalRGroups,
->(groupName: SG, active: boolean, hubPath: string = resolveHubPath()) {
+>(signalr: SignalrService, groupName: SG, active: boolean, hubPath?: string) {
   const subbed = useRef(false)
-  const client = getSignalrClient(hubPath)
+  const client = signalr.getSignalrClient(hubPath)
 
   useEffect(() => {
     if (!active) return
@@ -39,5 +39,5 @@ export function useSignalRGroup<
         .invoke(unsubMethod)
         .catch((err) => console.warn(`${unsubMethod} failed:`, err))
     }
-  }, [active, groupName, hubPath])
+  }, [active, groupName, hubPath, client])
 }

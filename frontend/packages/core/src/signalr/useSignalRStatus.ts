@@ -1,25 +1,23 @@
 import { useEffect, useState } from "react"
 import { HubConnectionState } from "@microsoft/signalr"
-import {
-  addStatusHandler,
-  getConnectionState,
-  removeStatusHandler,
-  resolveHubPath,
-} from "./signalr.service"
+import type { SignalrService } from "./signalr.service"
 import type { SignalRStatus } from "./types"
 
-export function useSignalRStatus(hubPath: string = resolveHubPath()): SignalRStatus {
+export function useSignalRStatus(
+  signalr: SignalrService,
+  hubPath?: string,
+): SignalRStatus {
   const [status, setStatus] = useState<SignalRStatus>(() => {
-    const state = getConnectionState(hubPath)
+    const state = signalr.getConnectionState(hubPath)
     if (state === HubConnectionState.Connected) return "connected"
     if (state === HubConnectionState.Reconnecting) return "reconnecting"
     return "disconnected"
   })
 
   useEffect(() => {
-    addStatusHandler(setStatus, hubPath)
-    return () => removeStatusHandler(setStatus, hubPath)
-  }, [hubPath])
+    signalr.addStatusHandler(setStatus, hubPath)
+    return () => signalr.removeStatusHandler(setStatus, hubPath)
+  }, [hubPath, signalr])
 
   return status
 }

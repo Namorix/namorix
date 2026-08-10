@@ -9,16 +9,23 @@ import {
   apiAuthError,
 } from "../types"
 import { ApiAuthRoutes } from "../apiRoutes"
-import { refreshAccessToken } from "./authRefresh"
+import type { AuthRefreshService } from "./authRefresh"
+
+export interface HttpService {
+  url(url: string): RequestBuilder
+  getJson<T>(url: string): Promise<ApiResponse<T>>
+}
 
 class RequestBuilder {
   private _url: string
   private _options: RequestInit = { credentials: "include" }
   private _headers: Record<string, string> = {}
   private _retried = false
+  private _authRefresh: AuthRefreshService
 
-  constructor(url: string) {
+  constructor(url: string, authRefresh: AuthRefreshService) {
     this._url = url
+    this._authRefresh = authRefresh
   }
 
   private _body(method: string, body?: unknown): this {
@@ -103,18 +110,17 @@ class RequestBuilder {
         ...this._options,
         headers: this._headers,
       })
+
       if (
         result.status === HttpStatus.UNAUTHORIZED &&
         !this._retried &&
         !this._url.includes(ApiAuthRoutes.refresh)
       ) {
-        const refreshResult = await refreshAccessToken()
-
+        const refreshResult = await this._authRefresh.refreshAccessToken()
         if (refreshResult === "success") {
           this._retried = true
           return await this.json<T>()
         }
-
         return apiAuthError(
           "Unauthorized",
           AuthErrorCodes.UNAUTHORIZED,
@@ -184,25 +190,26 @@ class RequestBuilder {
   }
 }
 
-export const nmxHttp = {
-  url: (url: string) => new RequestBuilder(url),
-  getJson: async <T>(url: string): Promise<ApiResponse<T>> => {
-    try {
-      const result = await fetch(url, { credentials: "include" })
-      if (!result.ok) {
+export function createHttpClient(authRefresh: AuthRefreshService): HttpService {
+  return {
+    url: (url: string) => new RequestBuilder(url, authRefresh),
+    getJson: async <T>(url: string): Promise<ApiResponse<T>> => {
+      try {
+        const result = await fetch(url, { credentials: "include" })
+        if (!result.ok) {
+          return apiHttpError(
+            `HTTP ${result.status}`,
+            HttpErrorCodes.INTERNAL_ERROR,
+          ) as ApiResponse<T>
+        }
+        const data = (await result.json()) as T
+        return { success: true, data } as ApiResponse<T>
+      } catch {
         return apiHttpError(
-          `HTTP ${result.status}`,
+          "Network error",
           HttpErrorCodes.INTERNAL_ERROR,
         ) as ApiResponse<T>
       }
-
-      const data = (await result.json()) as T
-      return { success: true, data } as ApiResponse<T>
-    } catch {
-      return apiHttpError(
-        "Network error",
-        HttpErrorCodes.INTERNAL_ERROR,
-      ) as ApiResponse<T>
-    }
-  },
+    },
+  }
 }

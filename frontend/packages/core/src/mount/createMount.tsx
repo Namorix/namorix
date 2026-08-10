@@ -2,13 +2,12 @@ import React from "react"
 import { createRoot, type Root } from "react-dom/client"
 import { AddonModeProvider } from "./host"
 import {
-  authorizeRedirect,
-  getAccessToken,
-  handleRedirectCallback,
+  createOauth,
+  type OAuthService,
   OAUTH_PARAMS,
   OAUTH_WELL_KNOWN_PATH,
-  trySilentRefresh,
 } from "../oauth"
+import { createNmxCore } from "../config"
 
 export interface CreateMountContext {
   mode?: string
@@ -27,10 +26,16 @@ interface WellKnownOAuthConfig {
 
 export function createMount(
   Component: React.ComponentType<object>,
+  deps?: { oauth?: OAuthService },
 ): (
   container: HTMLElement,
   context?: CreateMountContext,
 ) => Promise<() => void> {
+  // Each app (shell/addon) passes its own oauth service (config-bound).
+  // If not passed, it instantiates its own instance within the closure — it is not a global state,
+  // so there are no conflicts when sharing modules via federation.
+
+  const oauth = deps?.oauth ?? createOauth(createNmxCore())
   const rootMap = new WeakMap<HTMLElement, Root>()
 
   return async (container: HTMLElement, context?: CreateMountContext) => {
@@ -67,7 +72,7 @@ export function createMount(
       const state = params.get(OAUTH_PARAMS.state)
 
       if (code && state && oauthConfig.tokenUrl) {
-        await handleRedirectCallback(
+        await oauth.handleRedirectCallback(
           oauthConfig.tokenUrl,
           oauthConfig.clientId,
           oauthConfig.redirectUri,
@@ -77,15 +82,15 @@ export function createMount(
         return () => {}
       }
 
-      if (!getAccessToken()) {
+      if (!oauth.getAccessToken()) {
         const desktopUrl = oauthConfig.tokenUrl.replace("/api/oauth/token", "")
-        const refreshed = await trySilentRefresh(desktopUrl)
+        const refreshed = await oauth.trySilentRefresh(desktopUrl)
         if (refreshed) {
           render()
           return () => {}
         }
 
-        void authorizeRedirect(
+        void oauth.authorizeRedirect(
           oauthConfig.authorizeUrl,
           oauthConfig.clientId,
           oauthConfig.redirectUri,

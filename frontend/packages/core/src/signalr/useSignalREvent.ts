@@ -1,11 +1,16 @@
 import { useEffect, useRef } from "react"
-import { getSignalrClient, resolveHubPath } from "./signalr.service"
+import type { SignalrService } from "./signalr.service"
 import type { SignalREvent } from "./constants"
 
 export function useSignalREvent<
   T = unknown,
   SE extends SignalREvent | (string & {}) = SignalREvent,
->(eventName: SE, handler: (data: T) => void, hubPath: string = resolveHubPath()) {
+>(
+  signalr: SignalrService,
+  eventName: SE,
+  handler: (data: T) => void,
+  hubPath?: string,
+) {
   const saveHandler = useRef(handler)
 
   useEffect(() => {
@@ -13,10 +18,10 @@ export function useSignalREvent<
   }, [handler])
 
   useEffect(() => {
-    const client = getSignalrClient(hubPath)
+    const client = signalr.getSignalrClient(hubPath)
     const wrapped = (data: T) => saveHandler.current(data)
 
     client.on(eventName, wrapped)
     return () => client.off(eventName, wrapped)
-  }, [eventName, hubPath])
+  }, [eventName, hubPath, signalr])
 }
