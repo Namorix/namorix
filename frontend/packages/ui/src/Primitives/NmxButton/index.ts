@@ -1,3 +1,4 @@
 export * from "./NmxButton"
 export * from "./NmxButtonLive"
 export * from "./NmxButtonRefresh"
+export * from "./NmxButtonClear"
