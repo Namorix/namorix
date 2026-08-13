@@ -1,4 +1,7 @@
 using System.Diagnostics;
+using System.Text.Json;
+using Namorix.Core.Constants;
+using Namorix.Server.Constants;
 using Namorix.Server.Infrastructure;
 using Namorix.Server.Models.Warden;
 
@@ -88,6 +91,18 @@ public class WdFirewallService(
         using var scope = scopeFactory.CreateScope();
         var herald = scope.ServiceProvider.GetRequiredService<IHeraldNotifier>();
         await herald.NotifyRuleAppliedAsync(rule);
+
+        var events = scope.ServiceProvider.GetRequiredService<WdEventService>();
+        await events.PublishAsync(
+            rule.Auto ? WdEventTypes.AutoBan : WdEventTypes.RuleApplied,
+            rule.Auto ? WdSeverity.Critical : WdSeverity.Warning,
+            AddonSourceId.Warden, rule.SourceCidr,
+            detailJson: JsonSerializer.Serialize(new
+            {
+                ruleId = rule.Id,
+                name = rule.Name,
+                action = WdEventAction.Applied
+            }));
     }
 
     private async Task NotifyRuleRemovedAsync(WdFirewallRule rule)
@@ -95,6 +110,19 @@ public class WdFirewallService(
         using var scope = scopeFactory.CreateScope();
         var herald = scope.ServiceProvider.GetRequiredService<IHeraldNotifier>();
         await herald.NotifyRuleRemovedAsync(rule);
+
+        var expired = rule is { Auto: true, ExpiresAt: not null } && rule.ExpiresAt < DateTime.UtcNow;
+        var events = scope.ServiceProvider.GetRequiredService<WdEventService>();
+        await events.PublishAsync(
+            expired ? WdEventTypes.BanExpired : WdEventTypes.RuleRemoved,
+            WdSeverity.Info,
+            AddonSourceId.Warden, rule.SourceCidr,
+            detailJson: JsonSerializer.Serialize(new
+            {
+                ruleId = rule.Id,
+                name = rule.Name,
+                action = WdEventAction.Removed
+            }));
     }
 
     // RuleExistsAsync / RunIptablesAsync / ExecAsync / BuildArgList — giữ nguyên

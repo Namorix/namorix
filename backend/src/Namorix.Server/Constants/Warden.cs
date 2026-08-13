@@ -17,6 +17,16 @@ public static class WdEventTypes
     public const string Scan404 = "SCAN_404";
     public const string BruteForce = "BRUTE_FORCE";
     public const string ExploitAttempt = "EXPLOIT_ATTEMPT";
+    public const string AutoBan = "AUTO_BAN";
+    public const string RuleApplied = "RULE_APPLIED";
+    public const string RuleRemoved = "RULE_REMOVED";
+    public const string BanExpired = "BAN_EXPIRED";
+}
+
+public static class WdEventAction
+{
+    public const string Applied = "applied";
+    public const string Removed = "removed";
 }
 
 public static class WdThresholdFactors
