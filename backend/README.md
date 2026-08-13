@@ -181,7 +181,7 @@ backend/
         │   ├── Addon.cs              # Addon task phase constants, error codes
         │   ├── Beacon.cs             # Beacon codes (BcnErrorCodes/BcnActivityCodes/BcnParam/BcnCredentialParam/BcnHttpClientNames/BcnHeaderKey)
         │   ├── Frontgate.cs          # Frontgate error codes (FgErrorCodes)
-        │   ├── Warden.cs             # Warden codes (WdErrorCodes/WdEventTypes/WdSecurityProfile/WdThresholdFactors/WdThresholdRules)
+        │   ├── Warden.cs             # Warden codes (WdErrorCodes/WdEventTypes +AUTO_BAN/RULE_APPLIED/RULE_REMOVED/BAN_EXPIRED/WdEventAction/WdSecurityProfile/WdThresholdFactors/WdThresholdRules)
         │   └── ServerSignalR.cs      # Server-specific SignalR event names + groups (incl. beacon, frontgate, warden)
         ├── Extensions/
         │   └── ApplicationBuilderExtensions.cs  # Server middleware pipeline wrapper
@@ -241,7 +241,7 @@ backend/
         │   │                            #   AcmeChallengeStore, AcmeDryRunService, DnsLookupChecker,
         │   │                            #   FrontgateAccessService (access policy eval), GeoIpService (MaxMind.GeoIP2),
         │   │                            #   FrontgateAudit (audit log write + push), SniCertProvider (SNI cert lookup)
-        │   ├── Warden/                  # WdFirewallService (iptables/nftables enforcement + Herald), WdEventService (publish WdSecurityEvent + notify),
+        │   ├── Warden/                  # WdFirewallService (iptables/nftables enforcement + Herald + audit trail — publish WdSecurityEvent cho rule lifecycle), WdEventService (publish WdSecurityEvent + notify),
         │   │                            #   HeraldNotifier (ruleApplied/ruleRemoved admin notifications)
         │   └── Grpc/
         │       └── AddonChannelService.cs  # gRPC bidirectional stream handler + interceptor auth

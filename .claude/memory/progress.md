@@ -1,5 +1,16 @@
 # Version History — August 2026
 
+## 2026-08-13 — Warden audit trail + Activity search + notification detail time + panel overlay
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| Namorix.Server | 0.76.0 → 0.77.0 | **Warden audit trail** — `WdFirewallService` chokepoint giờ publish `WdSecurityEvent` cho toàn bộ rule lifecycle (không chỉ notification): `NotifyRuleAppliedAsync` → `AUTO_BAN` (Critical, rule.Auto) / `RULE_APPLIED` (Warning, manual), `NotifyRuleRemovedAsync` → `BAN_EXPIRED` (Info, auto + hết hạn) / `RULE_REMOVED` (Info). `detailJson` dùng `JsonSerializer` + constants `WdEventAction.Applied`/`Removed` (không hardcode string). `Constants/Warden.cs` +4 event types (`AUTO_BAN`/`RULE_APPLIED`/`RULE_REMOVED`/`BAN_EXPIRED`). Activity log Warden giờ ghi nhận cả auto-ban + manual rules + ban hết hạn. |
+| @namorix/ui | 0.46.0 → 0.47.0 | NEW: `Primitives/NmxButton/NmxButtonClear.tsx` (`NmxButtonClear` — ghost + semantic error + `DELETE` icon, class `nmx-button__clear`) + export qua `NmxButton/index.ts`. |
+| @namorix/styles | 0.57.0 → 0.57.1 | MODIFIED: `base/components/button.scss` — `.nmx-button__refresh, .nmx-button__clear` share padding; `base/components/pagination.scss` — `__actions` gap sm → xs (chống tràn màn hình bé); `base/shell/addon/warden.scss` — +`__activity-actions`/`__activity-search` (flex 1)/`__activity-buttons` (Warden Activity toolbar); `base/shell/components/notification.scss` — dialog restructure column + `__content` (flex row) + `__time` (column, align-end, muted). |
+| @namorix/core | 0.66.1 → 0.66.2 | MODIFIED: `i18n/locales/en.json` — `ui.pagination.showing` "Showing {{from}}-{{to}} of {{total}}" → "{{from}}-{{to}} / {{total}}" (ngắn gọn — tràn trên màn hình bé). |
+| frontend | 0.89.0 → 0.90.0 | **Warden Activity search** — `WardenActivity.tsx` +`search` state, `listEvents({ ..., ip: search })` live search (onChange + onSubmit reset page 1, deps `[events.length, search]`), toolbar `NmxSearchInput` + `NmxButtonClear`/`NmxButtonRefresh` thay 2 NmxButton cũ, i18n +`searchPlaceholder` "Search by IP...". **Notification detail time** — `NotificationPanel.tsx` dùng `useDateTimeFormat().dateTime` hiện `createdAt`/`lastOccurredAt` theo format hệ thống trong dialog. **Notification panel overlay** — `Taskbar.tsx` +`__overlay` (transparent click-catcher, mousedown preventDefault + stopPropagation → đóng panel trước, không trigger onClick của item bên dưới). **Launcher cleanup** — bỏ `NmxSearchInput`/`query`/`searchRef` khỏi `Launcher.tsx`/`LauncherView.tsx` (launcher locale rỗng). i18n +4 Warden event type translations (`AUTO_BAN`/`RULE_APPLIED`/`RULE_REMOVED`/`BAN_EXPIRED`). |
+| warden addon | 0.6.0 → 0.7.0 | `version.ts` `NmxAddonVersions` — MINOR bump (Activity search + 4 event type translations). |
+
 ## 2026-08-10 — Core default hub path sync: /hubs/main → /hubs/namorix
 
 | Package | Version | Changes |

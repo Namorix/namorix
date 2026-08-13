@@ -27,6 +27,17 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-08-2026.md](versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-08-13 — Warden audit trail + Activity search + notification detail time + panel overlay (Namorix.Server 0.77.0 / frontend 0.90.0)
+
+- **Warden audit trail (Namorix.Server 0.77.0)**: `WdFirewallService` chokepoint giờ publish `WdSecurityEvent` cho toàn bộ rule lifecycle — `NotifyRuleAppliedAsync` → `AUTO_BAN` (Critical, auto) / `RULE_APPLIED` (Warning, manual); `NotifyRuleRemovedAsync` → `BAN_EXPIRED` (Info, auto + hết hạn) / `RULE_REMOVED` (Info). Fix lỗi trước đây: IP bị block xuất hiện trong Notifications (Herald) nhưng không có trong Activity log Warden — 2 kênh audit tách rời. `detailJson` qua `JsonSerializer` + constants `WdEventAction.Applied`/`Removed`. `Constants/Warden.cs` +4 event types. Không feedback loop threshold — 4 type mới rơi vào default `int.MaxValue` threshold.
+- **Warden Activity search (frontend 0.90.0 / warden 0.7.0)**: `WardenActivity.tsx` +live search theo IP (`listEvents({ ip: search })`, onChange/onSubmit reset page 1), toolbar `NmxSearchInput` + `NmxButtonClear`/`NmxButtonRefresh`. Backend `WdEventController.List` đã có sẵn filter `ip` — chỉ thiếu frontend wiring.
+- **Notification detail time**: `NotificationPanel.tsx` dùng `useDateTimeFormat().dateTime` hiện `createdAt`/`lastOccurredAt` theo format hệ thống (`appearance_time_format`/`date_format`).
+- **Notification panel overlay**: `Taskbar.tsx` +`__overlay` transparent click-catcher — mousedown `preventDefault`+`stopPropagation` đóng panel TRƯỚC khi click-through, không trigger onClick item bên dưới (pattern launcher).
+- **Launcher cleanup**: bỏ `NmxSearchInput`/`query`/`searchRef` khỏi `Launcher`/`LauncherView`.
+- **@namorix/ui 0.47.0**: NEW `NmxButtonClear` primitive (ghost + error + DELETE icon, `nmx-button__clear`).
+- **@namorix/core 0.66.2**: `ui.pagination.showing` → `"{{from}}-{{to}} / {{total}}"` (ngắn gọn, chống tràn).
+- Versions: Namorix.Server 0.77.0 / ui 0.47.0 / styles 0.57.1 / core 0.66.2 / frontend 0.90.0 / warden 0.7.0.
+
 ### 2026-08-10 — Core default hub path sync: /hubs/namorix (@namorix/core 0.66.1)
 
 - **Sync default hub path**: `HUB_MAIN` (`apiRoutes.ts`) + `DEFAULT_HUBS_PATH` (`config.ts`) đổi `/hubs/main` → `/hubs/namorix` — khớp backend `feat(backend): rename HubMain to HubNamorix` (`07e64bb`). App frontend đã truyền tường minh `hubsPath: "/hubs/namorix"` trong `coreConfig`; fix này bảo vệ external addon tạo `createNmxCore()` không truyền `hubsPath` (fallback đúng thay vì hub path cũ).

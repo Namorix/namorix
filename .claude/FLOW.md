@@ -948,6 +948,10 @@ WdEventService.PublishAsync(eventType, severity, sourceAddon, sourceIp, count, d
 Call sites:
 - `AcmeChallengeMiddleware` — ACME challenge fail → `WdEventTypes.AcmeChallengeFail` (severity Warning)
 - `ProxyTrafficMiddleware` — 404 scan → `WdEventTypes.Scan404` (severity Info) — **debounce 1 event/IP/5-min** qua `ScanWindow` ConcurrentDictionary (chống DB flood khi bot scan hàng trăm req/s)
+- `WdFirewallService` (chokepoint rule lifecycle — audit đầy đủ, không chỉ Herald notification):
+  - `NotifyRuleAppliedAsync` → `AUTO_BAN` (Critical, `rule.Auto`) / `RULE_APPLIED` (Warning, manual)
+  - `NotifyRuleRemovedAsync` → `BAN_EXPIRED` (Info, auto + `ExpiresAt < UtcNow`) / `RULE_REMOVED` (Info)
+  - `detailJson` = `JsonSerializer.Serialize({ ruleId, name, action })` với `WdEventAction.Applied`/`Removed` (constants, không hardcode string)
 
 **Threshold engine (Phase 2):** `WdThresholdRules.For(eventType, thresholdFactor, durationFactor)` — base config theo event type:
 | Event | Threshold | Lookback | BanDuration |
@@ -965,7 +969,7 @@ Call sites:
 
 **Notification keys:** `NotificationKeys.Warden.RuleApplied`/`RuleRemoved` = `warden:ruleApplied`/`warden:ruleRemoved` (camelCase — align FE template `warden.ruleApplied` "IP **{{sourceCidr}}** has been blocked"). `AddonSourceId.Warden` (`Namorix.Core/Constants/Addon.cs`).
 
-**Frontend (`frontend/src/addons/Warden/`):** `Warden.tsx` — `NmxToolbar` tabs (overview/activity/rules/settings, content TRONG provider scope). Cả 3 page dùng `useActiveTab<WardenTab>` guard — chỉ fetch khi tab đang active. `WardenOverview.tsx` — firewall master toggle + 3 `NmxStatCard` + profile `NmxSegmentedGroup` + **stats realtime** (SignalR group `warden` `warden:new-event` + 30s poll fallback). `WardenActivity.tsx` — `NmxLogList` + pagination + detail dialog (click row → `NmxAlertDialog` + `NmxMetaList`, severity info/warning/error) + **Clear activity** (nút Clear → `NmxAlertDialog` confirm `confirmSemantic="error"` → `wardenController.clearEvents()` = `DELETE /api/warden/events`). `WardenRules.tsx` — `NmxDataTable` + `NmxBadge` allow=success/deny=error + `NmxMenuButton` + detail dialog + **add/update feedback** (`handleSubmitRule` → `nmxToast.success` `feedback.addSuccess`/`updateSuccess` kèm `{{name}}`; error `formatCustomError` + fallback `addError`/`updateError` qua `nmxToast.error` fallbackMessage). `WardenRuleDialog.tsx` — ports `NmxTagInput`. Notification icon: `warden` → `APP_WARDEN`.
+**Frontend (`frontend/src/addons/Warden/`):** `Warden.tsx` — `NmxToolbar` tabs (overview/activity/rules/settings, content TRONG provider scope). Cả 3 page dùng `useActiveTab<WardenTab>` guard — chỉ fetch khi tab đang active. `WardenOverview.tsx` — firewall master toggle + 3 `NmxStatCard` + profile `NmxSegmentedGroup` + **stats realtime** (SignalR group `warden` `warden:new-event` + 30s poll fallback). `WardenActivity.tsx` — `NmxLogList` + pagination + detail dialog (click row → `NmxAlertDialog` + `NmxMetaList`, severity info/warning/error) + **search theo IP** (toolbar `NmxSearchInput` — live search qua `listEvents({ ip })`, onChange/onSubmit reset page 1; backend `WdEventController.List` filter `SourceIp.Contains`) + **Clear activity** (nút Clear → `NmxAlertDialog` confirm `confirmSemantic="error"` → `wardenController.clearEvents()` = `DELETE /api/warden/events`). Toolbar buttons dùng `NmxButtonClear`/`NmxButtonRefresh`. `WardenRules.tsx` — `NmxDataTable` + `NmxBadge` allow=success/deny=error + `NmxMenuButton` + detail dialog + **add/update feedback** (`handleSubmitRule` → `nmxToast.success` `feedback.addSuccess`/`updateSuccess` kèm `{{name}}`; error `formatCustomError` + fallback `addError`/`updateError` qua `nmxToast.error` fallbackMessage). `WardenRuleDialog.tsx` — ports `NmxTagInput`. Notification icon: `warden` → `APP_WARDEN`.
 
 ### Key files (Warden)
 
@@ -979,7 +983,7 @@ Call sites:
 | `backend/src/Namorix.Server/Hubs/SignalRWardenNotifier.cs` | `IWardenNotifier` — `warden:new-event` → group `warden` |
 | `backend/src/Namorix.Server/Workers/Warden/WdThresholdWorker.cs` | Threshold engine — auto-ban theo profile |
 | `backend/src/Namorix.Server/Workers/Warden/WdBanCleanupWorker.cs` | Gỡ ban rule hết hạn |
-| `backend/src/Namorix.Server/Constants/Warden.cs` | `WdErrorCodes`/`WdEventTypes`/`WdSecurityProfile`/`WdThresholdFactors`/`WdThresholdRules` |
+| `backend/src/Namorix.Server/Constants/Warden.cs` | `WdErrorCodes`/`WdEventTypes` (+AUTO_BAN/RULE_APPLIED/RULE_REMOVED/BAN_EXPIRED)/`WdEventAction`/`WdSecurityProfile`/`WdThresholdFactors`/`WdThresholdRules` |
 | `backend/src/Namorix.Server/Models/Warden/` | WdFirewallRule/WdSecurityEvent/WdSettings |
 | `frontend/src/addons/Warden/` | Warden/WardenOverview/WardenActivity/WardenRules + warden.controller |
 | `frontend/packages/core/src/apiRoutes.ts` | ApiWardenRoutes |
