@@ -1,10 +1,5 @@
 import React from "react"
-import {
-  NmxIconFont,
-  NmxIconFontSymbol,
-  NmxIconSvg,
-  NmxSearchInput,
-} from "@namorix/ui"
+import { NmxIconFont, NmxIconFontSymbol, NmxIconSvg } from "@namorix/ui"
 import type { AddonItem, OnOpenApp } from "../../types"
 import { NMX_NAME, type User } from "@namorix/core"
 import { useTranslation } from "react-i18next"
@@ -12,40 +7,20 @@ import { resolveAddonLocaleTitle } from "../../utils"
 
 interface LauncherViewProps {
   items: AddonItem[]
-  query: string
   user?: User | null
-  onQueryChange: (query: string) => void
   onLogout: () => void
   onOpenApp: OnOpenApp
-  searchRef: React.RefObject<HTMLInputElement | null>
 }
 
 export const LauncherView: React.FC<
   LauncherViewProps & { onClose: () => void }
-> = ({
-  items,
-  query,
-  user,
-  onQueryChange,
-  onLogout,
-  onOpenApp,
-  onClose,
-  searchRef,
-}) => {
+> = ({ items, user, onLogout, onOpenApp, onClose }) => {
   const { t } = useTranslation()
 
   return (
     <div className="nmx-launcher-overlay" onMouseDown={onClose}>
       <div className="nmx-launcher" onMouseDown={(e) => e.stopPropagation()}>
         <span className="nmx-launcher__head">{NMX_NAME}</span>
-        <NmxSearchInput
-          ref={searchRef}
-          value={query}
-          onChange={onQueryChange}
-          placeholder={t("launcher.searchPlaceholder")}
-          className="nmx-launcher__search"
-        />
-
         <div className="nmx-launcher__grid">
           {items.length > 0 ? (
             items.map((item) => (

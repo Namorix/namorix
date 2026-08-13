@@ -69,23 +69,35 @@ export const Taskbar: React.FC = () => {
   }, [isNotificationPanelOpen])
 
   return (
-    <TaskbarView
-      order={order}
-      time={time}
-      date={date}
-      signalStatus={signalStatus}
-      unreadCount={unreadCountCapped}
-      isNotificationPanelOpen={isNotificationPanelOpen}
-      onStartClick={() => {
-        setNotificationPanelOpen(false)
-        dispatch(toggleLauncher())
-      }}
-      onAppClick={handleAppClick}
-      onNotificationClick={() => {
-        dispatch(closeLauncher())
-        setNotificationPanelOpen((v) => !v)
-      }}
-      panelRef={panelRef}
-    />
+    <>
+      {isNotificationPanelOpen && (
+        <div
+          className="nmx-notification-panel__overlay"
+          onMouseDown={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            setNotificationPanelOpen(false)
+          }}
+        />
+      )}
+      <TaskbarView
+        order={order}
+        time={time}
+        date={date}
+        signalStatus={signalStatus}
+        unreadCount={unreadCountCapped}
+        isNotificationPanelOpen={isNotificationPanelOpen}
+        onStartClick={() => {
+          setNotificationPanelOpen(false)
+          dispatch(toggleLauncher())
+        }}
+        onAppClick={handleAppClick}
+        onNotificationClick={() => {
+          dispatch(closeLauncher())
+          setNotificationPanelOpen((v) => !v)
+        }}
+        panelRef={panelRef}
+      />
+    </>
   )
 }

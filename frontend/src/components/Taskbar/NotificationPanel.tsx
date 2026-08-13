@@ -44,6 +44,7 @@ import {
   nmxToast,
   setAppearanceStore,
   useAppearanceStore,
+  useDateTimeFormat,
 } from "@namorix/core"
 import {
   NOTIFICATION_SOURCE_ICON,
@@ -58,6 +59,7 @@ const PAGE_SIZE = 10
 
 export const NotificationPanel = memo(() => {
   const { t } = useTranslation()
+  const { dateTime } = useDateTimeFormat()
   const appearance = useAppearanceStore()
   const toastEnabled = appearance?.appearance_notifications_toast !== "false"
   const panelRef = useRef<HTMLDivElement>(null)
@@ -293,41 +295,54 @@ export const NotificationPanel = memo(() => {
       >
         {detail && (
           <div className="nmx-notification-dialog">
-            <div className="nmx-notification-item__icon-box">
-              <NmxIconSvg
-                symbol={
-                  NOTIFICATION_SOURCE_ICON[detail.source ?? ""] ??
-                  NmxIconSvgSymbol.APP_SYSTEM
-                }
-                className="nmx-notification-item__icon"
-              />
-              <NmxIconBox
-                semantic={
-                  (
-                    { security: "error" } as Partial<
-                      Record<string, NmxSemanticColor>
-                    >
-                  )[detail.type] ?? (detail.type as NmxSemanticColor)
-                }
-                className="nmx-notification-item__box-level"
-              >
-                <NmxIconFont
+            <div className="nmx-notification-dialog__content">
+              <div className="nmx-notification-item__icon-box">
+                <NmxIconSvg
                   symbol={
-                    NOTIFICATION_TYPE_ICON[detail.type ?? "info"] ??
-                    NmxIconFontSymbol.INFO
+                    NOTIFICATION_SOURCE_ICON[detail.source ?? ""] ??
+                    NmxIconSvgSymbol.APP_SYSTEM
                   }
-                  className="nmx-notification-item__icon-level"
+                  className="nmx-notification-item__icon"
                 />
-              </NmxIconBox>
+                <NmxIconBox
+                  semantic={
+                    (
+                      { security: "error" } as Partial<
+                        Record<string, NmxSemanticColor>
+                      >
+                    )[detail.type] ?? (detail.type as NmxSemanticColor)
+                  }
+                  className="nmx-notification-item__box-level"
+                >
+                  <NmxIconFont
+                    symbol={
+                      NOTIFICATION_TYPE_ICON[detail.type ?? "info"] ??
+                      NmxIconFontSymbol.INFO
+                    }
+                    className="nmx-notification-item__icon-level"
+                  />
+                </NmxIconBox>
+              </div>
+              <span
+                className="nmx-notification-dialog__description"
+                dangerouslySetInnerHTML={{
+                  __html: detail
+                    ? resolveNotificationDescriptionHtml(t, detail)
+                    : "",
+                }}
+              />
             </div>
-            <span
-              className="nmx-notification-dialog__description"
-              dangerouslySetInnerHTML={{
-                __html: detail
-                  ? resolveNotificationDescriptionHtml(t, detail)
-                  : "",
-              }}
-            />
+            <div className="nmx-notification-dialog__time">
+              <span>{detail ? dateTime(detail.createdAt) : ""}</span>
+              {detail && detail.occurrences > 1 && (
+                <span>
+                  {t("notification.occurredTimes", {
+                    count: detail.occurrences,
+                  })}
+                  {dateTime(detail.lastOccurredAt)}
+                </span>
+              )}
+            </div>
           </div>
         )}
       </NmxAlertDialog>

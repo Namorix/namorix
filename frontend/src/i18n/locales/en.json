@@ -89,9 +89,7 @@
       "cancel": "Cancel"
     }
   },
-  "launcher": {
-    "searchPlaceholder": "Search app..."
-  },
+  "launcher": {},
   "notification": {
     "title": "Notifications",
     "noNotifications": "No notifications",
@@ -1015,11 +1013,16 @@
             "clear": "Clear",
             "refresh": "Refresh"
           },
+          "searchPlaceholder": "Search by IP...",
           "eventTypes": {
             "ACME_CHALLENGE_FAIL": "ACME challenge failed",
             "SCAN_404": "404 scan detected",
             "BRUTE_FORCE": "Brute-force attempt",
-            "EXPLOIT_ATTEMPT": "Exploit attempt"
+            "EXPLOIT_ATTEMPT": "Exploit attempt",
+            "AUTO_BAN": "IP auto-banned",
+            "RULE_APPLIED": "Block rule applied",
+            "RULE_REMOVED": "Block rule removed",
+            "BAN_EXPIRED": "Auto-ban expired"
           },
           "fallbacks": {
             "loading": "Loading activity...",

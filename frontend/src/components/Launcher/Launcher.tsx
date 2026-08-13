@@ -28,7 +28,7 @@ export const Launcher: React.FC = () => {
   const user = useUserStore()
   const navigate = useNavigate()
 
-  const { query, setQuery, items, searchRef } = useLauncherSearch(isOpen)
+  const { items } = useLauncherSearch(isOpen)
 
   useEffect(() => {
     if (!isOpen) return
@@ -70,12 +70,9 @@ export const Launcher: React.FC = () => {
     <>
       <LauncherView
         items={items}
-        query={query}
         user={user}
-        onQueryChange={setQuery}
         onLogout={handleLogoutClick}
         onOpenApp={handleOpenApp}
-        searchRef={searchRef}
         onClose={close}
       />
       <NmxAlertDialog

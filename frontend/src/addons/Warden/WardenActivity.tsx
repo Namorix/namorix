@@ -1,16 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import {
   NmxAlertDialog,
-  NmxAlign,
-  NmxButton,
+  NmxButtonClear,
+  NmxButtonRefresh,
   type NmxFallback,
-  NmxIconFont,
-  NmxIconFontSymbol,
   type NmxLogEntry,
   NmxLogList,
   NmxMetaItem,
   NmxMetaList,
   NmxPagination,
+  NmxSearchInput,
   type NmxSemanticColor,
   useActiveTab,
 } from "@namorix/ui"
@@ -40,6 +39,7 @@ export const WardenActivity: React.FC = () => {
   const { dateTime } = useDateTimeFormat()
   const { pageSize, setPageSize, options: pageSizeOptions } = usePageSize()
   const [page, setPage] = useState(1)
+  const [search, setSearch] = useState("")
   const [total, setTotal] = useState(0)
   const [selected, setSelected] = useState<WdSecurityEvent | null>(null)
   const [confirmClear, setConfirmClear] = useState(false)
@@ -49,7 +49,7 @@ export const WardenActivity: React.FC = () => {
     (pg: number, size: number) => {
       if (events.length <= 0) setEventsLoading(true)
       wardenController
-        .listEvents({ page: pg, size })
+        .listEvents({ page: pg, size, ip: search })
         .then((res) => {
           setEvents(res.items)
           setTotal(res.total)
@@ -57,7 +57,7 @@ export const WardenActivity: React.FC = () => {
         .finally(() => setEventsLoading(false))
         .catch(nmxToast.error)
     },
-    [events.length],
+    [events.length, search],
   )
 
   const entries: NmxLogEntry[] = events.map((row) => ({
@@ -134,16 +134,25 @@ export const WardenActivity: React.FC = () => {
 
   return (
     <div className="nmx-addon-warden__page">
-      <NmxAlign direction="row" justify="end">
-        <NmxButton onClick={() => setConfirmClear(true)} semantic="error">
-          <NmxIconFont symbol={NmxIconFontSymbol.DELETE} />
-          <span>{t("addon.warden.pages.activity.actions.clear")}</span>
-        </NmxButton>
-        <NmxButton onClick={() => fetchEvents(page, pageSize)}>
-          <NmxIconFont symbol={NmxIconFontSymbol.REFRESH} />
-          <span>{t("addon.warden.pages.activity.actions.refresh")}</span>
-        </NmxButton>
-      </NmxAlign>
+      <div className="nmx-addon-warden__activity-actions">
+        <NmxSearchInput
+          className="nmx-addon-warden__activity-search"
+          value={search}
+          onChange={(v) => {
+            setSearch(v)
+            setPage(1)
+          }}
+          onSubmit={(v) => {
+            setSearch(v)
+            setPage(1)
+          }}
+          placeholder={t("addon.warden.pages.activity.searchPlaceholder")}
+        />
+        <div className="nmx-addon-warden__activity-buttons">
+          <NmxButtonClear onClick={() => setConfirmClear(true)} />
+          <NmxButtonRefresh onClick={() => fetchEvents(page, pageSize)} />
+        </div>
+      </div>
 
       <div className="nmx-addon-warden__list">
         <NmxLogList
