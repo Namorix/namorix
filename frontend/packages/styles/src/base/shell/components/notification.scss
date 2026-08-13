@@ -25,6 +25,12 @@
   animation: nmx-notification-panel-in var(--nmx-duration-normal)
     var(--nmx-easing-standard) both;
 
+  &__overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--nmx-z-notification);
+  }
+
   @keyframes nmx-notification-panel-in {
     from {
       opacity: 0;
@@ -316,11 +322,26 @@
 
 .nmx-notification-dialog {
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: var(--nmx-spacing-md);
+  flex-direction: column;
+
+  &__content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--nmx-spacing-md);
+  }
 
   &__description {
     @include user-select;
+  }
+
+  &__time {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--nmx-spacing-xs);
+    color: var(--nmx-color-on-surface-variant);
+    font-size: var(--nmx-font-size-xs);
+    white-space: nowrap;
   }
 }
