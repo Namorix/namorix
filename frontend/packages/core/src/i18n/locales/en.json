@@ -46,7 +46,7 @@
   },
   "ui": {
     "pagination": {
-      "showing": "Showing {{from}}-{{to}} of {{total}}",
+      "showing": "{{from}}-{{to}} / {{total}}",
       "elapsed": " · {{ms}}ms"
     },
     "alertDialog": {
