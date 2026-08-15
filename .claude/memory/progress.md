@@ -1,5 +1,12 @@
 # Version History — August 2026
 
+## 2026-08-15 — NmxCard spacing/empty/clickable + NmxToolbarContent spacing + NmxToolbarHeader onBack wiring
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/ui | 0.48.0 → 0.49.0 | MODIFIED: `Components/NmxCard/NmxCard.tsx` — +`nmx-card--clickable` class khi có `onClick` (weave `NetworkView` grid card mở detail); `NmxCardBody.tsx` — +`isEmpty` prop (`nmx-card__body--empty` placeholder); `NmxCardHeader.tsx` — +`spacing?: NmxSpacing \| null` (`cxSpacing("nmx-card__header", spacing)`); `NmxCardFooter.tsx` — +`spacingBottom?: NmxSpacing \| null` (`cxSpacing("nmx-card__footer", spacingBottom)`). `Components/NmxToolbar/NmxToolbarContent.tsx` — +`spacing?: NmxSpacing \| null` (áp cả 2 branch render + `NmxTabContentInner`). `Components/NmxToolbar/NmxToolbarHeader.tsx` — **wire `onClick={onBack}`** vào `.nmx-toolbar-header__action-back` (trước chỉ hiển thị chevron khi có children, chưa click được). |
+| @namorix/styles | 0.57.2 → 0.58.0 | MODIFIED: `base/components/card.scss` — +`nmx-card--clickable` (cursor pointer + hover `--nmx-color-surface-mid`), +`nmx-card__body--empty` (warning color, font-size sm, center), `nmx-card__header` margin-bottom qua `--nmx-card__header-spacing` + `spacings()` mixin, `nmx-card__footer` +`margin-top` + `spacings()` mixin. `base/components/toolbar.scss` — `.nmx-toolbar-content` +`--nmx-toolbar-content-spacing` padding + `spacings()` mixin. |
+
 ## 2026-08-15 — NmxToolbarHeader back-action chevron + useSessionGuard deferred status fix
 
 | Package | Version | Changes |

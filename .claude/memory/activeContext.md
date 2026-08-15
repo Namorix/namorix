@@ -27,6 +27,12 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-08-2026.md](versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-08-15 — NmxCard spacing/empty/clickable + NmxToolbarContent spacing + NmxToolbarHeader onBack wiring (@namorix/ui 0.49.0 / @namorix/styles 0.58.0)
+
+- **@namorix/ui 0.49.0:** `NmxCard` +`nmx-card--clickable` class khi có `onClick` (hover `--nmx-color-surface-mid`); `NmxCardBody` +`isEmpty` prop (`nmx-card__body--empty` placeholder); `NmxCardHeader` +`spacing` / `NmxCardFooter` +`spacingBottom` / `NmxToolbarContent` +`spacing` (đều qua `cxSpacing`); **`NmxToolbarHeader` wire `onClick={onBack}`** vào `.nmx-toolbar-header__action-back` — back-action giờ click được (trước chỉ hiện chevron, chưa wire). Consumer đầu tiên = weave `ThreadNetworkView` (`onBack` → `NetworkView`).
+- **@namorix/styles 0.58.0:** `card.scss` — `nmx-card--clickable`/`nmx-card__body--empty` + `spacings()` mixin cho header/footer (margin-bottom qua `--nmx-card__header-spacing`); `toolbar.scss` — `.nmx-toolbar-content` +`spacings()` mixin.
+- Versions: @namorix/ui 0.49.0 / @namorix/styles 0.58.0 (core/backend/frontend không bump — không file đổi).
+
 ### 2026-08-15 — NmxToolbarHeader back-action chevron + useSessionGuard deferred status fix (@namorix/core 0.67.1 / @namorix/ui 0.48.0 / @namorix/styles 0.57.2)
 
 - **@namorix/ui 0.48.0:** `NmxToolbarHeader` — back-action slot: chevron `ARROW_NEXT` sau khối title/icon khi có `children`; `__action-back--clickable` (info block hover đổi màu). **`onBack` chưa wire vào onClick** (WIP — cần wire trong consumer, ví dụ weave `ThreadNetworkView`).
