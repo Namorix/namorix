@@ -19,6 +19,5 @@ export * from "./hooks"
 export * from "./toast"
 export * from "./notification"
 export * from "./mount"
-export * from "./oauth"
 
 initStores()

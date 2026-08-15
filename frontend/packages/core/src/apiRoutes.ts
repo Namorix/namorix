@@ -7,10 +7,10 @@ export const API_TRAFFIC_BASE = API_BASE + "/traffic"
 export const API_SETTINGS_BASE = API_BASE + "/settings"
 export const API_NOTIFICATION_BASE = API_BASE + "/notifications"
 export const API_ADDON_BASE = API_BASE + "/addons"
-export const API_OAUTH_BASE = API_BASE + "/oauth"
 export const API_FRONTGATE_BASE = API_BASE + "/frontgate"
 export const API_BEACON_BASE = API_BASE + "/beacon"
 export const API_WARDEN_BASE = API_BASE + "/warden"
+export const API_OAUTH_BASE = API_BASE + "/oauth"
 
 export const ApiAuthRoutes = {
   status: API_AUTH_BASE + "/status",
@@ -75,10 +75,6 @@ export const ApiAddonRoutes = {
   syncCatalog: `${API_ADDON_BASE}/catalog/sync`,
 } as const
 
-export const ApiOAuthRoutes = {
-  refresh: API_OAUTH_BASE + "/token/refresh",
-} as const
-
 export const ApiFrontgateRoutes = {
   reverseProxy: API_FRONTGATE_BASE + "/reverse-proxy",
   reverseProxyById: (id: string) => `${API_FRONTGATE_BASE}/reverse-proxy/${id}`,
@@ -133,3 +129,8 @@ export const ApiWardenRoutes = {
   stats: API_WARDEN_BASE + "/stats",
   events: API_WARDEN_BASE + "/events",
 } as const
+
+export const ApiOauthRoutes = {
+  status: API_OAUTH_BASE + "/status",
+  login: API_OAUTH_BASE + "/login",
+}
