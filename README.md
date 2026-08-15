@@ -66,15 +66,15 @@ cd namorix
 cd frontend && pnpm install
 
 # Run development (2 terminals)
-cd backend && dotnet watch run  # Backend C# (port 5001)
+cd backend && dotnet watch run  # Backend C# (port 5000)
 # or: cd backend && dotnet run
-cd frontend && pnpm dev         # Frontend (Vite port 5000)
+cd frontend && pnpm dev         # Frontend (Vite port 5002)
 ```
 
 ## Docker Deployment
 
 ```bash
-docker compose up -d --build    # Build + run (ports 5001/5002/80/443)
+docker compose up -d --build    # Build + run (ports 5000/5001/80/443)
 ```
 
 - `Dockerfile` 3-stage: build SPA (`frontend/dist`) → publish backend → runtime `dotnet/aspnet` (SPA copy vào `/app/public`, serve bởi backend).
@@ -86,21 +86,21 @@ docker compose up -d --build    # Build + run (ports 5001/5002/80/443)
 
 | Port | Service | Protocol | Purpose |
 |------|---------|----------|---------|
-| 5000 | Namorix Frontend (Vite) | HTTP | Main desktop shell dev server |
-| 5001 | Namorix Backend | HTTP/1.1 | REST API + SignalR realtime |
-| 5002 | Namorix Backend (gRPC) | HTTP/2 | gRPC bidirectional streaming for addon channels |
-| 5100 | namorix-weave (Vite) | HTTP | Weave addon frontend |
-| 5101 | namorix-weave (backend) | — | Reserved — addon backend |
-| 5102 | namorix-weave (gRPC) | — | Reserved — addon gRPC |
-| 5200 | namorix-beam (Vite) | HTTP | Beam addon frontend |
-| 5201 | namorix-beam (backend) | — | Reserved — addon backend |
-| 5202 | namorix-beam (gRPC) | — | Reserved — addon gRPC |
-| 5300 | namorix-scout (Vite) | HTTP | Scout addon frontend |
-| 5301 | namorix-scout (backend) | — | Reserved — addon backend |
-| 5302 | namorix-scout (gRPC) | — | Reserved — addon gRPC |
-| 5400 | namorix-vault (Vite) | HTTP | Vault addon frontend |
-| 5401 | namorix-vault (backend) | — | Reserved — addon backend |
-| 5402 | namorix-vault (gRPC) | — | Reserved — addon gRPC |
+| 5000 | Namorix Backend | HTTP/1.1 | REST API + SignalR realtime |
+| 5001 | Namorix Backend (gRPC) | HTTP/2 | gRPC bidirectional streaming for addon channels |
+| 5002 | Namorix Frontend (Vite) | HTTP | Main desktop shell dev server |
+| 5100 | namorix-weave (backend) | HTTP/1.1 | Weave addon backend (REST + SignalR) |
+| 5101 | namorix-weave (gRPC) | HTTP/2 | Reserved — addon gRPC |
+| 5102 | namorix-weave (Vite) | HTTP | Weave addon frontend dev server |
+| 5200 | namorix-beam (backend) | HTTP/1.1 | Reserved — addon backend |
+| 5201 | namorix-beam (gRPC) | HTTP/2 | Reserved — addon gRPC |
+| 5202 | namorix-beam (Vite) | HTTP | Reserved — addon frontend |
+| 5300 | namorix-scout (backend) | HTTP/1.1 | Reserved — addon backend |
+| 5301 | namorix-scout (gRPC) | HTTP/2 | Reserved — addon gRPC |
+| 5302 | namorix-scout (Vite) | HTTP | Reserved — addon frontend |
+| 5400 | namorix-vault (backend) | HTTP/1.1 | Reserved — addon backend |
+| 5401 | namorix-vault (gRPC) | HTTP/2 | Reserved — addon gRPC |
+| 5402 | namorix-vault (Vite) | HTTP | Reserved — addon frontend |
 
 ### Linux: Binding Ports Below 1024 Without Root
 
@@ -124,7 +124,7 @@ Setting this to 80 means all ports ≥ 80 are available to unprivileged processe
 ```
 namorix/
 ├── frontend/
-│   ├── package.json          # pnpm workspace root (port 5000)
+│   ├── package.json          # pnpm workspace root (port 5002)
 │   ├── pnpm-workspace.yaml   # workspace config
 │   ├── tsconfig.base.json    # shared TypeScript config
 │   ├── public/themes/        # Compiled theme CSS (light, dark)
@@ -207,7 +207,7 @@ namorix/
 │       │   ├── slices/       # windowsSlice, launcherSlice, taskbarSlice, notificationsSlice, externalAddonsSlice
 │       │   └── selectors/    # Memoized createSelector
 │       └── types/            # WindowId, WindowState, windowing types
-└── backend/                   # ASP.NET Core 10 API (port 5001)
+└── backend/                   # ASP.NET Core 10 API (port 5000)
     ├── Makefile               # Build/EF commands
     ├── Namorix.sln            # Solution file
     └── src/
@@ -349,7 +349,7 @@ Addon có 2 mode tích hợp:
 | `AppConfig__CsrfEnabled` | AppConfig.CsrfEnabled | false | Enable CSRF protection |
 | `AppConfig__SecureCookie` | AppConfig.SecureCookie | false | Set true for HTTPS |
 | `AppConfig__AllowedOrigins` | AppConfig.AllowedOrigins | (empty) | Comma-separated CORS origins; empty = allow all (trusted proxy mode) |
-| `Backend__Port` | Backend.Port | 5001 | Backend listen port |
+| `Backend__Port` | Backend.Port | 5000 | Backend listen port |
 | `Backend__ContainerName` | Backend.ContainerName | `namorix-server` | Docker container name |
 | `Backend__NetworkName` | Backend.NetworkName | `namorix-net` | Docker network name |
 | `Backend__RegistrationTokenTtlMinutes` | Backend.RegistrationTokenTtlMinutes | 60 | Addon registration token TTL |

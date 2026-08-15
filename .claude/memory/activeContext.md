@@ -27,6 +27,15 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-08-2026.md](versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-08-15 — gRPC user OAuth over addon channel + traffic monitor refactor (Core→Server) + dev single-origin proxy + port renumber (Namorix.Server 0.78.0 / Namorix.Core 0.58.0 / frontend 0.90.1)
+
+- **gRPC user OAuth (Namorix.Core 0.58.0 / Namorix.Server 0.78.0)**: Addon backend giờ exchange/refresh **user** token trực tiếp qua gRPC addon channel — `AddonChannelService.ExchangeUserCode` (authorization code + PKCE; caller auth bằng machine token trên gRPC auth header; `client_assertion` chứng minh addon sở hữu code; `RequireAddonClientIdAsync` + ClientId mismatch → `PermissionDenied`) / `RefreshUserToken` (dùng stored refresh token). `OAuthService.ExchangeCodeAsync` trả thêm `UserId` + NEW `GetClientIdAsync(addonId)`. Client: `AddonChannelClient.ExchangeUserCodeAsync`/`RefreshUserTokenAsync`, `NmxOAuth2Client.CreateClientAssertionAsync` (extract từ `GetAccessTokenAsync` — reuse cho gRPC).
+- **Traffic monitor refactor (Core → Server)**: toàn bộ `Traffic*` chuyển sang `Namorix.Server` (`Workers/TrafficMonitor/`, `TrafficBuffer`/`ITrafficNotifier`/`SignalRTrafficNotifier`, `TrafficRoutes`, `TrafficMonitorController`/`TrafficMonitorFilter`).
+- **Dev single-origin proxy (Server)**: `FrontgateProxyConfigProvider` +dev Vite route catch-all → cluster `dev:vite` (ActivityTimeout 10 min — Vite cold start esbuild; mô hình giống weave `LoadFromMemory`).
+- **Port renumber 5000/5001/5002**: REST+SignalR / gRPC / Vite — sync backend config, `vite.config.ts` env-driven (`DESKTOP_FRONTEND_PORT`/`DESKTOP_BACKEND_PORT`), Dockerfile/composes, 3 READMEs.
+- **Frontend (0.90.1)**: config-only — `vite.config.ts` `hmr.clientPort = backendPort`; xóa staged `Dockerfile.dev`/`Dockerfile.prod`/`docker-compose.yml`/`icomoon.ps1`.
+- Versions: Namorix.Server 0.78.0 / Namorix.Core 0.58.0 / frontend 0.90.1 (core/ui/styles/warden không bump — không file đổi).
+
 ### 2026-08-13 — Warden audit trail + Activity search + notification detail time + panel overlay (Namorix.Server 0.77.0 / frontend 0.90.0)
 
 - **Warden audit trail (Namorix.Server 0.77.0)**: `WdFirewallService` chokepoint giờ publish `WdSecurityEvent` cho toàn bộ rule lifecycle — `NotifyRuleAppliedAsync` → `AUTO_BAN` (Critical, auto) / `RULE_APPLIED` (Warning, manual); `NotifyRuleRemovedAsync` → `BAN_EXPIRED` (Info, auto + hết hạn) / `RULE_REMOVED` (Info). Fix lỗi trước đây: IP bị block xuất hiện trong Notifications (Herald) nhưng không có trong Activity log Warden — 2 kênh audit tách rời. `detailJson` qua `JsonSerializer` + constants `WdEventAction.Applied`/`Removed`. `Constants/Warden.cs` +4 event types. Không feedback loop threshold — 4 type mới rơi vào default `int.MaxValue` threshold.

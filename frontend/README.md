@@ -21,7 +21,7 @@ Vite + React desktop shell — window manager, taskbar, launcher, and built-in s
 
 ```bash
 pnpm install
-pnpm dev          # Vite dev server (port 5000)
+pnpm dev          # Vite dev server (port 5002)
 pnpm build        # TypeScript check + production build
 pnpm preview      # Preview production build
 ```
@@ -116,7 +116,7 @@ frontend/
 │
 ├── public/themes/                   # Compiled theme CSS (light, dark)
 ├── vite.config.ts                   # Vite config with /api and /hubs proxy
-└── .env.example                     # VITE_API_URL=http://localhost:5001
+└── .env.example                     # VITE_API_URL=http://localhost:5000
 ```
 
 ## Key Patterns
@@ -203,7 +203,7 @@ export const addonController = {
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `VITE_API_URL` | `http://localhost:5001` | Backend API URL |
+| `VITE_API_URL` | `http://localhost:5000` | Backend API URL |
 
 ## Addon Architecture
 

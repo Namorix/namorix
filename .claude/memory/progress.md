@@ -1,5 +1,13 @@
 # Version History — August 2026
 
+## 2026-08-15 — gRPC user OAuth over addon channel + traffic monitor refactor (Core→Server) + dev single-origin proxy + port renumber
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| Namorix.Core | 0.57.1 → 0.58.0 | NEW: `Protos/addon_channel.proto` +2 unary RPC — `ExchangeUserCode` (addon backend exchange user authorization code → `OAuthTokenResult`; caller auth bằng machine token trên gRPC auth header, `client_assertion` chứng minh addon sở hữu code) / `RefreshUserToken` (refresh user access token bằng stored refresh token) + messages `ExchangeCodeRequest`/`RefreshTokenRequest`/`OAuthTokenResult`. `Grpc/AddonChannelClient.cs` +`ExchangeUserCodeAsync`/`RefreshUserTokenAsync` (dùng `oauth.CreateClientAssertionAsync`). `OAuth/NmxOAuth2Client.cs` — extract `CreateClientAssertion()` private + NEW public `CreateClientAssertionAsync()` (reuse cho gRPC). NEW `Extensions/NmxCoreOptions.cs`. MODIFIED: `Extensions/ServiceCollectionExtensions.cs` (+60 — options wiring). Traffic monitor refactor — file move Core→Server. |
+| Namorix.Server | 0.77.0 → 0.78.0 | NEW: `Services/Grpc/AddonChannelService.cs` +2 unary RPC `ExchangeUserCode`/`RefreshUserToken` — `RequireAddonClientIdAsync` + ClientId mismatch → `PermissionDenied`, delegate `OAuthService.ExchangeCodeAsync`/`RefreshAddonTokenAsync`. MODIFIED: `OAuthService.cs` — `ExchangeCodeAsync` trả thêm `UserId`; NEW `GetClientIdAsync(addonId)`. **Traffic monitor refactor** — toàn bộ `Traffic*` (`TrafficMonitorService`/Controller/Filters/Workers/`TrafficBuffer`/`SignalRTrafficNotifier`/`ITrafficNotifier`/`TrafficRoutes`) chuyển từ Namorix.Core → Namorix.Server (`Workers/TrafficMonitor/`). **Dev single-origin proxy** — `FrontgateProxyConfigProvider` +dev Vite route (catch-all `dev:vite` cluster, `ActivityTimeout` 10 min — Vite cold start esbuild). `Hubs/MainHub.cs` +44; `Program.cs` +24. Port renumber 5000/5001/5002 (REST+SignalR / gRPC / Vite). |
+| frontend | 0.90.0 → 0.90.1 | MODIFIED: `vite.config.ts` — port renumber env-driven (`DESKTOP_FRONTEND_PORT`/`DESKTOP_BACKEND_PORT`, default 5002/5000) + `hmr.clientPort = backendPort` (HMR qua Kestrel single-origin). `.env.example` port refs. DELETED (staged): `Dockerfile.dev`/`Dockerfile.prod`/`docker-compose.yml`/`icomoon.ps1`. |
+
 ## 2026-08-13 — Warden audit trail + Activity search + notification detail time + panel overlay
 
 | Package | Version | Changes |

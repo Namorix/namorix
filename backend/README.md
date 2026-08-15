@@ -33,7 +33,7 @@ dotnet watch run
 make watch
 ```
 
-Server runs at `http://localhost:5001` (REST API + SignalR) and `http://localhost:5002` (gRPC).
+Server runs at `http://localhost:5000` (REST API + SignalR) and `http://localhost:5001` (gRPC).
 
 ## Project Structure
 
@@ -438,9 +438,9 @@ backend/
 
 ## Middleware Pipeline
 
-Thứ tự middleware trong `Program.cs` (Kestrel 2-port: REST API + SignalR on 5001, gRPC on 5002):
+Thứ tự middleware trong `Program.cs` (Kestrel 2-port: REST API + SignalR on 5000, gRPC on 5001):
 
-### REST Pipeline (port 5001)
+### REST Pipeline (port 5000)
 ```
 CORS → SecurityHeaders → TrustedProxy → Routing → CSRF → JsonError → Exception → **YARP Reverse Proxy** → Controllers
 ```
@@ -454,7 +454,7 @@ CORS → SecurityHeaders → TrustedProxy → Routing → CSRF → JsonError →
 - **AuthMiddleware**: Session validation from HttpOnly cookies.
 - **OAuth2Middleware**: Bearer token validation (private_key_jwt) for addon-to-server requests.
 
-### gRPC Pipeline (port 5002)
+### gRPC Pipeline (port 5001)
 ```
 gRPC → AddonChannelService → AddonChannelManager
 ```
@@ -507,7 +507,7 @@ Flow:
 | `AppConfig__CsrfEnabled` | AppConfig.CsrfEnabled | false | Enable CSRF protection |
 | `AppConfig__SecureCookie` | AppConfig.SecureCookie | false | Set true for HTTPS |
 | `AppConfig__AllowedOrigins` | AppConfig.AllowedOrigins | (empty) | Comma-separated CORS origins; empty = allow all |
-| `Backend__Port` | Backend.Port | 5001 | Backend listen port |
+| `Backend__Port` | Backend.Port | 5000 | Backend listen port |
 | `Backend__ContainerName` | Backend.ContainerName | `namorix-server` | Docker container name |
 | `Backend__NetworkName` | Backend.NetworkName | `namorix-net` | Docker network name |
 | `Backend__RegistrationTokenTtlMinutes` | Backend.RegistrationTokenTtlMinutes | 60 | Addon registration token TTL |
@@ -611,9 +611,10 @@ SignalR client auto-reconnects with exponential backoff (5s → 30s cap, infinit
 
 ## gRPC Bidirectional Streaming
 
-Addon backend ↔ Namorix backend communication qua port 5002 (HTTP/2):
+Addon backend ↔ Namorix backend communication qua port 5001 (HTTP/2):
 
 - **AddonChannelService** — gRPC bidirectional stream for widget event forwarding + heartbeat
+- **Unary RPCs (user OAuth)** — `ExchangeUserCode` (addon backend exchanges user authorization code → `OAuthTokenResult`; caller auth bằng machine token, `client_assertion` chứng minh addon sở hữu code) / `RefreshUserToken` (refresh user access token bằng stored refresh token)
 - **AddonChannelManager** — Tracks active gRPC connections per addon
 - **Auth**: OAuth2 Bearer token (private_key_jwt) in gRPC metadata
 - **Reconnect**: RetryConnectHostedService with configurable backoff

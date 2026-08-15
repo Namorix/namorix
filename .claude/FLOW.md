@@ -777,6 +777,13 @@ Addon container → Connect(metadata: Bearer <access_token>)
         │     └── "config-update" → (planned) push config changes
         └── finally: AddonChannelManager.DisconnectAsync(addonId)
 
+Unary RPCs trên cùng kênh (user OAuth — addon backend exchange/refresh user token):
+ExchangeUserCode(ExchangeCodeRequest) → OAuthTokenResult
+  └── authorization_code + PKCE; caller auth bằng machine token (gRPC auth header)
+        client_assertion chứng minh addon sở hữu code; ClientId mismatch → PermissionDenied
+RefreshUserToken(RefreshTokenRequest) → OAuthTokenResult
+  └── refresh user access token bằng stored refresh token (OAuthService.RefreshAddonTokenAsync)
+
 Active cancellation (revoke/uninstall):
   ├── OAuthController.Revoke → ChannelManager.DisconnectAsync(addonId)
   │     └── ChannelManager cancels ChannelContext.CTS → linkedCts cancelled
