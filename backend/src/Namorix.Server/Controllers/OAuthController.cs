@@ -5,7 +5,6 @@ using Namorix.Core.Constants;
 using Namorix.Core.Extensions;
 using Namorix.Core.OAuth;
 using Namorix.Core.Responses;
-using Namorix.Server.Config;
 using Namorix.Server.Services;
 
 namespace Namorix.Server.Controllers;
@@ -13,7 +12,7 @@ namespace Namorix.Server.Controllers;
 [ApiController]
 [Route("api/oauth")]
 public class OAuthController(OAuthService oauth, AddonChannelManager channelManager,
-    IOptions<AppConfig> appConfig, IOptions<FrontendConfig> frontendConfig) : ControllerBase
+    IOptions<AppConfig> appConfig) : ControllerBase
 {
     private readonly AppConfig _appConfig = appConfig.Value;
     
@@ -24,7 +23,7 @@ public class OAuthController(OAuthService oauth, AddonChannelManager channelMana
         if (userIdClaim is null || !int.TryParse(userIdClaim, out var userId))
         {
             var returnUrl = $"{OAuthEndpoints.Authorize}?{Request.QueryString.Value?.TrimStart('?')}";
-            return Redirect($"{frontendConfig.Value.BaseUrl}/login?returnUrl={Uri.EscapeDataString(returnUrl!)}");
+            return Redirect($"{Request.Scheme}://{Request.Host}/login?returnUrl={Uri.EscapeDataString(returnUrl!)}");
         }
 
         var addonId = await oauth.ValidateAuthorizationAsync(request.ClientId, request.RedirectUri);
