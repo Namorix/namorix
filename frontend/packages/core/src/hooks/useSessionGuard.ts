@@ -10,7 +10,9 @@ export interface SessionGuardOptions {
   loginUrl?: string
 }
 
-export function useSessionGuard(options: SessionGuardOptions = {}): SessionGuardState {
+export function useSessionGuard(
+  options: SessionGuardOptions = {},
+): SessionGuardState {
   const isStandalone = useIsStandalone()
   const [status, setStatus] = useState<SessionGuardState>("loading")
   const statusUrl = options.statusUrl ?? ApiOauthRoutes.status
@@ -18,8 +20,8 @@ export function useSessionGuard(options: SessionGuardOptions = {}): SessionGuard
 
   useEffect(() => {
     if (!isStandalone) {
-      setStatus("authenticated")
-      return
+      const timeout = setTimeout(() => setStatus("authenticated"), 0)
+      return () => clearTimeout(timeout)
     }
 
     let cancelled = false
