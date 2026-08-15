@@ -6,6 +6,9 @@
     <RootNamespace>Namorix.Server</RootNamespace>
     <UseRazorBuildServer>false</UseRazorBuildServer>
     <UseSharedCompilation>true</UseSharedCompilation>
+    <!-- Core controllers are opt-in via AddApplicationPart (e.g. addon session auth),
+         so the desktop host never auto-discovers them. -->
+    <GenerateMvcApplicationPartsAssemblyAttributes>false</GenerateMvcApplicationPartsAssemblyAttributes>
   </PropertyGroup>
 
   <ItemGroup>
