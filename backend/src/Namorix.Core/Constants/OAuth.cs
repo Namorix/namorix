@@ -15,6 +15,7 @@ public static class OAuth
     public static class NmxOAuth2Defaults
     {
         public const string Bearer = "Bearer";
+        public const string Authorization = "Authorization";
         public const string JwtBearerAssertionType = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer";
         public const string DataDir = "./data" ;
     }

@@ -73,6 +73,70 @@ public class AddonChannelService(AddonChannelManager manager, OAuthService oauth
         }
     }
 
+    public override async Task<OAuthTokenResult> ExchangeUserCode(
+        ExchangeCodeRequest request, ServerCallContext context)
+    {
+        var clientId = await RequireAddonClientIdAsync(context);
+        if (clientId != request.ClientId)
+            throw new RpcException(new Status(StatusCode.PermissionDenied, "ClientId mismatch"));
+
+        var (tokenId, refreshToken, userId) = await oauth.ExchangeCodeAsync(
+            request.Code, clientId, request.ClientAssertion, request.CodeVerifier);
+        if (tokenId is null)
+            throw new RpcException(new Status(StatusCode.InvalidArgument,
+                "Authorization code is invalid or expired"));
+
+        return new OAuthTokenResult
+        {
+            AccessToken = tokenId,
+            RefreshToken = refreshToken,
+            ExpiresIn = 3600,
+            UserId = userId,
+        };
+    }
+
+    public override async Task<OAuthTokenResult> RefreshUserToken(
+        RefreshTokenRequest request, ServerCallContext context)
+    {
+        var clientId = await RequireAddonClientIdAsync(context);
+        if (clientId != request.ClientId)
+            throw new RpcException(new Status(StatusCode.PermissionDenied, "ClientId mismatch"));
+
+        var result = await oauth.RefreshAddonTokenAsync(request.RefreshToken);
+        if (result is null)
+            throw new RpcException(new Status(StatusCode.Unauthenticated, "Invalid refresh token"));
+
+        var (tokenId, newRefreshToken, status) = result.Value;
+        if (status == OAuthRefreshStatus.Reused || tokenId is null)
+            throw new RpcException(new Status(StatusCode.Unauthenticated,
+                "Refresh token was reused. Possible theft detected. Re-registration required."));
+
+        return new OAuthTokenResult
+        {
+            AccessToken = tokenId,
+            RefreshToken = newRefreshToken!,
+            ExpiresIn = 3600,
+        };
+    }
+
+    private async Task<string> RequireAddonClientIdAsync(ServerCallContext context)
+    {
+        var authHeader = context.RequestHeaders.Get("authorization")?.Value;
+        if (authHeader == null || !authHeader.StartsWith("Bearer "))
+            throw new RpcException(new Status(StatusCode.Unauthenticated, "Missing token"));
+
+        var token = authHeader["Bearer ".Length..];
+        var addonId = await oauth.ValidateTokenAsync(token);
+        if (addonId is null)
+            throw new RpcException(new Status(StatusCode.Unauthenticated, "Invalid token"));
+
+        var clientId = await oauth.GetClientIdAsync(addonId);
+        if (clientId is null)
+            throw new RpcException(new Status(StatusCode.Unauthenticated, "Addon has no OAuth client"));
+
+        return clientId;
+    }
+
     private async Task RecheckLoopAsync(string addonId, CancellationTokenSource linkedCts, CancellationToken ct)
     {
         while (!ct.IsCancellationRequested)

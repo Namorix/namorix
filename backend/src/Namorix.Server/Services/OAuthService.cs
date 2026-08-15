@@ -41,34 +41,34 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache, ILogger<OAu
         return code;
     }
     
-    public async Task<(string TokenId, string RefreshToken)> ExchangeCodeAsync(
+    public async Task<(string TokenId, string RefreshToken, int UserId)> ExchangeCodeAsync(
         string code, string clientId, string? clientAssertion, string? codeVerifier)
     {
         var authCode = await db.OAuthAuthorizationCodes
             .FirstOrDefaultAsync(c => c.Code == code && c.ClientId == clientId);
 
         if (authCode is null || authCode.ExpiresAt < DateTime.UtcNow)
-            return (null, null)!;
+            return (null, null, 0)!;
         
         if (!string.IsNullOrEmpty(codeVerifier))
         {
             if (string.IsNullOrEmpty(authCode.CodeChallenge) || authCode.CodeChallengeMethod != "S256")
-                return (null, null)!;
+                return (null, null, 0)!;
 
             var challenge = Base64UrlEncode(SHA256.HashData(
                 Encoding.UTF8.GetBytes(codeVerifier)));
             if (!string.Equals(challenge, authCode.CodeChallenge, StringComparison.Ordinal))
-                return (null, null)!;
+                return (null, null, 0)!;
         }
         else
         {
             if (string.IsNullOrEmpty(clientAssertion))
-                return (null, null)!;
+                return (null, null, 0)!;
 
             var addon = await db.AddonInstallations
                 .FirstOrDefaultAsync(a => a.ClientId == clientId);
             if (addon?.PublicKey is null || !VerifyClientAssertion(clientAssertion, addon.PublicKey, clientId))
-                return (null, null)!;
+                return (null, null, 0)!;
         }
 
         db.OAuthAuthorizationCodes.Remove(authCode);
@@ -93,7 +93,7 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache, ILogger<OAu
         });
         
         await db.SaveChangesAsync();
-        return (tokenId, refreshToken);
+        return (tokenId, refreshToken, authCode.UserId);
     }
 
     public async Task<(string? TokenId, string? RefreshToken, OAuthRefreshStatus Status)?>
@@ -228,11 +228,15 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache, ILogger<OAu
         var token = await db.OAuthTokens.FindAsync(tokenId);
         if (token == null || token.ExpiresAt < DateTime.UtcNow || token.Revoked)
             return null;
-        
+
         var addon = await db.AddonInstallations
             .FirstOrDefaultAsync(a => a.ClientId == token.ClientId);
         return addon?.Id;
     }
+
+    public async Task<string?> GetClientIdAsync(string addonId) =>
+        (await db.AddonInstallations.AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Id == addonId))?.ClientId;
     
     private static bool VerifyClientAssertion(
         string assertion, string publicKeyPem, string expectedClientId)

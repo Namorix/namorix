@@ -4,6 +4,12 @@ option csharp_namespace = "Namorix.Core.Protos";
 
 service AddonChannel {
   rpc Connect(stream AddonMessage) returns (stream ShellMessage);
+  // Addon backend (confidential client) exchanges a user's authorization code
+  // for tokens. Caller authenticates via the addon's machine token on the
+  // gRPC authorization header; client_assertion proves the addon owns the code.
+  rpc ExchangeUserCode(ExchangeCodeRequest) returns (OAuthTokenResult);
+  // Addon backend refreshes a user's access token using the stored refresh token.
+  rpc RefreshUserToken(RefreshTokenRequest) returns (OAuthTokenResult);
 }
 
 message AddonMessage {
@@ -16,4 +22,23 @@ message ShellMessage {
   string type = 1;       // "command", "config-update", "heartbeat-ack"
   string payload = 2;
   string message_id = 3;
+}
+
+message ExchangeCodeRequest {
+  string code = 1;
+  string code_verifier = 2;
+  string client_assertion = 3;
+  string client_id = 4;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1;
+  string client_id = 2;
+}
+
+message OAuthTokenResult {
+  string access_token = 1;
+  string refresh_token = 2;
+  int64 expires_in = 3;
+  int64 user_id = 4;
 }

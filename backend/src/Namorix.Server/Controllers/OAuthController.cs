@@ -54,7 +54,7 @@ public class OAuthController(OAuthService oauth, AddonChannelManager channelMana
         {
             case OAuth.GrantTypes.AuthorizationCode:
             {
-                var (tokenId, refreshToken) = await oauth.ExchangeCodeAsync(request.Code, request.ClientId,
+                var (tokenId, refreshToken, _) = await oauth.ExchangeCodeAsync(request.Code, request.ClientId,
                     request.ClientAssertion, request.CodeVerifier);
             
                 if (tokenId is null)

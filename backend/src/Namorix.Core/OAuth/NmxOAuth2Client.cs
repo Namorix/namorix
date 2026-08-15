@@ -113,21 +113,9 @@ public class NmxOAuth2Client(HttpClient http, NmxAddonConfig config, ILogger<Nmx
         await EnsureInitializedAsync(ct);
         if (_cached is { } cached && DateTime.UtcNow < cached.ExpiresAt)
             return cached.Token;
-        
-        var handler = new JwtSecurityTokenHandler();
-        var assertion = handler.CreateEncodedJwt(new SecurityTokenDescriptor
-        {
-            Issuer = ClientId,
-            Subject = new ClaimsIdentity([
-                new Claim(ClaimTypes.NameIdentifier, ClientId!),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("N")),
-            ]),
-            Audience = $"{config.DesktopApiUrl}{OAuthEndpoints.Token}",
-            Expires = DateTime.UtcNow.AddMinutes(config.ClientAssertionTtlMinutes),
-            SigningCredentials = new SigningCredentials(
-                new RsaSecurityKey(_key), SecurityAlgorithms.RsaSha256),
-        });
-        
+
+        var assertion = CreateClientAssertion();
+
         var form = new FormUrlEncodedContent(new Dictionary<string, string>
         {
             [Constants.OAuth.OAuthParameter.GrantType] = Constants.OAuth.GrantTypes.ClientCredentials,
@@ -148,6 +136,29 @@ public class NmxOAuth2Client(HttpClient http, NmxAddonConfig config, ILogger<Nmx
         return _cached.Value.Token;
     }
     
+    public async Task<string> CreateClientAssertionAsync(CancellationToken ct = default)
+    {
+        await EnsureInitializedAsync(ct);
+        return CreateClientAssertion();
+    }
+
+    private string CreateClientAssertion()
+    {
+        var handler = new JwtSecurityTokenHandler();
+        return handler.CreateEncodedJwt(new SecurityTokenDescriptor
+        {
+            Issuer = ClientId,
+            Subject = new ClaimsIdentity([
+                new Claim(ClaimTypes.NameIdentifier, ClientId!),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("N")),
+            ]),
+            Audience = $"{config.DesktopApiUrl}{OAuthEndpoints.Token}",
+            Expires = DateTime.UtcNow.AddMinutes(config.ClientAssertionTtlMinutes),
+            SigningCredentials = new SigningCredentials(
+                new RsaSecurityKey(_key), SecurityAlgorithms.RsaSha256),
+        });
+    }
+
     private async Task EnsureSuccessAsync(HttpResponseMessage response, string action, CancellationToken ct)
     {
         if (response.IsSuccessStatusCode)

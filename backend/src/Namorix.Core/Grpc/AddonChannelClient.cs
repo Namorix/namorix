@@ -42,7 +42,7 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
         var stub = new AddonChannel.AddonChannelClient(_channel);
         var headers = new Metadata
         {
-            { "Authorization", $"{Constants.OAuth.NmxOAuth2Defaults.Bearer} {token}" }
+            { Constants.OAuth.NmxOAuth2Defaults.Authorization, $"{Constants.OAuth.NmxOAuth2Defaults.Bearer} {token}" }
         };
 
         _call = stub.Connect(headers, cancellationToken: _cts.Token);
@@ -94,6 +94,52 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
         if (_call == null)
             throw new InvalidOperationException("Channel not started. Call StartAsync first.");
         await _call.RequestStream.WriteAsync(message, ct);
+    }
+
+    public async Task<OAuthTokenResult> ExchangeUserCodeAsync(
+        string code, string clientId, CancellationToken ct = default)
+    {
+        EnsureStarted();
+        var stub = new AddonChannel.AddonChannelClient(_channel!);
+        return await stub.ExchangeUserCodeAsync(
+            new ExchangeCodeRequest
+            {
+                Code = code,
+                ClientId = clientId,
+                ClientAssertion = await oauth.CreateClientAssertionAsync(ct),
+            },
+            await BuildAuthHeadersAsync(ct),
+            cancellationToken: ct);
+    }
+
+    public async Task<OAuthTokenResult> RefreshUserTokenAsync(
+        string refreshToken, string clientId, CancellationToken ct = default)
+    {
+        EnsureStarted();
+        var stub = new AddonChannel.AddonChannelClient(_channel!);
+        return await stub.RefreshUserTokenAsync(
+            new RefreshTokenRequest
+            {
+                RefreshToken = refreshToken,
+                ClientId = clientId,
+            },
+            await BuildAuthHeadersAsync(ct),
+            cancellationToken: ct);
+    }
+
+    private void EnsureStarted()
+    {
+        if (_channel == null)
+            throw new InvalidOperationException("Channel not started. Call StartAsync first.");
+    }
+
+    private async Task<Metadata> BuildAuthHeadersAsync(CancellationToken ct)
+    {
+        var token = await oauth.GetAccessTokenAsync(ct);
+        return new Metadata
+        {
+            { Constants.OAuth.NmxOAuth2Defaults.Authorization, $"{Constants.OAuth.NmxOAuth2Defaults.Bearer} {token}" }
+        };
     }
 
     public async Task StopAsync()
