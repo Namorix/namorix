@@ -16,6 +16,32 @@
   flex-shrink: 0;
   flex-wrap: wrap;
   container-type: inline-size;
+
+  &__action-back {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--nmx-spacing-sm);
+    font-size: var(--nmx-font-size-sm);
+    font-weight: var(--nmx-font-weight-medium);
+    color: var(--nmx-color-on-surface-variant);
+    padding: var(--nmx-spacing-sm) 0;
+
+    &--clickable &__info {
+      cursor: pointer;
+
+      &:hover {
+        color: var(--nmx-color-on-surface);
+      }
+    }
+
+    &__info {
+      display: flex;
+      flex-direction: row;
+      gap: var(--nmx-spacing-sm);
+      align-items: center;
+    }
+  }
 }
 
 .nmx-toolbar-list {
