@@ -77,7 +77,8 @@ backend/
     │   ├── Exceptions/
     │   │   └── AuthException.cs      # Custom exception with error code
     │   ├── Extensions/
-    │   │   ├── ApplicationBuilderExtensions.cs  # Core middleware pipeline wrapper
+    │   │   ├── ApplicationBuilderExtensions.cs  # Core middleware pipeline wrapper (+ UseChromeDevToolsProbe404)
+    │   │   ├── DevViteReverseProxyExtensions.cs # Dev-only single-origin YARP→Vite proxy (AddDevViteReverseProxy/MapDevViteReverseProxy, reusable cho addon)
     │   │   └── ServiceCollectionExtensions.cs   # DI registration + DbContext + SignalR + CSRF + ValidationFilter
     │   ├── Filters/
     │   │   ├── TrafficLogFilter.cs

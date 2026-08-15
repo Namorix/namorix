@@ -1,5 +1,13 @@
 # Version History — August 2026
 
+## 2026-08-15 — Dev Vite proxy + Chrome DevTools 404 → Namorix.Core extensions; useSessionGuard trả state; OAuth login redirect fix
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| Namorix.Core | 0.58.0 → 0.59.0 | NEW: `Extensions/DevViteReverseProxyExtensions.cs` — C# 14 `extension` blocks: `AddDevViteReverseProxy(env, config, section="Frontend", hostKey="Host", portKey="Port", defaultPort=5102)` (dev-only `AddReverseProxy().LoadFromMemory` — route `dev:vite` catch-all → cluster Vite `Address`, `ActivityTimeout` 10 min cho cold start; reusable cho addon khác) + `MapDevViteReverseProxy(env)` (dev-only `MapReverseProxy()`). `Extensions/ApplicationBuilderExtensions.cs` +`UseChromeDevToolsProbe404()` — `app.Map("/.well-known/appspecific/com.chrome.devtools.json")` → 404 trước session auth + YARP (Chrome DevTools probe không trigger DB lookup / không proxy sang Vite). `Namorix.Core.csproj` +`Yarp.ReverseProxy` (CPM 2.3.0). First consumer = weave. |
+| Namorix.Server | 0.78.0 → 0.78.1 | FIXED: `Controllers/OAuthController.cs` — login redirect dùng `Request.Scheme://Request.Host` thay `FrontendConfig.BaseUrl` (đúng origin khi sau proxy / cổng tùy chỉnh; bỏ DI `IOptions<FrontendConfig>`). |
+| @namorix/core | 0.66.2 → 0.67.0 | MODIFIED: `hooks/useSessionGuard.ts` — return type đổi `void` → `SessionGuardState` (`"loading" \| "authenticated" \| "unauthorized"`); widget → `authenticated`; standalone fetch `/api/oauth/status` → 200 `authenticated`, 401 `unauthorized` + redirect `/api/oauth/login`, khác → `unauthorized`; consumer gating theo state (weave `WeaveApp` hiện `NmxLoadingOverlay` khi loading). NEW export type `SessionGuardState`. |
+
 ## 2026-08-15 — gRPC user OAuth over addon channel + traffic monitor refactor (Core→Server) + dev single-origin proxy + port renumber
 
 | Package | Version | Changes |

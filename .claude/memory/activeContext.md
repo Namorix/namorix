@@ -27,6 +27,14 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-08-2026.md](versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-08-15 — Dev Vite proxy + Chrome DevTools 404 vào Namorix.Core; useSessionGuard trả state; OAuth login redirect fix (Namorix.Core 0.59.0 / Namorix.Server 0.78.1 / @namorix/core 0.67.0)
+
+- **Dev Vite proxy → Namorix.Core (0.59.0)**: move dev single-origin proxy từ weave/server-local vào core để tái sử dụng — NEW `Extensions/DevViteReverseProxyExtensions.cs` (C# 14 `extension` blocks): `AddDevViteReverseProxy(env, config)` (dev-only `AddReverseProxy().LoadFromMemory` route `dev:vite` catch-all → Vite `:5102`, `ActivityTimeout` 10 min) + `MapDevViteReverseProxy(env)` (dev-only `MapReverseProxy()`). `Namorix.Core.csproj` +`Yarp.ReverseProxy`. First consumer = weave `Program.cs` (bỏ YARP local, dùng core extension).
+- **`UseChromeDevToolsProbe404()`**: `ApplicationBuilderExtensions.cs` + middleware 404 hoá `/.well-known/appspecific/com.chrome.devtools.json` trước session auth + YARP (Chrome probe không trigger session DB lookup / không proxy sang Vite).
+- **`useSessionGuard` trả state (@namorix/core 0.67.0)**: return type `void` → `SessionGuardState` (`"loading" | "authenticated" | "unauthorized"`) — cho phép UI render loading overlay; weave `WeaveApp` gating theo state (`NmxLoadingOverlay` khi loading).
+- **OAuth login redirect fix (Namorix.Server 0.78.1)**: `OAuthController` dùng `Request.Scheme://Request.Host` thay `FrontendConfig.BaseUrl` (đúng origin sau proxy / cổng tùy chỉnh; bỏ DI `IOptions<FrontendConfig>`).
+- Versions: Namorix.Core 0.59.0 / Namorix.Server 0.78.1 / @namorix/core 0.67.0 (frontend/ui/styles/warden không bump — không file đổi).
+
 ### 2026-08-15 — gRPC user OAuth over addon channel + traffic monitor refactor (Core→Server) + dev single-origin proxy + port renumber (Namorix.Server 0.78.0 / Namorix.Core 0.58.0 / frontend 0.90.1)
 
 - **gRPC user OAuth (Namorix.Core 0.58.0 / Namorix.Server 0.78.0)**: Addon backend giờ exchange/refresh **user** token trực tiếp qua gRPC addon channel — `AddonChannelService.ExchangeUserCode` (authorization code + PKCE; caller auth bằng machine token trên gRPC auth header; `client_assertion` chứng minh addon sở hữu code; `RequireAddonClientIdAsync` + ClientId mismatch → `PermissionDenied`) / `RefreshUserToken` (dùng stored refresh token). `OAuthService.ExchangeCodeAsync` trả thêm `UserId` + NEW `GetClientIdAsync(addonId)`. Client: `AddonChannelClient.ExchangeUserCodeAsync`/`RefreshUserTokenAsync`, `NmxOAuth2Client.CreateClientAssertionAsync` (extract từ `GetAccessTokenAsync` — reuse cho gRPC).
