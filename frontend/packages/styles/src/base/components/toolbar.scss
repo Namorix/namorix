@@ -124,5 +124,8 @@
 }
 
 .nmx-toolbar-content {
+  padding: var(--nmx-toolbar-content-spacing);
   @include flex-fill-column;
+
+  @include spacings(nmx-toolbar-content);
 }
