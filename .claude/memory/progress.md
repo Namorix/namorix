@@ -1,5 +1,13 @@
 # Version History — August 2026
 
+## 2026-08-15 — NmxToolbarHeader back-action chevron + useSessionGuard deferred status fix
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/ui | 0.47.0 → 0.48.0 | MODIFIED: `Components/NmxToolbar/NmxToolbarHeader.tsx` — back-action slot hoàn thiện: chevron `ARROW_NEXT` hiện sau khối title/icon khi có `children`; `__action-back--clickable` (info block hover đổi màu). Props `title`/`icon`/`onBack` đã có từ `feat(ui)` trước. **Lưu ý:** `onBack` chưa wire vào onClick (WIP — cần wire trong consumer). |
+| @namorix/styles | 0.57.1 → 0.57.2 | MODIFIED: `base/components/toolbar.scss` — `.nmx-toolbar-header__action-back` + `__info` (flex row, gap sm, font-size sm, weight medium) + `--clickable` hover đổi on-surface. |
+| @namorix/core | 0.67.0 → 0.67.1 | FIXED: `hooks/useSessionGuard.ts` — widget case defer `setStatus("authenticated")` qua `setTimeout(..., 0)` + cleanup (`clearTimeout`) — tránh set state trong render phase. |
+
 ## 2026-08-15 — Dev Vite proxy + Chrome DevTools 404 → Namorix.Core extensions; useSessionGuard trả state; OAuth login redirect fix
 
 | Package | Version | Changes |

@@ -27,6 +27,12 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-08-2026.md](versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-08-15 — NmxToolbarHeader back-action chevron + useSessionGuard deferred status fix (@namorix/core 0.67.1 / @namorix/ui 0.48.0 / @namorix/styles 0.57.2)
+
+- **@namorix/ui 0.48.0:** `NmxToolbarHeader` — back-action slot: chevron `ARROW_NEXT` sau khối title/icon khi có `children`; `__action-back--clickable` (info block hover đổi màu). **`onBack` chưa wire vào onClick** (WIP — cần wire trong consumer, ví dụ weave `ThreadNetworkView`).
+- **@namorix/styles 0.57.2:** `base/components/toolbar.scss` — `.nmx-toolbar-header__action-back` + `__info` + `--clickable` hover.
+- **@namorix/core 0.67.1:** `hooks/useSessionGuard.ts` — widget case defer `setStatus("authenticated")` qua `setTimeout(..., 0)` + cleanup.
+
 ### 2026-08-15 — Dev Vite proxy + Chrome DevTools 404 vào Namorix.Core; useSessionGuard trả state; OAuth login redirect fix (Namorix.Core 0.59.0 / Namorix.Server 0.78.1 / @namorix/core 0.67.0)
 
 - **Dev Vite proxy → Namorix.Core (0.59.0)**: move dev single-origin proxy từ weave/server-local vào core để tái sử dụng — NEW `Extensions/DevViteReverseProxyExtensions.cs` (C# 14 `extension` blocks): `AddDevViteReverseProxy(env, config)` (dev-only `AddReverseProxy().LoadFromMemory` route `dev:vite` catch-all → Vite `:5102`, `ActivityTimeout` 10 min) + `MapDevViteReverseProxy(env)` (dev-only `MapReverseProxy()`). `Namorix.Core.csproj` +`Yarp.ReverseProxy`. First consumer = weave `Program.cs` (bỏ YARP local, dùng core extension).
