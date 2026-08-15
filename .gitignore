@@ -7,6 +7,7 @@ pnpm-lock.yaml
 .claude/skills/skill-creator
 .claude/skills/find-skills
 .claude/*.js
+.claude/settings.local.json
 memory/
 .commandcode
 data/
