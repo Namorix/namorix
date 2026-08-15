@@ -7,13 +7,13 @@ using Namorix.Core.Responses;
 
 namespace Namorix.Core.Middleware;
 
-public class CsrfMiddleware(RequestDelegate requestDelegate, IOptions<AppConfig> appConfig, ILogger<CsrfMiddleware> logger)
+public class CsrfMiddleware(RequestDelegate requestDelegate, ILogger<CsrfMiddleware> logger,
+    IOptions<AppConfig>? appConfig = null)
 {
-    private readonly AppConfig _appConfig = appConfig.Value;
-    
     public async Task InvokeAsync(HttpContext httpContext)
     {
-        if (!_appConfig.CsrfEnabled ||
+        var config = appConfig?.Value;
+        if (config is null || !config.CsrfEnabled ||
             httpContext.Request.Path.StartsWithSegments(SignalRPath.HubPrefix) ||
             ExemptPaths.NoCsrfSession.Any(p => httpContext.Request.Path.StartsWithSegments(p)))
         {
@@ -32,7 +32,7 @@ public class CsrfMiddleware(RequestDelegate requestDelegate, IOptions<AppConfig>
             // compromises the session entirely regardless.
             HttpOnly = false,
             SameSite = SameSiteMode.Lax,
-            Secure = _appConfig.SecureCookie,
+            Secure = config.SecureCookie,
             MaxAge = TimeSpan.FromHours(2)
         });
 

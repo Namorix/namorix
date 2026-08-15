@@ -10,7 +10,7 @@ public class SignalRBeaconNotifier(IHubContext<MainHub> hubContext) : IBeaconNot
 {
     public async Task NotifyHostnameStatusChanged(string hostnameId, string hostname, BcnHostnameStatus status)
     {
-        await hubContext.Clients.Group(ServerSignalRGroups.Beacon).SendAsync(ServerSignalREvent.BeaconHostnameStatusChanged, new
+        await hubContext.Clients.Group(ServerSignalRGroups.Beacon).SendAsync(ServerSignalREvents.BeaconHostnameStatusChanged, new
         {
             hostnameId,
             hostname,
@@ -20,7 +20,7 @@ public class SignalRBeaconNotifier(IHubContext<MainHub> hubContext) : IBeaconNot
     
     public async Task NotifyActivityCreated(BcnActivityLog log, string? hostname)
     {
-        await hubContext.Clients.Group(ServerSignalRGroups.Beacon).SendAsync(ServerSignalREvent.BeaconActivityCreated, new
+        await hubContext.Clients.Group(ServerSignalRGroups.Beacon).SendAsync(ServerSignalREvents.BeaconActivityCreated, new
         {
             id = log.Id,
             timestamp = log.Timestamp,
@@ -33,7 +33,7 @@ public class SignalRBeaconNotifier(IHubContext<MainHub> hubContext) : IBeaconNot
     
     public async Task NotifyHostnamesRefreshed(int updated)
     {
-        await hubContext.Clients.Group(ServerSignalRGroups.Beacon).SendAsync(ServerSignalREvent.BeaconHostnamesRefreshed, new
+        await hubContext.Clients.Group(ServerSignalRGroups.Beacon).SendAsync(ServerSignalREvents.BeaconHostnamesRefreshed, new
         {
             updated
         });
@@ -41,7 +41,7 @@ public class SignalRBeaconNotifier(IHubContext<MainHub> hubContext) : IBeaconNot
     
     public async Task NotifyHostnameChanged(string hostnameId, string hostname, BcnHostnameAction action)
     {
-        await hubContext.Clients.Group(ServerSignalRGroups.Beacon).SendAsync(ServerSignalREvent.BeaconHostnameChanged, new
+        await hubContext.Clients.Group(ServerSignalRGroups.Beacon).SendAsync(ServerSignalREvents.BeaconHostnameChanged, new
         {
             hostnameId,
             hostname,

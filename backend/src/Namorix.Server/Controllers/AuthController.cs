@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Namorix.Core.Attributes;
 using Namorix.Core.Config;
 using Namorix.Core.Constants;
 using Namorix.Core.Exceptions;
@@ -9,6 +8,7 @@ using Namorix.Core.Models;
 using Namorix.Core.Responses;
 using Namorix.Core.Validation;
 using Namorix.Core.Validation.Schemas;
+using Namorix.Server.Attributes;
 using Namorix.Server.Services;
 
 namespace Namorix.Server.Controllers;

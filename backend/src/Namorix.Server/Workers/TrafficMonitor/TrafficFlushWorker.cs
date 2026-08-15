@@ -1,11 +1,11 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Namorix.Core.FlatFile;
 using Namorix.Core.Infrastructure;
 using Namorix.Core.Services;
+using Namorix.Server.Flatfile;
+using Namorix.Server.Infrastructure;
+using Namorix.Server.Services;
 
-namespace Namorix.Core.Workers;
+namespace Namorix.Server.Workers.TrafficMonitor;
 
 public class TrafficFlushWorker(IFlatFileStore flatFileStore,
     TrafficMonitorService monitorService,

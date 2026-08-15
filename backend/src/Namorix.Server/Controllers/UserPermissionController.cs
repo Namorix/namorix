@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Namorix.Core.Attributes;
 using Namorix.Core.Middleware;
 using Namorix.Core.Responses;
 using Namorix.Server.Middleware;

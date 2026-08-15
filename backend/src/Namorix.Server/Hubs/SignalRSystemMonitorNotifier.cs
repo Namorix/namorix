@@ -8,5 +8,5 @@ public class SignalRSystemMonitorNotifier(IHubContext<MainHub> hubContext) : ISy
 {
     public async Task NotifyStatsAsync(object stats) =>
         await hubContext.Clients.Group(ServerSignalRGroups.SystemMonitor)
-            .SendAsync(ServerSignalREvent.SystemMonitorStatsUpdate, stats);
+            .SendAsync(ServerSignalREvents.SystemMonitorStatsUpdate, stats);
 }

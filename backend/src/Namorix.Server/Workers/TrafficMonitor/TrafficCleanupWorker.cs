@@ -1,9 +1,8 @@
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Namorix.Core.FlatFile;
 using Namorix.Core.IO;
+using Namorix.Server.Flatfile;
 
-namespace Namorix.Core.Workers;
+namespace Namorix.Server.Workers.TrafficMonitor;
 
 public class TrafficCleanupWorker(DataDirectory dataDir,
     ILogger<TrafficCleanupWorker> logger): BackgroundService

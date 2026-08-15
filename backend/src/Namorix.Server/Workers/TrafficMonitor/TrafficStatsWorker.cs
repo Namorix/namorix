@@ -1,15 +1,16 @@
-using Microsoft.Extensions.Hosting;
 using Namorix.Core.FlatFile;
 using Namorix.Core.IO;
 using Namorix.Core.Services;
+using Namorix.Server.Flatfile;
+using Namorix.Server.Services;
 
-namespace Namorix.Core.Workers;
+namespace Namorix.Server.Workers.TrafficMonitor;
 
 public class TrafficStatsWorker(IFlatFileStore flatFileStore,
     TrafficMonitorService monitorService,
     DataDirectory dataDir) : BackgroundService
 {
-    private readonly object _scanLock = new();
+    private readonly Lock _scanLock = new();
     private bool _scanning;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)

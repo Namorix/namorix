@@ -10,7 +10,7 @@ public class SignalRWardenNotifier(IHubContext<MainHub> hubContext) : IWardenNot
     public async Task NotifyNewEvent(WdSecurityEvent evt)
     {
         await hubContext.Clients.Group(ServerSignalRGroups.Warden)
-            .SendAsync(ServerSignalREvent.WardenNewEvent, new
+            .SendAsync(ServerSignalREvents.WardenNewEvent, new
             {
                 evt.Id, evt.EventType, evt.Severity, evt.SourceAddon,
                 evt.SourceIp, evt.Count, evt.Timestamp

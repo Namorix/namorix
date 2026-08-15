@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Routing;
 using Namorix.Core.Constants;
 using Namorix.Core.Hubs;
 using Namorix.Core.Middleware;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Namorix.Core.Extensions;
 
@@ -18,6 +19,8 @@ public static class ApplicationBuilderExtensions
         public IApplicationBuilder UseNamorixCore<THub>(Action<IApplicationBuilder>? configurePipeline = null,
             Action<IEndpointRouteBuilder>? configureEndpoints = null) where THub : NmxHub
         {
+            var options = app.ApplicationServices.GetService<NmxCoreOptions>();
+
             app.UseApiErrorHandling();
             app.UseSecurityHeaders();
     
@@ -30,7 +33,7 @@ public static class ApplicationBuilderExtensions
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapHub<THub>(SignalRPath.HubNamorix);
+                endpoints.MapHub<THub>(options?.HubPath ?? SignalRPath.HubNamorix);
                 configureEndpoints?.Invoke(endpoints);
             });
     

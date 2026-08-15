@@ -2,6 +2,7 @@
 
 public static class ServerSignalRGroups
 {
+    public const string Traffic = "traffic";
     public const string SystemMonitor = "system-monitor";
     public const string Addon = "addon";
     public const string Beacon = "beacon";
@@ -9,8 +10,10 @@ public static class ServerSignalRGroups
     public const string Warden = "warden"; 
 }
 
-public static class ServerSignalREvent
+public static class ServerSignalREvents
 {
+    public const string TrafficNewLogs = $"{ServerSignalRGroups.Traffic}:new-logs";
+    public const string TrafficStatsInit = $"{ServerSignalRGroups.Traffic}:stats-init";
     public const string SystemMonitorStatsUpdate = $"{ServerSignalRGroups.SystemMonitor}:stats-update";
     public const string AddonStatusChanged = $"{ServerSignalRGroups.Addon}:status-changed";
     public const string AddonPendingTaskChanged = $"{ServerSignalRGroups.Addon}:pending-task-changed";

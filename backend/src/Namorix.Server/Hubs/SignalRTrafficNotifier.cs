@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.SignalR;
-using Namorix.Core.Constants;
+using Namorix.Core.Hubs;
 using Namorix.Core.Infrastructure;
-using Namorix.Core.Services;
+using Namorix.Server.Constants;
+using Namorix.Server.Infrastructure;
+using Namorix.Server.Services;
 
-namespace Namorix.Core.Hubs;
+namespace Namorix.Server.Hubs;
 
 public class SignalRTrafficNotifier<THub>(IHubContext<THub> hubContext,
     TrafficMonitorService monitorService): ITrafficNotifier where THub: NmxHub
@@ -32,7 +34,7 @@ public class SignalRTrafficNotifier<THub>(IHubContext<THub> hubContext,
             },
         };
         await hubContext.Clients
-            .Group(SignalRGroups.Traffic)
-            .SendAsync(SignalREvents.TrafficNewLogs, payload);
+            .Group(ServerSignalRGroups.Traffic)
+            .SendAsync(ServerSignalREvents.TrafficNewLogs, payload);
     }
 }

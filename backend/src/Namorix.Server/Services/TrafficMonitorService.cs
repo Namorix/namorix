@@ -1,9 +1,10 @@
 using System.Diagnostics;
-using Namorix.Core.Filters;
 using Namorix.Core.FlatFile;
 using Namorix.Core.IO;
+using Namorix.Server.Filters;
+using Namorix.Server.Flatfile;
 
-namespace Namorix.Core.Services;
+namespace Namorix.Server.Services;
 
 public class TrafficMonitorService(IFlatFileStore flatFileStore, DataDirectory dataDir)
 {

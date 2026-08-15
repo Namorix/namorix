@@ -1,4 +1,4 @@
-namespace Namorix.Core.Constants;
+namespace Namorix.Server.Constants;
 
 public static class TrafficRoutes
 {

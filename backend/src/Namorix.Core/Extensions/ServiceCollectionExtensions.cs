@@ -26,52 +26,53 @@ namespace Namorix.Core.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddNamorixCore<THub>(this IServiceCollection services, bool isDevelopment = false)
+    public static IServiceCollection AddNamorixCore<THub>(this IServiceCollection services, bool isDevelopment = false,
+        Action<NmxCoreOptions>? configure = null)
         where THub: NmxHub
     {
-        services.Configure<KestrelServerOptions>(options =>
+        var options = new NmxCoreOptions();
+        configure?.Invoke(options);
+        services.AddSingleton(options);
+        
+        services.Configure<KestrelServerOptions>(opts =>
         {
-            options.Limits.MaxRequestBodySize = 10240;
+            opts.Limits.MaxRequestBodySize = 10240;
         });
         
         services.AddSingleton<FlatFileOptions>();
         services.AddSingleton<DataDirectory>(sp =>
-            new DataDirectory(sp.GetRequiredService<IOptions<AppConfig>>().Value.DataBasePath));
+            new DataDirectory(options?.DataBasePath
+                ?? sp.GetRequiredService<IOptions<AppConfig>>().Value.DataBasePath));
         services.AddSingleton<IFlatFileStore, FlatFileStore>();
-        services.AddSingleton<TrafficMonitorService>();
         services.AddSingleton<LogService>();
         services.AddSingleton<ILogNotifier, SignalRLogNotifier<THub>>();
         
         services.AddSingleton<ILoggerProvider>(sp =>
         {
-            var options = sp.GetRequiredService<FlatFileOptions>();
-            return new FileLoggerProvider(() => options.MinLogLevel);
+            var opts = sp.GetRequiredService<FlatFileOptions>();
+            return new FileLoggerProvider(() => opts.MinLogLevel);
         });
         
-        services.AddScoped<ITrafficNotifier, SignalRTrafficNotifier<THub>>();
         services.AddScoped<ISystemNotifier, SignalRSystemNotifier<THub>>();
         services.AddScoped<IUserSettingsNotifier, SignalRUserSettingsNotifier<THub>>();
         services.AddHostedService<LogFlushWorker>();
-        services.AddHostedService<TrafficFlushWorker>();
-        services.AddHostedService<TrafficCleanupWorker>();
-        services.AddHostedService<TrafficStatsWorker>();
         services.AddHostedService<LogCleanupWorker>();
         
-        services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+        services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(opts =>
         {
-            options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+            opts.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
         });
         
         services.AddMemoryCache();
-        services.AddSignalR(options =>
+        services.AddSignalR(opts =>
         {
-            options.AddFilter<NmxHubFilter>();
-            options.EnableDetailedErrors = isDevelopment;
+            opts.AddFilter<NmxHubFilter>();
+            opts.EnableDetailedErrors = isDevelopment;
         });
         
-        services.AddRateLimiter(options =>
+        services.AddRateLimiter(opts =>
         {
-            options.AddPolicy("Default", context =>
+            opts.AddPolicy("Default", context =>
                 context.Request.Path.StartsWithSegments(SignalRPath.HubPrefix)
                     ? RateLimitPartition.GetNoLimiter("signalr-hubs")
                     : RateLimitPartition.GetFixedWindowLimiter("Global", _ => new FixedWindowRateLimiterOptions
@@ -81,8 +82,8 @@ public static class ServiceCollectionExtensions
                         QueueLimit = 0,
                         QueueProcessingOrder = QueueProcessingOrder.OldestFirst
                     }));
-            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-            options.OnRejected = async (context, cancellationToken) =>
+            opts.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            opts.OnRejected = async (context, cancellationToken) =>
             {
                 context.HttpContext.Response.ContentType = System.Net.Mime.MediaTypeNames.Application.Json;
                 await context.HttpContext.Response.WriteAsJsonAsync(
@@ -91,21 +92,20 @@ public static class ServiceCollectionExtensions
             };
         });
         
-        services.Configure<ApiBehaviorOptions>(options =>
+        services.Configure<ApiBehaviorOptions>(opts =>
         {
-            options.SuppressModelStateInvalidFilter = true;
+            opts.SuppressModelStateInvalidFilter = true;
         });
         
-        services.AddControllers(options =>
+        services.AddControllers(opts =>
         {
-            options.Filters.Add<ValidationFilter>();
-            options.Filters.Add<TrafficMonitorFilter>();
-        }).AddJsonOptions(options =>
+            opts.Filters.Add<ValidationFilter>();
+        }).AddJsonOptions(opts =>
         {
-            options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-            options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
-            options.JsonSerializerOptions.Converters.Add(new UtcDateTimeJsonConverter());
+            opts.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+            opts.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+            opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+            opts.JsonSerializerOptions.Converters.Add(new UtcDateTimeJsonConverter());
         });
         
         services.AddCors();

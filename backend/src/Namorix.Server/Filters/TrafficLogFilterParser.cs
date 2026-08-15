@@ -1,4 +1,4 @@
-namespace Namorix.Core.Filters;
+namespace Namorix.Server.Filters;
 
 public static class TrafficLogFilterParser
 {

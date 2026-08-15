@@ -3,9 +3,11 @@ using Namorix.Core.Constants;
 using Namorix.Core.FlatFile;
 using Namorix.Core.Middleware;
 using Namorix.Core.Responses;
-using Namorix.Core.Services;
+using Namorix.Server.Constants;
+using Namorix.Server.Flatfile;
+using Namorix.Server.Services;
 
-namespace Namorix.Core.Controllers;
+namespace Namorix.Server.Controllers;
 
 [ApiController]
 [RequireAdmin]

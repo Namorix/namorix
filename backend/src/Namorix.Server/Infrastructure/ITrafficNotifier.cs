@@ -1,4 +1,4 @@
-namespace Namorix.Core.Infrastructure;
+namespace Namorix.Server.Infrastructure;
 
 public interface ITrafficNotifier
 {

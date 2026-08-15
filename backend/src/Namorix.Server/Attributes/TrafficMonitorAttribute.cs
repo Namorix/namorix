@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace Namorix.Core.Attributes;
+namespace Namorix.Server.Attributes;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class TrafficMonitorAttribute : Attribute

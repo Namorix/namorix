@@ -1,12 +1,13 @@
 using System.Diagnostics;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Namorix.Core.Attributes;
-using Namorix.Core.FlatFile;
 using Namorix.Core.Helpers;
 using Namorix.Core.Infrastructure;
+using Namorix.Server.Attributes;
+using Namorix.Server.Flatfile;
+using Namorix.Server.Infrastructure;
 
-namespace Namorix.Core.Filters;
+namespace Namorix.Server.Filters;
 
 public class TrafficMonitorFilter : IAsyncActionFilter
 {

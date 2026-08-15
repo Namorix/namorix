@@ -1,4 +1,6 @@
-namespace Namorix.Core.FlatFile;
+using Namorix.Core.FlatFile;
+
+namespace Namorix.Server.Flatfile;
 
 public enum TrafficSource { Api, Proxy }
 

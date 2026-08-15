@@ -11,7 +11,7 @@ public class SignalRFrontgateNotifier(IHubContext<MainHub>
     public async Task NotifyCertStatusChanged(string certId, FgCertificateStatus 
         status, string? issuer, DateTime? expiresAt)
     {
-        await hubContext.Clients.Group(ServerSignalRGroups.Frontgate).SendAsync(ServerSignalREvent.FrontgateCertStatusChanged, new
+        await hubContext.Clients.Group(ServerSignalRGroups.Frontgate).SendAsync(ServerSignalREvents.FrontgateCertStatusChanged, new
         {
             certId,
             status = status.ToString().ToLowerInvariant(),
@@ -22,7 +22,7 @@ public class SignalRFrontgateNotifier(IHubContext<MainHub>
     
     public async Task NotifyDryRunChanged(string ruleId, FgDryRunAction action)
     {
-        await hubContext.Clients.Group(ServerSignalRGroups.Frontgate).SendAsync(ServerSignalREvent.FrontgateDryRunChanged, new
+        await hubContext.Clients.Group(ServerSignalRGroups.Frontgate).SendAsync(ServerSignalREvents.FrontgateDryRunChanged, new
         {
             ruleId,
             action = action.ToString().ToLowerInvariant()
@@ -31,7 +31,7 @@ public class SignalRFrontgateNotifier(IHubContext<MainHub>
     
     public async Task NotifyRuleChanged(string ruleId, FgRuleAction action)
     {
-        await hubContext.Clients.Group(ServerSignalRGroups.Frontgate).SendAsync(ServerSignalREvent.FrontgateRuleChanged, new
+        await hubContext.Clients.Group(ServerSignalRGroups.Frontgate).SendAsync(ServerSignalREvents.FrontgateRuleChanged, new
         {
             ruleId,
             action = action.ToString().ToLowerInvariant()
@@ -40,7 +40,7 @@ public class SignalRFrontgateNotifier(IHubContext<MainHub>
     
     public async Task NotifyCertChanged(string certId, FgCertAction action)
     {
-        await hubContext.Clients.Group(ServerSignalRGroups.Frontgate).SendAsync(ServerSignalREvent.FrontgateCertChanged, new
+        await hubContext.Clients.Group(ServerSignalRGroups.Frontgate).SendAsync(ServerSignalREvents.FrontgateCertChanged, new
         {
             certId,
             action = action.ToString().ToLowerInvariant()
@@ -50,7 +50,7 @@ public class SignalRFrontgateNotifier(IHubContext<MainHub>
     public async Task NotifyAuditCreated(FgAuditTargetType targetType, string? targetId, FgAuditAction action)
     {
         await hubContext.Clients.Group(ServerSignalRGroups.Frontgate).SendAsync(
-            ServerSignalREvent.FrontgateAuditCreated, new
+            ServerSignalREvents.FrontgateAuditCreated, new
             {
                 targetType = targetType.ToString().ToLowerInvariant(),
                 targetId,
