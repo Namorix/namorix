@@ -1,10 +1,13 @@
 import React from "react"
-import { cx } from "../../utils"
-import type { WithBaseProps } from "../../types"
+import {cx, cxSpacing} from "../../utils"
+import type {NmxSpacing, WithBaseProps} from "../../types"
 
-type NmxCardFooterProps = WithBaseProps
+interface NmxCardFooterProps extends WithBaseProps {
+  spacingBottom?: NmxSpacing | null
+}
 
 export const NmxCardFooter: React.FC<NmxCardFooterProps> = ({
+  spacingBottom = null,
   shouldRender = true,
   className,
   children,
@@ -15,7 +18,7 @@ export const NmxCardFooter: React.FC<NmxCardFooterProps> = ({
   }
 
   return (
-    <div {...rest} className={cx("nmx-card__footer", className)}>
+    <div {...rest} className={cx("nmx-card__footer", spacingBottom && cxSpacing("nmx-card__footer", spacingBottom), className)}>
       {children}
     </div>
   )

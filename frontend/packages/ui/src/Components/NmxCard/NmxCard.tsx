@@ -23,6 +23,7 @@ export const NmxCard: React.FC<NmxCardProps> = ({
       {...rest}
       className={cx(
         "nmx-card",
+        onClick && "nmx-card--clickable",
         spacing === "none" && "nmx-card-spacing--none",
         spacing && spacing !== "none" && cxSpacing("nmx-card", spacing),
         className,

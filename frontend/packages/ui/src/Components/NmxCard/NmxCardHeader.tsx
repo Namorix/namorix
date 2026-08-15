@@ -1,12 +1,13 @@
 import React from "react"
-import { cx } from "../../utils"
-import type { WithBaseProps } from "../../types"
+import {cx, cxSpacing} from "../../utils"
+import type {NmxSpacing, WithBaseProps} from "../../types"
 
 export interface NmxCardHeaderProps extends WithBaseProps {
   title?: string
   description?: string
   titleClassName?: string
   descriptionClassName?: string
+  spacing?: NmxSpacing | null
 }
 
 export const NmxCardHeader: React.FC<NmxCardHeaderProps> = ({
@@ -14,6 +15,7 @@ export const NmxCardHeader: React.FC<NmxCardHeaderProps> = ({
   description,
   titleClassName,
   descriptionClassName,
+  spacing = null,
   shouldRender = true,
   className,
   ...rest
@@ -23,7 +25,7 @@ export const NmxCardHeader: React.FC<NmxCardHeaderProps> = ({
   }
 
   return (
-    <div {...rest} className={cx("nmx-card__header", className)}>
+    <div {...rest} className={cx("nmx-card__header", spacing && cxSpacing("nmx-card__header", spacing), className)}>
       <h2 className={cx("nmx-card__header-title", titleClassName)}>{title}</h2>
       {description && (
         <p className={cx("nmx-card__header-description", descriptionClassName)}>

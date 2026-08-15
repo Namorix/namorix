@@ -1,16 +1,18 @@
 import React from "react"
-import type { WithBaseProps } from "../../types"
-import { cx } from "../../utils"
+import type {NmxSpacing, WithBaseProps} from "../../types"
+import {cx, cxSpacing} from "../../utils"
 import { useNmxTabContext } from "../NmxTabContext"
 
 export interface NmxToolbarContentProps<
   T extends string = string,
 > extends WithBaseProps {
   tabKey?: T
+  spacing?: NmxSpacing | null
 }
 
 export const NmxToolbarContent = <T extends string = string>({
   tabKey,
+  spacing = null,
   shouldRender = true,
   className,
   children,
@@ -20,14 +22,14 @@ export const NmxToolbarContent = <T extends string = string>({
 
   if (!tabKey) {
     return (
-      <div {...rest} className={cx("nmx-toolbar-content", className)}>
+      <div {...rest} className={cx("nmx-toolbar-content", spacing && cxSpacing("nmx-toolbar-content", spacing), className)}>
         {children}
       </div>
     )
   }
 
   return (
-    <NmxTabContentInner tabKey={tabKey} className={className}>
+    <NmxTabContentInner tabKey={tabKey} className={cx(spacing && cxSpacing("nmx-toolbar-content", spacing), className)}>
       {children}
     </NmxTabContentInner>
   )
