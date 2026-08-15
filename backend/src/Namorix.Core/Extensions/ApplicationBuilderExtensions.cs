@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Namorix.Core.Constants;
 using Namorix.Core.Hubs;
@@ -59,6 +60,21 @@ public static class ApplicationBuilderExtensions
         public void UseNotFoundHandler()
         {
             app.UseMiddleware<NotFoundMiddleware>();
+        }
+
+        public IApplicationBuilder UseChromeDevToolsProbe404()
+        {
+            // Chrome DevTools polls this path on page load; 404 it before session auth / YARP
+            // so it neither triggers a session DB lookup nor gets proxied to the Vite dev server.
+            app.Map("/.well-known/appspecific/com.chrome.devtools.json", static branch =>
+            {
+                branch.Run(static context =>
+                {
+                    context.Response.StatusCode = StatusCodes.Status404NotFound;
+                    return Task.CompletedTask;
+                });
+            });
+            return app;
         }
     }
 }
