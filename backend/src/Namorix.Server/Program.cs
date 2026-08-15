@@ -151,6 +151,7 @@ builder.Services.AddHttpClient<CatalogService>(client =>
 });
 
 builder.Services.AddNamorixCore<MainHub>(builder.Environment.IsDevelopment());
+builder.Services.AddNamorixTrafficMonitoring<MainHub>();
 
 builder.Services.AddHostedService<TokenCleanupWorker>();
 builder.Services.AddHostedService<NotificationCleanupWorker>();
@@ -207,10 +208,9 @@ if (app.Environment.IsProduction())
     db.Database.Migrate();
 }
 
-app.Logger.LogInformation("Serving static files from: {PathPublic}", pathPublic);
 await app.Services.GetRequiredService<FrontgateProxyConfigProvider>().UpdateAsync();
 
-// API port (backendConfig.Port = 5001): full pipeline
+// API port (backendConfig.Port = 5000): full pipeline
 app.UseWhen(ctx => ctx.Connection.LocalPort == backendConfig.Port, api =>
 {
     api.UseApiErrorHandling();
@@ -226,11 +226,14 @@ app.UseWhen(ctx => ctx.Connection.LocalPort == backendConfig.Port, api =>
         await next();
     });
     
-    api.UseStaticFiles(new StaticFileOptions
+    if (!app.Environment.IsDevelopment())
     {
-        FileProvider = new PhysicalFileProvider(pathPublic)
-    });
-    
+        api.UseStaticFiles(new StaticFileOptions
+        {
+            FileProvider = new PhysicalFileProvider(pathPublic)
+        });
+    }
+
     api.UseCors(policy =>
     {
         policy.SetIsOriginAllowed(origin =>
@@ -263,10 +266,13 @@ app.UseWhen(ctx => ctx.Connection.LocalPort == backendConfig.Port, api =>
     api.UseRateLimiter();
     api.UseEndpoints(endpoints =>
     {
-        endpoints.MapFallbackToFile("index.html", new StaticFileOptions
+        if (!app.Environment.IsDevelopment())
         {
-            FileProvider = new PhysicalFileProvider(pathPublic)
-        });
+            endpoints.MapFallbackToFile("index.html", new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(pathPublic)
+            });
+        }
         endpoints.MapControllers();
         endpoints.MapHub<MainHub>(SignalRPath.HubNamorix);
         endpoints.MapReverseProxy();

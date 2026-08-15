@@ -5,8 +5,8 @@ services:
     restart: unless-stopped
     pull_policy: always
     ports:
+      - "5000:5000"
       - "5001:5001"
-      - "5002:5002"
       - "80:80"
       - "443:443"
     volumes:

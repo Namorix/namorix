@@ -2,7 +2,9 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Namorix.Server.Config;
 using Namorix.Server.Models.Frontgate;
 using Namorix.Server.Persistence;
 using Yarp.ReverseProxy.Configuration;
@@ -10,7 +12,10 @@ using Yarp.ReverseProxy.Forwarder;
 
 namespace Namorix.Server.Services.Frontgate;
 
-public class FrontgateProxyConfigProvider(IServiceScopeFactory scopeFactory) : IProxyConfigProvider
+public class FrontgateProxyConfigProvider(
+    IServiceScopeFactory scopeFactory,
+    IWebHostEnvironment env,
+    IOptions<FrontendConfig> frontend) : IProxyConfigProvider
 {
     private FrontgateProxyConfig _config = new([], []);
     public ConcurrentDictionary<string, byte> ForceSslSources { get; } = new();
@@ -124,6 +129,32 @@ public class FrontgateProxyConfigProvider(IServiceScopeFactory scopeFactory) : I
                     Transforms = transforms.Count > 0 ? transforms : null,
                 });
             }
+        }
+
+        if (env.IsDevelopment())
+        {
+            // Dev-only: Kestrel (API port) is the sole entry — anything the app requests
+            // that isn't /api|/hubs (assets, @vite/client, HMR websocket) forwards to Vite.
+            var viteClusterId = "dev:vite";
+            clusters[viteClusterId] = new ClusterConfig
+            {
+                ClusterId = viteClusterId,
+                Destinations = new Dictionary<string, DestinationConfig>
+                {
+                    ["default"] = new() { Address = frontend.Value.BaseUrl }
+                }
+            };
+            
+            routes.Add(new RouteConfig
+            {
+                RouteId = viteClusterId,
+                ClusterId = viteClusterId,
+                Match = new RouteMatch
+                {
+                    Hosts = ["localhost", "127.0.0.1"],
+                    Path = "{**catch-all}"
+                }
+            });
         }
 
         var oldConfig = _config;

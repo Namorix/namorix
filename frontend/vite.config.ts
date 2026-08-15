@@ -28,8 +28,8 @@ const getBackendVersionXML = (path: string): string => {
 
 export default defineConfig((config) => {
   const env = loadEnv(config.mode, new URL(".", import.meta.url).pathname, "")
-  const frontendPort = parseInt(env.DESKTOP_FRONTEND_PORT || "5000", 10)
-  const backendPort = parseInt(env.DESKTOP_BACKEND_PORT || "5001", 10)
+  const frontendPort = parseInt(env.DESKTOP_FRONTEND_PORT || "5002", 10)
+  const backendPort = parseInt(env.DESKTOP_BACKEND_PORT || "5000", 10)
   const desktopHost = env.DESKTOP_HOST ?? "http://localhost"
   const backendOrigin = `${desktopHost}:${backendPort}`
 
@@ -53,6 +53,9 @@ export default defineConfig((config) => {
       port: frontendPort,
       hmr: {
         port: frontendPort,
+        // Browser connects HMR websocket through Kestrel (backendPort) in dev,
+        // which YARP forwards to this Vite server.
+        clientPort: backendPort,
       },
       allowedHosts: true,
       proxy: {

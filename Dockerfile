@@ -41,5 +41,5 @@ COPY backend/src/Namorix.Server/data/GeoLite2-Country.mmdb /app/GeoLite2-Country
 RUN test -s /app/GeoLite2-Country.mmdb \
     || (echo "ERROR: backend/src/Namorix.Server/data/GeoLite2-Country.mmdb missing or empty — run backend once to generate it" >&2 && exit 1)
 
-EXPOSE 5001 5002 80 443
+EXPOSE 5000 5001 80 443
 ENTRYPOINT ["dotnet", "Namorix.Server.dll"]
