@@ -123,9 +123,23 @@
   }
 }
 
+.nmx-toolbar-container {
+  @include flex-fill-column;
+  container-type: inline-size;
+  container-name: toolbar-container;
+}
+
 .nmx-toolbar-content {
+  margin: 0 auto;
+  width: 100%;
   padding: var(--nmx-toolbar-content-spacing);
   @include flex-fill-column;
 
   @include spacings(nmx-toolbar-content);
+}
+
+@container toolbar-container (min-width: #{$nmx-breakpoint-lg}){
+  .nmx-toolbar-content {
+    max-width: 960px;
+  }
 }

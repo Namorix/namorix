@@ -8,8 +8,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--nmx-spacing-md) var(--nmx-spacing-lg);
-    border: 1px solid var(--nmx-color-surface-lowest);
+    padding: var(--nmx-spacing-sm) var(--nmx-spacing-md);
+    border: none;
     background: var(--nmx-color-surface-lowest);
     color: var(--nmx-color-on-surface-variant);
     border-radius: var(--nmx-radius-md);
@@ -22,7 +22,6 @@
     &--open {
       color: var(--nmx-color-on-surface);
       background: var(--nmx-color-surface-mid);
-      border: 1px solid var(--nmx-color-surface-mid);
     }
   }
 

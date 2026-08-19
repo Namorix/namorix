@@ -65,11 +65,18 @@
   letter-spacing: var(--nmx-letter-spacing-wide);
 }
 
-.nmx-button__live,
-.nmx-button__refresh,
-.nmx-button__clear {
+.nmx-button__action {
   padding: var(--nmx-spacing-md);
   font-size: var(--nmx-font-size-lg);
+}
+
+.nmx-button__action--has-title {
+  padding: var(--nmx-spacing-sm) var(--nmx-spacing-lg);
+  font-size: var(--nmx-font-size-sm);
+}
+
+.nmx-button__action-title {
+  font-size: var(--nmx-font-size-xs);
 }
 
 .nmx-button--outline {
