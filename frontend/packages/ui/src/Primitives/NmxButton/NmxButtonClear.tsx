@@ -1,23 +1,20 @@
 import React from "react"
-import { NmxIconFont, NmxIconFontSymbol } from "../NmxIcon"
-import { NmxButton } from "./NmxButton"
+import { NmxIconFontSymbol } from "../NmxIcon"
+import {
+  NmxButtonAction,
+  type NmxButtonActionBaseProps,
+} from "./NmxButtonAction"
 
-interface NmxButtonClearProps {
-  onClick?: () => void
-  title?: string
-}
-
-export const NmxButtonClear: React.FC<NmxButtonClearProps> = ({
+export const NmxButtonClear: React.FC<NmxButtonActionBaseProps> = ({
   onClick,
-  title = "Clear",
+  title = null,
 }) => (
-  <NmxButton
+  <NmxButtonAction
     title={title}
+    icon={NmxIconFontSymbol.DELETE}
     onClick={onClick}
     className="nmx-button__clear"
     variant="ghost"
     semantic="error"
-  >
-    <NmxIconFont symbol={NmxIconFontSymbol.DELETE} />
-  </NmxButton>
+  />
 )

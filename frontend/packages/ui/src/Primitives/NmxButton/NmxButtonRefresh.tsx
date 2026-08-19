@@ -1,22 +1,17 @@
 import React from "react"
-import { NmxIconFont, NmxIconFontSymbol } from "../NmxIcon"
-import { NmxButton } from "./NmxButton"
+import { NmxIconFontSymbol } from "../NmxIcon"
+import {
+  NmxButtonAction,
+  type NmxButtonActionBaseProps,
+} from "./NmxButtonAction"
 
-interface NmxButtonRefreshProps {
-  onClick?: () => void
-  title?: string
-}
-
-export const NmxButtonRefresh: React.FC<NmxButtonRefreshProps> = ({
+export const NmxButtonRefresh: React.FC<NmxButtonActionBaseProps> = ({
   onClick,
-  title = "Refresh",
+  title = null,
 }) => (
-  <NmxButton
+  <NmxButtonAction
+    icon={NmxIconFontSymbol.REFRESH}
     title={title}
     onClick={onClick}
-    className="nmx-button__refresh"
-    variant="ghost"
-  >
-    <NmxIconFont symbol={NmxIconFontSymbol.REFRESH} />
-  </NmxButton>
+  />
 )

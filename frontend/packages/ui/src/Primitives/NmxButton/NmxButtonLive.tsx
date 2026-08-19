@@ -1,25 +1,21 @@
 import React from "react"
-import { NmxIconFont, NmxIconFontSymbol } from "../NmxIcon"
-import { NmxButton } from "./NmxButton"
+import { NmxIconFontSymbol } from "../NmxIcon"
+import { NmxButtonAction } from "./NmxButtonAction"
 
 interface NmxButtonLiveProps {
   live: boolean
-  onToggle?: () => void
+  onToggle?: (e: React.MouseEvent) => void
 }
 
 export const NmxButtonLive: React.FC<NmxButtonLiveProps> = ({
   live,
   onToggle,
 }) => (
-  <NmxButton
-    title={live ? "Pause live" : "Resume live"}
+  <NmxButtonAction
+    icon={live ? NmxIconFontSymbol.PAUSE : NmxIconFontSymbol.PLAY}
+    tooltip={live ? "Pause live" : "Resume live"}
     onClick={onToggle}
-    className="nmx-button__live"
     semantic={live ? "success" : "error"}
     variant="ghost"
-  >
-    <NmxIconFont
-      symbol={!live ? NmxIconFontSymbol.PLAY : NmxIconFontSymbol.PAUSE}
-    />
-  </NmxButton>
+  />
 )
