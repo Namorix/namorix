@@ -2,6 +2,7 @@ import { HubConnectionState } from "@microsoft/signalr"
 import { useEffect, useRef } from "react"
 import type { SignalrService } from "./signalr.service"
 import type { SignalRGroups } from "./constants"
+import type { SignalRStatus } from "./types"
 import { groupMethod } from "./utils"
 
 export function useSignalRGroup<
@@ -20,20 +21,26 @@ export function useSignalRGroup<
     if (!conn) return
 
     const doSub = async () => {
-      await conn.invoke(subMethod)
-      subbed.current = true
+      if (conn.state !== HubConnectionState.Connected) return
+      try {
+        await conn.invoke(subMethod)
+        subbed.current = true
+      } catch (err) {
+        console.warn(`${subMethod} failed:`, err)
+      }
     }
 
-    doSub().catch((err) => console.warn(`${subMethod} failed:`, err))
-
-    const onReconnected = () => {
-      if (!subbed.current)
-        doSub().catch((err) => console.warn(`${subMethod} failed:`, err))
+    // The connection may still be starting when this effect runs — subscribe
+    // only once the hub reports "connected" (initial start or reconnect).
+    const onStatus = (status: SignalRStatus) => {
+      if (status === "connected") void doSub()
     }
-    conn.onreconnected(onReconnected)
+    client.addStatusHandler(onStatus)
+    void doSub()
 
     return () => {
       subbed.current = false
+      client.removeStatusHandler(onStatus)
       if (conn.state !== HubConnectionState.Connected) return
       conn
         .invoke(unsubMethod)
