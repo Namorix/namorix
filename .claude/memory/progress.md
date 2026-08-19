@@ -1,5 +1,14 @@
 # Version History — August 2026
 
+## 2026-08-19 — OAuth callback error contract (invalid_grant/invalid_request) + middleware Content-Length fix; NmxToolbarContainer + NmxButtonAction; useSignalRGroup subscribe race fix
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| Namorix.Core | 0.59.0 → 0.60.0 | NEW: `AddonSession/OAuthCallbackException.cs` — exception có `ErrorCode` cho lỗi OAuth callback. MODIFIED: `AddonSession/AddonSessionAuthService.cs` — state mismatch → `OAuthCallbackException(invalid_request)`; catch `RpcException` (InvalidArgument/Unauthenticated/PermissionDenied — desktop reject code invalid/expired, sai machine token/client_id) → `OAuthCallbackException(invalid_grant)`; `AddonSession/AddonSessionAuthController.cs` — catch `OAuthCallbackException` → `400 OAuthErrorResponse(ErrorCode, Message)`, fallback `InvalidOperationException` → `OAuthErrorResponse(invalid_request, ...)` (trước `{ error = message }`); `Constants/Error.cs` +`OAuthErrors.InvalidRequest`. FIXED: `Middleware/ExceptionMiddleware.cs` + `JsonErrorMiddleware.cs` + `NotFoundMiddleware.cs` — `Response.ContentLength = null` trước `WriteAsJsonAsync` (fix Kestrel "Response Content-Length mismatch: too many bytes written" khi middleware viết JSON lỗi sau response đã bắt đầu). |
+| @namorix/core | 0.67.1 → 0.67.2 | FIXED: `signalr/useSignalRGroup.ts` — subscribe sau khi connection báo `"connected"` qua `client.addStatusHandler` + guard `HubConnectionState.Connected` (trước `conn.invoke` chạy ngay trong effect khi connection chưa sẵn sàng → "Cannot send data if the connection is not in the 'Connected' State"; bỏ `conn.onreconnected`). |
+| @namorix/ui | 0.49.0 → 0.50.0 | NEW: `Components/NmxToolbar/NmxToolbarContainer.tsx` — container (`.nmx-toolbar-container`, flex-fill-column + `container-type: inline-size`); `Primitives/NmxButton/NmxButtonAction.tsx` — base action button (icon bắt buộc + `title?`/`tooltip?`, ghost→filled khi có title). MODIFIED: `NmxButtonClear`/`NmxButtonLive`/`NmxButtonRefresh` refactor sang `NmxButtonAction` (bỏ trùng lặp); `NmxButton` +`tooltip` prop (`title = title \|\| tooltip`); `NmxToolbar/index.ts` + `NmxButton/index.ts` export mới. |
+| @namorix/styles | 0.58.0 → 0.59.0 | MODIFIED: `base/components/button.scss` — +`.nmx-button__action`/`--has-title`/`__action-title` (thay `.nmx-button__live/__refresh/__clear`); `select-multiple.scss` — compact padding, bỏ border; `toolbar.scss` — +`.nmx-toolbar-container` + `@container` query (`.nmx-toolbar-content` max-width 960px khi ≥ `$nmx-breakpoint-lg`). |
+
 ## 2026-08-15 — NmxCard spacing/empty/clickable + NmxToolbarContent spacing + NmxToolbarHeader onBack wiring
 
 | Package | Version | Changes |

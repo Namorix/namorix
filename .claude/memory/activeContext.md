@@ -27,6 +27,14 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [versionHistory-08-2026.md](versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-08-19 — OAuth callback error contract + middleware Content-Length fix; NmxToolbarContainer + NmxButtonAction; useSignalRGroup subscribe race fix (@namorix/core 0.67.2 / @namorix/ui 0.50.0 / @namorix/styles 0.59.0 / Namorix.Core 0.60.0)
+
+- **Namorix.Core 0.60.0:** NEW `OAuthCallbackException` (ErrorCode) + map trong `AddonSessionAuthService` — state mismatch → `invalid_request`, desktop reject code (RpcException InvalidArgument/Unauthenticated/PermissionDenied) → `invalid_grant`; `AddonSessionAuthController` trả `400 OAuthErrorResponse(ErrorCode, Message)` (fallback `invalid_request`, trước `{ error = message }`); `Error.cs` +`OAuthErrors.InvalidRequest`. FIXED: `ExceptionMiddleware`/`JsonErrorMiddleware`/`NotFoundMiddleware` set `Response.ContentLength = null` trước `WriteAsJsonAsync` (hết "Response Content-Length mismatch: too many bytes written").
+- **@namorix/core 0.67.2:** `useSignalRGroup` — subscribe sau khi connection `"connected"` (addStatusHandler + guard `HubConnectionState.Connected`) → hết "Cannot send data if the connection is not in the 'Connected' State" (consumer: weave `NetworkView`, LogViewer group subscribe).
+- **@namorix/ui 0.50.0:** NEW `NmxToolbarContainer` (container-type inline-size) + `NmxButtonAction` (base action button, icon + title/tooltip); refactor `NmxButtonClear`/`NmxButtonLive`/`NmxButtonRefresh` sang `NmxButtonAction`; `NmxButton` +`tooltip`.
+- **@namorix/styles 0.59.0:** `button.scss` +`nmx-button__action*`; `select-multiple.scss` compact (padding sm/md, bỏ border); `toolbar.scss` +`.nmx-toolbar-container` + `@container` max-width 960px ≥ lg.
+- Versions: @namorix/core 0.67.2 / @namorix/ui 0.50.0 / @namorix/styles 0.59.0 / Namorix.Core 0.60.0 (Namorix.Server không đổi — không bump).
+
 ### 2026-08-15 — NmxCard spacing/empty/clickable + NmxToolbarContent spacing + NmxToolbarHeader onBack wiring (@namorix/ui 0.49.0 / @namorix/styles 0.58.0)
 
 - **@namorix/ui 0.49.0:** `NmxCard` +`nmx-card--clickable` class khi có `onClick` (hover `--nmx-color-surface-mid`); `NmxCardBody` +`isEmpty` prop (`nmx-card__body--empty` placeholder); `NmxCardHeader` +`spacing` / `NmxCardFooter` +`spacingBottom` / `NmxToolbarContent` +`spacing` (đều qua `cxSpacing`); **`NmxToolbarHeader` wire `onClick={onBack}`** vào `.nmx-toolbar-header__action-back` — back-action giờ click được (trước chỉ hiện chevron, chưa wire). Consumer đầu tiên = weave `ThreadNetworkView` (`onBack` → `NetworkView`).
