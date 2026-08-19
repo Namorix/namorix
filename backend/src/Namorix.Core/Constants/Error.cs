@@ -58,6 +58,7 @@ public static class OAuthErrors
     public const string UnsupportedGrantType = "unsupported_grant_type";
     public const string InvalidGrant = "invalid_grant";
     public const string InvalidClient = "invalid_client";
+    public const string InvalidRequest = "invalid_request";
 }
 
 public static class OAuthRegisterErrors

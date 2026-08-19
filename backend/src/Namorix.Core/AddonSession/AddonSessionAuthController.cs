@@ -2,6 +2,8 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Namorix.Core.Constants;
+using Namorix.Core.OAuth;
 
 namespace Namorix.Core.AddonSession;
 
@@ -25,9 +27,13 @@ public sealed class AddonSessionAuthController(
         {
             session = await oauth.CompleteLoginAsync(code, state, ct);
         }
+        catch (OAuthCallbackException ex)
+        {
+            return BadRequest(new OAuthErrorResponse(ex.ErrorCode, ex.Message));
+        }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { error = ex.Message });
+            return BadRequest(new OAuthErrorResponse(OAuthErrors.InvalidRequest, ex.Message));
         }
 
         var opts = options.Value;

@@ -42,6 +42,7 @@ public class JsonErrorMiddleware(RequestDelegate requestDelegate)
             !httpContext.Items.ContainsKey(HttpContextKeys.Validated))
         {
             if (httpContext.Response.HasStarted) return;
+            httpContext.Response.ContentLength = null;
             httpContext.Response.ContentType = System.Net.Mime.MediaTypeNames.Application.Json;
             await httpContext.Response.WriteAsJsonAsync(
                 ApiResponse.Fail(MiddlewareErrorCodes.InvalidRequestBody));

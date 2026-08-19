@@ -12,6 +12,7 @@ public class NotFoundMiddleware(RequestDelegate requestDelegate)
 
         if (httpContext.Response is { StatusCode: StatusCodes.Status404NotFound, HasStarted: false })
         {
+            httpContext.Response.ContentLength = null;
             httpContext.Response.ContentType = System.Net.Mime.MediaTypeNames.Application.Json;
             await httpContext.Response.WriteAsJsonAsync(
                 ApiResponse.Fail(HttpErrorCodes.NotFound, "Endpoint not found"));

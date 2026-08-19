@@ -2,9 +2,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using Grpc.Core;
 using Microsoft.Extensions.Options;
+using Namorix.Core.Constants;
 using Namorix.Core.Grpc;
 using Namorix.Core.OAuth;
+using Namorix.Core.Protos;
 
 namespace Namorix.Core.AddonSession;
 
@@ -43,11 +46,26 @@ public sealed class AddonSessionAuthService(
         string code, string state, CancellationToken ct)
     {
         if (!cache.TryGetValue(StatePrefix + state, out _))
-            throw new InvalidOperationException("OAuth state mismatch or login flow expired.");
+            throw new OAuthCallbackException(OAuthErrors.InvalidRequest,
+                "OAuth state mismatch or login flow expired");
         cache.Remove(StatePrefix + state);
 
         await oauth.CreateClientAssertionAsync(ct);
-        var result = await channel.ExchangeUserCodeAsync(code, oauth.ClientId!, ct);
+
+        OAuthTokenResult result;
+        try
+        {
+            result = await channel.ExchangeUserCodeAsync(code, oauth.ClientId!, ct);
+        }
+        catch (RpcException ex) when (ex.StatusCode is StatusCode.InvalidArgument
+            or StatusCode.Unauthenticated or StatusCode.PermissionDenied)
+        {
+            // Desktop rejects the code (invalid/expired) or the addon's machine token/client_id is wrong.
+            // Surface as an OAuth callback error so Callback returns a clean 400 with the right code.
+            throw new OAuthCallbackException(OAuthErrors.InvalidGrant,
+                "Invalid or expired authorization code", ex);
+        }
+
         logger.LogInformation("User {UserId} logged in via desktop OAuth", result.UserId);
 
         return await sessions.CreateAsync(

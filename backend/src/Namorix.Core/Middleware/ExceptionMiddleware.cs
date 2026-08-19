@@ -27,6 +27,7 @@ public class ExceptionMiddleware(RequestDelegate requestDelegate, ILogger<Except
             }
             
             httpContext.Response.Body = originalBody;
+            httpContext.Response.ContentLength = null;
             httpContext.Response.ContentType = System.Net.Mime.MediaTypeNames.Application.Json;
             httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
             await httpContext.Response.WriteAsJsonAsync(ApiResponse.Fail(HttpErrorCodes.InternalError,
