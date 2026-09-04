@@ -27,6 +27,13 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [progress.md](progress.md) (September 2026), [versionHistory-08-2026.md](../archive/versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-09-04 — About addon hiện version runtime backend (AboutController + ApiAboutRoutes) (Namorix.Server 0.78.3 / @namorix/core 0.67.3 / frontend 0.90.2)
+
+- **Namorix.Server 0.78.3:** NEW `Controllers/AboutController.cs` — `GET /api/about` trả `AssemblyInformationalVersion` của Namorix.Core + Namorix.Server lúc runtime (`info.core`/`info.server`, bọc `ApiResponse.Ok`). Không còn bake version từ vite lúc build → hết lệch version giữa frontend bundle và backend đang chạy (vd image cũ báo 0.77.0 dù csproj 0.78.2).
+- **@namorix/core 0.67.3:** `apiRoutes.ts` — +`ApiAboutRoutes` (`base = API_BASE + "/about"`).
+- **frontend 0.90.2:** NEW `addons/About/about.controller.ts` — `aboutController.getInfo()` qua `coreConfig.http`. MODIFIED `addons/About/About.tsx` — `useEffect` gọi `getInfo()` khi mount; 2 dòng meta Namorix.Core/Namorix.Server lấy từ runtime (`info?.core`/`info?.server`) fallback về hằng baked `__BACKEND_*__` khi load/lỗi.
+- Versions: Namorix.Server 0.78.2 → 0.78.3 / @namorix/core 0.67.2 → 0.67.3 / frontend 0.90.1 → 0.90.2 (ui/styles/Namorix.Core không đổi — không bump).
+
 ### 2026-09-04 — Frontgate redirect loop HTTP→HTTPS fix (Namorix.Server 0.78.2)
 
 - **Namorix.Server 0.78.2:** `Middleware/Frontgate/RewriteRedirectLocationMiddleware.cs` — Location 301 `http→https` do `ForceSslMiddleware` sinh ra từng bị rewrite scheme ngược về `http` (middleware dùng `Request.Scheme` làm fallback, mà chính request đang là http nên scheme bị hạ) → `ERR_TOO_MANY_REDIRECT`. Fix: chỉ override scheme khi có header `X-Forwarded-Proto`; Location absolute giữ nguyên scheme đích, chỉ rewrite host/port.
