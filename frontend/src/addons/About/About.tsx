@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect, useState } from "react"
 import {
   NmxIconSvg,
   NmxIconSvgSymbol,
@@ -14,6 +14,7 @@ import {
   NMX_GITHUB_REPOSITORY_ISSUES,
   NMX_NAME,
 } from "@namorix/core"
+import { aboutController, type AboutInfo } from "./about.controller"
 
 declare const __APP_VERSION__: string
 declare const __CORE_VERSION__: string
@@ -24,6 +25,20 @@ declare const __BACKEND_SERVER_VERSION__: string
 
 export const About: React.FC = () => {
   const { t } = useTranslation()
+  const [info, setInfo] = useState<AboutInfo | null>(null)
+
+  useEffect(() => {
+    let active = true
+    aboutController
+      .getInfo()
+      .then((data) => {
+        if (active) setInfo(data)
+      })
+      .catch(() => undefined)
+    return () => {
+      active = false
+    }
+  }, [])
 
   return (
     <NmxAddonRoot className="nmx-addon-about-wrap">
@@ -71,13 +86,13 @@ export const About: React.FC = () => {
         <NmxMetaList className="nmx-addon-about__meta-list">
           <NmxMetaItem
             label="Namorix.Core"
-            value={__BACKEND_CORE_VERSION__}
+            value={info?.core ?? __BACKEND_CORE_VERSION__}
             className="nmx-addon-about__meta-item"
             alignValue="end"
           />
           <NmxMetaItem
             label="Namorix.Server"
-            value={__BACKEND_SERVER_VERSION__}
+            value={info?.server ?? __BACKEND_SERVER_VERSION__}
             className="nmx-addon-about__meta-item"
             alignValue="end"
           />
