@@ -25,7 +25,12 @@ M4 — External Addon System ✅ Complete
 
 ## Recent Changes
 
-Xem chi tiết tại [versionHistory-08-2026.md](versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
+Xem chi tiết tại [progress.md](progress.md) (September 2026), [versionHistory-08-2026.md](../archive/versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
+
+### 2026-09-04 — Frontgate redirect loop HTTP→HTTPS fix (Namorix.Server 0.78.2)
+
+- **Namorix.Server 0.78.2:** `Middleware/Frontgate/RewriteRedirectLocationMiddleware.cs` — Location 301 `http→https` do `ForceSslMiddleware` sinh ra từng bị rewrite scheme ngược về `http` (middleware dùng `Request.Scheme` làm fallback, mà chính request đang là http nên scheme bị hạ) → `ERR_TOO_MANY_REDIRECT`. Fix: chỉ override scheme khi có header `X-Forwarded-Proto`; Location absolute giữ nguyên scheme đích, chỉ rewrite host/port.
+- Versions: Namorix.Server 0.78.1 → 0.78.2 (chỉ 1 file middleware — không đổi core/ui/styles/frontend).
 
 ### 2026-08-19 — OAuth callback error contract + middleware Content-Length fix; NmxToolbarContainer + NmxButtonAction; useSignalRGroup subscribe race fix (@namorix/core 0.67.2 / @namorix/ui 0.50.0 / @namorix/styles 0.59.0 / Namorix.Core 0.60.0)
 
