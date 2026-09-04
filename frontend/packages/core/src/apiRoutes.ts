@@ -1,6 +1,7 @@
 export const HUB_MAIN = "/hubs/namorix"
 
 export const API_BASE = "/api"
+export const API_ABOUT_BASE = API_BASE + "/about"
 export const API_AUTH_BASE = API_BASE + "/auth"
 export const API_USER_BASE = API_BASE + "/user"
 export const API_TRAFFIC_BASE = API_BASE + "/traffic"
@@ -11,6 +12,10 @@ export const API_FRONTGATE_BASE = API_BASE + "/frontgate"
 export const API_BEACON_BASE = API_BASE + "/beacon"
 export const API_WARDEN_BASE = API_BASE + "/warden"
 export const API_OAUTH_BASE = API_BASE + "/oauth"
+
+export const ApiAboutRoutes = {
+  base: API_ABOUT_BASE,
+}
 
 export const ApiAuthRoutes = {
   status: API_AUTH_BASE + "/status",
