@@ -12,7 +12,8 @@ public static class FrontgateAudit
 {
     public static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
-        Converters = { new JsonStringEnumConverter() }
+        Converters = { new JsonStringEnumConverter() },
+        ReferenceHandler = ReferenceHandler.IgnoreCycles
     };
 
     public static (string actor, string? actorId, string? ip) Who(HttpContext ctx)
