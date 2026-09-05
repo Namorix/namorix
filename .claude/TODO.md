@@ -146,6 +146,22 @@
 
 ---
 
+## FrontgateCertificate — Auto-renew toggle cho cert đã có
+
+**Context**: `AutoRenew` chỉ được set lúc tạo cert (dialog LetsEncrypt HTTP, `FrontgateCertificate.tsx` `certAutoRenew`). Với cert đã tồn tại, action menu chỉ có manual Renew/Retry — **không có cách bật/tắt auto-renew** sau khi tạo.
+
+**Approach**:
+- Backend: `CertificateController.cs` — thêm endpoint update AutoRenew (`PUT /api/frontgate/certificates/{id}` hoặc `POST {id}/auto-renew` nhận `{ autoRenew: bool }`), set `cert.AutoRenew`
+- Frontend `FrontgateCertificate.tsx` — thêm toggle/switch AutoRenew (hàng hoặc chi tiết cert), gọi endpoint + refresh
+- `frontgate.controller.ts` — thêm method + type tương ứng
+
+**Files**:
+- `backend/src/Namorix.Server/Controllers/Frontgate/CertificateController.cs`
+- `frontend/src/addons/Frontgate/FrontgateCertificate.tsx`
+- `frontend/src/addons/Frontgate/frontgate.controller.ts`
+
+---
+
 ## Beacon — Provider error `()` rỗng (2026-08-05) — DuckDNS + Namecheap ✅, NoIp ⏳ cần test thêm
 
 **Context**: activity log + toast hiển thị `Provider returned an error ()` — `BcnUpdateResult.Params` không mang detail lỗi qua mọi error path.
