@@ -70,6 +70,7 @@ export const NmxIconFontSymbol = {
   PROXY: "ic-proxy",
   TASK: "ic-task",
   BLOCK: "ic-block",
+  CAMERA: "ic-camera",
 } as const
 
 export type NmxIconFontSymbol =
