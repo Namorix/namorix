@@ -27,6 +27,11 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [progress.md](progress.md) (September 2026), [versionHistory-08-2026.md](../archive/versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-09-05 — Frontgate: fix JsonException object cycle khi add proxy RequestCert (Namorix.Server 0.78.4)
+
+- **Namorix.Server 0.78.4:** `Services/Frontgate/FrontgateAudit.cs` — `JsonOptions` +`ReferenceHandler = ReferenceHandler.IgnoreCycles` (thiếu từ trước → `JsonSerializer.Serialize(rule, ...)` trong audit CreateRule/UpdateRule crash khi RequestCert). Sau `SaveChangesAsync` EF fixup gắn `rule.Certificate` (cert mới tracked) → cycle `rule → Certificate → CertificateDomains → domain.Certificate → cert` vô hạn. MVC response (`Ok(rule)`) không lỗi vì `ServiceCollectionExtensions` (Namorix.Core) đã set IgnoreCycles; chỉ `FrontgateAudit.JsonOptions` (Web defaults riêng) thiếu.
+- Versions: Namorix.Server 0.78.3 → 0.78.4 (chỉ 1 file — không đổi core/ui/styles/frontend).
+
 ### 2026-09-04 — About addon hiện version runtime backend (AboutController + ApiAboutRoutes) (Namorix.Server 0.78.3 / @namorix/core 0.67.3 / frontend 0.90.2)
 
 - **Namorix.Server 0.78.3:** NEW `Controllers/AboutController.cs` — `GET /api/about` trả `AssemblyInformationalVersion` của Namorix.Core + Namorix.Server lúc runtime (`info.core`/`info.server`, bọc `ApiResponse.Ok`). Không còn bake version từ vite lúc build → hết lệch version giữa frontend bundle và backend đang chạy (vd image cũ báo 0.77.0 dù csproj 0.78.2).

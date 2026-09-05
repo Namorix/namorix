@@ -1,5 +1,11 @@
 # Version History — September 2026
 
+## 2026-09-05 — Frontgate: fix JsonException object cycle khi add proxy RequestCert (FrontgateAudit.JsonOptions)
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| Namorix.Server | 0.78.3 → 0.78.4 | FIXED: `Services/Frontgate/FrontgateAudit.cs` — `JsonOptions` thiếu `ReferenceHandler.IgnoreCycles` → add proxy với "request new certificate" (RequestCert) crash `System.Text.Json.JsonException: A possible object cycle was detected`. Root cause: sau `SaveChangesAsync` EF relationship fixup gắn `FgReverseProxyRule.Certificate` (nav tới cert mới tạo đang tracked) → cycle `rule → Certificate → CertificateDomains → FgCertificateDomain.Certificate → cert → …`; audit `JsonSerializer.Serialize(rule, FrontgateAudit.JsonOptions)` (Web defaults, không IgnoreCycles — khác MVC options trong `Namorix.Core` đã IgnoreCycles) ném exception → `ExceptionMiddleware` log "Unhandled exception". Fix: +`ReferenceHandler = ReferenceHandler.IgnoreCycles` vào `FrontgateAudit.JsonOptions`. |
+
 ## 2026-09-04 — About addon hiện version runtime backend (AboutController) + ApiAboutRoutes
 
 | Package | Version | Changes |
