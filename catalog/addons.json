@@ -5,6 +5,10 @@
     {
       "id": "namorix-weave",
       "manifestUrl": "https://raw.githubusercontent.com/Namorix/namorix-weave/main/addon.json"
+    },
+    {
+      "id": "namorix-scout",
+      "manifestUrl": "https://raw.githubusercontent.com/Namorix/namorix-scout/main/addon.json"
     }
   ]
 }
