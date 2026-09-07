@@ -296,6 +296,8 @@ backend/
 |--------|------|------|-------------|
 | GET | `/api/settings/system` | Admin | System config (proxies, origins, register) |
 | PUT | `/api/settings/system` | Admin | Set system config |
+| GET | `/api/settings/docker` | Admin | Desktop domain + container/network name (fallback BackendConfig) |
+| PUT | `/api/settings/docker` | Admin | Set desktop domain + container/network name |
 | GET | `/api/settings/appearance` | Public | System default appearance settings |
 | GET | `/api/settings/appearance/merged` | Public | Merged appearance (defaults + user overrides, userId from cookie) |
 | PUT | `/api/settings/appearance` | Admin | Set system default appearance (validated) |
@@ -510,7 +512,7 @@ Flow:
 | `AppConfig__AllowedOrigins` | AppConfig.AllowedOrigins | (empty) | Comma-separated CORS origins; empty = allow all |
 | `Backend__Port` | Backend.Port | 5000 | Backend listen port |
 | `Backend__ContainerName` | Backend.ContainerName | `namorix-server` | Docker container name |
-| `Backend__NetworkName` | Backend.NetworkName | `namorix-net` | Docker network name |
+| `Backend__NetworkName` | Backend.NetworkName | `namorix_default` | Docker network name |
 | `Backend__RegistrationTokenTtlMinutes` | Backend.RegistrationTokenTtlMinutes | 60 | Addon registration token TTL |
 | `AddonCatalog__CatalogUrl` | AddonCatalog.CatalogUrl | (see appsettings) | Catalog manifest URL |
 | `AddonCatalog__TtlSeconds` | AddonCatalog.TtlSeconds | 3600 | Catalog cache TTL |

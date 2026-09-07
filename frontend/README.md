@@ -45,7 +45,7 @@ frontend/
 │   │   ├── LogViewer/               # Log entry viewer with level chips, source search, pagination, detail dialog
 │   │   ├── NetworkTraffic/          # Network traffic overview, logs (SignalR + flat file), detail dialog, API/Proxy source filter
 │   │   ├── PackageCenter/           # External addon management (catalog browse, install, start/stop, grid view)
-│   │   ├── Settings/                # Appearance (theme, accent, density, font, language, date/time), System, Account
+│   │   ├── Settings/                # Appearance (theme, accent, density, font, language, date/time), System (proxies/origins/register), Docker (desktop domain, container/network name), Account
 │   │   ├── SystemMonitor/           # CPU, memory, uptime, disk, IO real-time (SignalR)
 │   │   └── Terminal/                # Terminal emulator scaffold
 │   │   │

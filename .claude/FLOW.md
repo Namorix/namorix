@@ -212,7 +212,7 @@ applyTheme(themeId)
 
 ```
 Settings table (system-wide)
-  └── SettingKeys: register_enabled, trusted_proxies, allowed_origins, appearance_*
+  └── SettingKeys: register_enabled, trusted_proxies, allowed_origins, desktop_domain, desktop_container_name, desktop_network_name, appearance_*
   └── Cached via IMemoryCache (10 min)
 
 UserSettings table (per-user)
@@ -226,6 +226,8 @@ UserSettings table (per-user)
 |--------|----------|------|------|
 | GET | `/api/settings/system` | RequireAdmin | Proxies, origins, register |
 | PUT | `/api/settings/system` | RequireAdmin | Save all |
+| GET | `/api/settings/docker` | RequireAdmin | Desktop domain + container/network name (fallback BackendConfig) |
+| PUT | `/api/settings/docker` | RequireAdmin | Set desktop domain + container/network name |
 | GET | `/api/settings/appearance` | Public | System defaults |
 | PUT | `/api/settings/appearance` | RequireAdmin | Save defaults (validated) |
 
@@ -690,9 +692,9 @@ User installs addon
               ├── If catalog entry not found → notify ADDON_NOT_FOUND error
               ├── DockerService.ImageExistsLocallyAsync(image)
               │     └── If false → DockerService.PullImageAsync(image)
-              ├── ParseCatalogPorts(catalogEntry.Ports) — JSON [{"container":5180,"protocol":"tcp"}]
-              ├── DockerService.CreateContainerAsync() with env vars + port mapping
-              │     (container created but NOT started)
+              ├── DockerService.CreateContainerAsync() — NetworkMode = "host"
+              │     NMX_DESKTOP_API_URL/NMX_DESKTOP_GRPC_URL = http://127.0.0.1:{port}
+              │     (container created but NOT started — no bridge network, no port publish)
               ├── Save AddonInstallation to DB (Status = Installed)
               └── NotifyAddonStatusChanged(addonId, Installed) via SignalR
 
@@ -716,7 +718,7 @@ Addon tự tạo RSA keypair, gửi public key qua registration token để đă
 InstallAsync (AddonTaskExecutor)
   └── Generate registration token (Guid)
   └── Store OAuthRegistration (Token, AddonInstallationId, ExpiresAt)
-  └── Docker create: passes NMX_DESKTOP_API_URL + NMX_REGISTRATION_TOKEN env vars
+  └── Docker create (host network): passes NMX_DESKTOP_API_URL = http://127.0.0.1:{port} + NMX_REGISTRATION_TOKEN env vars
   └── Addon container starts → NmxOAuth2Client.EnsureInitializedAsync()
         ├── Nếu oauth.json tồn tại: load credentials từ disk
         ├── Nếu NMX_REGISTRATION_TOKEN set: self-register
@@ -774,7 +776,7 @@ Addon container → Connect(metadata: Bearer <access_token>)
         │     └── "heartbeat" → respond ShellMessage heartbeat-ack
         ├── responseStream: backend → addon (ShellMessage)
         │     ├── "command" → (planned) admin gửi command xuống addon
-        │     └── "config-update" → (planned) push config changes
+        │     └── "config-update" → DesktopConfigMessage.ConfigUpdate — push sau khi Settings set (desktopDomain...) + on connect
         └── finally: AddonChannelManager.DisconnectAsync(addonId)
 
 Unary RPCs trên cùng kênh (user OAuth — addon backend exchange/refresh user token):

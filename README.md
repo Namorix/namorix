@@ -351,7 +351,7 @@ Addon có 2 mode tích hợp:
 | `AppConfig__AllowedOrigins` | AppConfig.AllowedOrigins | (empty) | Comma-separated CORS origins; empty = allow all (trusted proxy mode) |
 | `Backend__Port` | Backend.Port | 5000 | Backend listen port |
 | `Backend__ContainerName` | Backend.ContainerName | `namorix-server` | Docker container name |
-| `Backend__NetworkName` | Backend.NetworkName | `namorix-net` | Docker network name |
+| `Backend__NetworkName` | Backend.NetworkName | `namorix_default` | Docker network name |
 | `Backend__RegistrationTokenTtlMinutes` | Backend.RegistrationTokenTtlMinutes | 60 | Addon registration token TTL |
 | `AddonCatalog__CatalogUrl` | AddonCatalog.CatalogUrl | (see appsettings) | Addon catalog manifest URL |
 | `AddonCatalog__TtlSeconds` | AddonCatalog.TtlSeconds | 3600 | Catalog cache TTL |

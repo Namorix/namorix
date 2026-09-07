@@ -1,5 +1,16 @@
 # Version History — September 2026
 
+## 2026-09-07 — Settings → Docker tab (Desktop domain + container/network name) + addon container network_mode host + dev Vite proxy mọi Host
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| Namorix.Core | 0.61.0 → 0.62.0 | MODIFIED: `Constants/Settings.cs` +`SettingKeys.DesktopContainerName = "desktop_container_name"` / `DesktopNetworkName = "desktop_network_name"`. `Extensions/DevViteReverseProxyExtensions.cs` — dev proxy route bỏ host match (`Hosts: ["localhost","127.0.0.1"]`) → catch-all mọi Host (proxy tới Vite qua IP/hostname LAN, không chỉ localhost). |
+| Namorix.Server | 0.79.0 → 0.80.0 | NEW: `Controllers/SettingsController.cs` +`GET/PUT /api/settings/docker` (`DockerSettingsResponse`/`DockerSettingsRequest` — `desktopDomain`/`containerName`/`networkName`); `Services/SettingsService.cs` +`Get/SetDesktopContainerName` +`Get/SetDesktopNetworkName` (upsert DB, fallback `BackendConfig.ContainerName/NetworkName`), inject `IOptions<BackendConfig>`; `Get/SetAllAsync` bỏ `desktopDomain` (tách sang docker). MODIFIED: `Services/DockerService.cs` `CreateContainerAsync` `NetworkMode = "host"` (bỏ bridge network create + port bindings + extra hosts); `Services/AddonTaskExecutor.cs` `DesktopApiUrl`/`DesktopGrpcUrl` = `http://127.0.0.1:{port}` (bỏ `ParseCatalogPorts`/`EnsureNetworkExistsAsync`/host-gateway) — addon container chia sẻ network namespace desktop. `appsettings.json` `Backend.NetworkName` `namorix-net` → `namorix_default`. |
+| @namorix/core | 0.67.3 → 0.67.4 | MODIFIED: `apiRoutes.ts` +`ApiSettingsRoutes.docker` (`API_SETTINGS_BASE + "/docker"`); `version.ts` `NmxAddonVersions.settings` 1.1.0 → 1.2.0. |
+| @namorix/ui | 0.50.0 → 0.51.0 | MODIFIED: `Primitives/NmxIcon/NmxIconFont.types.ts` +`DOCKER` icon symbol (`ic-docker`). |
+| @namorix/styles | 0.59.0 → 0.60.0 | MODIFIED: icomoon rebuild (`variables.scss` +`$ic-docker: "\e947"`; `fonts.scss`/`_font-face.scss`/`selection.json`). |
+| frontend | 0.91.0 → 0.92.0 | NEW: `addons/Settings/SettingsDocker.tsx` (tab "Docker" admin-only — Desktop domain + container name + network name, load/save/reset-on-fail). MODIFIED: `Settings.tsx` +tab Docker +`ADMIN_TABS = ["system","docker"]`; `settings.controller.ts` +`getDocker()`/`setDocker()`, getSystem/setSystem bỏ `desktopDomain`; `SettingsSystem.tsx` bỏ section "Domain" (chuyển sang Docker); `en.json` +keys `addon.settings.tabs.docker`/`addon.settings.docker.*`, bỏ `addon.settings.system.desktopDomain*`. |
+
 ## 2026-09-07 — Desktop Domain setting + push config-update qua gRPC cho addon OAuth redirect (DesktopConfigMessage) + DockerService tmpfs /tmp
 
 | Package | Version | Changes |
