@@ -52,6 +52,7 @@ export const settingsController = {
     proxies: string[]
     origins: string[]
     registerEnabled: boolean
+    desktopDomain: string
   }> {
     const res = await coreConfig.http
       .url(coreConfig.getApiBaseUrl() + ApiSettingsRoutes.system)
@@ -60,16 +61,18 @@ export const settingsController = {
         proxies: string[]
         origins: string[]
         registerEnabled: boolean
+        desktopDomain: string
       }>()
     return res.success
       ? res.data
-      : { proxies: [], origins: [], registerEnabled: false }
+      : { proxies: [], origins: [], registerEnabled: false, desktopDomain: "" }
   },
 
   async setSystem(data: {
     proxies: string[]
     origins: string[]
     registerEnabled: boolean
+    desktopDomain: string
   }): Promise<boolean> {
     const res = await coreConfig.http
       .url(coreConfig.getApiBaseUrl() + ApiSettingsRoutes.system)

@@ -227,6 +227,9 @@
         "registrationSection": "Registration",
         "registerEnabled": "Enable Registration",
         "registerEnabledDesc": "Allow public user registration",
+        "desktopDomainSection": "Domain",
+        "desktopDomain": "Desktop domain",
+        "desktopDomainDesc": "Browser-reachable origin (http://host:port) pushed to addons over gRPC for the OAuth login redirect",
         "saved": "System settings saved successfully",
         "saveFailed": "Failed to save system settings"
       },
