@@ -30,6 +30,23 @@ public class AddonChannelManager
     
     public bool IsConnected(string addonId) =>
         _channels.ContainsKey(addonId);
+
+    public async Task BroadcastAsync(ShellMessage message)
+    {
+        foreach (var ctx in _channels.Values)
+        {
+            if (ctx.ResponseStream is null)
+                continue;
+            try
+            {
+                await ctx.ResponseStream.WriteAsync(message);
+            }
+            catch
+            {
+                // Connection likely closed; next DisconnectAsync() removes it.
+            }
+        }
+    }
 }
 
 public class ChannelContext(string addonId, CancellationTokenSource cts)

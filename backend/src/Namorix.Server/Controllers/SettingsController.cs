@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Namorix.Core.Constants;
 using Namorix.Core.Data;
+using Namorix.Core.Grpc;
 using Namorix.Core.Middleware;
 using Namorix.Core.Responses;
 using Namorix.Core.Validation;
@@ -11,26 +12,28 @@ namespace Namorix.Server.Controllers;
 
 [ApiController]
 [Route("api/settings")]
-public class SettingsController(SettingsService settingsService) : ControllerBase
+public class SettingsController(SettingsService settingsService, AddonChannelManager channelManager) : ControllerBase
 {
     [HttpGet("system")]
     [RequireAdmin]
     public async Task<IActionResult> GetSystem()
     {
-        var (proxies, origins, registerEnabled) = await settingsService.GetAllAsync();
+        var (proxies, origins, registerEnabled, desktopDomain) = await settingsService.GetAllAsync();
         return Ok(ApiResponse<SettingsResponse>.Ok(new SettingsResponse
         {
             Proxies = proxies,
             Origins = origins,
-            RegisterEnabled = registerEnabled
+            RegisterEnabled = registerEnabled,
+            DesktopDomain = desktopDomain
         }));
     }
-    
+
     [HttpPut("system")]
     [RequireAdmin]
     public async Task<IActionResult> SetSystem([FromBody] SettingsRequest request)
     {
-        await settingsService.SetAllAsync(request.Proxies, request.Origins, request.RegisterEnabled);
+        await settingsService.SetAllAsync(request.Proxies, request.Origins, request.RegisterEnabled, request.DesktopDomain);
+        await channelManager.BroadcastAsync(DesktopConfigMessage.ConfigUpdate(request.DesktopDomain));
         return Ok(ApiResponse.Ok());
     }
     
@@ -75,6 +78,7 @@ public class SettingsResponse
     public List<string> Proxies { get; init; } = [];
     public List<string> Origins { get; init; } = [];
     public bool RegisterEnabled { get; init; }
+    public string DesktopDomain { get; init; } = string.Empty;
 }
 
 public class SettingsRequest
@@ -82,4 +86,5 @@ public class SettingsRequest
     public List<string> Proxies { get; init; } = [];
     public List<string> Origins { get; init; } = [];
     public bool RegisterEnabled { get; init; }
+    public string DesktopDomain { get; init; } = string.Empty;
 }

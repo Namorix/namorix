@@ -1,11 +1,13 @@
 using Grpc.Core;
+using Namorix.Core.Grpc;
 using Namorix.Core.Protos;
 using Namorix.Server.Infrastructure;
 
 namespace Namorix.Server.Services.Grpc;
 
 public class AddonChannelService(AddonChannelManager manager, OAuthService oauth,
-    IAddonNotifier notifier, ILogger<AddonChannelService> logger) : AddonChannel.AddonChannelBase
+    SettingsService settings, IAddonNotifier notifier,
+    ILogger<AddonChannelService> logger) : AddonChannel.AddonChannelBase
 {
     public override async Task Connect(
         IAsyncStreamReader<AddonMessage> requestStream,
@@ -25,6 +27,16 @@ public class AddonChannelService(AddonChannelManager manager, OAuthService oauth
         using var cts = new CancellationTokenSource();
         var ctx = manager.Register(addonId, cts);
         ctx.ResponseStream = responseStream;
+
+        try
+        {
+            var desktopDomain = await settings.GetDesktopDomain();
+            await responseStream.WriteAsync(DesktopConfigMessage.ConfigUpdate(desktopDomain), cts.Token);
+        }
+        catch
+        {
+            // Push is best-effort; the receive loop below still owns the stream lifecycle.
+        }
 
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
             context.CancellationToken, cts.Token);

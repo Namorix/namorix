@@ -12,18 +12,46 @@ public class SettingsService(AppDbContext dbContext, IMemoryCache memoryCache,
     ISystemNotifier systemNotifier, ILogger<SettingsService> logger,
     UserSettingsService userSettingsService)
 {
-    public async Task<(List<string> proxies, List<string> origins, bool registerEnabled)> GetAllAsync()
+    public async Task<(List<string> proxies, List<string> origins, bool registerEnabled, string desktopDomain)> GetAllAsync()
     {
         var proxies = await GetTrustedProxies();
         var origins = await GetAllowedOrigins();
         var registerEnabled = await IsRegisterEnabled();
-        return (proxies, origins, registerEnabled);
+        var desktopDomain = await GetDesktopDomain();
+        return (proxies, origins, registerEnabled, desktopDomain);
     }
-    public async Task SetAllAsync(List<string> proxies, List<string> origins, bool registerEnabled)
+    public async Task SetAllAsync(List<string> proxies, List<string> origins, bool registerEnabled, string desktopDomain)
     {
         await SetTrustedProxies(proxies);
         await SetAllowedOrigins(origins);
         await SetRegisterEnabled(registerEnabled);
+        await SetDesktopDomain(desktopDomain);
+    }
+
+    public async Task<string> GetDesktopDomain()
+    {
+        var setting = await dbContext.Settings
+            .FirstOrDefaultAsync(s => s.Key == SettingKeys.DesktopDomain);
+        return setting?.Value ?? string.Empty;
+    }
+
+    public async Task SetDesktopDomain(string desktopDomain)
+    {
+        var value = desktopDomain.Trim();
+        var setting = await dbContext.Settings
+            .FirstOrDefaultAsync(s => s.Key == SettingKeys.DesktopDomain);
+        if (setting == null)
+        {
+            setting = new Setting { Key = SettingKeys.DesktopDomain, Value = value };
+            dbContext.Settings.Add(setting);
+        }
+        else
+        {
+            setting.Value = value;
+        }
+
+        logger.LogInformation("Desktop domain updated");
+        await dbContext.SaveChangesAsync();
     }
     
     public async Task<bool> IsRegisterEnabled()
