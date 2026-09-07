@@ -11,9 +11,10 @@ import { UserRole, useUserStore } from "@namorix/core"
 import { useTranslation } from "react-i18next"
 import { SettingsAppearance } from "./SettingsAppearance"
 import { SettingsSystem } from "./SettingsSystem"
+import { SettingsDocker } from "./SettingsDocker"
 import { SettingsAccount } from "./SettingsAccount"
 
-type Tab = "appearance" | "system" | "account"
+type Tab = "appearance" | "system" | "docker" | "account"
 
 const TABS: NmxRailItemData<Tab>[] = [
   {
@@ -27,17 +28,26 @@ const TABS: NmxRailItemData<Tab>[] = [
     label: "addon.settings.tabs.system",
   },
   {
+    key: "docker",
+    icon: NmxIconFontSymbol.DOCKER,
+    label: "addon.settings.tabs.docker",
+  },
+  {
     key: "account",
     icon: NmxIconFontSymbol.USER,
     label: "addon.settings.tabs.account",
   },
 ]
 
+const ADMIN_TABS: Tab[] = ["system", "docker"]
+
 export const Settings: React.FC = () => {
   const { t } = useTranslation()
   const user = useUserStore()
   const isAdmin = user?.role === UserRole.Admin
-  const tabs = isAdmin ? TABS : TABS.filter((t) => t.key !== "system")
+  const tabs = isAdmin
+    ? TABS
+    : TABS.filter((t) => !ADMIN_TABS.includes(t.key))
   return (
     <NmxAddonRoot className="nmx-addon-setting">
       <NmxRail<Tab> defaultTab="appearance">
@@ -47,6 +57,9 @@ export const Settings: React.FC = () => {
         </NmxRailContent>
         <NmxRailContent<Tab> tabKey="system">
           <SettingsSystem />
+        </NmxRailContent>
+        <NmxRailContent<Tab> tabKey="docker">
+          <SettingsDocker />
         </NmxRailContent>
         <NmxRailContent<Tab> tabKey="account">
           <SettingsAccount />

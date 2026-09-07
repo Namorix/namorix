@@ -52,7 +52,6 @@ export const settingsController = {
     proxies: string[]
     origins: string[]
     registerEnabled: boolean
-    desktopDomain: string
   }> {
     const res = await coreConfig.http
       .url(coreConfig.getApiBaseUrl() + ApiSettingsRoutes.system)
@@ -61,21 +60,49 @@ export const settingsController = {
         proxies: string[]
         origins: string[]
         registerEnabled: boolean
-        desktopDomain: string
       }>()
     return res.success
       ? res.data
-      : { proxies: [], origins: [], registerEnabled: false, desktopDomain: "" }
+      : { proxies: [], origins: [], registerEnabled: false }
   },
 
   async setSystem(data: {
     proxies: string[]
     origins: string[]
     registerEnabled: boolean
-    desktopDomain: string
   }): Promise<boolean> {
     const res = await coreConfig.http
       .url(coreConfig.getApiBaseUrl() + ApiSettingsRoutes.system)
+      .put(data)
+      .json()
+    return res.success
+  },
+
+  async getDocker(): Promise<{
+    desktopDomain: string
+    containerName: string
+    networkName: string
+  }> {
+    const res = await coreConfig.http
+      .url(coreConfig.getApiBaseUrl() + ApiSettingsRoutes.docker)
+      .get()
+      .json<{
+        desktopDomain: string
+        containerName: string
+        networkName: string
+      }>()
+    return res.success
+      ? res.data
+      : { desktopDomain: "", containerName: "", networkName: "" }
+  },
+
+  async setDocker(data: {
+    desktopDomain: string
+    containerName: string
+    networkName: string
+  }): Promise<boolean> {
+    const res = await coreConfig.http
+      .url(coreConfig.getApiBaseUrl() + ApiSettingsRoutes.docker)
       .put(data)
       .json()
     return res.success

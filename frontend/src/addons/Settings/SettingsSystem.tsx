@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react"
 import {
   NmxButton,
-  NmxFormInput,
   NmxSettingsCard,
   NmxSettingsRow,
   NmxSettingsSection,
@@ -17,7 +16,6 @@ export const SettingsSystem: React.FC = () => {
   const [proxies, setProxies] = useState<string[]>([])
   const [origins, setOrigins] = useState<string[]>([])
   const [registerEnabled, setRegisterEnabled] = useState(false)
-  const [desktopDomain, setDesktopDomain] = useState("")
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
@@ -25,7 +23,6 @@ export const SettingsSystem: React.FC = () => {
       setProxies(data.proxies)
       setOrigins(data.origins)
       setRegisterEnabled(data.registerEnabled)
-      setDesktopDomain(data.desktopDomain)
     })
   }, [])
 
@@ -37,7 +34,6 @@ export const SettingsSystem: React.FC = () => {
       proxies,
       origins,
       registerEnabled,
-      desktopDomain,
     })
 
     if (!ok) {
@@ -45,7 +41,6 @@ export const SettingsSystem: React.FC = () => {
       setProxies(data.proxies)
       setOrigins(data.origins)
       setRegisterEnabled(data.registerEnabled)
-      setDesktopDomain(data.desktopDomain)
       nmxToast.error(t("addon.settings.system.saveFailed"))
     } else {
       nmxToast.success(t("addon.settings.system.saved"))
@@ -76,22 +71,6 @@ export const SettingsSystem: React.FC = () => {
               value={origins}
               onChange={setOrigins}
               placeholder="e.g. https://example.com"
-            />
-          </NmxSettingsRow>
-        </NmxSettingsCard>
-      </NmxSettingsSection>
-      <NmxSettingsSection title={t("addon.settings.system.desktopDomainSection")}>
-        <NmxSettingsCard>
-          <NmxSettingsRow
-            label={t("addon.settings.system.desktopDomain")}
-            description={t("addon.settings.system.desktopDomainDesc")}
-          >
-            <NmxFormInput
-              type="text"
-              value={desktopDomain}
-              onValueChange={setDesktopDomain}
-              placeholder="http://192.168.1.10:5000"
-              disabled={busy}
             />
           </NmxSettingsRow>
         </NmxSettingsCard>

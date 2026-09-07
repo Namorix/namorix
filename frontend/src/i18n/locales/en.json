@@ -184,6 +184,7 @@
       "tabs": {
         "appearance": "Appearance",
         "system": "System",
+        "docker": "Docker",
         "account": "Account"
       },
       "appearance": {
@@ -227,11 +228,20 @@
         "registrationSection": "Registration",
         "registerEnabled": "Enable Registration",
         "registerEnabledDesc": "Allow public user registration",
-        "desktopDomainSection": "Domain",
-        "desktopDomain": "Desktop domain",
-        "desktopDomainDesc": "Browser-reachable origin (http://host:port) pushed to addons over gRPC for the OAuth login redirect",
         "saved": "System settings saved successfully",
         "saveFailed": "Failed to save system settings"
+      },
+      "docker": {
+        "title": "Docker",
+        "section": "Docker",
+        "desktopDomain": "Desktop domain",
+        "desktopDomainDesc": "Browser-reachable origin (http://host:port) pushed to addons over gRPC for the OAuth login redirect",
+        "containerName": "Container name",
+        "containerNameDesc": "Desktop container name used to build addon connection URLs",
+        "networkName": "Network name",
+        "networkNameDesc": "Docker network that addon containers join to reach the desktop",
+        "saved": "Docker settings saved successfully",
+        "saveFailed": "Failed to save docker settings"
       },
       "account": {
         "title": "Account",
