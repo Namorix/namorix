@@ -80,18 +80,11 @@ public class DockerService
                 {
                     $"{spec.AddonId}-data:/data"
                 },
-                NetworkMode = spec.NetworkName,
-                PortBindings = spec.PortMappings?.ToDictionary(
-                    p => $"{p.InternalPort}/tcp", IList<PortBinding> (p) => new List<PortBinding>
-                    {
-                        new() { HostPort = p.HostPort.ToString() }
-                    }
-                ),
+                NetworkMode = "host",
                 Memory = spec.MemoryLimit ?? 0,
                 NanoCPUs = spec.CpuLimit ?? 0,
                 ReadonlyRootfs = true,
                 Tmpfs = new Dictionary<string, string> { ["/tmp"] = "rw" },
-                ExtraHosts = spec.ExtraHosts,
             },
         });
 
@@ -113,19 +106,6 @@ public class DockerService
         await Client.Containers.RemoveContainerAsync(id, new ContainerRemoveParameters
         {
             Force = true
-        });
-    }
-
-    public async Task EnsureNetworkExistsAsync(string networkName)
-    {
-        var networks = await Client.Networks.ListNetworksAsync();
-        if (networks.Any(n => n.Name == networkName))
-            return;
-        
-        await Client.Networks.CreateNetworkAsync(new NetworksCreateParameters
-        {
-            Name = networkName,
-            Driver = "bridge",
         });
     }
 
@@ -182,16 +162,6 @@ public class AddonContainerSpec
     public string DesktopApiUrl { get; init; } = string.Empty;
     public string DesktopGrpcUrl { get; init; } = string.Empty;
     public string? RegistrationToken { get; init; }
-    public List<PortMapping>? PortMappings { get; init; }
     public int? MemoryLimit { get; init; }
     public long? CpuLimit { get; init; }
-    public List<string>? ExtraHosts { get; init; }
-    public string? NetworkName { get; init; }
-
-}
-
-public class PortMapping
-{
-    public int InternalPort { get; init; }
-    public int HostPort { get; init; }
 }

@@ -129,30 +129,14 @@ public class AddonTaskExecutor(
             var registrationToken = Guid.NewGuid().ToString("N");
 
             var cfg = backendConfig.Value;
-            var backendInContainer = DockerService.IsRunningInContainer();
-            var desktopApiUrl = backendInContainer
-                ? $"http://{cfg.ContainerName}:{cfg.Port}"
-                : $"http://host.docker.internal:{cfg.Port}";
-            
-            var desktopGrpcUrl = backendInContainer
-                ? $"http://{cfg.ContainerName}:{cfg.GrpcPort}"
-                : $"http://host.docker.internal:{cfg.GrpcPort}";
-            
-            if (backendInContainer)
-                await docker.EnsureNetworkExistsAsync(cfg.NetworkName);
-            
-            var portMappings = ParseCatalogPorts(catalogEntry.Ports);
             await docker.RemoveContainerIfExistsAsync(addonId);
             var containerId = await docker.CreateContainerAsync(new AddonContainerSpec
             {
                 Image = image,
                 AddonId = addonId,
-                DesktopApiUrl = desktopApiUrl,
-                DesktopGrpcUrl = desktopGrpcUrl,
+                DesktopApiUrl = $"http://127.0.0.1:{cfg.Port}",
+                DesktopGrpcUrl = $"http://127.0.0.1:{cfg.GrpcPort}",
                 RegistrationToken = registrationToken,
-                PortMappings = portMappings,
-                ExtraHosts = backendInContainer ? null : ["host.docker.internal:host-gateway"],
-                NetworkName = backendInContainer ? cfg.NetworkName : null,
             });
 
             var entryPort = GetEntryPort(catalogEntry.Ports) ?? 0;
@@ -261,15 +245,6 @@ public class AddonTaskExecutor(
         return string.IsNullOrEmpty(portsJson)
             ? null
             : JsonSerializer.Deserialize<List<CatalogPortDef>>(portsJson, CatalogPortsJsonOptions);
-    }
-    
-    private static List<PortMapping>? ParseCatalogPorts(string? portsJson)
-    {
-        var ports = PortDeserializeJson(portsJson);
-        return ports?.Select(p => new PortMapping {
-            InternalPort = p.Container,
-            HostPort = p.Container,
-        }).ToList();
     }
 
     private static int? GetEntryPort(string? portsJson)
