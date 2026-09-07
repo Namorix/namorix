@@ -54,6 +54,7 @@ export const ApiLogRoutes = {
 
 export const ApiSettingsRoutes = {
   system: API_SETTINGS_BASE + "/system",
+  docker: API_SETTINGS_BASE + "/docker",
   appearanceOptions: API_SETTINGS_BASE + "/appearance/options",
   appearanceSystem: API_SETTINGS_BASE + "/appearance",
   appearanceMerged: API_SETTINGS_BASE + "/appearance/merged",
