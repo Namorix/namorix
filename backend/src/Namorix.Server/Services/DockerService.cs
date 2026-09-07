@@ -90,6 +90,8 @@ public class DockerService
                 Memory = spec.MemoryLimit ?? 0,
                 NanoCPUs = spec.CpuLimit ?? 0,
                 ReadonlyRootfs = true,
+                Tmpfs = new Dictionary<string, string> { ["/tmp"] = "rw" },
+                ExtraHosts = spec.ExtraHosts,
             },
         });
 
