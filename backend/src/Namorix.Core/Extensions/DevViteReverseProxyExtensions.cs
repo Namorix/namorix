@@ -36,7 +36,7 @@ public static class DevViteReverseProxyExtensions
                 {
                     RouteId = "dev:vite",
                     ClusterId = "dev:vite",
-                    Match = new RouteMatch { Hosts = ["localhost", "127.0.0.1"], Path = "{**catch-all}" }
+                    Match = new RouteMatch { Path = "{**catch-all}" }
                 }
             ],
             [
