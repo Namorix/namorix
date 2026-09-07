@@ -18,13 +18,12 @@ public class SettingsController(SettingsService settingsService, AddonChannelMan
     [RequireAdmin]
     public async Task<IActionResult> GetSystem()
     {
-        var (proxies, origins, registerEnabled, desktopDomain) = await settingsService.GetAllAsync();
+        var (proxies, origins, registerEnabled) = await settingsService.GetAllAsync();
         return Ok(ApiResponse<SettingsResponse>.Ok(new SettingsResponse
         {
             Proxies = proxies,
             Origins = origins,
-            RegisterEnabled = registerEnabled,
-            DesktopDomain = desktopDomain
+            RegisterEnabled = registerEnabled
         }));
     }
 
@@ -32,7 +31,29 @@ public class SettingsController(SettingsService settingsService, AddonChannelMan
     [RequireAdmin]
     public async Task<IActionResult> SetSystem([FromBody] SettingsRequest request)
     {
-        await settingsService.SetAllAsync(request.Proxies, request.Origins, request.RegisterEnabled, request.DesktopDomain);
+        await settingsService.SetAllAsync(request.Proxies, request.Origins, request.RegisterEnabled);
+        return Ok(ApiResponse.Ok());
+    }
+
+    [HttpGet("docker")]
+    [RequireAdmin]
+    public async Task<IActionResult> GetDocker()
+    {
+        return Ok(ApiResponse<DockerSettingsResponse>.Ok(new DockerSettingsResponse
+        {
+            DesktopDomain = await settingsService.GetDesktopDomain(),
+            ContainerName = await settingsService.GetDesktopContainerName(),
+            NetworkName = await settingsService.GetDesktopNetworkName()
+        }));
+    }
+
+    [HttpPut("docker")]
+    [RequireAdmin]
+    public async Task<IActionResult> SetDocker([FromBody] DockerSettingsRequest request)
+    {
+        await settingsService.SetDesktopDomain(request.DesktopDomain);
+        await settingsService.SetDesktopContainerName(request.ContainerName);
+        await settingsService.SetDesktopNetworkName(request.NetworkName);
         await channelManager.BroadcastAsync(DesktopConfigMessage.ConfigUpdate(request.DesktopDomain));
         return Ok(ApiResponse.Ok());
     }
@@ -78,7 +99,6 @@ public class SettingsResponse
     public List<string> Proxies { get; init; } = [];
     public List<string> Origins { get; init; } = [];
     public bool RegisterEnabled { get; init; }
-    public string DesktopDomain { get; init; } = string.Empty;
 }
 
 public class SettingsRequest
@@ -86,5 +106,18 @@ public class SettingsRequest
     public List<string> Proxies { get; init; } = [];
     public List<string> Origins { get; init; } = [];
     public bool RegisterEnabled { get; init; }
+}
+
+public class DockerSettingsResponse
+{
     public string DesktopDomain { get; init; } = string.Empty;
+    public string ContainerName { get; init; } = string.Empty;
+    public string NetworkName { get; init; } = string.Empty;
+}
+
+public class DockerSettingsRequest
+{
+    public string DesktopDomain { get; init; } = string.Empty;
+    public string ContainerName { get; init; } = string.Empty;
+    public string NetworkName { get; init; } = string.Empty;
 }

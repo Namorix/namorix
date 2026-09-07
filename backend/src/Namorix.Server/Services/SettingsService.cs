@@ -1,31 +1,31 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using Namorix.Core.Constants;
 using Namorix.Core.Data;
 using Namorix.Core.Infrastructure;
 using Namorix.Core.Models;
+using Namorix.Server.Config;
 using Namorix.Server.Persistence;
 
 namespace Namorix.Server.Services;
 
 public class SettingsService(AppDbContext dbContext, IMemoryCache memoryCache,
     ISystemNotifier systemNotifier, ILogger<SettingsService> logger,
-    UserSettingsService userSettingsService)
+    UserSettingsService userSettingsService, IOptions<BackendConfig> backendConfig)
 {
-    public async Task<(List<string> proxies, List<string> origins, bool registerEnabled, string desktopDomain)> GetAllAsync()
+    public async Task<(List<string> proxies, List<string> origins, bool registerEnabled)> GetAllAsync()
     {
         var proxies = await GetTrustedProxies();
         var origins = await GetAllowedOrigins();
         var registerEnabled = await IsRegisterEnabled();
-        var desktopDomain = await GetDesktopDomain();
-        return (proxies, origins, registerEnabled, desktopDomain);
+        return (proxies, origins, registerEnabled);
     }
-    public async Task SetAllAsync(List<string> proxies, List<string> origins, bool registerEnabled, string desktopDomain)
+    public async Task SetAllAsync(List<string> proxies, List<string> origins, bool registerEnabled)
     {
         await SetTrustedProxies(proxies);
         await SetAllowedOrigins(origins);
         await SetRegisterEnabled(registerEnabled);
-        await SetDesktopDomain(desktopDomain);
     }
 
     public async Task<string> GetDesktopDomain()
@@ -53,7 +53,53 @@ public class SettingsService(AppDbContext dbContext, IMemoryCache memoryCache,
         logger.LogInformation("Desktop domain updated");
         await dbContext.SaveChangesAsync();
     }
-    
+
+    public async Task<string> GetDesktopContainerName()
+    {
+        var setting = await dbContext.Settings
+            .FirstOrDefaultAsync(s => s.Key == SettingKeys.DesktopContainerName);
+        return string.IsNullOrWhiteSpace(setting?.Value)
+            ? backendConfig.Value.ContainerName
+            : setting.Value.Trim();
+    }
+
+    public async Task SetDesktopContainerName(string containerName)
+    {
+        var value = containerName.Trim();
+        var setting = await dbContext.Settings
+            .FirstOrDefaultAsync(s => s.Key == SettingKeys.DesktopContainerName);
+        if (setting == null)
+            dbContext.Settings.Add(new Setting { Key = SettingKeys.DesktopContainerName, Value = value });
+        else
+            setting.Value = value;
+
+        logger.LogInformation("Desktop container name updated");
+        await dbContext.SaveChangesAsync();
+    }
+
+    public async Task<string> GetDesktopNetworkName()
+    {
+        var setting = await dbContext.Settings
+            .FirstOrDefaultAsync(s => s.Key == SettingKeys.DesktopNetworkName);
+        return string.IsNullOrWhiteSpace(setting?.Value)
+            ? backendConfig.Value.NetworkName
+            : setting.Value.Trim();
+    }
+
+    public async Task SetDesktopNetworkName(string networkName)
+    {
+        var value = networkName.Trim();
+        var setting = await dbContext.Settings
+            .FirstOrDefaultAsync(s => s.Key == SettingKeys.DesktopNetworkName);
+        if (setting == null)
+            dbContext.Settings.Add(new Setting { Key = SettingKeys.DesktopNetworkName, Value = value });
+        else
+            setting.Value = value;
+
+        logger.LogInformation("Desktop network name updated");
+        await dbContext.SaveChangesAsync();
+    }
+
     public async Task<bool> IsRegisterEnabled()
     {
         return await memoryCache.GetOrCreateAsync(SettingKeys.RegisterEnabled, async entry =>

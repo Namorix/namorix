@@ -6,6 +6,8 @@ public static class SettingKeys
     public const string TrustedProxies = "trusted_proxies";
     public const string AllowedOrigins = "allowed_origins";
     public const string DesktopDomain = "desktop_domain";
+    public const string DesktopContainerName = "desktop_container_name";
+    public const string DesktopNetworkName = "desktop_network_name";
 }
 
 public static class SettingValues
