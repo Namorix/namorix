@@ -5,6 +5,7 @@ public static class SettingKeys
     public const string RegisterEnabled = "register_enabled";
     public const string TrustedProxies = "trusted_proxies";
     public const string AllowedOrigins = "allowed_origins";
+    public const string DesktopDomain = "desktop_domain";
 }
 
 public static class SettingValues

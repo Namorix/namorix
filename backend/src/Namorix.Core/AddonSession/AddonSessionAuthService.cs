@@ -30,6 +30,7 @@ public sealed class AddonSessionAuthService(
         cache.Set(StatePrefix + state, true, TimeSpan.FromMinutes(options.Value.StateTtlMinutes));
 
         var redirectUri = $"{request.Scheme}://{request.Host}{options.Value.CallbackPath}";
+        var desktopApiUrl = channel.BrowserOrigin ?? config.DesktopApiUrl;
         var query = new Dictionary<string, string?>
         {
             ["response_type"] = "code",
@@ -39,7 +40,7 @@ public sealed class AddonSessionAuthService(
         };
 
         return QueryHelpers.AddQueryString(
-            $"{config.DesktopApiUrl}{OAuthEndpoints.Authorize}", query);
+            $"{desktopApiUrl}{OAuthEndpoints.Authorize}", query);
     }
 
     public async Task<AddonSession> CompleteLoginAsync(

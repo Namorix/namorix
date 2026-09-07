@@ -22,6 +22,7 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
 
     public event Action<ShellMessage>? OnMessage;
     public bool IsConnected => _call != null;
+    public string? BrowserOrigin { get; private set; }
 
     public async Task StartAsync(CancellationToken ct = default)
     {
@@ -58,6 +59,9 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
             {
                 try
                 {
+                    if (msg.Type == DesktopConfigMessage.TypeConfigUpdate)
+                        BrowserOrigin = DesktopConfigMessage.ParseDesktopDomain(msg.Payload);
+
                     OnMessage?.Invoke(msg);
                 }
                 catch (Exception ex)
