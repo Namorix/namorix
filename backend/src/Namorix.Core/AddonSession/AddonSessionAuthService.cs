@@ -29,7 +29,11 @@ public sealed class AddonSessionAuthService(
         var state = Guid.NewGuid().ToString("N");
         cache.Set(StatePrefix + state, true, TimeSpan.FromMinutes(options.Value.StateTtlMinutes));
 
-        var redirectUri = $"{request.Scheme}://{request.Host}{options.Value.CallbackPath}";
+        // Behind the desktop's frontgate the addon is addressed by its internal address; the
+        // origin the browser actually used arrives in the forwarded headers.
+        var scheme = request.Headers["X-Forwarded-Proto"].FirstOrDefault() ?? request.Scheme;
+        var host = request.Headers["X-Forwarded-Host"].FirstOrDefault() ?? request.Host.Value;
+        var redirectUri = $"{scheme}://{host}{options.Value.CallbackPath}";
         var desktopApiUrl = channel.BrowserOrigin ?? config.DesktopApiUrl;
         var query = new Dictionary<string, string?>
         {
