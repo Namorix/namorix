@@ -9,7 +9,10 @@
       "mcp__exa__web_search_exa",
       "Bash(rtk ls *)",
       "Bash(rtk find *)",
-      "mcp__exa__web_fetch_exa"
+      "mcp__exa__web_fetch_exa",
+      "Read(//home/izerocs/Documents/GitHub/namorix-scout/**)",
+      "Bash(rtk read *)",
+      "Bash(python3 -)"
     ]
   }
 }
