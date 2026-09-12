@@ -119,12 +119,12 @@ public class AddonTaskExecutor(
         
         try 
         {
+            // Always pull: the catalog tags addons as :latest, so a locally cached image
+            // would otherwise shadow a newly published build. Docker compares digests and
+            // only downloads layers when the tag actually moved.
             var image = catalogEntry.Image;
-            if (!await docker.ImageExistsLocallyAsync(image))
-            {
-                logger.LogInformation("Pulling image {Image}...", image);
-                await docker.PullImageAsync(image);
-            }
+            logger.LogInformation("Pulling image {Image}...", image);
+            await docker.PullImageAsync(image);
             
             var registrationToken = Guid.NewGuid().ToString("N");
 
