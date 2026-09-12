@@ -1,5 +1,12 @@
 # Version History — September 2026
 
+## 2026-09-12 — Frontgate: static file host-scoping + redirect rewrite theo upstream; addon OAuth redirect_uri theo forwarded headers; install luôn pull image
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| Namorix.Server | 0.80.0 → 0.80.1 | FIXED: `Program.cs` — trên proxy port `UseStaticFiles(pathPublic)` chạy **trước** `MapReverseProxy()` và không quan tâm Host → file build của desktop (vd `mf-entry-bootstrap-0.js`, `assets/hostInit-*.js`) bị trả cho **mọi** domain, che asset của addon trùng tên (`scout.<domain>` nhận asset của desktop → load bootstrap của namorix). Fix: bọc trong `UseWhen(ctx => !proxyConfig.DestinationSources.ContainsKey(ctx.Request.Host.Host), ...)` — chỉ phục vụ static desktop cho host **không có** frontgate rule; host có rule đi qua YARP tới destination (kể cả `namorix.online` → port 5000 tự phục vụ static/index fallback). +capture `proxyConfig` ở dòng 211 để tái dùng. FIXED: `Middleware/Frontgate/RewriteRedirectLocationMiddleware.cs` — trước rewrite **mọi** `Location` absolute khác host → redirect của addon (vd `redirect_uri` OAuth trỏ về IP nội bộ) bị đổi thành host public → 504 do vòng proxy dev. Fix: chỉ rewrite khi Location trỏ về chính upstream của rule (`DestinationSources` + alias loopback `localhost`/`127.0.0.1`/`[::1]`), redirect cross-host pass-through; scheme chỉ override khi có `X-Forwarded-Proto`. MODIFIED: `Services/Frontgate/FrontgateProxyConfigProvider.cs` +`DestinationSources` (source host → set `host:port` của destination chính + locations). FIXED: `Services/AddonTaskExecutor.cs` `InstallAsync` — bỏ guard `ImageExistsLocallyAsync` → luôn `PullImageAsync` (catalog tag `:latest`, image local cũ che bản mới; Docker so digest nên chỉ tải layer khi tag đổi). |
+| Namorix.Core | 0.62.0 → 0.62.1 | FIXED: `AddonSession/AddonSessionAuthService.cs` `BuildLoginUrlAsync` — dựng `redirect_uri` từ `X-Forwarded-Proto`/`X-Forwarded-Host` (fallback `Request.Scheme`/`Request.Host`). Root cause: YARP suppress Host → addon sau frontgate thấy `http://<ip-nội-bộ>:<port>` → `redirect_uri` sai → OAuth xong browser quay về IP nội bộ thay vì domain. |
+
 ## 2026-09-07 — Settings → Docker tab (Desktop domain + container/network name) + addon container network_mode host + dev Vite proxy mọi Host
 
 | Package | Version | Changes |

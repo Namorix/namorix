@@ -27,6 +27,15 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [progress.md](progress.md) (September 2026), [versionHistory-08-2026.md](../archive/versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-09-12 — Frontgate static host-scoping + redirect rewrite theo upstream; addon OAuth redirect_uri forwarded headers; install luôn pull image (Namorix.Server 0.80.1 / Namorix.Core 0.62.1)
+
+- **Static file desktop che asset addon:** proxy port chạy `UseStaticFiles(pathPublic)` trước `MapReverseProxy()` và host-blind → `mf-entry-bootstrap-0.js`/`assets/hostInit-*.js` của desktop trả cho cả `scout.<domain>`; scout load bootstrap của namorix → "assets lấy từ namorix". Fix: `UseWhen(ctx => !proxyConfig.DestinationSources.ContainsKey(host))` — host có frontgate rule đi YARP tới destination.
+- **RewriteRedirectLocationMiddleware:** chỉ rewrite `Location` khi trỏ về upstream của rule (kèm alias loopback); redirect cross-host (OAuth `redirect_uri`) pass-through; scheme chỉ override khi có `X-Forwarded-Proto`.
+- **FrontgateProxyConfigProvider +`DestinationSources`** (source host → set `host:port` của destination chính + locations) — dùng cho static scoping + redirect rewrite.
+- **Addon install luôn pull:** `AddonTaskExecutor.InstallAsync` bỏ guard `ImageExistsLocallyAsync` → `PullImageAsync` mỗi lần install (tag `:latest` local cũ che bản mới).
+- **Namorix.Core 0.62.1:** `AddonSessionAuthService.BuildLoginUrlAsync` dựng `redirect_uri` từ `X-Forwarded-Proto`/`X-Forwarded-Host` (YARP suppress Host → trước đó OAuth xong redirect về IP nội bộ).
+- Versions: Namorix.Server 0.80.0 → 0.80.1 / Namorix.Core 0.62.0 → 0.62.1 (@namorix/core/ui/styles/frontend không đổi — không bump).
+
 ### 2026-09-07 — Settings → Docker tab (Desktop domain + container/network name) + addon container network_mode host + dev Vite proxy mọi Host (Namorix.Server 0.80.0 / Namorix.Core 0.62.0 / @namorix/core 0.67.4 / @namorix/ui 0.51.0 / @namorix/styles 0.60.0 / frontend 0.92.0)
 
 - **Addon container chạy `network_mode: host`:** `DockerService.CreateContainerAsync` `NetworkMode = "host"` — bỏ `EnsureNetworkExistsAsync` (bridge network), port bindings, `ExtraHosts`/host-gateway; `AddonTaskExecutor` build `DesktopApiUrl`/`DesktopGrpcUrl` = `http://127.0.0.1:{port}` (bỏ `ParseCatalogPorts`). Addon container chia sẻ network namespace với desktop → gRPC/API tới `127.0.0.1`, không cần docker network riêng.

@@ -690,8 +690,8 @@ User installs addon
         └── AddonTaskQueue → AddonTaskExecutor.InstallAsync(id)
               ├── Look up catalog entry by id (AddonCatalogEntry)
               ├── If catalog entry not found → notify ADDON_NOT_FOUND error
-              ├── DockerService.ImageExistsLocallyAsync(image)
-              │     └── If false → DockerService.PullImageAsync(image)
+              ├── DockerService.PullImageAsync(image) — luôn pull (catalog dùng tag :latest;
+              │     image local cũ sẽ che bản mới — Docker so digest, chỉ tải layer khi tag đổi)
               ├── DockerService.CreateContainerAsync() — NetworkMode = "host"
               │     NMX_DESKTOP_API_URL/NMX_DESKTOP_GRPC_URL = http://127.0.0.1:{port}
               │     (container created but NOT started — no bridge network, no port publish)
