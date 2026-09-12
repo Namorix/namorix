@@ -208,7 +208,8 @@ if (app.Environment.IsProduction())
     db.Database.Migrate();
 }
 
-await app.Services.GetRequiredService<FrontgateProxyConfigProvider>().UpdateAsync();
+var proxyConfig = app.Services.GetRequiredService<FrontgateProxyConfigProvider>();
+await proxyConfig.UpdateAsync();
 
 // API port (backendConfig.Port = 5000): full pipeline
 app.UseWhen(ctx => ctx.Connection.LocalPort == backendConfig.Port, api =>
@@ -308,10 +309,17 @@ if (proxyPorts.Length > 0)
             await next();
         });
         
-        proxy.UseStaticFiles(new StaticFileOptions
-        {
-            FileProvider = new PhysicalFileProvider(pathPublic)
-        });
+        // Static files here are the desktop's own SPA output and are host-blind: serving them
+        // unconditionally would shadow proxied addons whose build happens to share filenames
+        // (e.g. mf-entry-bootstrap-0.js), so a request to scout.<domain> would get the desktop's
+        // assets. Only serve them for hosts without a frontgate rule; rules proxy to their own
+        // destination (the desktop's API port included) which serves the same files correctly.
+        proxy.UseWhen(
+            ctx => !proxyConfig.DestinationSources.ContainsKey(ctx.Request.Host.Host),
+            branch => branch.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(pathPublic)
+            }));
         
         proxy.UseRouting();
         proxy.UseEndpoints(endpoints =>

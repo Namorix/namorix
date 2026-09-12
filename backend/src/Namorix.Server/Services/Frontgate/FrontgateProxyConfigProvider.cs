@@ -24,6 +24,7 @@ public class FrontgateProxyConfigProvider(
     public ConcurrentDictionary<string, byte> HstsSubdomainSources { get; } = new();
     public ConcurrentDictionary<string, byte> BlockExploitSources { get; } = new();
     public ConcurrentDictionary<string, (ProxyAccessMode Mode, FgAccessPolicy? Policy)> AccessSources { get; } = new();
+    public ConcurrentDictionary<string, HashSet<string>> DestinationSources { get; } = new(StringComparer.OrdinalIgnoreCase);
     public ConcurrentDictionary<string, (int Limit, int WindowSec)> RateLimitSources { get; } = new();
     public bool HasDryRun { get; private set; }
 
@@ -135,6 +136,7 @@ public class FrontgateProxyConfigProvider(
         {
             // Dev-only: Kestrel (API port) is the sole entry — anything the app requests
             // that isn't /api|/hubs (assets, @vite/client, HMR websocket) forwards to Vite.
+            // No Host filter: the SPA must load via LAN IP/hostname too, not just localhost.
             var viteClusterId = "dev:vite";
             clusters[viteClusterId] = new ClusterConfig
             {
@@ -151,7 +153,6 @@ public class FrontgateProxyConfigProvider(
                 ClusterId = viteClusterId,
                 Match = new RouteMatch
                 {
-                    Hosts = ["localhost", "127.0.0.1"],
                     Path = "{**catch-all}"
                 }
             });
@@ -185,12 +186,29 @@ public class FrontgateProxyConfigProvider(
         foreach (var rule in rules)
             AccessSources[rule.Source] = (rule.Access, rule.AccessPolicy);
 
+        DestinationSources.Clear();
+        foreach (var rule in rules)
+        {
+            var destinations = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                FormatEndpoint(rule.DestinationHost, rule.DestinationPort)
+            };
+
+            if (rule.Locations is { Count: > 0 })
+                foreach (var loc in rule.Locations)
+                    destinations.Add(FormatEndpoint(loc.ForwardHost, loc.ForwardPort));
+
+            DestinationSources[rule.Source] = destinations;
+        }
+
         RateLimitSources.Clear();
         foreach (var rule in rules.Where(r => r.RateLimit.HasValue))
             RateLimitSources[rule.Source] = (rule.RateLimit!.Value, rule.RateLimitWindowSec ?? 60);
         
         HasDryRun = await db.FgReverseProxyRules.AnyAsync(r => r.DryRunExpiresAt != null);
     }
+
+    private static string FormatEndpoint(string host, int port) => $"{host}:{port}";
 }
 
 internal class FrontgateProxyConfig(IReadOnlyList<RouteConfig> routes, IReadOnlyList<ClusterConfig> clusters) : IProxyConfig
