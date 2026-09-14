@@ -7,7 +7,7 @@ isProject: false
 
 # Addon OAuth — JWT verify local + revoke theo user
 
-> **Tiến độ:** Phase 0 (chốt DG1–DG9) ✅ · **Phase 0.5 hotfix bug sống ✅ 2026-09-14** · **Phase 1a (`UserId`) ✅ 2026-09-14** · **Phase 1b (signer + `GetJwks` + hardening cổng) ✅ 2026-09-14** · **Phase 1c (cấp JWT thay GUID) ✅ 2026-09-14** · Phase 2 ⏳ tiếp theo · Phase 3–6 chưa. Build sạch 3 project; signer đã verify thật, phần cổng **chưa test runtime**, và chưa mục nào của Phase 1 chạy end-to-end (addon còn chưa verify JWT — việc của Phase 3).
+> **Tiến độ:** Phase 0 (chốt DG1–DG9) ✅ · **Phase 0.5 hotfix bug sống ✅ 2026-09-14** · **Phase 1a (`UserId`) ✅ 2026-09-14** · **Phase 1b (signer + `GetJwks` + hardening cổng) ✅ 2026-09-14** · **Phase 1c (cấp JWT thay GUID) ✅ 2026-09-14** · **Phase 2 (revoke theo user + push `session-revoked`) ✅ 2026-09-14** · Phase 3 ⏳ tiếp theo · Phase 4–6 chưa. Build sạch 3 project; signer đã verify thật, phần cổng **chưa test runtime**, và chưa mục nào chạy end-to-end (addon còn chưa verify JWT — việc của Phase 3).
 >
 > **DG1 đã chốt lại cuối ngày 2026-09-14:** khoá phát qua **gRPC `GetJwks`**, không HTTP; cổng hoạt động của addon là **trạng thái kênh gRPC**; bỏ cache đĩa. Plan đã sửa đồng bộ toàn bộ các mục phụ thuộc (Flow, DG7/DG8, Phase 1b/1c/2/3, Risks).
 >
@@ -16,6 +16,8 @@ isProject: false
 > ⚠️ **Phase 1b gồm cả hardening cổng kênh — đã làm.** Đọc kỹ `AddonChannelClient.cs` thấy **4 lỗ độc lập** làm cổng `IsConnected` không đáng tin: chết im lặng (thiếu keepalive), `Cancelled` không reconnect (chết vĩnh viễn), stream kết thúc êm (cổng nói dối là còn sống). Đã bịt bằng keepalive ping + reconnect mọi nhánh + cờ `_streamUp` fail-closed + message `handshake`. Đây là điều kiện của chính DG1, **không** phải việc phụ. Chi tiết ở Phase 1b + Risks.
 
 ## Trạng thái hiện tại (đã đọc code, 2026-09-14)
+
+> ⚠️ **Đây là baseline trước khi làm Phase 0.5/1/2/3 — không phải tình trạng hiện tại.** Phần này giữ nguyên để đối chiếu "trước/sau"; bảng "Kết quả thực tế" cuối mỗi phase mới là cái đúng. Vài chỗ dưới đây đã bị chính các phase thay (vd `AddonSession` không còn tồn tại, middleware không còn `catch (Exception)` trần, revoke đã theo user).
 
 ### Desktop (namorix)
 
@@ -37,7 +39,9 @@ isProject: false
 
 ### Addon SDK (`Namorix.Core`, addon ProjectReference vào)
 
-- `AddonSession { Id, UserId, ClientId, EncryptedAccessToken, EncryptedRefreshToken, AccessTokenExpiresAt, RefreshTokenExpiresAt, CreatedAt, LastSeenAt }` — `AddonSession/AddonSession.cs`
+> ⚠️ Snapshot dưới đây là **trước Phase 3**. Phase 3 đã thay: `AddonSession` → `AddonToken` (bỏ `EncryptedAccessToken`/`AccessTokenExpiresAt`), `IAddonSessionService` → `IAddonTokenStore`, cookie mang chính JWT thay vì session id, và bỏ claim `session_id`. Chi tiết ở mục "Kết quả thực tế" của Phase 3.
+
+- ~~`AddonSession { Id, UserId, ClientId, EncryptedAccessToken, EncryptedRefreshToken, AccessTokenExpiresAt, RefreshTokenExpiresAt, CreatedAt, LastSeenAt }`~~ — `AddonSession/AddonSession.cs` (đã xoá)
 - Token mã hoá bằng DataProtection keyring **của container addon** → desktop không đọc được.
 - `AddonSessionMiddleware` mỗi request tra cookie `nmx_addon_session` → row DB; nếu access token hết hạn thì gọi gRPC `RefreshUserToken`, fail thì **xoá row** → 401.
 - Cookie → claims `NameIdentifier`/`Name`/`session_id`/`client_id`.
@@ -45,8 +49,8 @@ isProject: false
 ### Frontend (`@namorix/core`)
 
 - **PKCE browser đã bị xoá** ở commit `e6b6198`. `useSessionGuard` chỉ gọi `/api/oauth/status`, 401 → `window.location.replace("/api/oauth/login")`. Không có `code_verifier` ở đâu cả.
-- `AddonSessionAuthService.BuildLoginUrlAsync` gửi `response_type=code`, `client_id`, `redirect_uri`, `state` — **không có** `code_challenge`/`code_challenge_method`/`scope`.
-- Desktop `OAuthService:55` vẫn verify PKCE `S256` nếu có, nhưng nhánh này chết.
+- `AddonSessionAuthService.BuildLoginUrlAsync` gửi `response_type=code`, `client_id`, `redirect_uri`, `state` — **không có** `code_challenge`/`code_challenge_method`/`scope`. → **Phase 3 đã gửi PKCE `S256`**; phần browser vẫn không đổi (verifier nằm ở backend addon, không xuống browser).
+- Desktop `OAuthService:55` vẫn verify PKCE `S256` nếu có, nhưng nhánh này chết. → **Phase 3 làm nhánh này sống lại**.
 - `useSessionGuard` chỉ trả `"loading" | "authenticated" | "unauthorized"` — **không có userId**.
 - 401 ở addon: full-page redirect, không refresh tại chỗ.
 
@@ -288,7 +292,7 @@ Hệ quả, cần nhớ:
 - **Đã có sẵn, không phải do 1c:** `ValidateTokenAsync:235` chỉ tra `AddonInstallations` theo `ClientId` của row trong `OAuthTokens`, **không phân biệt grant**. Nên một access token user (giờ là JWT) vẫn được `Connect`/`RequireAddonClientIdAsync` chấp nhận như machine token. Trước 1c cũng vậy (GUID cũng nằm cùng bảng) — không phải lỗ mới, nhưng đáng ghi để Phase 2/6 siết.
 
 
-### Phase 2 — Desktop: revoke theo user + push `session-revoked`
+### Phase 2 — Desktop: revoke theo user + push `session-revoked` ✅ XONG 2026-09-14
 - ~~Migration `OAuthRefreshToken` + `UserId`~~ → **đã làm ở Phase 1a** (kéo lên vì 1c cần `UserId` để set `sub`). Phase 2 chỉ **dùng** cột đó; phần truncate row cũ vẫn treo ở máy chưa chạy (xem Risks).
 - `RevokeTokenAsync` xử lý `token_type_hint == refresh_token`.
 - **Reuse detection**: refresh token đã `Used` bị dùng lại → revoke cả chain `(userId, clientId)` + grace/idempotency window ~10–30s (trả lại **cùng** token mới) để không nổ nhầm khi response bị mất hoặc addon crash trước khi persist. Tái dùng logic revoke-theo-user của DG6.
@@ -297,7 +301,32 @@ Hệ quả, cần nhớ:
 - `AddonChannelManager`: broadcast theo `clientId` (mọi instance của client đó), thay vì/ngoài `DisconnectAsync(addonId)`.
 - `OAuthController.Revoke` bỏ `DisconnectAsync`, chuyển sang push.
 
-### Phase 3 — Addon SDK (`Namorix.Core`): verify local + token store mới
+#### Kết quả thực tế (2026-09-14) — build sạch 3 project, **chưa test runtime**
+
+User chốt cửa sổ grace theo hướng **lưu successor đã mã hoá** (không chọn phương án phát lại token mới / bỏ grace).
+
+| Việc | Chỗ sửa |
+|------|---------|
+| Hằng số | `Constants/OAuth.cs`: `AddonToken.RefreshReuseGraceSeconds = 30`; +`OAuth.TokenTypeHint` (`access_token`/`refresh_token`) |
+| Cột mới | `Models/OAuthRefreshToken.cs`: `ReplacedByAccessTokenId` (1024), `EncryptedReplacedRefreshToken` (500), `ReplacedAt` (nullable) — `set` chứ không `init` vì ghi lên row cũ đã tracked |
+| Migration | `20260914031757_AddOAuthRefreshTokenRotationSuccessor` — **có delta thật** (3 AddColumn), **đã apply vào DB dev** (user chạy `make db-update`) |
+| Grace window | `OAuthService.TryReadSuccessor` — chỉ trong 30s kể từ `ReplacedAt`; `CryptographicException` (key-ring xoay) → coi như mất successor, rơi xuống nhánh theft chứ không bịa token |
+| Revoke chain | `OAuthService.RevokeChainAsync(userId, clientId)` — thay filter `ClientId` đơn thuần bằng `(UserId, ClientId)` theo DG6 |
+| Revoke theo hint | `RevokeTokenAsync` thử đúng hint trước, **rồi thử cái còn lại** (hint chỉ là gợi ý); trả `OAuthRevokedGrant(AddonId, ClientId, UserId)` thay vì chỉ addonId |
+| Revoke refresh token | `RevokeRefreshTokenAsync` gọi luôn `RevokeChainAsync` — nếu chỉ đánh dấu refresh token thì access token của nó vẫn sống hết TTL, vô nghĩa hoá endpoint revoke |
+| Revoke theo user | `OAuthService.RevokeAddonTokensForUserAsync(userId)` — `(userId, *)`, mọi client |
+| Push | `Grpc/SessionRevokedMessage.cs` (mới, ở **Core** vì Phase 3 cần parse ở addon) + `ShellMessage` comment trong proto; `AddonChannelManager.BroadcastToClientAsync(clientId, msg)` + `ChannelContext.ClientId` (lấy ở `AddonChannelService.Connect` qua `GetClientIdAsync`) |
+| Nối dây | `OAuthController.Revoke` bỏ `DisconnectAsync` → push theo `ClientId`; `AuthController.Logout`/`LogoutAll` → `RevokeAddonSessionsAsync(await RevokeRefreshAndResolveUserIdAsync())` (revoke DB + broadcast toàn bộ, payload `userId` để addon tự lọc) |
+| Chống revoke hụt | `AuthService.RevokeTokenByHash` → `Task<int?>` (trả owner của row); `AuthController.RevokeRefreshAndResolveUserIdAsync` — refresh cookie là nguồn userId, access cookie chỉ là fallback. `OAuthService.RevokeAccessTokenAsync` chain-revoke khi `UserId != 0` |
+
+**Hai lỗ do Phase 2 tự lộ ra — đã đóng cùng ngày (2026-09-14), build sạch:**
+
+1. **`AuthController.Logout` lấy `userId` từ access cookie.** Access token hết hạn (15 phút) thì `VerifyAccessToken` trả null → desktop refresh token bị revoke nhưng grant addon **sống sót**.
+   → `AuthService.RevokeTokenByHash` đổi thành `Task<int?>`: trả `UserId` của row trước khi `Remove` (chỉ 1 caller nên đổi signature an toàn). Thêm `AuthController.RevokeRefreshAndResolveUserIdAsync()` — ưu tiên userId từ refresh cookie (credential sống 30 ngày, còn hiệu lực khi access đã hết hạn), fallback `ResolveUserId()` cho request không có refresh token. Cả `Logout` lẫn `LogoutAll` dùng chung helper; `LogoutAll` trước đó lấy userId từ access cookie nên cùng bug.
+2. **`RevokeAccessTokenAsync` chỉ revoke đúng 1 access token**, không đụng refresh token → addon refresh lại là có access token mới, revoke thành vô nghĩa.
+   → Thêm `if (token.UserId != 0) await RevokeChainAsync(token.UserId, token.ClientId);` trong `RevokeAccessTokenAsync`. Guard `UserId != 0` vì machine token (`client_credentials`) tạo row **không set `UserId`** → `0`, không có refresh chain nên revoke row là hết việc; row legacy cũng `UserId = 0` nên không bị chain-revoke — **no-regression** so với trước, và đã nằm trong Risks (truncate legacy trước khi bỏ bảng). **Không thêm cột `GrantType`**: DG8 chốt `OAuthTokens` bỏ khỏi verify path, chỉ giữ làm audit tới Phase 6 → cột phân loại cho bảng sắp chết là scaffolding vứt đi.
+
+### Phase 3 — Addon SDK (`Namorix.Core`): verify local + token store mới ✅ XONG 2026-09-14
 - `AddonSession/NmxAddonTokenValidator.cs` — verify RS256 bằng public key **cache RAM-only** (⚠️ **bản đầu ghi RAM + disk**; bỏ đĩa theo DG1 chốt lại: kênh đứt là addon nghỉ phục vụ, giữ khoá trên đĩa chỉ tạo cảm giác "sống sót khi desktop chết" mà luật nền đã cấm). Check `exp`/`iss`, trả `(userId, clientId)`. Khoá lấy qua **`AddonChannelClient.GetJwksAsync`** (gRPC, không phải `NmxOAuth2Client`/`DesktopApiUrl`), refetch khi gặp `kid` lạ.
 - `AddonSessionMiddleware` → **đọc cookie HttpOnly mang JWT** (giữ cơ chế cookie hiện tại, chỉ đổi payload từ session id sang JWT). **Thứ tự bắt buộc: kiểm kênh TRƯỚC, verify chữ ký SAU.** Kênh đứt (`!channel.IsConnected`) → **503, không đọc cookie, không verify** — đây là cổng bảo mật, và nhờ đặt trước nên nó không tốn thêm gì mỗi request. Kênh sống → verify local → set claims. Không chuyển sang Bearer (DG4).
 - ⚠️ Cổng chỉ đáng tin sau khi Phase 1b hardening xong (keepalive + reconnect cả nhánh `Cancelled` + xử lý kết thúc êm + cờ `_streamUp` fail-closed). Middleware phải đọc **cờ đó**, **không** đọc `_call != null`. Nếu Phase 1b chưa làm thì **không được** coi cổng này là đảm bảo bảo mật.
@@ -309,6 +338,58 @@ Hệ quả, cần nhớ:
 - `AddonSessionAuthController`: `/api/oauth/status` trả thêm `userId`.
 - `AddonChannelClient.ReceiveLoopAsync`: handle `session-revoked` → xoá token record đúng `userId`.
 - **Reconnect re-check**: khi kênh gRPC connect lại, hỏi desktop session nào của `(userId, *)` còn valid → drop phần còn lại. Bịt cửa sổ push-miss.
+
+#### Kết quả thực tế (2026-09-14) — build sạch 3 project, **chưa test runtime**
+
+| Việc | Chỗ sửa |
+|------|---------|
+| Entity | `AddonSession` → `AddonToken` (`Id, UserId, ClientId, EncryptedRefreshToken, RefreshTokenExpiresAt, CreatedAt, LastSeenAt`); bỏ `EncryptedAccessToken`/`AccessTokenExpiresAt`. Xoá `AddonSession.cs` |
+| Ràng buộc | `AddonSessionDbContext.Tokens` + index unique `(ClientId, UserId)` — bất biến dài hạn. Chặn user thứ 2 là **rule tạm DG9 ở tầng app** (`AddonTokenStore.CreateAsync` trả `null`), không nhét vào schema vì Phase 5 sẽ gỡ |
+| Store | `IAddonTokenStore`/`AddonTokenStore<TContext>` thay `IAddonSessionService` — thêm `DeleteMissingAsync`, `ListUserIdsAsync`; `FindAsync`/`DeleteAsync` khoá theo `(userId, clientId)` |
+| Verifier | `NmxAddonTokenValidator` — RS256, key cache **RAM-only** (`Dictionary<kid, SecurityKey>`), `kid` lạ → `GetJwksAsync` refetch 1 lần; JWKS **thay cả cục** chứ không merge để key bị retire thôi verify |
+| Ranh giới exp | `ValidateAsync` **không** enforce `exp` — trả `AddonTokenValidation(..., ExpiresAt, IsExpired)`. Phải nhận ra token "thật nhưng hết hạn" mới refresh được; `null` = không xác thực |
+| Cổng | Middleware kiểm `channel.IsConnected` **trước khi đọc cookie**; đứt → 503, không verify gì |
+| Claims | Bỏ `SessionIdClaim` (không còn session id); cookie mang chính JWT |
+| Refresh | `AddonSessionAuthService.RefreshAsync(userId, clientId)` — lock `(clientId, userId)`, đọc token **trong lock**, `UpdateRefreshTokenAsync` **trước khi** trả JWT mới; trả `null` = grant đã chết |
+| Cookie | `MaxAge = SessionTtlDays` (30 ngày) chứ không theo `exp` 900s — cookie phải sống lâu hơn JWT, nếu không hết 900s là mất luôn khả năng refresh |
+| PKCE | `BuildLoginUrlAsync` sinh verifier → cache theo `state`, gửi `code_challenge`/`S256`; `CompleteLoginAsync` đọc verifier từ cache; `AddonChannelClient.ExchangeUserCodeAsync` thêm tham số `codeVerifier` (proto đã có field) |
+| Revoke online | `AddonChannelClient.OnMessageAsync` (event mới, có I/O) + `AddonSessionChannelHandler : IHostedService` — `session-revoked` → xoá đúng `userId` |
+| Reconnect re-check | Đổi từ "hỏi desktop" sang **desktop push `session-grants` mỗi lần connect** (`SessionGrantsMessage`, payload `{userIds}`): cùng kết quả, bớt 1 round-trip, và dùng lại đúng chỗ desktop đã push handshake/config-update. `AddonChannelClient.ActiveGrantUserIds` giữ list mới nhất để subscriber gắn muộn vẫn áp được |
+| Phía desktop | `OAuthService.GetActiveGrantUserIdsAsync(clientId)` — refresh token `!Used && ExpiresAt > now && UserId > 0` (row legacy `UserId = 0` không phải grant của ai); `AddonChannelService.Connect` push ngay sau config-update, best-effort |
+| Đã có sẵn | `/api/oauth/status` vốn đã trả `userId`; desktop đã nhận `code_challenge` từ trước — Phase 3 chỉ thiếu phía gửi |
+
+**Quyết định & đánh đổi ghi lại:**
+- `ActiveGrantUserIds == null` **khác** `== []`. `null` = chưa nhận được list (hoặc kênh vừa đứt) → không xoá gì; `[]` = desktop bảo "mày không còn grant nào" → xoá hết. Gộp hai cái là wipe sạch token vì một message không tới.
+- Lock ở addon vẫn **in-process**, không dời sang desktop như bản plan đầu. Hai replica cùng refresh một grant vẫn có thể đụng nhau, nhưng grace window 30s của desktop đỡ được ca đó — nên không đáng thêm RPC.
+- Refresh khi JWT hết hạn mà có 2 request song song cùng cookie cũ: request thứ hai vào lock sau, đọc refresh token **mới** (chưa dùng) nên xoay vòng lần nữa — **đúng**, chỉ tốn 1 rotation. Không dùng lại double-check kiểu cũ vì đã bỏ cột `AccessTokenExpiresAt`.
+- Cửa sổ hẹp right after reconnect: handshake mở cổng trước khi `session-grants` tới, nên trong vài ms addon có thể phục vụ grant vừa bị revoke lúc offline. Đúng như plan đã chấp nhận — TTL 900s là chốt chặn cuối.
+- `OAuthErrors.AccessDenied = "access_denied"` thêm mới, dùng cho ca DG9 chặn user thứ 2.
+
+**Nợ đã biết:**
+- ~~Endpoint `POST /api/oauth/logout` của addon chỉ xoá row cục bộ, **không** revoke grant phía desktop → grant cũ còn sống tới 30 ngày~~ ✅ **đã đóng 2026-09-14**, làm sớm so với Phase 6 — xem mục "Addon logout revoke grant" ngay dưới.
+- `AddonSessionChannelHandler` là hosted service `AddonChannelClient` phụ thuộc — addon phải gọi `AddAddonChannelClient()` trước, đã ghi trong comment của `AddAddonSessionAuth`.
+- Chưa test runtime: PKCE end-to-end, `kid` rotation, 503 khi SIGKILL desktop, reconnect + drop grant.
+
+#### Addon logout revoke grant — việc Phase 6 làm sớm ✅ XONG 2026-09-14 (build sạch 3 project, **chưa test runtime**)
+
+User chốt 2 điểm: **(1)** scope revoke là `(userId, clientId)` — logout addon A **không** đá user khỏi addon B; **(2)** kênh đứt thì **503, không cho logout** (không xoá cục bộ rồi để grant treo).
+
+| Việc | Chỗ sửa |
+|------|---------|
+| RPC mới | `Protos/addon_channel.proto`: `RevokeGrant(RevokeGrantRequest) → RevokeGrantResponse` — RPC thứ 5 của kênh. Request **chỉ mang `user_id`**, cố ý **không** có `client_id` |
+| Desktop | `OAuthService.RevokeGrantAsync(userId, clientId)` — bọc `RevokeChainAsync` (đang `private`), scope `(user, client)`; **idempotent**: grant đã chết vẫn trả success |
+| gRPC server | `AddonChannelService.RevokeGrant` — `clientId` lấy từ `RequireAddonClientIdAsync` (machine token), **không** tin payload; chặn `user_id <= 0` (row backfill cũ thuộc về không ai) |
+| Client | `AddonChannelClient.RevokeGrantAsync(userId, ct)` |
+| Addon service | `AddonSessionAuthService.RevokeAsync` — lấy **cùng lease** `(clientId, userId)` với refresh; trả `false` khi desktop không tới được / từ chối |
+| Controller | `AddonSessionAuthController.Logout` — revoke **trước**, desktop xác nhận rồi mới xoá row cục bộ + cookie; revoke thất bại → **503, không logout** |
+
+**Ghi chú thiết kế:**
+1. Lựa chọn (2) gần như miễn phí: cổng `!IsConnected → 503` nằm **đầu** `AddonSessionMiddleware` và **vô điều kiện**, nên kênh đứt thì request chưa tới controller đã 503. Code mới chỉ lo ca "desktop vẫn nối được nhưng từ chối".
+2. Lock chung với refresh là **bắt buộc**, không phải tối ưu: một refresh đang bay có thể ghi row xoay mới lên desktop **sau** lệnh revoke → grant còn sống sau một logout báo thành công.
+3. **Không** cần phân loại trailer `invalid_grant`/`theft_detected` như dự tính ban đầu — `RevokeGrant` idempotent nên ca "grant đã chết" không sinh mã lỗi nào.
+4. **Không** push `session-revoked` ngược về addon sau khi revoke: addon đã tự xoá row, và nhiều replica của cùng addon dùng chung DB token (scout) nên không ai cần báo.
+
+**Nợ còn lại:** lock vẫn **in-process** — 2 replica cùng lúc (một logout, một refresh) vẫn có thể để lại row desktop sống; addon thì đã logout nên chỉ còn row rác phía desktop. Chưa test runtime: kênh đứt → 503, desktop từ chối → 503, revoke thành công → row desktop chết.
 
 ### Phase 4 — `@namorix/core` (teo lại do DG4 chốt cookie)
 - **Không** token store, **không** gắn `Authorization: Bearer`, **không** retry 401 ở FE — token không rời BE, addon BE lo toàn bộ.
@@ -323,24 +404,26 @@ Hệ quả, cần nhớ:
 - **DG9 — nợ kỹ thuật có hạn**: tạm **chặn grant thứ 2** khi đã có `AddonToken` của user khác → 403, kèm cảnh báo rõ trong README/code rằng addon hiện **single-user** (bật multi-user mà quên phần data là rò rỉ camera giữa các user). TODO cụ thể: thêm `UserId` trên `ScCamera` + filter mọi query theo user, rồi mới gỡ chặn.
 
 ### Phase 6 — Dọn dẹp & bảo mật
+- ~~Addon logout phải revoke grant phía desktop~~ ✅ xong sớm 2026-09-14 — xem mục "Addon logout revoke grant" cuối Phase 3.
 - Validate `redirect_uri` theo `ClientId` đã đăng ký (đang bỏ ngỏ).
 - Bỏ nhánh legacy `/api/oauth/token` + cookie `nmx_addon_refresh_token` nếu không còn dùng.
 - Key rotation: hướng dẫn rotate + `kid` overlap.
-- Bump version `Namorix.Core`, `Namorix.Server`, `@namorix/core`; cập nhật memory bank + `FLOW.md`.
+- Bump version `Namorix.Core`, `Namorix.Server`, `@namorix/core`; cập nhật memory bank + `FLOW.md`. Ghi chú cho addon ngoài: kênh đã thêm RPC thứ 5 (`RevokeGrant`) — **additive**, call cũ không đổi, nhưng phải regenerate proto.
 
 ## Rủi ro
 
 | Rủi ro | Mức | Xử lý |
 |---|---|---|
 | Lỗi **tạm** (desktop restart, channel chưa start, timeout) bị xử như lỗi thật → xoá session → **logout oan** | ~~Cao~~ **đã bịt** | ✅ Phase 0.5: bỏ `catch (Exception)` trần, phân loại qua trailer mã lỗi; transient giữ session, trả 503. Phase 3 kế thừa nguyên contract |
-| **Thiếu single-flight** + rotation → 2 request song song cùng refresh, cái sau dùng token đã `Used` → coi là theft → revoke chain → **logout oan**. Bug tính đúng đắn, không phải performance | ~~Cao~~ **đã bịt** | ✅ Phase 0.5: lock per-session + double-check trong `AddonSessionAuthService`. Phase 3 thay bằng lock per `(userId, clientId)` — nhưng contract mã lỗi thì giữ |
-| Reuse detection báo nhầm khi response refresh bị mất, hoặc addon crash sau khi desktop đã rotate mà chưa persist token mới → revoke chain oan | Cao | Grace/idempotency window ~10–30s ở desktop: token cũ còn trong cửa sổ thì trả lại **cùng** token mới thay vì coi là theft. **Phase 0.5 chỉ bịt ca race, không bịt ca mất response** |
+| **Thiếu single-flight** + rotation → 2 request song song cùng refresh, cái sau dùng token đã `Used` → coi là theft → revoke chain → **logout oan**. Bug tính đúng đắn, không phải performance | ~~Cao~~ **đã bịt** | ✅ Phase 0.5: lock per-session. ✅ Phase 3: lock per `(clientId, userId)` trong `AddonSessionAuthService.RefreshAsync`, đọc refresh token **trong lock**, persist trước khi trả JWT mới; contract mã lỗi giữ nguyên. Lock vẫn **in-process** — 2 replica addon cùng refresh một grant vẫn có thể đụng, nhưng grace 30s ở desktop đỡ được ca đó |
+| Reuse detection báo nhầm khi response refresh bị mất, hoặc addon crash sau khi desktop đã rotate mà chưa persist token mới → revoke chain oan | ~~Cao~~ **đã bịt** | ✅ Phase 2: grace window 30s (`AddonToken.RefreshReuseGraceSeconds`) — desktop giữ successor đã mã hoá trên row vừa bị tiêu, replay trong cửa sổ trả lại **cùng** token mới thay vì coi là theft. ✅ Phase 3 phía addon: `UpdateRefreshTokenAsync` chạy **trước** khi trả response, nên ca "crash trước khi persist" không còn xảy ra |
 | `RefreshAddonTokenAsync` cấp token `UserId = 0` → revoke theo user nhắm sai | ~~Cao~~ **đã bịt** | ✅ Phase 1a: set `UserId = stored.UserId` cho **cả** `OAuthToken` và `OAuthRefreshToken` mới; gRPC `RefreshUserToken` trả `user_id`. ⚠️ **chưa verify runtime** — repo không có test project nên phải soi row bằng tay. ⚠️ Phase 1c thêm hệ quả: row cũ `UserId = 0` giờ sinh JWT `sub = "0"`, nên `userId` addon nhận cũng sai, không chỉ revoke nhắm sai |
-| Push miss khi addon offline | Thấp | Bịt theo 4 lớp, mạnh nhất đứng đầu: **kênh đứt** (tức thời) → push (addon online) → reconnect re-check (addon down) → TTL 900s là chốt chặn cuối. Cửa sổ hẹp hơn TTL nhiều vì addon down thì không phục vụ ai |
+| Push miss khi addon offline | Thấp | Bịt theo 4 lớp, mạnh nhất đứng đầu: **kênh đứt** (tức thời) → push (addon online) → reconnect re-check (addon down) → TTL 900s là chốt chặn cuối. Cửa sổ hẹp hơn TTL nhiều vì addon down thì không phục vụ ai. ✅ Phase 3 làm lớp 3 thành thật: desktop push `session-grants` mỗi lần connect, addon `DeleteMissingAsync`. ⚠️ Còn cửa sổ vài ms sau `handshake` — handshake mở cổng trước khi list tới, nên grant bị revoke lúc offline có thể được phục vụ trong khoảng đó; TTL 900s là chốt cuối, đúng như đã chấp nhận |
 | **Cổng kênh không đáng tin** (mới phát hiện khi đọc `AddonChannelClient.cs`) — 4 lỗ độc lập, cộng lại phá đúng luật nền DG1: (1) chết im lặng (half-open/kill không sạch/treo) không ném exception vì không có keepalive ping; (2) nhánh `StatusCode.Cancelled` set `_call = null` **mà không reconnect** → addon chết vĩnh viễn tới khi restart process; (3) stream kết thúc êm → thoát khỏi mọi catch, `_call` giữ nguyên → **cổng nói dối là còn sống** trong khi đã mất kênh | ~~Cao~~ **đã code, chưa test runtime** | ✅ Phase 1b: keepalive ping; `Cancelled` + kết thúc êm đi chung đường reconnect (trừ shutdown thật); `IsConnected` → cờ `_streamUp` **fail-closed**, mở chỉ khi nhận `handshake`. ⚠️ **Chưa chạy thật lần nào** — test tay còn nợ: SIGKILL desktop → 503 trong vài giây; cắt stream êm → addon tự nối lại |
 | Revoke theo user dựa vào `OAuthRefreshToken.UserId`; row cũ `UserId = 0` (máy khác chưa truncate) → revoke không trúng ai | Trung bình | Phase 1a mới chỉ `AddColumn`; user đã truncate tay trên DB dev. Máy/instance khác phải truncate tay, hoặc thêm `Sql("DELETE FROM OAuthRefreshTokens;")` vào migration sau |
 | Addon tách FE sang origin khác BE → cookie không tự gắn | Thấp | Hiện FE+BE cùng origin (cookie `nmx_addon_session` đang chạy). Addon nào tách origin thì phải tính lại (Bearer + CORS) |
-| Breaking cho mọi addon ngoài (khác scout) | Trung bình | Coi là breaking change, bump major `Namorix.Core` |
+| Breaking cho mọi addon ngoài (khác scout) | Trung bình | ✅ Phase 3 đã gây break: xoá `AddonSession`/`IAddonSessionService`, thêm `AddonToken`/`IAddonTokenStore`, `AddonSessionDbContext.Sessions` → `.Tokens` (+ index unique `(ClientId, UserId)`), bỏ claim `session_id`. Addon phải viết migration riêng (Phase 5). Bump major `Namorix.Core` để ở Phase 6 |
+| Logout addon bị **503 khi desktop từ chối** → user kẹt, không đăng xuất được cho tới khi desktop chịu revoke | Thấp | Cố ý theo lựa chọn (2) của user 2026-09-14: thà kẹt logout còn hơn báo "đã đăng xuất" trong khi grant bên desktop vẫn refresh được tới 30 ngày. FE addon phải hiện lỗi + cho bấm lại, **không** tự xoá cookie |
 
 ## Không nằm trong phạm vi
 

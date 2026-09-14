@@ -27,6 +27,18 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [progress.md](progress.md) (September 2026), [versionHistory-08-2026.md](../archive/versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-09-14 — Addon SDK verify JWT offline + token store mới; desktop revoke theo user + push session-revoked/session-grants; addon logout revoke grant (Namorix.Core 0.64.0 / Namorix.Server 0.82.0)
+
+Kế hoạch: `.claude/plans/01-addon-oauth-token-model.plan.md` — Phase 2 → 3, cộng việc Phase 6 làm sớm (addon logout). **Chưa mục nào test runtime**, build sạch 3 project.
+
+- **Addon verify offline (Phase 3):** `NmxAddonTokenValidator` verify RS256 bằng public key lấy qua `GetJwks`, cache **RAM-only**, `kid` lạ → refetch 1 lần. Cố ý **không** enforce `exp` — trả `IsExpired` để middleware tự refresh. Cookie `nmx_addon_session` giờ mang **chính JWT**, `MaxAge = SessionTtlDays` (phải sống lâu hơn JWT 900s, không thì mất đường refresh).
+- **Token store mới (BREAKING):** xoá `AddonSession`/`AddonSessionService`/`IAddonSessionService`; thêm `AddonToken` + `IAddonTokenStore`/`AddonTokenStore<TContext>`, `AddonSessionDbContext.Sessions` → `Tokens` (+ index unique `(ClientId, UserId)`). Không lưu access token — JWT verify offline nên lưu lại chỉ thành nguồn sự thật thứ hai. `CreateAsync` trả `null` khi client đã có grant của user khác (**DG9**).
+- **Revoke online (Phase 2 + 3):** desktop `RevokeChainAsync` filter `(UserId, ClientId)` theo **DG6**; push `session-revoked` khi revoke; push `session-grants` **mỗi lần** addon connect. `AddonSessionChannelHandler` áp cả hai; phân biệt `null` (kênh đứt, **không** xoá gì) với `[]` (hết grant → xoá hết).
+- **Grace 30s cho rotation:** response refresh bị mất → replay trong cửa sổ trả **đúng** token mới thay vì coi là theft (successor mã hoá lưu trên row vừa tiêu).
+- **Addon logout revoke grant (Phase 6 làm sớm):** RPC thứ 5 `RevokeGrant` trên `addon_channel.proto`; `Logout` revoke **trước** rồi mới xoá row + cookie; desktop từ chối → **503, không logout** (user chốt: thà kẹt còn hơn báo "đã đăng xuất" sai). Scope `(userId, clientId)` — logout addon A không đá user khỏi addon B.
+- **Còn nợ:** lock refresh/logout **in-process**; chưa test runtime (PKCE end-to-end, `kid` rotation, 503 khi SIGKILL desktop, reconnect + drop grant, logout 503); bump major `Namorix.Core` để Phase 6.
+- Versions: Namorix.Core 0.63.0 → 0.64.0 / Namorix.Server 0.81.0 → 0.82.0 (@namorix/core/ui/styles/frontend không đổi — không bump).
+
 ### 2026-09-14 — Addon OAuth: access token = JWT RS256, JWKS qua gRPC, gate `IsConnected` fail-closed, TTL 900s, refresh token gắn UserId (Namorix.Core 0.63.0 / Namorix.Server 0.81.0)
 
 Kế hoạch: `.claude/plans/01-addon-oauth-token-model.plan.md` — giai đoạn 0.5 → 1c. **Chưa có mục nào chạy end-to-end**: addon chưa verify JWT (Phase 3), `GetJwks` chưa được gọi trên channel sống, gate/503 chưa test runtime. Build sạch 3 project, 0 warning.
