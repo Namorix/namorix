@@ -11,13 +11,13 @@ public class AddonChannelManager
     public ChannelContext? Get(string addonId) =>
         _channels.GetValueOrDefault(addonId);
     
-    public ChannelContext Register(string addonId, CancellationTokenSource cts)
+    public ChannelContext Register(string addonId, string clientId, CancellationTokenSource cts)
     {
-        var ctx = new ChannelContext(addonId, cts);
+        var ctx = new ChannelContext(addonId, clientId, cts);
         _channels[addonId] = ctx;
         return ctx;
     }
-    
+
     public void DisconnectAsync(string addonId)
     {
         Console.WriteLine("DisconnectAsync");
@@ -47,11 +47,32 @@ public class AddonChannelManager
             }
         }
     }
+
+    // Revoking one user's grant is scoped to the OAuth client that holds it, so it must
+    // not travel over the addonId path: one addon can host several clients, and a user
+    // logging out of one must not tear down the others.
+    public async Task BroadcastToClientAsync(string clientId, ShellMessage message)
+    {
+        foreach (var ctx in _channels.Values)
+        {
+            if (ctx.ClientId != clientId || ctx.ResponseStream is null)
+                continue;
+            try
+            {
+                await ctx.ResponseStream.WriteAsync(message);
+            }
+            catch
+            {
+                // Connection likely closed; next DisconnectAsync() removes it.
+            }
+        }
+    }
 }
 
-public class ChannelContext(string addonId, CancellationTokenSource cts)
+public class ChannelContext(string addonId, string clientId, CancellationTokenSource cts)
 {
     public string AddonId { get; } = addonId;
+    public string ClientId { get; } = clientId;
     public CancellationToken Token => cts.Token;
     public IServerStreamWriter<ShellMessage>? ResponseStream { get; set; }
     public void Cancel() => cts.Cancel();

@@ -29,7 +29,6 @@ public static class OAuth
     public static class AddonToken
     {
         public const string Issuer = "namorix-desktop";
-        public const string SessionIdClaim = "session_id";
         public const string ClientIdClaim = "client_id";
 
         // Single source of truth for the addon access token lifetime (DG7). The JWT
@@ -38,6 +37,19 @@ public static class OAuth
         // minutes before refreshing and every request in that gap fails.
         // Not used for the client_credentials machine token, whose TTL is separate.
         public const int AccessTokenTtlSeconds = 900;
+
+        // A token that was just rotated can legitimately be presented again: the
+        // response carrying its successor may have been lost, or the addon may have
+        // crashed before persisting it. Inside this window we hand back the same
+        // successor instead of reading the retry as theft, which would revoke the
+        // whole chain and log the user out over a dropped packet.
+        public const int RefreshReuseGraceSeconds = 30;
+    }
+
+    public static class TokenTypeHint
+    {
+        public const string AccessToken = "access_token";
+        public const string RefreshToken = "refresh_token";
     }
 
     public static class GrantTypes

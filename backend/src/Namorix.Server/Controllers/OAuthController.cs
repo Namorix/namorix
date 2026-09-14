@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Namorix.Core.Config;
 using Namorix.Core.Constants;
 using Namorix.Core.Extensions;
+using Namorix.Core.Grpc;
 using Namorix.Core.OAuth;
 using Namorix.Core.Responses;
 using Namorix.Server.Services;
@@ -124,10 +125,15 @@ public class OAuthController(OAuthService oauth, AddonChannelManager channelMana
     [HttpPost("revoke")]
     public async Task<IActionResult> Revoke([FromBody] RevokeRequest request)
     {
-        var addonId = await oauth.RevokeTokenAsync(request.Token, request.TokenTypeHint);
-        if (addonId != null)
-            channelManager.DisconnectAsync(addonId);
-        
+        var revoked = await oauth.RevokeTokenAsync(request.Token, request.TokenTypeHint);
+        if (revoked is not null)
+        {
+            // Push, don't disconnect: the channel carries other users' sessions for the
+            // same addon, so tearing it down would log them all out.
+            await channelManager.BroadcastToClientAsync(revoked.ClientId,
+                SessionRevokedMessage.For(revoked.UserId));
+        }
+
         return Ok(new { }); // OAuth2 spec: always 200
     }
     

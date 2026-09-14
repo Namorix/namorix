@@ -243,22 +243,26 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig,
         return (user, newAccessToken, newRefreshToken, storedToken.RememberMe);
     }
 
-    public async Task RevokeTokenByHash(string rawToken)
+    // Returns the owner of the row it deleted. The refresh token outlives the access
+    // token by weeks, so it is the only credential still present when a desktop session
+    // is ended late — callers need its userId to reach that user's addon grants.
+    public async Task<int?> RevokeTokenByHash(string rawToken)
     {
         try
         {
             var hash = TokenHash.HashToken(rawToken);
             var token = await dbContext.RefreshTokens.FirstOrDefaultAsync(rt => rt.TokenHash == hash);
 
-            if (token != null)
-            {
-                dbContext.RefreshTokens.Remove(token);
-                await dbContext.SaveChangesAsync();
-            }
+            if (token is null)
+                return null;
+
+            dbContext.RefreshTokens.Remove(token);
+            await dbContext.SaveChangesAsync();
+            return token.UserId;
         }
         catch (FormatException)
         {
-            return;
+            return null;
         }
     }
 

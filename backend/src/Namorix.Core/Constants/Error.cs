@@ -59,6 +59,7 @@ public static class OAuthErrors
     public const string InvalidGrant = "invalid_grant";
     public const string InvalidClient = "invalid_client";
     public const string InvalidRequest = "invalid_request";
+    public const string AccessDenied = "access_denied";
     public const string TheftDetected = "theft_detected";
 }
 

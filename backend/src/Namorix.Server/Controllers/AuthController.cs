@@ -4,6 +4,7 @@ using Namorix.Core.Config;
 using Namorix.Core.Constants;
 using Namorix.Core.Exceptions;
 using Namorix.Core.Extensions;
+using Namorix.Core.Grpc;
 using Namorix.Core.Models;
 using Namorix.Core.Responses;
 using Namorix.Core.Validation;
@@ -17,6 +18,7 @@ namespace Namorix.Server.Controllers;
 [ApiController]
 [Route("api/auth")]
 public class AuthController(AuthService authService, SettingsService settingsService,
+    OAuthService oauthService, AddonChannelManager channelManager,
     IOptions<AppConfig> appConfig) : ControllerBase
 {
     private readonly AppConfig _appConfig = appConfig.Value;
@@ -81,10 +83,8 @@ public class AuthController(AuthService authService, SettingsService settingsSer
     [TrafficPost("logout", Label = "Auth Logout")]
     public async Task<IActionResult> Logout()
     {
-        var refreshToken = GetRefreshCookie();
-        if (!string.IsNullOrEmpty(refreshToken))
-            await authService.RevokeTokenByHash(refreshToken);
-        
+        await RevokeAddonSessionsAsync(await RevokeRefreshAndResolveUserIdAsync());
+
         ClearAccessCookie();
         ClearRefreshCookie();
 
@@ -94,18 +94,17 @@ public class AuthController(AuthService authService, SettingsService settingsSer
     [TrafficPost("logout-all", Label = "Auth Logout All")]
     public async Task<IActionResult> LogoutAll()
     {
-        var accessToken = GetAccessCookie();
-        if (!string.IsNullOrEmpty(accessToken))
-        {
-            var payload = authService.VerifyAccessToken(accessToken);
-            if (payload.HasValue)
-                await authService.RevokeAllUserTokens(payload.Value.userId);
-        }
-        
+        var userId = await RevokeRefreshAndResolveUserIdAsync();
+        if (userId is not null)
+            await authService.RevokeAllUserTokens(userId.Value);
+
+        await RevokeAddonSessionsAsync(userId);
+
         ClearAccessCookie();
         ClearRefreshCookie();
         return Ok(ApiResponse.Ok());
     }
+
 
     [TrafficGet("session", Label = "Auth Session")]
     public async Task<IActionResult> Session()
@@ -180,6 +179,44 @@ public class AuthController(AuthService authService, SettingsService settingsSer
         }
     }
     
+    private int? ResolveUserId()
+    {
+        var accessToken = GetAccessCookie();
+        if (string.IsNullOrEmpty(accessToken))
+            return null;
+
+        return authService.VerifyAccessToken(accessToken)?.userId;
+    }
+
+    // The refresh token outlives the access token by weeks, so it is the credential still
+    // present when logout lands after the 15-minute access window closed. Revoking it also
+    // yields its owner; the access cookie is only a fallback for a request that arrived
+    // without a refresh token.
+    private async Task<int?> RevokeRefreshAndResolveUserIdAsync()
+    {
+        var refreshToken = GetRefreshCookie();
+        if (!string.IsNullOrEmpty(refreshToken))
+        {
+            var ownerId = await authService.RevokeTokenByHash(refreshToken);
+            if (ownerId is not null)
+                return ownerId;
+        }
+
+        return ResolveUserId();
+    }
+
+    // DG6: the desktop session is the addon's root of trust, so ending it ends every
+    // addon grant the user holds. The push carries userId because it goes out to every
+    // connected addon — each one must drop only the session that belongs to it.
+    private async Task RevokeAddonSessionsAsync(int? userId)
+    {
+        if (userId is null)
+            return;
+
+        await oauthService.RevokeAddonTokensForUserAsync(userId.Value);
+        await channelManager.BroadcastAsync(SessionRevokedMessage.For(userId.Value));
+    }
+
     private string? GetAccessCookie() => Request.Cookies[CookieName.AccessToken];
     private string? GetRefreshCookie() => Request.Cookies[CookieName.RefreshToken];
 

@@ -26,7 +26,8 @@ public class AddonChannelService(AddonChannelManager manager, OAuthService oauth
 
         logger.LogInformation("Addon {AddonId} connected via gRPC", addonId);
         using var cts = new CancellationTokenSource();
-        var ctx = manager.Register(addonId, cts);
+        var clientId = await oauth.GetClientIdAsync(addonId);
+        var ctx = manager.Register(addonId, clientId ?? string.Empty, cts);
         ctx.ResponseStream = responseStream;
 
         // Sent unconditionally, before anything that can fail: the addon opens its
@@ -42,6 +43,20 @@ public class AddonChannelService(AddonChannelManager manager, OAuthService oauth
         catch
         {
             // Push is best-effort; the receive loop below still owns the stream lifecycle.
+        }
+
+        try
+        {
+            // Every (re)connect, so a revoke that happened while the addon was offline is
+            // repaired here rather than waited on: that push reached nobody, and without
+            // this the addon would keep a dead grant until its next refresh was refused.
+            var activeUserIds = await oauth.GetActiveGrantUserIdsAsync(clientId ?? string.Empty);
+            await responseStream.WriteAsync(SessionGrantsMessage.For(activeUserIds), cts.Token);
+        }
+        catch
+        {
+            // Same as above: best-effort. A missed list only delays the repair, it does not
+            // leave the addon serving a revoked user — the channel-down gate covers that.
         }
 
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
@@ -157,6 +172,23 @@ public class AddonChannelService(AddonChannelManager manager, OAuthService oauth
             PublicKeyPem = signer.PublicKeyPem,
         });
         return response;
+    }
+
+    public override async Task<RevokeGrantResponse> RevokeGrant(
+        RevokeGrantRequest request, ServerCallContext context)
+    {
+        // clientId comes from the machine token, never from the payload. That is the whole
+        // reason the request has no client_id field: an addon must not be able to revoke a
+        // grant it does not own, whatever it claims.
+        var clientId = await RequireAddonClientIdAsync(context);
+
+        // 0 is the pre-Phase-1a backfill, which belongs to no user. Revoking it would be
+        // revoking nothing while reporting success.
+        if (request.UserId <= 0)
+            throw new RpcException(new Status(StatusCode.InvalidArgument, "user_id must be a real user"));
+
+        await oauth.RevokeGrantAsync((int)request.UserId, clientId);
+        return new RevokeGrantResponse();
     }
 
     private async Task<string> RequireAddonClientIdAsync(ServerCallContext context)

@@ -17,4 +17,12 @@ public class OAuthRefreshToken
     public DateTime ExpiresAt { get; init; }
     public DateTime CreatedAt { get; init; }
     public bool Used { get; set; }
+
+    // Rotation successor, recorded on the token we just marked Used so a retry arriving
+    // inside RefreshReuseGraceSeconds can be answered with the same pair instead of
+    // being read as theft. The refresh half is encrypted at rest and nothing else ever
+    // reads it back.
+    [MaxLength(1024)] public string? ReplacedByAccessTokenId { get; set; }
+    [MaxLength(500)] public string? EncryptedReplacedRefreshToken { get; set; }
+    public DateTime? ReplacedAt { get; set; }
 }

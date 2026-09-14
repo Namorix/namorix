@@ -28,8 +28,27 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
     private CancellationToken _lifetimeCt;
 
     public event Action<ShellMessage>? OnMessage;
+
+    // Same stream of messages, for handlers that need to do I/O (a revocation push has to
+    // reach the token store). Awaited inside the receive loop's try/catch, so a failing
+    // handler is logged instead of killing the stream.
+    public event Func<ShellMessage, Task>? OnMessageAsync;
+
     public bool IsConnected => _streamUp;
     public string? BrowserOrigin { get; private set; }
+
+    // Newest grant list the desktop pushed on this stream, or null when no proven stream
+    // has delivered one. Exposed as state and not just an event so a subscriber that
+    // attaches after the push can still apply it.
+    public IReadOnlyList<int>? ActiveGrantUserIds { get; private set; }
+
+    // Closes the availability gate. Also drops the grant list: an unproven channel has no
+    // proven truth about which grants are still alive.
+    private void MarkStreamDown()
+    {
+        _streamUp = false;
+        ActiveGrantUserIds = null;
+    }
 
     public async Task StartAsync(CancellationToken ct = default)
     {
@@ -82,7 +101,18 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
                     if (msg.Type == DesktopConfigMessage.TypeConfigUpdate)
                         BrowserOrigin = DesktopConfigMessage.ParseDesktopDomain(msg.Payload);
 
+                    if (msg.Type == SessionGrantsMessage.Type)
+                    {
+                        if (SessionGrantsMessage.ParseUserIds(msg.Payload) is { } userIds)
+                            ActiveGrantUserIds = userIds;
+                        else
+                            logger.LogWarning("Ignoring unreadable {Type} payload", msg.Type);
+                    }
+
                     OnMessage?.Invoke(msg);
+
+                    if (OnMessageAsync is { } asyncHandler)
+                        await asyncHandler(msg);
                 }
                 catch (Exception ex)
                 {
@@ -102,7 +132,7 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
             // Whoever cancelled owns the next transition, so reconnecting here would
             // race their StartAsync and spin — just close the gate and stop.
             logger.LogDebug("Receive loop cancelled");
-            _streamUp = false;
+            MarkStreamDown();
             return;
         }
         catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled)
@@ -117,7 +147,7 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
 
         // Every non-cancellation exit closes the gate. Fail closed: an unproven
         // channel never serves requests.
-        _streamUp = false;
+        MarkStreamDown();
 
         // Only reconnect if the service hasn't been asked to shut down.
         // Use _lifetimeCt (not ct/_cts.Token) because StopAsync() inside
@@ -135,7 +165,7 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
     }
 
     public async Task<OAuthTokenResult> ExchangeUserCodeAsync(
-        string code, string clientId, CancellationToken ct = default)
+        string code, string clientId, string codeVerifier, CancellationToken ct = default)
     {
         EnsureStarted();
         var stub = new AddonChannel.AddonChannelClient(_channel!);
@@ -144,6 +174,7 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
             {
                 Code = code,
                 ClientId = clientId,
+                CodeVerifier = codeVerifier,
                 ClientAssertion = await oauth.CreateClientAssertionAsync(ct),
             },
             await BuildAuthHeadersAsync(ct),
@@ -175,6 +206,16 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
             cancellationToken: ct);
     }
 
+    public async Task RevokeGrantAsync(int userId, CancellationToken ct = default)
+    {
+        EnsureStarted();
+        var stub = new AddonChannel.AddonChannelClient(_channel!);
+        await stub.RevokeGrantAsync(
+            new RevokeGrantRequest { UserId = userId },
+            await BuildAuthHeadersAsync(ct),
+            cancellationToken: ct);
+    }
+
     private void EnsureStarted()
     {
         if (_channel == null)
@@ -194,7 +235,7 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
     {
         // Close the gate first: the call is about to be torn down, so until a new
         // stream hands us proof of life we are not connected.
-        _streamUp = false;
+        MarkStreamDown();
 
         if (_call != null)
         {
