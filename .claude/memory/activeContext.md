@@ -27,6 +27,11 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [progress.md](progress.md) (September 2026), [versionHistory-08-2026.md](../archive/versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-09-14 — Icon `ic-fullscreen-exit` cho Scout (@namorix/ui 0.53.0 / @namorix/styles 0.62.0)
+
+- Nút fullscreen trên card camera cần icon thoát riêng → thêm `FULLSCREEN_EXIT` (`ic-fullscreen-exit`) rồi rebuild icomoon.
+- Icomoon cấp `\e94a` cho icon mới và **dời `ic-fullscreen` sang `\e94b`** — mã icon cũ có đổi, nhưng `ic-fullscreen` mới thêm cùng ngày, chưa addon nào dùng nên không vỡ icon ở đâu.
+
 ### 2026-09-14 — Icon `ic-live` + `ic-fullscreen` cho Scout (@namorix/ui 0.52.0 / @namorix/styles 0.61.0)
 
 - Thêm cho namorix-scout v0.5.0: icon tab Live + nút fullscreen trên card camera.

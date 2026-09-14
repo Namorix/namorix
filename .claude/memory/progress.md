@@ -1,5 +1,14 @@
 # Version History — September 2026
 
+## 2026-09-14 — Icon `ic-fullscreen-exit` cho Scout; icomoon dồn mã `ic-fullscreen`; bump 2 package
+
+> Yêu cầu từ namorix-scout: nút fullscreen trên card camera cần icon thoát riêng. Icomoon khi thêm glyph mới đã cấp `\e94a` cho `ic-fullscreen-exit` và đẩy `ic-fullscreen` sang `\e94b` — **có đổi mã icon cũ**, nhưng `ic-fullscreen` mới thêm cùng ngày và chưa addon nào dùng nên không vỡ.
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/ui | 0.52.0 → 0.53.0 | MODIFIED: `Primitives/NmxIcon/NmxIconFont.types.ts` +`FULLSCREEN_EXIT` (`ic-fullscreen-exit`). |
+| @namorix/styles | 0.61.0 → 0.62.0 | MODIFIED: icomoon rebuild (`variables.scss` +`$ic-fullscreen-exit: "\e94a"`, `$ic-fullscreen` `\e94a` → `\e94b`; `fonts.scss` +`.ic-fullscreen-exit`; `_font-face.scss`/`selection.json`). |
+
 ## 2026-09-14 — Icons `ic-live` + `ic-fullscreen` cho Scout live view; bump 2 package
 
 > Yêu cầu từ namorix-scout: tab Live cần icon riêng + nút fullscreen trên card camera. Chỉ **thêm** glyph mới — không đổi mã icon cũ, không package nào khác bị ảnh hưởng.
