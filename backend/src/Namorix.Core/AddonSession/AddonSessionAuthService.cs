@@ -16,6 +16,7 @@ public sealed class AddonSessionAuthService(
     NmxOAuth2Client oauth,
     NmxAddonConfig config,
     IAddonSessionService sessions,
+    AddonSessionLockRegistry sessionLocks,
     IMemoryCache cache,
     IOptions<AddonSessionAuthOptions> options,
     ILogger<AddonSessionAuthService> logger)
@@ -80,14 +81,24 @@ public sealed class AddonSessionAuthService(
 
     public async Task RefreshSessionAsync(AddonSession session, CancellationToken ct)
     {
-        var refreshToken = sessions.DecryptRefreshToken(session);
+        await using var lease = await sessionLocks.AcquireAsync(session.Id, ct);
+
+        // Re-read inside the lock: if a concurrent request already refreshed, reuse its result
+        // instead of presenting the rotated refresh token, which the desktop treats as theft.
+        var current = await sessions.FindAsync(session.Id, ct);
+        if (current is null)
+            return;
+        if (current.AccessTokenExpiresAt > DateTime.UtcNow)
+            return;
+
+        var refreshToken = sessions.DecryptRefreshToken(current);
         if (string.IsNullOrEmpty(refreshToken))
             throw new InvalidOperationException("Session has no refresh token.");
 
         await oauth.CreateClientAssertionAsync(ct);
-        var result = await channel.RefreshUserTokenAsync(refreshToken, session.ClientId, ct);
+        var result = await channel.RefreshUserTokenAsync(refreshToken, current.ClientId, ct);
 
-        await sessions.UpdateTokensAsync(session,
+        await sessions.UpdateTokensAsync(current,
             result.AccessToken, result.RefreshToken, (int)result.ExpiresIn, ct);
     }
 }

@@ -1,7 +1,9 @@
 using System.Security.Claims;
+using Grpc.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Namorix.Core.Constants;
 
 namespace Namorix.Core.AddonSession;
 
@@ -36,12 +38,26 @@ public sealed class AddonSessionMiddleware(
                 {
                     await oauth.RefreshSessionAsync(session, context.RequestAborted);
                 }
-                catch (Exception ex)
+                catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
+                {
+                    return;
+                }
+                catch (Exception ex) when (IsFatalRefreshFailure(ex))
                 {
                     logger.LogWarning(ex,
-                        "Silent refresh failed for session {SessionId}; removing session", sessionId);
+                        "Session {SessionId} rejected by desktop; removing session", sessionId);
                     await sessions.DeleteAsync(sessionId, context.RequestAborted);
                     session = null;
+                }
+                catch (Exception ex)
+                {
+                    // Only an explicit fatal code means the session is dead. Anything else
+                    // (desktop restarting, channel not started, timeout) is transient — keeping
+                    // the session avoids logging the user out over a recoverable failure.
+                    logger.LogWarning(ex,
+                        "Transient refresh failure for session {SessionId}; keeping session", sessionId);
+                    context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+                    return;
                 }
             }
         }
@@ -53,8 +69,8 @@ public sealed class AddonSessionMiddleware(
             [
                 new Claim(ClaimTypes.NameIdentifier, userId),
                 new Claim(ClaimTypes.Name, userId),
-                new Claim("session_id", session.Id),
-                new Claim("client_id", session.ClientId),
+                new Claim(Constants.OAuth.AddonToken.SessionIdClaim, session.Id),
+                new Claim(Constants.OAuth.AddonToken.ClientIdClaim, session.ClientId),
             ], opts.AuthenticationScheme);
 
             context.User = new ClaimsPrincipal(identity);
@@ -62,4 +78,9 @@ public sealed class AddonSessionMiddleware(
 
         await next(context);
     }
+
+    private static bool IsFatalRefreshFailure(Exception ex)
+        => ex is RpcException rpc
+           && rpc.Trailers.GetValue(Constants.OAuth.Trailer.ErrorCode)
+               is OAuthErrors.TheftDetected or OAuthErrors.InvalidGrant;
 }

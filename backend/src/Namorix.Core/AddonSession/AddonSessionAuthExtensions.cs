@@ -19,6 +19,7 @@ public static class AddonSessionAuthExtensions
 
         services.AddSingleton<IAddonTokenProtector, DataProtectionTokenProtector>();
         services.AddSingleton<IAddonSessionService, AddonSessionService<TContext>>();
+        services.AddSingleton<AddonSessionLockRegistry>();
         services.AddSingleton<AddonSessionAuthService>();
 
         services.AddControllers()

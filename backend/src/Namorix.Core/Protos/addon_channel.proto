@@ -10,6 +10,10 @@ service AddonChannel {
   rpc ExchangeUserCode(ExchangeCodeRequest) returns (OAuthTokenResult);
   // Addon backend refreshes a user's access token using the stored refresh token.
   rpc RefreshUserToken(RefreshTokenRequest) returns (OAuthTokenResult);
+  // Public key(s) the desktop signs addon access tokens with. Delivered on the
+  // authenticated channel on purpose: the desktop is the only auth server, so an
+  // addon that cannot reach it must not be able to verify tokens either.
+  rpc GetJwks(JwksRequest) returns (JwksResponse);
 }
 
 message AddonMessage {
@@ -41,4 +45,18 @@ message OAuthTokenResult {
   string refresh_token = 2;
   int64 expires_in = 3;
   int64 user_id = 4;
+}
+
+message JwksRequest {}
+
+message JwksResponse {
+  // Newest first. More than one entry only during a key rotation overlap.
+  repeated AddonSigningKey keys = 1;
+}
+
+message AddonSigningKey {
+  string kid = 1;
+  // SubjectPublicKeyInfo, PEM. The only consumer is a .NET addon, and the
+  // transport is gRPC, so PEM beats hand-encoding JWK n/e as base64url bignums.
+  string public_key_pem = 2;
 }

@@ -15,13 +15,20 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
     private CancellationTokenSource? _cts;
     private Task? _receiveTask;
 
+    // True only while the desktop has proven it is alive on the open stream (it
+    // sent the handshake and the receive loop has not ended). This is the addon's
+    // availability gate: the desktop is the only auth server, so when we cannot
+    // prove it is reachable we must not serve. Deliberately not "does a call
+    // object exist" — that was true before the connection was even established.
+    private volatile bool _streamUp;
+
     // Token independent of the internal _cts, representing the service's lifetime
     // (e.g. ApplicationStopping). StopAsync() cancels _cts but does NOT touch this token,
     // so ReconnectAsync can still use it after StopAsync() has run.
     private CancellationToken _lifetimeCt;
 
     public event Action<ShellMessage>? OnMessage;
-    public bool IsConnected => _call != null;
+    public bool IsConnected => _streamUp;
     public string? BrowserOrigin { get; private set; }
 
     public async Task StartAsync(CancellationToken ct = default)
@@ -36,7 +43,14 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
             HttpHandler = new SocketsHttpHandler
             {
                 PooledConnectionLifetime = TimeSpan.FromMinutes(5),
-                EnableMultipleHttp2Connections = true
+                EnableMultipleHttp2Connections = true,
+                // Without pings, a desktop that died uncleanly (SIGKILL, half-open
+                // TCP, frozen host) looks exactly like a healthy one, so the gate
+                // above would stay open forever. Pings turn that into a stream
+                // error within seconds.
+                KeepAlivePingDelay = TimeSpan.FromSeconds(15),
+                KeepAlivePingTimeout = TimeSpan.FromSeconds(10),
+                KeepAlivePingPolicy = HttpKeepAlivePingPolicy.Always,
             }
         });
 
@@ -57,6 +71,12 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
         {
             await foreach (var msg in _call!.ResponseStream.ReadAllAsync(ct))
             {
+                if (msg.Type == DesktopConfigMessage.TypeHandshake)
+                {
+                    _streamUp = true;
+                    continue;
+                }
+
                 try
                 {
                     if (msg.Type == DesktopConfigMessage.TypeConfigUpdate)
@@ -70,10 +90,20 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
                         "Handler error for ShellMessage type={Type}", msg.Type);
                 }
             }
+
+            // The desktop ended the stream without an error. Nothing is connected
+            // any more, so fall through to the reconnect path below instead of
+            // leaving the gate open on a channel that no longer exists.
+            logger.LogWarning("Addon channel stream ended by the desktop");
         }
         catch (OperationCanceledException)
         {
-            logger.LogDebug("Receive loop cancelled (shutdown)");
+            // Shutdown, or StopAsync() tearing down for a reconnect or token refresh.
+            // Whoever cancelled owns the next transition, so reconnecting here would
+            // race their StartAsync and spin — just close the gate and stop.
+            logger.LogDebug("Receive loop cancelled");
+            _streamUp = false;
+            return;
         }
         catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled)
         {
@@ -83,14 +113,18 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
         catch (Exception ex)
         {
             logger.LogWarning(ex, "gRPC receive loop lost connection, attempting reconnect...");
-
-            // Only reconnect if the service hasn't been asked to shut down.
-            // Use _lifetimeCt (not ct/_cts.Token) because StopAsync() inside
-            // ReconnectAsync cancels _cts — if we used ct, the Task.Delay below
-            // would be cancelled immediately and reconnect would never happen.
-            if (!_lifetimeCt.IsCancellationRequested)
-                await ReconnectAsync(_lifetimeCt);
         }
+
+        // Every non-cancellation exit closes the gate. Fail closed: an unproven
+        // channel never serves requests.
+        _streamUp = false;
+
+        // Only reconnect if the service hasn't been asked to shut down.
+        // Use _lifetimeCt (not ct/_cts.Token) because StopAsync() inside
+        // ReconnectAsync cancels _cts — if we used ct, the Task.Delay below
+        // would be cancelled immediately and reconnect would never happen.
+        if (!_lifetimeCt.IsCancellationRequested)
+            await ReconnectAsync(_lifetimeCt);
     }
     
     public async Task SendAsync(AddonMessage message, CancellationToken ct = default)
@@ -131,6 +165,16 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
             cancellationToken: ct);
     }
 
+    public async Task<JwksResponse> GetJwksAsync(CancellationToken ct = default)
+    {
+        EnsureStarted();
+        var stub = new AddonChannel.AddonChannelClient(_channel!);
+        return await stub.GetJwksAsync(
+            new JwksRequest(),
+            await BuildAuthHeadersAsync(ct),
+            cancellationToken: ct);
+    }
+
     private void EnsureStarted()
     {
         if (_channel == null)
@@ -148,6 +192,10 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
 
     public async Task StopAsync()
     {
+        // Close the gate first: the call is about to be torn down, so until a new
+        // stream hands us proof of life we are not connected.
+        _streamUp = false;
+
         if (_call != null)
         {
             try

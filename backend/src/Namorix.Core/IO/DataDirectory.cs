@@ -14,6 +14,7 @@ public class DataDirectory(string basePath)
     public const string CertDir = "certs";
     public const string PrivateKeyFile = "privatekey.pem";
     public const string FullChainFile = "fullchain.pem";
+    public const string OAuthSigningKeyFile = "oauth-signing.pem";
     
     public void EnsureInitialized()
     {

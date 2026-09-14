@@ -20,6 +20,26 @@ public static class OAuth
         public const string DataDir = "./data" ;
     }
     
+    public static class Trailer
+    {
+        public const string ErrorCode = "nmx-error-code";
+    }
+
+    // Shared with the addon verifier, so these live in the SDK and not on the desktop side.
+    public static class AddonToken
+    {
+        public const string Issuer = "namorix-desktop";
+        public const string SessionIdClaim = "session_id";
+        public const string ClientIdClaim = "client_id";
+
+        // Single source of truth for the addon access token lifetime (DG7). The JWT
+        // `exp` and every `expires_in` handed to the addon must agree: if the token
+        // dies at 900s while expires_in still says 3600, the addon waits 45 more
+        // minutes before refreshing and every request in that gap fails.
+        // Not used for the client_credentials machine token, whose TTL is separate.
+        public const int AccessTokenTtlSeconds = 900;
+    }
+
     public static class GrantTypes
     {
         public const string AuthorizationCode = "authorization_code";

@@ -63,7 +63,8 @@ public class OAuthController(OAuthService oauth, AddonChannelManager channelMana
                 }
                 
                 SetAddonRefreshTokenCookie(refreshToken);
-                return Ok(new OAuthTokenResponse(tokenId, 3600, OAuth.NmxOAuth2Defaults.Bearer));
+                return Ok(new OAuthTokenResponse(tokenId, OAuth.AddonToken.AccessTokenTtlSeconds,
+                    OAuth.NmxOAuth2Defaults.Bearer));
             }
         
             case OAuth.GrantTypes.ClientCredentials:
@@ -113,10 +114,11 @@ public class OAuthController(OAuthService oauth, AddonChannelManager channelMana
                 "Refresh token was reused. Possible theft detected. Re-registration required."));
         }
         
-        var (tokenId, newRefreshToken, _) = result.Value;
+        var (tokenId, newRefreshToken, _, _) = result.Value;
         SetAddonRefreshTokenCookie(newRefreshToken!);
         
-        return Ok(new OAuthTokenResponse(tokenId!, 3600, OAuth.NmxOAuth2Defaults.Bearer));
+        return Ok(new OAuthTokenResponse(tokenId!, OAuth.AddonToken.AccessTokenTtlSeconds,
+            OAuth.NmxOAuth2Defaults.Bearer));
     }
     
     [HttpPost("revoke")]

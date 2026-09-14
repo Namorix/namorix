@@ -111,6 +111,7 @@ builder.Services.AddScoped<NotificationService>();
 builder.Services.AddSingleton<DockerService>();
 builder.Services.AddScoped<AddonService>();
 builder.Services.AddScoped<OAuthService>();
+builder.Services.AddSingleton<NmxAddonTokenSigner>();
 builder.Services.AddScoped<BcnHostnameService>();
 builder.Services.AddSingleton<FrontgateProxyConfigProvider>();
 builder.Services.AddBcnProviders();

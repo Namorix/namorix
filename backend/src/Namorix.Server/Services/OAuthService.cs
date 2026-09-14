@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
+using Namorix.Core.Constants;
 using Namorix.Core.Models;
 using Namorix.Core.Utils;
 using Namorix.Server.Persistence;
@@ -12,8 +13,15 @@ namespace Namorix.Server.Services;
 
 public enum OAuthRefreshStatus { Ok, Expired, Reused }
 
-public class OAuthService(AppDbContext db, IMemoryCache memoryCache, ILogger<OAuthService> logger)
+public class OAuthService(AppDbContext db, IMemoryCache memoryCache, ILogger<OAuthService> logger,
+    NmxAddonTokenSigner signer)
 {
+    // One source for the addon access token lifetime. The JWT `exp`, the OAuthTokens
+    // row and every expires_in handed back to the addon all derive from this, so they
+    // cannot drift apart. The client_credentials machine token keeps its own TTL.
+    private static readonly TimeSpan AccessTokenTtl =
+        TimeSpan.FromSeconds(OAuth.AddonToken.AccessTokenTtlSeconds);
+
     public async Task<string?> ValidateAuthorizationAsync(string clientId, string redirectUri)
     {
         var addon = await db.AddonInstallations.FirstOrDefaultAsync(a => a.ClientId == clientId);
@@ -72,7 +80,7 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache, ILogger<OAu
         }
 
         db.OAuthAuthorizationCodes.Remove(authCode);
-        var tokenId = Guid.NewGuid().ToString("N");
+        var tokenId = signer.Sign(authCode.UserId, clientId, AccessTokenTtl);
         
         db.OAuthTokens.Add(new OAuthToken
         {
@@ -80,13 +88,14 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache, ILogger<OAu
             ClientId = clientId,
             UserId = authCode.UserId,
             Scope = authCode.Scope,
-            ExpiresAt = DateTime.UtcNow.AddHours(1),
+            ExpiresAt = DateTime.UtcNow.Add(AccessTokenTtl),
         });
         
         var refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
         db.OAuthRefreshTokens.Add(new OAuthRefreshToken
         {
             ClientId = clientId,
+            UserId = authCode.UserId,
             TokenHash = TokenHash.HashToken(refreshToken),
             ExpiresAt = DateTime.UtcNow.AddDays(30),
             CreatedAt = DateTime.UtcNow,
@@ -96,7 +105,7 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache, ILogger<OAu
         return (tokenId, refreshToken, authCode.UserId);
     }
 
-    public async Task<(string? TokenId, string? RefreshToken, OAuthRefreshStatus Status)?>
+    public async Task<(string? TokenId, string? RefreshToken, int UserId, OAuthRefreshStatus Status)?>
         RefreshAddonTokenAsync(string refreshToken)
     {
         var hash = TokenHash.HashToken(refreshToken);
@@ -104,7 +113,7 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache, ILogger<OAu
             .FirstOrDefaultAsync(r => r.TokenHash == hash && r.ExpiresAt > DateTime.UtcNow);
 
         if (stored is null)
-            return (null, null, OAuthRefreshStatus.Expired);
+            return (null, null, 0, OAuthRefreshStatus.Expired);
         
         if (stored.Used)
         {
@@ -118,31 +127,33 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache, ILogger<OAu
                 .Where(r => r.ClientId == stored.ClientId && !r.Used)
                 .ExecuteUpdateAsync(r => r.SetProperty(p => p.Used, true));
             
-            return (null, null, OAuthRefreshStatus.Reused);
+            return (null, null, 0, OAuthRefreshStatus.Reused);
         }
-        
+
         stored.Used = true;
-        var newTokenId = Guid.NewGuid().ToString("N");
+        var newTokenId = signer.Sign(stored.UserId, stored.ClientId, AccessTokenTtl);
 
         db.OAuthTokens.Add(new OAuthToken
         {
             TokenId = newTokenId,
             ClientId = stored.ClientId,
+            UserId = stored.UserId,
             Scope = "default",
-            ExpiresAt = DateTime.UtcNow.AddHours(1),
+            ExpiresAt = DateTime.UtcNow.Add(AccessTokenTtl),
         });
 
         var newRefreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
         db.OAuthRefreshTokens.Add(new OAuthRefreshToken
         {
             ClientId = stored.ClientId,
+            UserId = stored.UserId,
             TokenHash = TokenHash.HashToken(newRefreshToken),
             ExpiresAt = DateTime.UtcNow.AddDays(30),
             CreatedAt = DateTime.UtcNow,
         });
 
         await db.SaveChangesAsync();
-        return (newTokenId, newRefreshToken, OAuthRefreshStatus.Ok);
+        return (newTokenId, newRefreshToken, stored.UserId, OAuthRefreshStatus.Ok);
     }
     
     public async Task<string?> RegisterClientAsync(string token, string publicKeyPem)
