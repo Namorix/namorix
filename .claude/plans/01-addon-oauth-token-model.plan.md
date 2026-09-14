@@ -7,7 +7,7 @@ isProject: false
 
 # Addon OAuth — JWT verify local + revoke theo user
 
-> **Tiến độ:** Phase 0 (chốt DG1–DG9) ✅ · **Phase 0.5 hotfix bug sống ✅ 2026-09-14** · **Phase 1a (`UserId`) ✅ 2026-09-14** · **Phase 1b (signer + `GetJwks` + hardening cổng) ✅ 2026-09-14** · **Phase 1c (cấp JWT thay GUID) ✅ 2026-09-14** · **Phase 2 (revoke theo user + push `session-revoked`) ✅ 2026-09-14** · Phase 3 ⏳ tiếp theo · Phase 4–6 chưa. Build sạch 3 project; signer đã verify thật, phần cổng **chưa test runtime**, và chưa mục nào chạy end-to-end (addon còn chưa verify JWT — việc của Phase 3).
+> **Tiến độ:** Phase 0 (chốt DG1–DG9) ✅ · **Phase 0.5 hotfix bug sống ✅ 2026-09-14** · **Phase 1a (`UserId`) ✅ 2026-09-14** · **Phase 1b (signer + `GetJwks` + hardening cổng) ✅ 2026-09-14** · **Phase 1c (cấp JWT thay GUID) ✅ 2026-09-14** · **Phase 2 (revoke theo user + push `session-revoked`) ✅ 2026-09-14** · **Phase 3 (SDK verify JWT offline + token store mới) ✅ 2026-09-14** · **Phase 4 (`@namorix/core` — `useSessionGuard` trả identity) ✅ 2026-09-14** · Phase 5 ⏳ tiếp theo · Phase 6 chưa. Backend build sạch 3 project; frontend **chưa chạy `tsc`**; signer đã verify thật, phần cổng **chưa test runtime**, và **chưa mục nào chạy end-to-end** (scout chưa adapt — việc của Phase 5).
 >
 > **DG1 đã chốt lại cuối ngày 2026-09-14:** khoá phát qua **gRPC `GetJwks`**, không HTTP; cổng hoạt động của addon là **trạng thái kênh gRPC**; bỏ cache đĩa. Plan đã sửa đồng bộ toàn bộ các mục phụ thuộc (Flow, DG7/DG8, Phase 1b/1c/2/3, Risks).
 >
@@ -391,11 +391,25 @@ User chốt 2 điểm: **(1)** scope revoke là `(userId, clientId)` — logout 
 
 **Nợ còn lại:** lock vẫn **in-process** — 2 replica cùng lúc (một logout, một refresh) vẫn có thể để lại row desktop sống; addon thì đã logout nên chỉ còn row rác phía desktop. Chưa test runtime: kênh đứt → 503, desktop từ chối → 503, revoke thành công → row desktop chết.
 
-### Phase 4 — `@namorix/core` (teo lại do DG4 chốt cookie)
-- **Không** token store, **không** gắn `Authorization: Bearer`, **không** retry 401 ở FE — token không rời BE, addon BE lo toàn bộ.
+### Phase 4 — `@namorix/core` (teo lại do DG4 chốt cookie) ✅ XONG 2026-09-14
+- **Không** token store, **không** gắn `Authorization: Bearer`, **không** retry 401 ở FE — token không rời BE, addon BE lo toàn bộ. ✅ Đã kiểm tra `@namorix/core`: cả ba thứ này **không tồn tại sẵn** nên không phải xoá gì. (`http/authRefresh.ts` là refresh cookie của **desktop shell**, không liên quan addon.)
 - `useSessionGuard`: expose `userId`/identity (lấy từ `/api/oauth/status`), không chỉ 3 trạng thái.
 - Giữ nguyên nhánh redirect login khi `/api/oauth/status` trả 401.
 - Bỏ hẳn tham chiếu PKCE đã xoá ở `e6b6198`; cập nhật `.claude/FLOW.md` (đang stale).
+
+#### Kết quả thực tế (2026-09-14) — **chưa chạy `tsc`**, chưa test runtime
+
+| Việc | Chỗ sửa |
+|------|---------|
+| Kiểu trả về | `SessionGuardResult { state: SessionGuardState; userId: number \| null }` (user chốt 2026-09-14) thay cho việc chỉ trả `SessionGuardState` — **breaking** với addon đang dùng hook |
+| Lấy danh tính | Đọc `userId` từ body `/api/oauth/status` (`AddonSessionAuthController.Status` vốn đã trả `{ authenticated, userId }` → backend **không phải sửa**) |
+| Body hỏng | `res.json()` lỗi → vẫn `authenticated` + `userId: null`, **không** đá addon ra; khớp hành vi `catch` cũ (desktop unreachable) |
+| Widget mode | `!isStandalone` → `userId: null` (user chốt 2026-09-14): phiên thuộc desktop shell, addon không được đoán danh tính |
+| 401 | Giữ nguyên `window.location.replace(loginUrl)` |
+| Guard unmount | Thêm `if (cancelled) return` sau `await res.json()` để không set state sau unmount |
+| Docs | `frontend/README.md`: bỏ "oauth (PKCE)" ở bảng deps; sửa ô Standalone auth (PKCE do **backend addon** lo, browser không thấy verifier); sửa dòng M4. `.claude/FLOW.md`: thêm `useSessionGuard()` vào bảng `hooks/` + đoạn "Phía frontend addon (Phase 4)" |
+
+**Chưa kiểm chứng (không phải nợ):** chưa chạy `tsc -b`/build frontend để kiểm type — user chốt 2026-09-14 là **không cần**; chưa test runtime (widget → `userId: null`; standalone → `userId` đúng; 401 → redirect). Bump version `@namorix/core` (đang `0.67.4`) để ở Phase 6 như plan.
 
 ### Phase 5 — Addon adapter (repo `namorix-scout`)
 - `ScoutDbContext`: bỏ `Sessions`, thêm `AddonToken`.
@@ -422,7 +436,7 @@ User chốt 2 điểm: **(1)** scope revoke là `(userId, clientId)` — logout 
 | **Cổng kênh không đáng tin** (mới phát hiện khi đọc `AddonChannelClient.cs`) — 4 lỗ độc lập, cộng lại phá đúng luật nền DG1: (1) chết im lặng (half-open/kill không sạch/treo) không ném exception vì không có keepalive ping; (2) nhánh `StatusCode.Cancelled` set `_call = null` **mà không reconnect** → addon chết vĩnh viễn tới khi restart process; (3) stream kết thúc êm → thoát khỏi mọi catch, `_call` giữ nguyên → **cổng nói dối là còn sống** trong khi đã mất kênh | ~~Cao~~ **đã code, chưa test runtime** | ✅ Phase 1b: keepalive ping; `Cancelled` + kết thúc êm đi chung đường reconnect (trừ shutdown thật); `IsConnected` → cờ `_streamUp` **fail-closed**, mở chỉ khi nhận `handshake`. ⚠️ **Chưa chạy thật lần nào** — test tay còn nợ: SIGKILL desktop → 503 trong vài giây; cắt stream êm → addon tự nối lại |
 | Revoke theo user dựa vào `OAuthRefreshToken.UserId`; row cũ `UserId = 0` (máy khác chưa truncate) → revoke không trúng ai | Trung bình | Phase 1a mới chỉ `AddColumn`; user đã truncate tay trên DB dev. Máy/instance khác phải truncate tay, hoặc thêm `Sql("DELETE FROM OAuthRefreshTokens;")` vào migration sau |
 | Addon tách FE sang origin khác BE → cookie không tự gắn | Thấp | Hiện FE+BE cùng origin (cookie `nmx_addon_session` đang chạy). Addon nào tách origin thì phải tính lại (Bearer + CORS) |
-| Breaking cho mọi addon ngoài (khác scout) | Trung bình | ✅ Phase 3 đã gây break: xoá `AddonSession`/`IAddonSessionService`, thêm `AddonToken`/`IAddonTokenStore`, `AddonSessionDbContext.Sessions` → `.Tokens` (+ index unique `(ClientId, UserId)`), bỏ claim `session_id`. Addon phải viết migration riêng (Phase 5). Bump major `Namorix.Core` để ở Phase 6 |
+| Breaking cho mọi addon ngoài (khác scout) | Trung bình | ✅ Phase 3 đã gây break: xoá `AddonSession`/`IAddonSessionService`, thêm `AddonToken`/`IAddonTokenStore`, `AddonSessionDbContext.Sessions` → `.Tokens` (+ index unique `(ClientId, UserId)`), bỏ claim `session_id`. Addon phải viết migration riêng (Phase 5). Bump major `Namorix.Core` để ở Phase 6. ✅ Phase 4 thêm break phía FE: `useSessionGuard` đổi kiểu trả về từ `SessionGuardState` sang `SessionGuardResult { state, userId }` — addon đang destructure state kiểu cũ phải sửa |
 | Logout addon bị **503 khi desktop từ chối** → user kẹt, không đăng xuất được cho tới khi desktop chịu revoke | Thấp | Cố ý theo lựa chọn (2) của user 2026-09-14: thà kẹt logout còn hơn báo "đã đăng xuất" trong khi grant bên desktop vẫn refresh được tới 30 ngày. FE addon phải hiện lỗi + cho bấm lại, **không** tự xoá cookie |
 
 ## Không nằm trong phạm vi

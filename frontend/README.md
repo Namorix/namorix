@@ -191,7 +191,7 @@ export const addonController = {
 
 | Package | Purpose |
 |---------|---------|
-| `@namorix/core` | Types, auth service, http client, i18n, SignalR hooks, store, guards, theme, toast, oauth (PKCE), mount (createMount, AddonModeProvider) |
+| `@namorix/core` | Types, auth service, http client, i18n, SignalR hooks, store, guards, theme, toast, session guard (useSessionGuard), mount (createMount, AddonModeProvider) |
 | `@namorix/styles` | SCSS design tokens, reset, variables, theme files, icomoon icons |
 | `@namorix/ui` | Primitives (NmxButton, NmxForm {NmxFormField.rowFlex}, NmxInlineAlert, NmxToggle, NmxChip, NmxIcon, NmxBadge, NmxSpinner, NmxSelect, NmxSlider, NmxSearchInput, etc.) + Composite (NmxCard, NmxDataTable, NmxDialog {NmxAlertDialog.noSpacingBody}, NmxMetaList, NmxRail, NmxSettings, NmxToolbar, NmxAddon, NmxToastProvider, NmxTabContext, NmxTabs, NmxFormRow, etc.) + Layouts (NmxHorizontalWrap, NmxGrid) |
 | `react-router-dom` | Client-side routing with GuardedRoute pattern |
@@ -222,7 +222,7 @@ External addons integrate via two modes:
 | Mode | Mechanism | Auth |
 |------|-----------|------|
 | **Widget** | Module Federation mount in desktop window, shares React + Redux | HttpOnly cookie (same-origin) |
-| **Standalone** | Runs on own port, own `index.html`, user navigates directly | OAuth2 authorization_code + PKCE (auto-handled by `createMount`) |
+| **Standalone** | Runs on own port, own `index.html`, user navigates directly | OAuth2 authorization_code + PKCE, run by the addon **backend** (the browser never sees the verifier); session kept in the `nmx_addon_session` cookie |
 
 - **Server-to-server**: gRPC bidirectional streaming for widget event forwarding + heartbeat
 - **Shell ↔ Addon (Widget)**: Event bus via `@namorix/core` (`shell:*` and `addon:*` events)
@@ -233,7 +233,7 @@ External addons integrate via two modes:
 - **M1** — Static shell UI + mock auth ✅
 - **M2** — Full auth backend ✅
 - **M3** — System Addons (Built-in): addon contract + registry, 11 built-in addons, theme system, SignalR realtime ✅
-- **M4** — External addon system: Docker lifecycle, OAuth2 (PKCE + client_credentials), gRPC, addon catalog, standalone mode ✅
+- **M4** — External addon system: Docker lifecycle, OAuth2 (authorization_code + PKCE in the addon backend, client_credentials), gRPC, addon catalog, standalone mode ✅
     - **Frontgate addon**: YARP reverse proxy with runtime config reload, CRUD API and management UI (Phase 1 ✅), certificate management (Phase 2 ✅ — LE HTTP-01 + dry-run, custom cert; DNS-01 dropped), access control (Phase 3 ✅ — Access Policy CRUD, IP allowlist/denylist, Geo blocking, BasicAuth, dry-run), audit log + rate limit + backend health (Phase 4 ✅), GeoIP database management (upload/rollback với backup `.bak` + progress)
     - **NetworkTraffic**: source filter API/Proxy — tách traffic từ API port vs proxy ports (cùng buffer, lọc theo `source` query param)
     - **Warden**: host-level firewall — Overview/Activity/Rules dashboard tabs, rules CRUD, security events + detail dialog + **search theo IP** (`NmxSearchInput` live search) + **Clear activity** (confirm dialog → xóa toàn bộ events), stats realtime (`warden:new-event` + 30s poll), Herald notification templates (`warden.ruleApplied`/`ruleRemoved`), **audit trail** (rule lifecycle — auto-ban/manual/expiry — ghi vào Activity log với event types AUTO_BAN/RULE_APPLIED/RULE_REMOVED/BAN_EXPIRED)

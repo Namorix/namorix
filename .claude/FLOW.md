@@ -636,6 +636,12 @@ sạch chain).
 
 Lock `AddonSessionLockRegistry` theo `(clientId, userId)`, **in-process**, dùng chung cho refresh và logout.
 
+**Phía frontend addon (Phase 4):** `useSessionGuard()` (`packages/core/src/hooks/useSessionGuard.ts`) gọi
+`/api/oauth/status` và trả `SessionGuardResult { state, userId }` — `userId` là danh tính **duy nhất**
+addon có được, `null` khi widget mode (phiên thuộc desktop shell, addon không được đoán) hoặc khi body
+không đọc được. Nhánh 401 giữ nguyên: `window.location.replace(loginUrl)`. Browser **không** giữ token,
+**không** gắn `Authorization: Bearer`, **không** retry 401 — token không rời backend addon.
+
 **Legacy HTTP path (giữ tới Phase 6):** flow dưới đây là đường cũ qua `POST /api/oauth/token` + cookie `nmx_addon_refresh_token` + discovery `/.well-known/nmx-oauth-config`. Addon standalone hiện chạy bằng cookie `nmx_addon_session` + gRPC channel như bảng trên.
 
 ```
@@ -1226,7 +1232,7 @@ bỏ qua `register_enabled` setting — user đầu tiên luôn có thể regist
 | `toast/` | `nmxToast` | - |
 | `types/` | All interfaces + constants | - |
 | `cache/` | `useTabCache()`, `Show` | - |
-| `hooks/` | `usePageSize()` | - |
+| `hooks/` | `usePageSize()`, `useSessionGuard()` | - |
 | `fingerprint/` | `generateFingerprint()` | - |
 
 ### @namorix/ui (React primitives)
