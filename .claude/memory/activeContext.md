@@ -27,6 +27,18 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [progress.md](progress.md) (September 2026), [versionHistory-08-2026.md](../archive/versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-09-14 — Addon OAuth Phase 6: validate hình dạng redirect_uri, xoá đường HTTP legacy, DG9 → 403, docs rotate khoá (Namorix.Core 0.65.0 / Namorix.Server 0.83.0 / @namorix/core 0.68.0)
+
+Kế hoạch: `.claude/plans/01-addon-oauth-token-model.plan.md` — Phase 6, mục cuối cùng. Build sạch 3 project. **Vẫn chưa chạy end-to-end** (nợ runtime test từ Phase 1b/3).
+
+- **Validate `redirect_uri` — chỉ hình dạng.** User chốt: desktop **không** biết trước origin của addon (frontgate gán host), nên `IsAcceptableRedirectUri` chỉ chấp nhận absolute `http`/`https`, không `Fragment`, `AbsolutePath == OAuth.AddonToken.CallbackPath`. Thứ thật sự chặn code bị chuyển hướng vẫn là PKCE + client assertion — comment trong code ghi rõ.
+- **Hằng dùng chung `OAuth.AddonToken.CallbackPath`:** desktop chặn theo nó, SDK lấy làm default `AddonSessionAuthOptions.CallbackPath` → hai đầu không lệch. Lưu ý `OAuth` trần trong Core resolve thành **namespace** `Namorix.Core.OAuth`, phải viết `Constants.OAuth.AddonToken.CallbackPath`.
+- **Xoá đường HTTP legacy:** `POST /api/oauth/token/refresh` + `SetAddonRefreshTokenCookie` xoá hẳn; `POST /api/oauth/token` co lại chỉ còn `client_credentials` (code redeem qua gRPC `ExchangeUserCode`); xoá `Cookie.AddonRefreshToken`, `OAuthEndpoints.TokenRefresh`, field `Code`/`CodeVerifier`/`ClientId` của `TokenRequest`.
+- **DG9 giờ trả 403** (`access_denied`) thay 400 — `AddonSessionAuthController.Callback` phân biệt "request hiểu được nhưng bị từ chối" với "request sai/hết hạn".
+- **Rotate khoá — docs-only (phương án A user chọn):** `backend/README.md` mục "Addon signing key rotation", rotate **cứng**, nói rõ mọi addon session chết. Chưa làm `kid` overlap.
+- **Chốt bump:** user chọn `Namorix.Core 0.65.0` (MINOR — 0.x cho phép break), **không** lên `1.0.0` như plan dự kiến. `@namorix/core 0.67.4 → 0.68.0` là bump trễ cho Phase 4 (`useSessionGuard` trả `SessionGuardResult`).
+- **Nợ ghi nhận, chưa xử lý:** `NmxOAuthConfigEndpointExtensions` + `OAuth.WellKnownPath` thành đường chết (trỏ `tokenUrl` không còn nhận `authorization_code`); `AppConfig.OAuthRefreshTokenTtlDays` không còn ai đọc (TTL refresh hardcode `AddDays(30)`); cây thư mục root `README.md` còn liệt kê `frontend/packages/core/src/oauth/` (đã xoá từ `e6b6198`).
+
 ### 2026-09-14 — Addon SDK verify JWT offline + token store mới; desktop revoke theo user + push session-revoked/session-grants; addon logout revoke grant (Namorix.Core 0.64.0 / Namorix.Server 0.82.0)
 
 Kế hoạch: `.claude/plans/01-addon-oauth-token-model.plan.md` — Phase 2 → 3, cộng việc Phase 6 làm sớm (addon logout). **Chưa mục nào test runtime**, build sạch 3 project.
@@ -36,7 +48,7 @@ Kế hoạch: `.claude/plans/01-addon-oauth-token-model.plan.md` — Phase 2 →
 - **Revoke online (Phase 2 + 3):** desktop `RevokeChainAsync` filter `(UserId, ClientId)` theo **DG6**; push `session-revoked` khi revoke; push `session-grants` **mỗi lần** addon connect. `AddonSessionChannelHandler` áp cả hai; phân biệt `null` (kênh đứt, **không** xoá gì) với `[]` (hết grant → xoá hết).
 - **Grace 30s cho rotation:** response refresh bị mất → replay trong cửa sổ trả **đúng** token mới thay vì coi là theft (successor mã hoá lưu trên row vừa tiêu).
 - **Addon logout revoke grant (Phase 6 làm sớm):** RPC thứ 5 `RevokeGrant` trên `addon_channel.proto`; `Logout` revoke **trước** rồi mới xoá row + cookie; desktop từ chối → **503, không logout** (user chốt: thà kẹt còn hơn báo "đã đăng xuất" sai). Scope `(userId, clientId)` — logout addon A không đá user khỏi addon B.
-- **Còn nợ:** lock refresh/logout **in-process**; chưa test runtime (PKCE end-to-end, `kid` rotation, 503 khi SIGKILL desktop, reconnect + drop grant, logout 503); bump major `Namorix.Core` để Phase 6.
+- **Còn nợ:** lock refresh/logout **in-process**; chưa test runtime (PKCE end-to-end, `kid` rotation, 503 khi SIGKILL desktop, reconnect + drop grant, logout 503); bump `Namorix.Core` để Phase 6 — đã chốt ở entry trên: `0.65.0`, không lên major.
 - Versions: Namorix.Core 0.63.0 → 0.64.0 / Namorix.Server 0.81.0 → 0.82.0 (@namorix/core/ui/styles/frontend không đổi — không bump).
 
 ### 2026-09-14 — Addon OAuth: access token = JWT RS256, JWKS qua gRPC, gate `IsConnected` fail-closed, TTL 900s, refresh token gắn UserId (Namorix.Core 0.63.0 / Namorix.Server 0.81.0)

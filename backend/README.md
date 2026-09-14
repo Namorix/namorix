@@ -336,9 +336,8 @@ backend/
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/api/oauth/authorize` | Authorize endpoint (PKCE + session check + login redirect) |
-| POST | `/api/oauth/token` | Token endpoint (authorization_code + PKCE + client_credentials) |
-| POST | `/api/oauth/token/refresh` | Refresh addon token via cookie rotation |
-| POST | `/api/oauth/revoke` | Revoke OAuth token + disconnect gRPC channel |
+| POST | `/api/oauth/token` | Token endpoint — **client_credentials only**; addon user tokens are exchanged/refreshed over gRPC |
+| POST | `/api/oauth/revoke` | Revoke OAuth token + push `session-revoked` to the addon |
 
 Addon access token là **JWT RS256, TTL 900s** (`OAuth.AddonToken.AccessTokenTtlSeconds` — `exp` và
 `expires_in` dùng chung một hằng số). Addon verify offline bằng public key lấy qua gRPC `GetJwks`.
@@ -475,16 +474,35 @@ Namorix backend acts as a full OAuth2 authorization server supporting:
 
 | Grant Type | Usage | Details |
 |-----------|-------|---------|
-| `authorization_code` + PKCE | Browser (standalone addon) | `S256` code challenge, session-based authorize, code exchange with `code_verifier` |
-| `client_credentials` + `private_key_jwt` | Server-to-server (addon backend) | RS256 signed JWT client assertion, token caching |
+| `authorization_code` + PKCE | Browser (standalone addon) | `S256` code challenge, session-based authorize; the code is redeemed over the **gRPC channel**, not over HTTP |
+| `client_credentials` + `private_key_jwt` | Server-to-server (addon backend) | RS256 signed JWT client assertion, token caching — the only grant `POST /api/oauth/token` still serves |
 
 Flow:
 ```
 1. Browser → GET /api/oauth/authorize?client_id=&redirect_uri=&response_type=code&code_challenge=S256
-2. Server validates session, creates authorization code → redirect to addon with ?code=
-3. Addon → POST /api/oauth/token with code + code_verifier → receives access_token
-4. Addon uses Bearer token for API requests (validated by OAuth2Middleware)
+   redirect_uri must be absolute http(s) ending at /api/oauth/callback with no fragment
+2. Server validates session + client, creates authorization code → redirect to addon with ?code=
+3. Addon backend → gRPC ExchangeUserCode(code, code_verifier, machine token) → access JWT + refresh token
+4. Addon verifies the JWT offline (public key via gRPC GetJwks) and serves from the nmx_addon_session
+   cookie; it refreshes over gRPC RefreshUserToken before the 900s JWT expires
 ```
+
+### Addon signing key rotation
+
+Addon access JWTs are signed with one RSA key at `{DataDir}/oauth-signing.pem` (mode 600), published
+from `GetJwks` with `kid` = base64url(SHA-256(SPKI)).
+
+**Rotation is a hard cutover** — only the current key is published, so there is no overlap window:
+
+1. Back up `oauth-signing.pem` somewhere offline (you cannot sign with it once it is replaced).
+2. Stop the desktop.
+3. Delete `oauth-signing.pem` and start the desktop — a new key is generated and written with mode 600.
+4. Delete the backup once you are sure nothing needs the old key.
+
+Every token issued under the old key stops verifying as soon as the new key is published. The addon
+caches keys in RAM, sees an unknown `kid`, refetches JWKS, finds no matching key, and clears its
+cookie — so **all addon sessions end and every user must log in again**. Rotate only on suspected
+compromise, and warn users first.
 
 ## Configuration
 

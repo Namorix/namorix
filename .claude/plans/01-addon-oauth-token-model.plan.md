@@ -7,7 +7,7 @@ isProject: false
 
 # Addon OAuth — JWT verify local + revoke theo user
 
-> **Tiến độ:** Phase 0 (chốt DG1–DG9) ✅ · **Phase 0.5 hotfix bug sống ✅ 2026-09-14** · **Phase 1a (`UserId`) ✅ 2026-09-14** · **Phase 1b (signer + `GetJwks` + hardening cổng) ✅ 2026-09-14** · **Phase 1c (cấp JWT thay GUID) ✅ 2026-09-14** · **Phase 2 (revoke theo user + push `session-revoked`) ✅ 2026-09-14** · **Phase 3 (SDK verify JWT offline + token store mới) ✅ 2026-09-14** · **Phase 4 (`@namorix/core` — `useSessionGuard` trả identity) ✅ 2026-09-14** · Phase 5 ⏳ tiếp theo · Phase 6 chưa. Backend build sạch 3 project; frontend **chưa chạy `tsc`**; signer đã verify thật, phần cổng **chưa test runtime**, và **chưa mục nào chạy end-to-end** (scout chưa adapt — việc của Phase 5).
+> **Tiến độ:** Phase 0 (chốt DG1–DG9) ✅ · **Phase 0.5 hotfix bug sống ✅ 2026-09-14** · **Phase 1a (`UserId`) ✅ 2026-09-14** · **Phase 1b (signer + `GetJwks` + hardening cổng) ✅ 2026-09-14** · **Phase 1c (cấp JWT thay GUID) ✅ 2026-09-14** · **Phase 2 (revoke theo user + push `session-revoked`) ✅ 2026-09-14** · **Phase 3 (SDK verify JWT offline + token store mới) ✅ 2026-09-14** · **Phase 4 (`@namorix/core` — `useSessionGuard` trả identity) ✅ 2026-09-14** · **Phase 5 (addon adapter `namorix-scout`) ✅ 2026-09-14** · **Phase 6 (dọn dẹp & bảo mật + bump version) ✅ 2026-09-14 — kế hoạch hoàn tất**. Backend build sạch 3 project; frontend **chưa chạy `tsc`**; signer đã verify thật, phần cổng **chưa test runtime**, và **chưa mục nào chạy end-to-end** (scout đã adapt xong ở Phase 5, nhưng chưa lần nào chạy thật cả luồng).
 >
 > **DG1 đã chốt lại cuối ngày 2026-09-14:** khoá phát qua **gRPC `GetJwks`**, không HTTP; cổng hoạt động của addon là **trạng thái kênh gRPC**; bỏ cache đĩa. Plan đã sửa đồng bộ toàn bộ các mục phụ thuộc (Flow, DG7/DG8, Phase 1b/1c/2/3, Risks).
 >
@@ -409,20 +409,40 @@ User chốt 2 điểm: **(1)** scope revoke là `(userId, clientId)` — logout 
 | Guard unmount | Thêm `if (cancelled) return` sau `await res.json()` để không set state sau unmount |
 | Docs | `frontend/README.md`: bỏ "oauth (PKCE)" ở bảng deps; sửa ô Standalone auth (PKCE do **backend addon** lo, browser không thấy verifier); sửa dòng M4. `.claude/FLOW.md`: thêm `useSessionGuard()` vào bảng `hooks/` + đoạn "Phía frontend addon (Phase 4)" |
 
-**Chưa kiểm chứng (không phải nợ):** chưa chạy `tsc -b`/build frontend để kiểm type — user chốt 2026-09-14 là **không cần**; chưa test runtime (widget → `userId: null`; standalone → `userId` đúng; 401 → redirect). Bump version `@namorix/core` (đang `0.67.4`) để ở Phase 6 như plan.
+**Chưa kiểm chứng (không phải nợ):** chưa chạy `tsc -b`/build frontend để kiểm type — user chốt 2026-09-14 là **không cần**; chưa test runtime (widget → `userId: null`; standalone → `userId` đúng; 401 → redirect). Bump version `@namorix/core` (`0.67.4` → `0.68.0`) để ở Phase 6 như plan — ✅ xong 2026-09-14.
 
-### Phase 5 — Addon adapter (repo `namorix-scout`)
+### Phase 5 — Addon adapter (repo `namorix-scout`) ✅ XONG 2026-09-14
 - `ScoutDbContext`: bỏ `Sessions`, thêm `AddonToken`.
 - `[RequireAuth]` / controllers đọc `userId` từ JWT claims.
 - `Services/ScoutService.cs`: handle `session-revoked`.
 - **DG9 — nợ kỹ thuật có hạn**: tạm **chặn grant thứ 2** khi đã có `AddonToken` của user khác → 403, kèm cảnh báo rõ trong README/code rằng addon hiện **single-user** (bật multi-user mà quên phần data là rò rỉ camera giữa các user). TODO cụ thể: thêm `UserId` trên `ScCamera` + filter mọi query theo user, rồi mới gỡ chặn.
 
-### Phase 6 — Dọn dẹp & bảo mật
+#### Kết quả thực tế (2026-09-14) — backend build sạch 2 project, **chưa test runtime**
+
+| Việc | Chỗ sửa |
+|------|---------|
+| Migration | `20260914090743_AddonTokenTable` — drop `Sessions`, tạo `Tokens` (`Id` int, `UserId`, `ClientId`, `EncryptedRefreshToken`, `RefreshTokenExpiresAt`, `CreatedAt`, `LastSeenAt`) + index unique `(ClientId, UserId)`. Row cũ **mất**, mọi addon phải login lại (đúng như plan Phase 3 đã chốt) |
+| **Bug bắt được khi sinh migration** | `ScoutDbContext.OnModelCreating` **không** gọi `base.OnModelCreating` → index unique `(ClientId, UserId)` của `AddonSessionDbContext` bị **rơi im lặng**: override thay thế chứ không cộng dồn. Nghĩa là bất biến Phase 3 **chưa từng tồn tại** trong DB scout. Đã thêm `base.OnModelCreating(modelBuilder)` rồi sinh lại migration (lần sinh đầu không có index) |
+| Adapter FE | `ScoutApp.tsx`: `guard === "loading"` → `guard.state === "loading"` (hệ quả breaking của Phase 4) |
+| DG9 | Không phải viết thêm: `AddonTokenStore.CreateAsync` đã trả `null`, `CompleteLoginAsync` đã ném `AccessDenied`. Thêm comment cảnh báo single-user ở `ScoutDbContext` (scout **không có README** nào để ghi) |
+| `ScoutService` handle `session-revoked` | **Không cần** — `AddonSessionChannelHandler` (do `AddAddonSessionAuth` đăng ký) đã lo cả `session-revoked` lẫn `session-grants`. Bullet này trong bản plan đầu đã lỗi thời |
+| Controllers đọc `userId` từ claims | **Hoãn** — middleware đã set `ClaimTypes.NameIdentifier`, nhưng chỉ có nghĩa khi `ScCamera` có `UserId` + filter query, tức chính là TODO của DG9 |
+| 400 → 403 | User chốt 2026-09-14: `AddonSessionAuthController.Callback` đổi `error=access_denied` → **403** (trước là 400 dùng chung cho mọi lỗi callback). Sửa ở **`Namorix.Core`** chứ không phải scout. `OAuthErrors.AccessDenied` chỉ có **đúng 1 chỗ** ném ra nên map thẳng là an toàn; lỗi callback còn lại vẫn 400 |
+
+**Chưa kiểm chứng (không phải nợ):** chưa chạy `dotnet ef database update` (app tự `Migrate()` lúc start); chưa typecheck/build FE scout (`frontend/node_modules` không tồn tại, `tsc` cần cài deps trước); chưa test runtime (login → logout → revoke, chặn user thứ 2, migration trên DB có row cũ).
+
+**Nợ kỹ thuật có hạn (DG9):** addon hiện **single-user** — `ScCamera` không có cột owner và mọi query không filter theo user. Bật multi-user mà quên phần data là **rò rỉ camera giữa các user**. TODO: thêm `UserId` trên `ScCamera` + filter mọi query theo user, rồi mới gỡ chặn ở `AddonTokenStore.CreateAsync`.
+
+### Phase 6 — Dọn dẹp & bảo mật (2026-09-14)
+
 - ~~Addon logout phải revoke grant phía desktop~~ ✅ xong sớm 2026-09-14 — xem mục "Addon logout revoke grant" cuối Phase 3.
-- Validate `redirect_uri` theo `ClientId` đã đăng ký (đang bỏ ngỏ).
-- Bỏ nhánh legacy `/api/oauth/token` + cookie `nmx_addon_refresh_token` nếu không còn dùng.
-- Key rotation: hướng dẫn rotate + `kid` overlap.
-- Bump version `Namorix.Core`, `Namorix.Server`, `@namorix/core`; cập nhật memory bank + `FLOW.md`. Ghi chú cho addon ngoài: kênh đã thêm RPC thứ 5 (`RevokeGrant`) — **additive**, call cũ không đổi, nhưng phải regenerate proto.
+- ✅ **Validate `redirect_uri` — chỉ kiểm hình dạng.** User chốt: desktop **không** biết trước origin của addon (frontgate gán host), nên chỉ chấp nhận `http`/`https`, không `Fragment`, `AbsolutePath == OAuth.AddonToken.CallbackPath`. `OAuth.AddonToken.CallbackPath` là hằng **dùng chung** (desktop chặn, SDK làm default `AddonSessionAuthOptions.CallbackPath`) để hai đầu không lệch. Thứ thật sự chặn code bị chuyển hướng là PKCE + client assertion, không phải check này — comment trong code ghi rõ.
+- ✅ **Bỏ code legacy:** xoá action `POST /api/oauth/token/refresh` + `SetAddonRefreshTokenCookie`; `POST /api/oauth/token` giờ **chỉ** nhận `client_credentials` (nhánh `authorization_code` bỏ — code redeem qua gRPC `ExchangeUserCode`); xoá `Cookie.AddonRefreshToken`, `OAuthEndpoints.TokenRefresh`, các field `Code`/`CodeVerifier`/`ClientId` của `TokenRequest`.
+- ✅ **Key rotation — chỉ docs (phương án A).** `backend/README.md` thêm mục "Addon signing key rotation": rotate **cứng**, backup file → stop desktop → xoá `oauth-signing.pem` → restart (tự sinh khoá mới) → xoá backup. Hệ quả ghi rõ: **mọi** addon session chết, user phải login lại. Chưa làm `kid` overlap.
+- ✅ **DG9 giờ trả 403** (trước 400): `AddonSessionAuthController.Callback` phân biệt `access_denied` (request hiểu được nhưng bị từ chối) với phần còn lại (request sai/hết hạn).
+- ✅ **Bump version 2026-09-14:** `Namorix.Core 0.64.0 → 0.65.0` (user chốt MINOR, **không** lên `1.0.0`), `Namorix.Server 0.82.0 → 0.83.0`, `@namorix/core 0.67.4 → 0.68.0` (bump trễ cho Phase 4). Đã cập nhật `progress.md`, `activeContext.md`, `FLOW.md`, `backend/README.md`. Ghi chú cho addon ngoài: kênh đã thêm RPC thứ 5 (`RevokeGrant`) — **additive**, call cũ không đổi, nhưng phải regenerate proto.
+
+**Còn nợ sau Phase 6 (chưa xử lý):** `NmxOAuthConfigEndpointExtensions` + `OAuth.WellKnownPath` (discovery `/.well-known/nmx-oauth-config`) giờ trỏ tới `tokenUrl` không còn nhận `authorization_code` → đường chết; `AppConfig.OAuthRefreshTokenTtlDays` (mặc định 1, `appsettings.json`) không còn ai đọc — TTL refresh của desktop hardcode `AddDays(30)` trong `OAuthService`.
 
 ## Rủi ro
 
@@ -436,7 +456,7 @@ User chốt 2 điểm: **(1)** scope revoke là `(userId, clientId)` — logout 
 | **Cổng kênh không đáng tin** (mới phát hiện khi đọc `AddonChannelClient.cs`) — 4 lỗ độc lập, cộng lại phá đúng luật nền DG1: (1) chết im lặng (half-open/kill không sạch/treo) không ném exception vì không có keepalive ping; (2) nhánh `StatusCode.Cancelled` set `_call = null` **mà không reconnect** → addon chết vĩnh viễn tới khi restart process; (3) stream kết thúc êm → thoát khỏi mọi catch, `_call` giữ nguyên → **cổng nói dối là còn sống** trong khi đã mất kênh | ~~Cao~~ **đã code, chưa test runtime** | ✅ Phase 1b: keepalive ping; `Cancelled` + kết thúc êm đi chung đường reconnect (trừ shutdown thật); `IsConnected` → cờ `_streamUp` **fail-closed**, mở chỉ khi nhận `handshake`. ⚠️ **Chưa chạy thật lần nào** — test tay còn nợ: SIGKILL desktop → 503 trong vài giây; cắt stream êm → addon tự nối lại |
 | Revoke theo user dựa vào `OAuthRefreshToken.UserId`; row cũ `UserId = 0` (máy khác chưa truncate) → revoke không trúng ai | Trung bình | Phase 1a mới chỉ `AddColumn`; user đã truncate tay trên DB dev. Máy/instance khác phải truncate tay, hoặc thêm `Sql("DELETE FROM OAuthRefreshTokens;")` vào migration sau |
 | Addon tách FE sang origin khác BE → cookie không tự gắn | Thấp | Hiện FE+BE cùng origin (cookie `nmx_addon_session` đang chạy). Addon nào tách origin thì phải tính lại (Bearer + CORS) |
-| Breaking cho mọi addon ngoài (khác scout) | Trung bình | ✅ Phase 3 đã gây break: xoá `AddonSession`/`IAddonSessionService`, thêm `AddonToken`/`IAddonTokenStore`, `AddonSessionDbContext.Sessions` → `.Tokens` (+ index unique `(ClientId, UserId)`), bỏ claim `session_id`. Addon phải viết migration riêng (Phase 5). Bump major `Namorix.Core` để ở Phase 6. ✅ Phase 4 thêm break phía FE: `useSessionGuard` đổi kiểu trả về từ `SessionGuardState` sang `SessionGuardResult { state, userId }` — addon đang destructure state kiểu cũ phải sửa |
+| Breaking cho mọi addon ngoài (khác scout) | Trung bình | ✅ Phase 3 đã gây break: xoá `AddonSession`/`IAddonSessionService`, thêm `AddonToken`/`IAddonTokenStore`, `AddonSessionDbContext.Sessions` → `.Tokens` (+ index unique `(ClientId, UserId)`), bỏ claim `session_id`. Addon phải viết migration riêng (Phase 5). Bump `Namorix.Core` để ở Phase 6 — ✅ xong 2026-09-14: `0.64.0 → 0.65.0` (user chốt MINOR, **không** lên `1.0.0`). ✅ Phase 4 thêm break phía FE: `useSessionGuard` đổi kiểu trả về từ `SessionGuardState` sang `SessionGuardResult { state, userId }` — addon đang destructure state kiểu cũ phải sửa |
 | Logout addon bị **503 khi desktop từ chối** → user kẹt, không đăng xuất được cho tới khi desktop chịu revoke | Thấp | Cố ý theo lựa chọn (2) của user 2026-09-14: thà kẹt logout còn hơn báo "đã đăng xuất" trong khi grant bên desktop vẫn refresh được tới 30 ngày. FE addon phải hiện lỗi + cho bấm lại, **không** tự xoá cookie |
 
 ## Không nằm trong phạm vi

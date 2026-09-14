@@ -629,7 +629,7 @@ sạch chain).
 |-----|---------|
 | Cookie phiên | `nmx_addon_session` mang **chính access JWT**, HttpOnly / SameSite=Lax / Path=/, `MaxAge = SessionTtlDays` (30) — cookie phải sống **lâu hơn** JWT 900s, nếu không hết 15 phút là mất luôn đường refresh |
 | Token store local | `AddonToken` — 1 row mỗi `(ClientId, UserId)`, unique index; **không** lưu access token (verify offline rồi, lưu lại chỉ thành nguồn sự thật thứ hai và cũ hơn); chỉ refresh token được mã hoá (`IAddonTokenProtector`) |
-| DG9 | Addon phục vụ **một** user: `AddonTokenStore.CreateAsync` trả `null` khi client đã có grant của user khác → `400 access_denied` |
+| DG9 | Addon phục vụ **một** user: `AddonTokenStore.CreateAsync` trả `null` khi client đã có grant của user khác → `403 access_denied` |
 | Thứ tự middleware | (1) `!IsConnected` → **503**, chưa đọc cookie; (2) verify JWT offline; (3) tìm grant — mất/hết hạn thì xoá cookie; (4) `exp` quá → refresh trong lock; (5) set `ClaimsPrincipal` (`NameIdentifier`/`Name`/`client_id`) |
 | Push từ desktop | `session-revoked` (payload `userId`) khi grant bị giết; `session-grants` (list `userId` còn sống) **mỗi lần** connect. `null` (chưa nhận list / kênh đứt) **≠** `[]` (hết grant): `null` không xoá gì |
 | Logout | `POST /api/oauth/logout` → gRPC `RevokeGrant` (scope `(userId, clientId)`) → desktop xác nhận rồi mới xoá row local + cookie. Thất bại → **503, không logout** |
@@ -642,70 +642,48 @@ addon có được, `null` khi widget mode (phiên thuộc desktop shell, addon 
 không đọc được. Nhánh 401 giữ nguyên: `window.location.replace(loginUrl)`. Browser **không** giữ token,
 **không** gắn `Authorization: Bearer`, **không** retry 401 — token không rời backend addon.
 
-**Legacy HTTP path (giữ tới Phase 6):** flow dưới đây là đường cũ qua `POST /api/oauth/token` + cookie `nmx_addon_refresh_token` + discovery `/.well-known/nmx-oauth-config`. Addon standalone hiện chạy bằng cookie `nmx_addon_session` + gRPC channel như bảng trên.
+**Đăng nhập standalone (đường hiện hành — code redeem qua gRPC):** đường HTTP cũ (`POST /api/oauth/token` + cookie `nmx_addon_refresh_token` + discovery `/.well-known/nmx-oauth-config`) đã bị xoá ở Phase 6. Chỉ còn `/api/oauth/token` cho `client_credentials` (addon lấy machine token), không nhận `authorization_code` nữa.
 
 ```
-createMount (addon entry)
-  ├── isStandalone && !context.oauthConfig
-  │     └── fetch /.well-known/nmx-oauth-config (discovery)
-  │           └── Returns { authorizeUrl, tokenUrl, clientId, redirectUri }
-  │
-  ├── URL có code + state? (OAuth callback)
-  │     └── handleRedirectCallback(tokenUrl, clientId, redirectUri)
-  │           ├── POST /api/oauth/token (form-urlencoded)
-  │           │     grant_type=authorization_code
-  │           │     code=xxx&code_verifier=yyy&client_id=zzz
-  │           ├── Server: PKCE verification, sign JWT (RS256) + create OAuthRefreshToken (UserId)
-  │           ├── Set-Cookie: nmx_addon_refresh_token (HttpOnly, SameSite=Lax, Path=/api)
-  │           └── Returns { accessToken: <JWT>, expiresIn: 900 }
-  │     ├── store token in-memory (_token)
-  │     └── window.history.replaceState (clean URL)
-  │
-  ├── Có access token? (getAccessToken)
-  │     └── Return cached token if not expired
-  │
-  ├── Không có access token?
-  │     └── trySilentRefresh(desktopUrl)
-  │           ├── POST /api/oauth/token/refresh (with cookie)
-  │           ├── Server: hash raw token → lookup OAuthRefreshToken
-  │           │     ├── Not found/used/expired → 401
-  │           │     └── Valid → mark old Used, sign new JWT + create new OAuthRefreshToken
-  │           │           ├── Set-Cookie: new nmx_addon_refresh_token
-  │           │           └── Returns { accessToken: <JWT> }
-  │           └── Success → render()
-  │
-  │     └── Silent refresh failed?
-  │           └── authorizeRedirect(authorizeUrl, clientId, redirectUri)
-  │                 ├── Generate PKCE code_verifier (43-128 chars) + code_challenge (S256)
-  │                 ├── Generate state (anti-CSRF)
-  │                 ├── Store in sessionStorage (code_verifier, state)
-  │                 └── Redirect to authorize endpoint:
-  │                       GET /api/oauth/authorize?
-  │                         client_id=xxx&redirect_uri=yyy&response_type=code
-  │                         &code_challenge=S256hash&code_challenge_method=S256&state=zzz
-  │
-  └── OAuth authorize:
-        └── Server checks user session (cookie)
-              ├── No session → redirect {frontendUrl}/login?returnUrl={authorizeUrl with params}
-              └── Has session → create authorization code
-                    ├── Store code + PKCE challenge in OAuthAuthorizationCode
-                    └── Redirect to redirect_uri?code=xxx&state=yyy
+Browser → addon backend (standalone, chưa có grant)
+  └── AddonSessionAuthService.BuildLoginUrlAsync()
+        ├── oauth.CreateClientAssertionAsync() — machine token RS256, aud = /api/oauth/token
+        ├── state + code_verifier → IMemoryCache (StateTtlMinutes)
+        └── redirect {DesktopApiUrl}/api/oauth/authorize?
+              response_type=code&client_id&redirect_uri&state
+              &code_challenge=S256(code_verifier)&code_challenge_method=S256
+
+Desktop GET /api/oauth/authorize (cookie session của user)
+  ├── ValidateAuthorizationAsync — redirect_uri phải http/https, không fragment,
+  │     path = OAuth.AddonToken.CallbackPath; sai → 400 không nói check nào fail
+  ├── chưa login → redirect {frontendUrl}/login?returnUrl=...
+  └── đã login → OAuthAuthorizationCode (TTL 60s) → redirect redirect_uri?code&state
+
+Addon GET /api/oauth/callback?code&state
+  └── AddonSessionAuthService.CompleteLoginAsync(code, state)
+        ├── tra state trong cache → code_verifier (thiếu → invalid_request)
+        ├── gRPC ExchangeUserCode(code, client_id, code_verifier) + client_assertion
+        │     └── OAuthService.ExchangeCodeAsync — verify PKCE S256 (hoặc client assertion),
+        │           ký JWT, tạo OAuthToken + OAuthRefreshToken
+        ├── AddonTokenStore.CreateAsync(userId, clientId, refreshToken)
+        │     └── null = đã có grant của user khác → DG9 → **403 access_denied**
+        └── Set-Cookie nmx_addon_session = access JWT
 ```
 
-Token refresh rotation:
+Token refresh rotation (desktop side, tới đây qua gRPC `RefreshUserToken`):
 ```
 OAuthService.RefreshAddonTokenAsync(rawToken)
-  ├── Hash = SHA256(Base64Decode(rawToken)) → hex string
-  ├── Find OAuthRefreshToken by hash (not expired)
-  │     ├── Not found → return (Expired, 401)
+  ├── Hash raw token → tìm OAuthRefreshToken chưa hết hạn
+  │     ├── Not found → (Expired) — addon trả 503, KHÔNG logout
   │     ├── Found + Used == true → REUSE DETECTED
-  │     │     ├── Revoke ALL OAuthTokens for this ClientId
-  │     │     ├── Mark ALL OAuthRefreshTokens for this ClientId as Used
-  │     │     ├── Log warning "Token reuse detected"
-  │     │     └── Return (Reused, 401 + TOKEN_REUSED error code)
-  │     └── Found + Used == false → mark as Used
-  ├── Sign new JWT (RS256, `sub` = stored.UserId, `client_id`) + new OAuthRefreshToken (rotation)
-  └── Return (Ok, newJwt, newRefreshToken)
+  │     │     ├── trong grace window (RefreshReuseGraceSeconds) + còn successor đọc được
+  │     │     │     → phát lại đúng successor (retry idempotent, không phải theft)
+  │     │     ├── ngoài grace window → RevokeChainAsync(userId, clientId)
+  │     │     │     (chỉ grant của user này trên addon này, không đụng addon khác)
+  │     │     └── (Reused) → addon coi session đã chết → xoá session
+  │     └── Found + Used == false → mark Used, ghi ReplacedBy*/ReplacedAt (mã hoá successor)
+  ├── Ký JWT RS256 (`sub` = stored.UserId, `client_id`) + tạo OAuthRefreshToken mới (rotation)
+  └── (Ok, newJwt, newRefreshToken)
 ```
 
 OAuth token cleanup (TokenCleanupWorker, every 24h):
@@ -718,14 +696,14 @@ CleanupExpiredTokens
   └── DELETE OAuthTokens WHERE ExpiresAt < UtcNow
 ```
 
-Cookie management:
+Addon session cookie (set by the addon, `AddonSessionAuthOptions.CookieName` = `nmx_addon_session`;
+the desktop's old `nmx_addon_refresh_token` cookie and `POST /api/oauth/token/refresh` are gone):
 ```
-SetAddonRefreshTokenCookie(token):
-  ├── HttpOnly = true (not readable by JS)
-  ├── SameSite = Lax (CSRF protection)
-  ├── Path = /api (available to all /api/* endpoints)
-  ├── Expires = UtcNow + OAuthRefreshTokenTtlDays (configurable, default 30)
-  └── Secure = _appConfig.SecureCookie
+  ├── Carries the access JWT itself, not a session id
+  ├── HttpOnly = true, SameSite = Lax, Path = /
+  ├── MaxAge = SessionTtlDays (30d) — must outlive the 900s JWT, else a live grant could
+  │     never be refreshed once the JWT expired
+  └── Cleared by the addon middleware when the grant is gone (revoked, or refresh credential expired)
 ```
 
 ### External Addons (M4 — Docker)
