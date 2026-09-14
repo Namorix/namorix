@@ -29,7 +29,13 @@ public sealed class AddonSessionAuthController(
         }
         catch (OAuthCallbackException ex)
         {
-            return BadRequest(new OAuthErrorResponse(ex.ErrorCode, ex.Message));
+            // access_denied is the one refusal that is not about the request being wrong: the
+            // addon is already granted to another user (DG9), so the request is understood and
+            // refused. Everything else here is a malformed or expired call.
+            var status = ex.ErrorCode == OAuthErrors.AccessDenied
+                ? StatusCodes.Status403Forbidden
+                : StatusCodes.Status400BadRequest;
+            return StatusCode(status, new OAuthErrorResponse(ex.ErrorCode, ex.Message));
         }
         catch (InvalidOperationException ex)
         {

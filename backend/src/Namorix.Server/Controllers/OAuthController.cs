@@ -1,8 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using Namorix.Core.Config;
 using Namorix.Core.Constants;
-using Namorix.Core.Extensions;
 using Namorix.Core.Grpc;
 using Namorix.Core.OAuth;
 using Namorix.Core.Responses;
@@ -12,11 +9,8 @@ namespace Namorix.Server.Controllers;
 
 [ApiController]
 [Route("api/oauth")]
-public class OAuthController(OAuthService oauth, AddonChannelManager channelManager,
-    IOptions<AppConfig> appConfig) : ControllerBase
+public class OAuthController(OAuthService oauth, AddonChannelManager channelManager) : ControllerBase
 {
-    private readonly AppConfig _appConfig = appConfig.Value;
-    
     [HttpGet("authorize")]
     public async Task<IActionResult> Authorize([FromQuery] AuthorizeRequest request)
     {
@@ -30,8 +24,10 @@ public class OAuthController(OAuthService oauth, AddonChannelManager channelMana
         var addonId = await oauth.ValidateAuthorizationAsync(request.ClientId, request.RedirectUri);
         if (addonId is null)
         {
+            // One message for both halves on purpose: saying which check failed would tell a
+            // caller probing client_ids that it guessed a real one.
             return BadRequest(new OAuthErrorResponse(OAuthErrors.InvalidClient,
-                "Invalid client_id"));
+                "Invalid client_id or redirect_uri"));
         }
         
         var code = await oauth.CreateAuthorizationCodeAsync(
@@ -46,82 +42,40 @@ public class OAuthController(OAuthService oauth, AddonChannelManager channelMana
         return Redirect(redirectUrl);
     }
 
+    // Only client_credentials remains here: the addon's authorization_code exchange and
+    // refresh both run over the authenticated gRPC channel now, so nothing on this endpoint
+    // hands out user tokens any more. Its path is still load-bearing — the addon signs its
+    // client assertion with this URL as the audience.
     [HttpPost("token")]
     [Consumes("application/x-www-form-urlencoded")]
     public async Task<IActionResult> Token([FromForm] TokenRequest request)
     {
-        switch (request.GrantType)
+        if (request.GrantType != OAuth.GrantTypes.ClientCredentials)
         {
-            case OAuth.GrantTypes.AuthorizationCode:
-            {
-                var (tokenId, refreshToken, _) = await oauth.ExchangeCodeAsync(request.Code, request.ClientId,
-                    request.ClientAssertion, request.CodeVerifier);
-            
-                if (tokenId is null)
-                {
-                    return BadRequest(new OAuthErrorResponse(OAuthErrors.InvalidGrant,
-                        "Authorization code is invalid or expired"));
-                }
-                
-                SetAddonRefreshTokenCookie(refreshToken);
-                return Ok(new OAuthTokenResponse(tokenId, OAuth.AddonToken.AccessTokenTtlSeconds,
-                    OAuth.NmxOAuth2Defaults.Bearer));
-            }
-        
-            case OAuth.GrantTypes.ClientCredentials:
-            {
-                if (string.IsNullOrEmpty(request.ClientAssertion))
-                {
-                    return BadRequest(new OAuthErrorResponse(OAuthErrors.InvalidClient,
-                        "client_assertion is required"));
-                }
-                if (request.ClientAssertionType != OAuth.NmxOAuth2Defaults.JwtBearerAssertionType)
-                {
-                    return BadRequest(new OAuthErrorResponse(OAuthErrors.InvalidClient,
-                        "Unsupported client_assertion_type"));
-                }
-            
-                var tokenId = await oauth.IssueClientCredentialsTokenAsync(request.ClientAssertion);
-                if (tokenId is null)
-                {
-                    return BadRequest(new OAuthErrorResponse(OAuthErrors.InvalidClient,
-                        "Client assertion is invalid or expired"));
-                }
-                return Ok(new OAuthTokenResponse(tokenId, 3600, OAuth.NmxOAuth2Defaults.Bearer));
-            }
-        
-            default:
-                return BadRequest(new OAuthErrorResponse(OAuthErrors.UnsupportedGrantType,
-                    $"Grant type '{request.GrantType}' is not supported"));
+            return BadRequest(new OAuthErrorResponse(OAuthErrors.UnsupportedGrantType,
+                $"Grant type '{request.GrantType}' is not supported"));
         }
-    }
-    
-    
-    [HttpPost("token/refresh")]
-    public async Task<IActionResult> RefreshToken()
-    {
-        var refreshToken = Request.Cookies[CookieName.AddonRefreshToken];
-        if (refreshToken is null)
-            return Unauthorized();
-        
-        var result = await oauth.RefreshAddonTokenAsync(refreshToken);
-        if (result is null)
-            return Unauthorized();
-        
-        if (result.Value.Status == OAuthRefreshStatus.Reused)
+
+        if (string.IsNullOrEmpty(request.ClientAssertion))
         {
-            Response.DeleteCookie(CookieName.AddonRefreshToken);
-            return Unauthorized(ApiResponse.Fail(OAuthRefreshErrors.TokenReused,
-                "Refresh token was reused. Possible theft detected. Re-registration required."));
+            return BadRequest(new OAuthErrorResponse(OAuthErrors.InvalidClient,
+                "client_assertion is required"));
         }
-        
-        var (tokenId, newRefreshToken, _, _) = result.Value;
-        SetAddonRefreshTokenCookie(newRefreshToken!);
-        
-        return Ok(new OAuthTokenResponse(tokenId!, OAuth.AddonToken.AccessTokenTtlSeconds,
-            OAuth.NmxOAuth2Defaults.Bearer));
+        if (request.ClientAssertionType != OAuth.NmxOAuth2Defaults.JwtBearerAssertionType)
+        {
+            return BadRequest(new OAuthErrorResponse(OAuthErrors.InvalidClient,
+                "Unsupported client_assertion_type"));
+        }
+
+        var tokenId = await oauth.IssueClientCredentialsTokenAsync(request.ClientAssertion);
+        if (tokenId is null)
+        {
+            return BadRequest(new OAuthErrorResponse(OAuthErrors.InvalidClient,
+                "Client assertion is invalid or expired"));
+        }
+        return Ok(new OAuthTokenResponse(tokenId, 3600, OAuth.NmxOAuth2Defaults.Bearer));
     }
-    
+
     [HttpPost("revoke")]
     public async Task<IActionResult> Revoke([FromBody] RevokeRequest request)
     {
@@ -148,10 +102,6 @@ public class OAuthController(OAuthService oauth, AddonChannelManager channelMana
         
         return Ok(new { clientId });
     }
-
-    private void SetAddonRefreshTokenCookie(string token) =>
-        Response.SetCookie(CookieName.AddonRefreshToken, token,
-            DateTimeOffset.UtcNow.AddDays(_appConfig.OAuthRefreshTokenTtlDays).DateTime, _appConfig.SecureCookie);
 }
 
 public class AuthorizeRequest
@@ -182,16 +132,7 @@ public class TokenRequest
 {
     [FromForm(Name = OAuth.OAuthParameter.GrantType)]
     public string GrantType { get; init; } = string.Empty;
-    
-    [FromForm(Name = OAuth.OAuthParameter.Code)]
-    public string Code { get; init; } = string.Empty;
-    
-    [FromForm(Name = OAuth.OAuthParameter.CodeVerifier)]
-    public string? CodeVerifier { get; init; }
 
-    [FromForm(Name = OAuth.OAuthParameter.ClientId)]
-    public string ClientId { get; init; } = string.Empty;
-    
     [FromForm(Name = OAuth.OAuthParameter.ClientAssertion)]
     public string ClientAssertion { get; init; } = string.Empty;
     

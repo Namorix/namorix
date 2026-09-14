@@ -31,6 +31,11 @@ public static class OAuth
         public const string Issuer = "namorix-desktop";
         public const string ClientIdClaim = "client_id";
 
+        // Where the desktop hands the authorization code back. Shared so the two ends cannot
+        // drift: the desktop refuses a redirect_uri that does not end at this path, and the
+        // SDK uses it as the default for AddonSessionAuthOptions.CallbackPath.
+        public const string CallbackPath = "/api/oauth/callback";
+
         // Single source of truth for the addon access token lifetime (DG7). The JWT
         // `exp` and every `expires_in` handed to the addon must agree: if the token
         // dies at 900s while expires_in still says 3600, the addon waits 45 more

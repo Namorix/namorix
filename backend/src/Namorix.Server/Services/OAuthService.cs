@@ -35,8 +35,29 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache, ILogger<OAu
 
     public async Task<string?> ValidateAuthorizationAsync(string clientId, string redirectUri)
     {
+        // The code is about to be sent to whatever address this says, so it is vetted before
+        // the client is looked up. Only the shape can be checked here: frontgate assigns the
+        // addon's host, so the desktop has no way to know the exact origin in advance. That
+        // rules out malformed and non-web schemes (javascript:, data:) but not a well-formed
+        // address pointing somewhere else — PKCE and the client assertion are what actually
+        // stop a redirected code from being redeemed.
+        if (!IsAcceptableRedirectUri(redirectUri))
+            return null;
+
         var addon = await db.AddonInstallations.FirstOrDefaultAsync(a => a.ClientId == clientId);
         return addon?.PublicKey != null ? addon.Id : null;
+    }
+
+    private static bool IsAcceptableRedirectUri(string redirectUri)
+    {
+        if (!Uri.TryCreate(redirectUri, UriKind.Absolute, out var uri))
+            return false;
+
+        // A fragment would be dropped by the browser before it reaches the addon, taking any
+        // query the desktop appended with it.
+        return (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
+               && string.IsNullOrEmpty(uri.Fragment)
+               && uri.AbsolutePath == OAuth.AddonToken.CallbackPath;
     }
 
     public async Task<OAuthAuthorizationCode> CreateAuthorizationCodeAsync(
