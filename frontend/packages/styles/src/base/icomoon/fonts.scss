@@ -16,14 +16,24 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.ic-docker {
+.ic-fullscreen {
   &:before {
-    content: $ic-docker; 
+    content: $ic-fullscreen; 
+  }
+}
+.ic-live {
+  &:before {
+    content: $ic-live; 
   }
 }
 .ic-camera {
   &:before {
     content: $ic-camera; 
+  }
+}
+.ic-docker {
+  &:before {
+    content: $ic-docker; 
   }
 }
 .ic-block {

@@ -71,7 +71,9 @@ export const NmxIconFontSymbol = {
   TASK: "ic-task",
   BLOCK: "ic-block",
   CAMERA: "ic-camera",
+  LIVE: "ic-live",
   DOCKER: "ic-docker",
+  FULLSCREEN: "ic-fullscreen",
 } as const
 
 export type NmxIconFontSymbol =
