@@ -27,6 +27,11 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [progress.md](progress.md) (September 2026), [versionHistory-08-2026.md](../archive/versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-09-14 — Icon `ic-live` + `ic-fullscreen` cho Scout (@namorix/ui 0.52.0 / @namorix/styles 0.61.0)
+
+- Thêm cho namorix-scout v0.5.0: icon tab Live + nút fullscreen trên card camera.
+- Chỉ **thêm** glyph (`\e949`, `\e94a`) — mã các icon cũ giữ nguyên, nên không addon nào bị vỡ icon.
+
 ### 2026-09-14 — Addon OAuth Phase 6: validate hình dạng redirect_uri, xoá đường HTTP legacy, DG9 → 403, docs rotate khoá (Namorix.Core 0.65.0 / Namorix.Server 0.83.0 / @namorix/core 0.68.0)
 
 Kế hoạch: `.claude/plans/01-addon-oauth-token-model.plan.md` — Phase 6, mục cuối cùng. Build sạch 3 project. **Vẫn chưa chạy end-to-end** (nợ runtime test từ Phase 1b/3).

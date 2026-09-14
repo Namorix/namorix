@@ -1,5 +1,14 @@
 # Version History — September 2026
 
+## 2026-09-14 — Icons `ic-live` + `ic-fullscreen` cho Scout live view; bump 2 package
+
+> Yêu cầu từ namorix-scout: tab Live cần icon riêng + nút fullscreen trên card camera. Chỉ **thêm** glyph mới — không đổi mã icon cũ, không package nào khác bị ảnh hưởng.
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/ui | 0.51.0 → 0.52.0 | MODIFIED: `Primitives/NmxIcon/NmxIconFont.types.ts` +`LIVE` (`ic-live`) +`FULLSCREEN` (`ic-fullscreen`). |
+| @namorix/styles | 0.60.0 → 0.61.0 | MODIFIED: icomoon rebuild (`variables.scss` +`$ic-live: "\e949"` +`$ic-fullscreen: "\e94a"`; `fonts.scss`/`_font-face.scss`/`selection.json`). |
+
 ## 2026-09-14 — Addon OAuth Phase 6: validate hình dạng `redirect_uri`, xoá đường HTTP legacy, DG9 trả 403, docs rotate khoá; bump version
 
 > Kết thúc kế hoạch `.claude/plans/01-addon-oauth-token-model.plan.md` (Phase 6). Build sạch 3 project. **Vẫn chưa mục nào chạy end-to-end** — nợ runtime test giữ nguyên từ Phase 1b/3 (PKCE end-to-end, `kid` rotation, 503 khi SIGKILL desktop, reconnect + drop grant, logout 503).
