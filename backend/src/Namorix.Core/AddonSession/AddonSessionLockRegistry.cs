@@ -2,12 +2,13 @@ using System.Collections.Concurrent;
 
 namespace Namorix.Core.AddonSession;
 
-// Serializes token refreshes per session id. A duplicated refresh presents an already-rotated
-// refresh token, which the desktop reads as theft and answers by revoking the whole client chain,
-// so the lock guards correctness rather than throughput.
+// Serializes token refreshes per (clientId, userId) grant. A duplicated refresh presents an
+// already-rotated refresh token, which the desktop reads as theft and answers by revoking the
+// whole chain, so the lock guards correctness rather than throughput.
 //
-// In-process only: it cannot coordinate several addon replicas. Phase 3 moves the lock to the
-// desktop, keyed by (userId, clientId), which also covers the multi-replica case.
+// In-process only: it cannot coordinate several addon replicas. Two replicas refreshing the
+// same grant concurrently would still collide — but the desktop's grace window absorbs that
+// case, since the loser presents a token whose successor is still recoverable.
 public sealed class AddonSessionLockRegistry
 {
     private readonly ConcurrentDictionary<string, Entry> _entries = new();
@@ -48,7 +49,7 @@ public sealed class AddonSessionLockRegistry
         var drop = false;
         lock (entry)
         {
-            // The entry leaves the dictionary once the last holder is done, so dead session ids
+            // The entry leaves the dictionary once the last holder is done, so dead grants
             // do not accumulate. Not disposing the semaphore: a waiter may still hold a reference.
             if (--entry.Refs == 0)
             {

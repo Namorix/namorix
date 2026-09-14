@@ -10,7 +10,7 @@ namespace Namorix.Core.AddonSession;
 [ApiController]
 [Route("api/oauth")]
 public sealed class AddonSessionAuthController(
-    IAddonSessionService sessions,
+    IAddonTokenStore tokens,
     AddonSessionAuthService oauth,
     IOptions<AddonSessionAuthOptions> options) : ControllerBase
 {
@@ -22,10 +22,10 @@ public sealed class AddonSessionAuthController(
     public async Task<IActionResult> Callback(
         [FromQuery] string code, [FromQuery] string state, CancellationToken ct)
     {
-        AddonSession session;
+        AddonLoginResult result;
         try
         {
-            session = await oauth.CompleteLoginAsync(code, state, ct);
+            result = await oauth.CompleteLoginAsync(code, state, ct);
         }
         catch (OAuthCallbackException ex)
         {
@@ -37,7 +37,12 @@ public sealed class AddonSessionAuthController(
         }
 
         var opts = options.Value;
-        Response.Cookies.Append(opts.CookieName, session.Id, new CookieOptions
+
+        // The cookie carries the access JWT itself. Its MaxAge follows the refresh token,
+        // not the JWT's own 900s: the middleware needs the cookie to survive the JWT so it
+        // can refresh from the stored grant, otherwise the user would be logged out every
+        // 15 minutes.
+        Response.Cookies.Append(opts.CookieName, result.AccessToken, new CookieOptions
         {
             HttpOnly = true,
             SameSite = SameSiteMode.Lax,
@@ -60,10 +65,24 @@ public sealed class AddonSessionAuthController(
     public async Task<IActionResult> Logout(CancellationToken ct)
     {
         var opts = options.Value;
-        if (!Request.Cookies.TryGetValue(opts.CookieName, out var sessionId))
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var clientId = User.FindFirst(Constants.OAuth.AddonToken.ClientIdClaim)?.Value;
+
+        if (!int.TryParse(userId, out var owner) || string.IsNullOrEmpty(clientId))
+        {
+            Response.Cookies.Delete(opts.CookieName, new CookieOptions { Path = "/" });
             return NoContent();
-        
-        await sessions.DeleteAsync(sessionId, ct);
+        }
+
+        // The desktop is the only place the grant lives, so the local row goes only after
+        // the desktop confirms it killed its side. Deleting locally on a failed revoke would
+        // tell the user they are signed out while the grant stays refreshable over there for
+        // the rest of its 30-day TTL. A dead channel never reaches here — the middleware's
+        // gate answers 503 first — so this covers the desktop that is reachable but refusing.
+        if (!await oauth.RevokeAsync(owner, clientId, ct))
+            return StatusCode(StatusCodes.Status503ServiceUnavailable);
+
+        await tokens.DeleteAsync(owner, clientId, ct);
         Response.Cookies.Delete(opts.CookieName, new CookieOptions { Path = "/" });
         return NoContent();
     }

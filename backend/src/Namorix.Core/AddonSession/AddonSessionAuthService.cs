@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Memory;
@@ -11,12 +13,16 @@ using Namorix.Core.Protos;
 
 namespace Namorix.Core.AddonSession;
 
+// What the browser gets after a successful login: the grant row (so the addon can refresh
+// later) and the access JWT that goes into the cookie.
+public sealed record AddonLoginResult(AddonToken Token, string AccessToken);
+
 public sealed class AddonSessionAuthService(
     AddonChannelClient channel,
     NmxOAuth2Client oauth,
     NmxAddonConfig config,
-    IAddonSessionService sessions,
-    AddonSessionLockRegistry sessionLocks,
+    IAddonTokenStore tokens,
+    AddonSessionLockRegistry refreshLocks,
     IMemoryCache cache,
     IOptions<AddonSessionAuthOptions> options,
     ILogger<AddonSessionAuthService> logger)
@@ -28,7 +34,14 @@ public sealed class AddonSessionAuthService(
         await oauth.CreateClientAssertionAsync(ct);
 
         var state = Guid.NewGuid().ToString("N");
-        cache.Set(StatePrefix + state, true, TimeSpan.FromMinutes(options.Value.StateTtlMinutes));
+
+        // PKCE: the addon is a confidential client, but the authorization code still travels
+        // back through the browser, so it is bound to a secret only this backend ever sees.
+        // The verifier rides in the state entry — the state is what ties the callback to the
+        // login that started it.
+        var codeVerifier = Base64UrlEncode(RandomNumberGenerator.GetBytes(32));
+        cache.Set(StatePrefix + state, codeVerifier,
+            TimeSpan.FromMinutes(options.Value.StateTtlMinutes));
 
         // Behind the desktop's frontgate the addon is addressed by its internal address; the
         // origin the browser actually used arrives in the forwarded headers.
@@ -42,16 +55,20 @@ public sealed class AddonSessionAuthService(
             ["client_id"] = oauth.ClientId,
             ["redirect_uri"] = redirectUri,
             ["state"] = state,
+            ["code_challenge"] = Base64UrlEncode(
+                SHA256.HashData(Encoding.UTF8.GetBytes(codeVerifier))),
+            ["code_challenge_method"] = "S256",
         };
 
         return QueryHelpers.AddQueryString(
             $"{desktopApiUrl}{OAuthEndpoints.Authorize}", query);
     }
 
-    public async Task<AddonSession> CompleteLoginAsync(
+    public async Task<AddonLoginResult> CompleteLoginAsync(
         string code, string state, CancellationToken ct)
     {
-        if (!cache.TryGetValue(StatePrefix + state, out _))
+        if (!cache.TryGetValue(StatePrefix + state, out string? codeVerifier)
+            || codeVerifier is null)
             throw new OAuthCallbackException(OAuthErrors.InvalidRequest,
                 "OAuth state mismatch or login flow expired");
         cache.Remove(StatePrefix + state);
@@ -61,7 +78,7 @@ public sealed class AddonSessionAuthService(
         OAuthTokenResult result;
         try
         {
-            result = await channel.ExchangeUserCodeAsync(code, oauth.ClientId!, ct);
+            result = await channel.ExchangeUserCodeAsync(code, oauth.ClientId!, codeVerifier, ct);
         }
         catch (RpcException ex) when (ex.StatusCode is StatusCode.InvalidArgument
             or StatusCode.Unauthenticated or StatusCode.PermissionDenied)
@@ -74,31 +91,80 @@ public sealed class AddonSessionAuthService(
 
         logger.LogInformation("User {UserId} logged in via desktop OAuth", result.UserId);
 
-        return await sessions.CreateAsync(
-            (int)result.UserId, oauth.ClientId!,
-            result.AccessToken, result.RefreshToken, (int)result.ExpiresIn, ct);
+        var token = await tokens.CreateAsync(
+            (int)result.UserId, oauth.ClientId!, result.RefreshToken, ct);
+
+        // DG9: the addon serves one user at a time. A second user must not be able to take
+        // over the stored grant, because the data behind it is not yet partitioned per user.
+        if (token is null)
+        {
+            logger.LogWarning(
+                "Refused login for user {UserId}: addon is already granted to another user",
+                result.UserId);
+            throw new OAuthCallbackException(OAuthErrors.AccessDenied,
+                "This addon is already logged in as another user");
+        }
+
+        return new AddonLoginResult(token, result.AccessToken);
     }
 
-    public async Task RefreshSessionAsync(AddonSession session, CancellationToken ct)
+    // Returns the new access JWT once the rotated refresh token is safely persisted, or
+    // null when the grant no longer exists (revoked by the desktop while we held it).
+    public async Task<string?> RefreshAsync(int userId, string clientId, CancellationToken ct)
     {
-        await using var lease = await sessionLocks.AcquireAsync(session.Id, ct);
+        await using var lease = await refreshLocks.AcquireAsync($"{clientId}:{userId}", ct);
 
-        // Re-read inside the lock: if a concurrent request already refreshed, reuse its result
-        // instead of presenting the rotated refresh token, which the desktop treats as theft.
-        var current = await sessions.FindAsync(session.Id, ct);
-        if (current is null)
-            return;
-        if (current.AccessTokenExpiresAt > DateTime.UtcNow)
-            return;
+        // Both the read and the network call stay inside the lock. Rotation makes the
+        // refresh token single-use: a second request that read it before we replaced it
+        // would present a consumed token, which the desktop reads as theft and answers by
+        // revoking the whole chain — a lost session, not just a wasted round trip.
+        var token = await tokens.FindAsync(userId, clientId, ct);
+        if (token is null || token.RefreshTokenExpiresAt <= DateTime.UtcNow)
+            return null;
 
-        var refreshToken = sessions.DecryptRefreshToken(current);
+        var refreshToken = tokens.DecryptRefreshToken(token);
         if (string.IsNullOrEmpty(refreshToken))
-            throw new InvalidOperationException("Session has no refresh token.");
+        {
+            logger.LogError("Stored grant for user {UserId} has an unreadable refresh token", userId);
+            return null;
+        }
 
         await oauth.CreateClientAssertionAsync(ct);
-        var result = await channel.RefreshUserTokenAsync(refreshToken, current.ClientId, ct);
+        var result = await channel.RefreshUserTokenAsync(refreshToken, clientId, ct);
 
-        await sessions.UpdateTokensAsync(current,
-            result.AccessToken, result.RefreshToken, (int)result.ExpiresIn, ct);
+        // Persist before returning: the desktop has already rotated, so a crash between its
+        // response and this write would leave the consumed token as our only credential, and
+        // the next refresh would read as theft.
+        await tokens.UpdateRefreshTokenAsync(token, result.RefreshToken, ct);
+
+        return result.AccessToken;
     }
+
+    // Logout, addon side. Takes the same lease as refresh: a refresh already past the lock
+    // would otherwise land its rotated row on the desktop after our revoke, leaving a live
+    // grant behind a logout the user was told had succeeded.
+    // False means the desktop could not be reached or refused, so the grant is still alive
+    // there and reporting a clean logout would be a lie.
+    public async Task<bool> RevokeAsync(int userId, string clientId, CancellationToken ct)
+    {
+        await using var lease = await refreshLocks.AcquireAsync($"{clientId}:{userId}", ct);
+
+        try
+        {
+            await channel.RevokeGrantAsync(userId, ct);
+            return true;
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Could not revoke the grant for user {UserId} on the desktop", userId);
+            return false;
+        }
+    }
+
+    private static string Base64UrlEncode(byte[] data) =>
+        Convert.ToBase64String(data).TrimEnd('=').Replace('+', '-').Replace('/', '_');
 }
