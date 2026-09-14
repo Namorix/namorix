@@ -74,6 +74,7 @@ export const NmxIconFontSymbol = {
   LIVE: "ic-live",
   DOCKER: "ic-docker",
   FULLSCREEN: "ic-fullscreen",
+  FULLSCREEN_EXIT: "ic-fullscreen-exit",
 } as const
 
 export type NmxIconFontSymbol =
