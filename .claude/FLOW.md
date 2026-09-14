@@ -594,7 +594,34 @@ Window open
 
 ### External Addon Standalone Auth (OAuth2 authorization_code + PKCE)
 
-Addon standalone mode (own server, separate origin) uses OAuth2 authorization code flow with PKCE:
+Addon standalone mode (own server, separate origin) uses OAuth2 authorization code flow with PKCE.
+
+**Access token = JWT RS256, TTL 900s** (không còn GUID opaque). Desktop ký bằng khoá riêng
+(`NmxAddonTokenSigner`, RSA 2048, PKCS#8 PEM `{DataDir}/oauth-signing.pem` mode 600, `kid` =
+base64url(SHA-256(SPKI))); addon verify **offline** bằng public key lấy qua gRPC `GetJwks`
+(không HTTP endpoint, không cache đĩa) — desktop là auth server duy nhất, nên addon không
+kết nối được desktop thì cũng không được verify gì.
+
+| Thứ | Giá trị |
+|-----|---------|
+| `iss` | `namorix-desktop` (`OAuth.AddonToken.Issuer`) |
+| `sub` | userId (row refresh token cũ có `UserId = 0` → `sub = "0"`) |
+| `client_id` | clientId của addon |
+| `exp` / `iat` / `jti` | TTL = `OAuth.AddonToken.AccessTokenTtlSeconds` (900) — **một nguồn duy nhất**, `expires_in` trả về addon lấy cùng hằng số |
+| header `kid` | dùng để chọn key trong JWKS |
+
+**Gate khả dụng (fail-closed):** `AddonChannelClient.IsConnected` chỉ `true` sau khi desktop gửi
+message `handshake` (`DesktopConfigMessage.TypeHandshake`) và receive loop chưa kết thúc — kể cả
+stream đóng **sạch** cũng đóng gate. Keepalive ping 15s/10s policy `Always` để desktop chết không
+sạch (SIGKILL/half-open TCP) lộ ra trong vài giây. Addon phải trả **503** khi gate đóng.
+
+**Hợp đồng lỗi refresh:** gRPC `Unauthenticated` bị overload nên lỗi phân loại qua trailer
+`OAuth.Trailer.ErrorCode` (`"nmx-error-code"`) với `OAuthErrors` (`invalid_client`,
+`invalid_grant`, `theft_detected`). Chỉ `theft_detected` và `invalid_grant` nghĩa là session đã
+chết → xoá session. Mọi thứ khác (desktop restart, channel chưa start, timeout) là **transient**
+→ giữ session và trả 503, không đăng xuất user. `AddonSessionLockRegistry` + đọc lại session
+trong lock đảm bảo 2 request đồng thời không cùng refresh (rotate lần hai bị coi là theft → xoá
+sạch chain).
 
 ```
 createMount (addon entry)
@@ -607,9 +634,9 @@ createMount (addon entry)
   │           ├── POST /api/oauth/token (form-urlencoded)
   │           │     grant_type=authorization_code
   │           │     code=xxx&code_verifier=yyy&client_id=zzz
-  │           ├── Server: PKCE verification, create OAuthToken + OAuthRefreshToken
+  │           ├── Server: PKCE verification, sign JWT (RS256) + create OAuthRefreshToken (UserId)
   │           ├── Set-Cookie: nmx_addon_refresh_token (HttpOnly, SameSite=Lax, Path=/api)
-  │           └── Returns { accessToken, expiresIn }
+  │           └── Returns { accessToken: <JWT>, expiresIn: 900 }
   │     ├── store token in-memory (_token)
   │     └── window.history.replaceState (clean URL)
   │
@@ -621,9 +648,9 @@ createMount (addon entry)
   │           ├── POST /api/oauth/token/refresh (with cookie)
   │           ├── Server: hash raw token → lookup OAuthRefreshToken
   │           │     ├── Not found/used/expired → 401
-  │           │     └── Valid → mark old Used, create new OAuthToken + OAuthRefreshToken
+  │           │     └── Valid → mark old Used, sign new JWT + create new OAuthRefreshToken
   │           │           ├── Set-Cookie: new nmx_addon_refresh_token
-  │           │           └── Returns { accessToken }
+  │           │           └── Returns { accessToken: <JWT> }
   │           └── Success → render()
   │
   │     └── Silent refresh failed?
@@ -656,8 +683,8 @@ OAuthService.RefreshAddonTokenAsync(rawToken)
   │     │     ├── Log warning "Token reuse detected"
   │     │     └── Return (Reused, 401 + TOKEN_REUSED error code)
   │     └── Found + Used == false → mark as Used
-  ├── Create new OAuthToken + new OAuthRefreshToken (rotation)
-  └── Return (Ok, newTokenId, newRefreshToken)
+  ├── Sign new JWT (RS256, `sub` = stored.UserId, `client_id`) + new OAuthRefreshToken (rotation)
+  └── Return (Ok, newJwt, newRefreshToken)
 ```
 
 OAuth token cleanup (TokenCleanupWorker, every 24h):
@@ -739,8 +766,8 @@ OAuthController.Token (POST /api/oauth/token) [form-urlencoded, exempt from JSON
   │           ├── Parse client_assertion (JWT)
   │           ├── Verify RSA signature against stored PublicKey
   │           └── Return access_token (Bearer, 1h TTL)
-  ├── grant_type=authorization_code (future)
-  │     └── OAuthService.ExchangeCodeAsync
+  ├── grant_type=authorization_code (PKCE hoặc client_assertion)
+  │     └── OAuthService.ExchangeCodeAsync → ký JWT RS256 (`sub`=userId, `client_id`) + refresh token
   └── grant_type=invalid → unsupported_grant_type error
 
 NmxOAuth2Client.GetAccessTokenAsync (addon gọi mỗi khi cần token)
@@ -831,9 +858,11 @@ AddonController action
 | `frontend/src/store/slices/externalAddonsSlice.ts` | Redux state for external addons |
 | `backend/src/Namorix.Server/Services/DockerService.cs` | Docker.DotNet wrapper |
 | `backend/src/Namorix.Server/Services/AddonService.cs` | Addon CRUD business logic |
-| `backend/src/Namorix.Server/Services/OAuthService.cs` | OAuth2 register + client_credentials token exchange (JWT RS256) |
+| `backend/src/Namorix.Server/Services/OAuthService.cs` | OAuth2 register + token exchange; ký JWT RS256 cho addon access token (`NmxAddonTokenSigner`), verify client_assertion |
+| `backend/src/Namorix.Server/Services/NmxAddonTokenSigner.cs` | RSA 2048 key (`{DataDir}/oauth-signing.pem`, mode 600) + `Sign(userId, clientId, ttl)` RS256; chỉ ở Server, Core (SDK) không mang private key |
 | `backend/src/Namorix.Server/Controllers/AddonController.cs` | REST API endpoints |
 | `backend/src/Namorix.Server/Controllers/OAuthController.cs` | OAuth register + token endpoints |
+| `backend/src/Namorix.Core/AddonSession/AddonSessionLockRegistry.cs` | Async lock per-session — 2 request đồng thời không cùng refresh (tránh false theft-detected) |
 | `backend/src/Namorix.Server/Middleware/OAuth2Middleware.cs` | Bearer token verification |
 | `backend/src/Namorix.Core/OAuth/NmxOAuth2Client.cs` | OAuth2 client SDK (self-registration, token caching) |
 | `backend/src/Namorix.Core/OAuth/NmxAddonConfig.cs` | Addon env var config (DesktopApiUrl, RegistrationToken, GrpcUrl) |
@@ -842,7 +871,7 @@ AddonController action
 | `backend/src/Namorix.Core/Constants/ExemptPaths.cs` | Middleware bypass paths (OAuth endpoints) |
 | `backend/src/Namorix.Core/Config/BackendConfig.cs` | Backend config (Port, RegistrationTokenTtlMinutes) |
 | `backend/src/Namorix.Core/Models/OAuthRegistration.cs` | Registration token entity |
-| `backend/src/Namorix.Core/Grpc/AddonChannelClient.cs` | gRPC client for addons (OAuth2 token + duplex stream management) |
+| `backend/src/Namorix.Core/Grpc/AddonChannelClient.cs` | gRPC client for addons (OAuth2 token + duplex stream); `IsConnected` = gate `_streamUp` fail-closed (chỉ mở sau `handshake`) |
 | `backend/src/Namorix.Core/Grpc/AddonChannelClientExtensions.cs` | DI extension for AddonChannelClient |
 | `backend/src/Namorix.Core/Grpc/AddonHostedServiceBase.cs` | Base class for addon IHostedService (auto-reconnect) |
 | `backend/src/Namorix.Server/Workers/DockerMonitorWorker.cs` | Container event stream + health check poll + auto-discover |

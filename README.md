@@ -48,6 +48,7 @@ Updates DNS records to your current public IP (DDNS). Host hỗ trợ multi-tag 
 | Backend | ASP.NET Core 10 |
 | Database | SQLite + EF Core |
 | OAuth | authorization_code + PKCE (browser), client_credentials + private_key_jwt (server) |
+| Addon access token | JWT RS256 (900s) — addon verifies offline bằng public key lấy qua gRPC `GetJwks` |
 | Addon protocol | Module Federation (widget), OAuth2 standalone (full app) |
 | Server-to-server | gRPC (bidirectional streaming) |
 | Docker | Docker.DotNet |

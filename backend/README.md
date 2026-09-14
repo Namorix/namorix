@@ -234,6 +234,7 @@ backend/
         │   ├── AddonTaskExecutor.cs     # Start/Stop/Uninstall with Docker calls + status updates
         │   ├── CatalogService.cs        # Catalog index fetch + manifest sync + TTL caching
         │   ├── OAuthService.cs          # OAuth2 authorization server (authorization_code + PKCE, client_credentials + private_key_jwt)
+        │   ├── NmxAddonTokenSigner.cs   # RSA 2048 signing key ({DataDir}/oauth-signing.pem, mode 600) — signs addon access JWTs (RS256, kid)
         │   ├── AddonChannelManager.cs   # gRPC channel connection tracking (ConcurrentDictionary)
         │   ├── PublicIpService.cs       # Public IP detection (auto/ipify.org) — shared Beacon/Frontgate
         │   ├── Beacon/                  # DDNS — BcnHostnameService (update logic), BcnUpdateQueue, BcnProbeQueue,
@@ -245,7 +246,8 @@ backend/
         │   ├── Warden/                  # WdFirewallService (iptables/nftables enforcement + Herald + audit trail — publish WdSecurityEvent cho rule lifecycle), WdEventService (publish WdSecurityEvent + notify),
         │   │                            #   HeraldNotifier (ruleApplied/ruleRemoved admin notifications)
         │   └── Grpc/
-        │       └── AddonChannelService.cs  # gRPC bidirectional stream handler + interceptor auth
+        │       └── AddonChannelService.cs  # gRPC bidirectional stream handler + interceptor auth;
+        │                                   #   sends handshake (availability gate), GetJwks (public signing key), config-update
         ├── Controllers/
         │   ├── AuthController.cs        # 7 auth endpoints (login, register, logout, session, refresh, status, logout-all)
         │   ├── Frontgate/               # ReverseProxyController (CRUD + dry-run confirm/cancel),
@@ -337,6 +339,11 @@ backend/
 | POST | `/api/oauth/token` | Token endpoint (authorization_code + PKCE + client_credentials) |
 | POST | `/api/oauth/token/refresh` | Refresh addon token via cookie rotation |
 | POST | `/api/oauth/revoke` | Revoke OAuth token + disconnect gRPC channel |
+
+Addon access token là **JWT RS256, TTL 900s** (`OAuth.AddonToken.AccessTokenTtlSeconds` — `exp` và
+`expires_in` dùng chung một hằng số). Addon verify offline bằng public key lấy qua gRPC `GetJwks`.
+Refresh token gắn `UserId`; lỗi refresh phân loại qua trailer `nmx-error-code` (transient → 503 giữ
+session, chỉ `invalid_grant`/`theft_detected` mới xoá session).
 
 ### Addon (`/api/addon`)
 
@@ -617,9 +624,11 @@ SignalR client auto-reconnects with exponential backoff (5s → 30s cap, infinit
 Addon backend ↔ Namorix backend communication qua port 5001 (HTTP/2):
 
 - **AddonChannelService** — gRPC bidirectional stream for widget event forwarding + heartbeat
-- **Unary RPCs (user OAuth)** — `ExchangeUserCode` (addon backend exchanges user authorization code → `OAuthTokenResult`; caller auth bằng machine token, `client_assertion` chứng minh addon sở hữu code) / `RefreshUserToken` (refresh user access token bằng stored refresh token)
+- **Server-first messages**: `handshake` (bare liveness proof — addon mở availability gate trên message này, gửi vô điều kiện trước mọi thứ có thể fail) / `config-update` (desktop domain, best-effort)
+- **Unary RPCs (user OAuth)** — `ExchangeUserCode` (addon backend exchanges user authorization code → `OAuthTokenResult`; caller auth bằng machine token, `client_assertion` chứng minh addon sở hữu code) / `RefreshUserToken` (refresh user access token bằng stored refresh token) / `GetJwks` (public key RS256 + `kid` để addon verify access JWT offline — chỉ với tới được khi channel còn sống)
 - **AddonChannelManager** — Tracks active gRPC connections per addon
 - **Auth**: OAuth2 Bearer token (private_key_jwt) in gRPC metadata
+- **Error classification**: `Unauthenticated` bị overload → trailer `nmx-error-code` mang `invalid_client` / `invalid_grant` / `theft_detected`; chỉ 2 mã sau nghĩa là session chết
 - **Reconnect**: RetryConnectHostedService with configurable backoff
 
 ## Docker Integration
