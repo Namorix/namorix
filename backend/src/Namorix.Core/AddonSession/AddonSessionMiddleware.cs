@@ -138,5 +138,8 @@ public sealed class AddonSessionMiddleware(
     private static bool IsFatalRefreshFailure(Exception ex)
         => ex is RpcException rpc
            && rpc.Trailers.GetValue(Constants.OAuth.Trailer.ErrorCode)
-               is OAuthErrors.TheftDetected or OAuthErrors.InvalidGrant;
+               // invalid_client means the desktop no longer knows this ClientId, so the
+               // cookie can never be refreshed again. Treating it as transient 503s forever
+               // and leaves the user clearing cookies by hand.
+               is OAuthErrors.TheftDetected or OAuthErrors.InvalidGrant or OAuthErrors.InvalidClient;
 }
