@@ -8,17 +8,17 @@ public class AddonInstallation
     [MaxLength(100)] public string? ContainerId { get; set; }
 
     public int HostPort { get; set; }
-    public string? Ports { get; init; }
+    public string? Ports { get; set; }
 
-    [MaxLength(200)] public string Image { get; init; } = string.Empty;
-    [MaxLength(50)] public string? Version { get; init; }
-    
+    [MaxLength(200)] public string Image { get; set; } = string.Empty;
+    [MaxLength(50)] public string? Version { get; set; }
+
     [MaxLength(20)] public string? Status { get; set; }   // installed|running|stopped|error
 
-    [MaxLength(100)] public string? PendingTaskId { get; init; }
-    [MaxLength(20)] public string? PendingTaskPhase { get; init; }
-    [MaxLength(500)] public string? LastErrorCode { get; init; }
-    public DateTime? LastStatusChangedAt { get; init; }
+    [MaxLength(100)] public string? PendingTaskId { get; set; }
+    [MaxLength(20)] public string? PendingTaskPhase { get; set; }
+    [MaxLength(500)] public string? LastErrorCode { get; set; }
+    public DateTime? LastStatusChangedAt { get; set; }
     public DateTime InstalledAt { get; init; }
 
     [MaxLength(100)] public string? ClientId { get; set; }

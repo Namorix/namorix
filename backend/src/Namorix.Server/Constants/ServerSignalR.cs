@@ -18,6 +18,7 @@ public static class ServerSignalREvents
     public const string AddonStatusChanged = $"{ServerSignalRGroups.Addon}:status-changed";
     public const string AddonPendingTaskChanged = $"{ServerSignalRGroups.Addon}:pending-task-changed";
     public const string AddonUninstalled = $"{ServerSignalRGroups.Addon}:uninstalled";
+    public const string AddonUpdated = $"{ServerSignalRGroups.Addon}:updated";
     public const string AddonWidgetEvent = $"{ServerSignalRGroups.Addon}:widget-event";
     public const string BeaconHostnameStatusChanged = $"{ServerSignalRGroups.Beacon}:hostname-status-changed";
     public const string BeaconActivityCreated = $"{ServerSignalRGroups.Beacon}:activity-created";

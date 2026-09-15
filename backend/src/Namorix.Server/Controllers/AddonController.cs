@@ -43,6 +43,24 @@ public class AddonController(AddonService addonService, AddonTaskQueue taskQueue
         }));
     }
 
+    [HttpPost("{id}/update")]
+    [RequireAdmin]
+    public async Task<IActionResult> Update(string id)
+    {
+        var task = new AddonTask
+        {
+            Type = AddonTaskType.Update,
+            AddonId = id
+        };
+
+        await addonService.SetTaskPending(id, AddonTaskPendingStatus.Updating);
+        await taskQueue.EnqueueAsync(task);
+        return Ok(ApiResponse.Ok(new
+        {
+            taskId = task.Id
+        }));
+    }
+
     [HttpPost("{id}/start")]
     [RequireAdmin]
     public async Task<IActionResult> Start(string id)

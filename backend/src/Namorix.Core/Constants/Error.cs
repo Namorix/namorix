@@ -51,6 +51,7 @@ public static class AddonErrors
     public const string ContainerNotFound = "CONTAINER_NOT_FOUND";
     public const string ImageNotFound = "IMAGE_NOT_FOUND";
     public const string InstallFailed = "INSTALL_FAILED";
+    public const string UpdateFailed = "UPDATE_FAILED";
 }
 
 public static class OAuthErrors
