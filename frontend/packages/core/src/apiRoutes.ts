@@ -76,6 +76,7 @@ export const ApiAddonRoutes = {
   install: API_ADDON_BASE + "/install",
   start: (id: string) => `${API_ADDON_BASE}/${id}/start`,
   stop: (id: string) => `${API_ADDON_BASE}/${id}/stop`,
+  update: (id: string) => `${API_ADDON_BASE}/${id}/update`,
   remove: (id: string) => `${API_ADDON_BASE}/${id}`,
   listCatalog: `${API_ADDON_BASE}/catalog`,
   syncCatalog: `${API_ADDON_BASE}/catalog/sync`,
