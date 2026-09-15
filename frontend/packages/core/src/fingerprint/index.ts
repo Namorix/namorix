@@ -64,7 +64,6 @@ export const generateFingerprint = async (): Promise<Fingerprint> => {
   // Temporary diagnostic: the id is what the fingerprint is derived from, so the same
   // browser can be compared across states — it has to survive a reload and a monitor
   // switch, and has to differ in another browser. Drop once the new scheme is confirmed.
-  console.log("[fingerprint]", deviceId)
   cachedFingerprint = deviceId ? await sha256(deviceId) : null
   isResolved = true
   return cachedFingerprint ?? ""
