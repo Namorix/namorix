@@ -344,17 +344,18 @@ Addon access token là **JWT RS256, TTL 900s** (`OAuth.AddonToken.AccessTokenTtl
 Refresh token gắn `UserId`; lỗi refresh phân loại qua trailer `nmx-error-code` (transient → 503 giữ
 session, chỉ `invalid_grant`/`theft_detected` mới xoá session).
 
-### Addon (`/api/addon`)
+### Addon (`/api/addons`)
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/api/addon` | RequireAuth | List installed addons |
-| POST | `/api/addon/install` | RequireAuth | Install addon from Docker image |
-| POST | `/api/addon/{id}/start` | RequireAuth | Start addon container |
-| POST | `/api/addon/{id}/stop` | RequireAuth | Stop addon container |
-| POST | `/api/addon/{id}/remove` | RequireAuth | Uninstall addon |
-| GET | `/api/addon/catalog` | RequireAuth | Get cached addon catalog |
-| POST | `/api/addon/catalog/sync` | RequireAuth | Refresh catalog from remote |
+| GET | `/api/addons` | RequireAuth | List installed addons |
+| POST | `/api/addons/install` | RequireAdmin | Install addon from Docker image |
+| POST | `/api/addons/{id}/update` | RequireAdmin | Pull latest image, swap the container, keep the addon's OAuth identity |
+| POST | `/api/addons/{id}/start` | RequireAdmin | Start addon container |
+| POST | `/api/addons/{id}/stop` | RequireAdmin | Stop addon container |
+| DELETE | `/api/addons/{id}` | RequireAdmin | Uninstall addon |
+| GET | `/api/addons/catalog` | RequireAuth | Get cached addon catalog |
+| POST | `/api/addons/catalog/sync` | RequireAdmin | Refresh catalog from remote |
 
 ### Health (`/api/health`)
 
@@ -620,9 +621,10 @@ SignalR hub tại `/hubs/namorix` (HubNamorix):
 | `system:config-changed` | Server → Client | Config changes (appearance defaults sync) |
 | `user:settings-changed` | Server → Client | User settings changes (multi-tab sync) |
 | `notification:received` | Server → Client | New notification push |
-| `addon:status` | Server → Client | Addon container status changes |
+| `addon:status-changed` | Server → Client | Addon container status changes |
 | `addon:pending-task-changed` | Server → Client | Addon task progress |
 | `addon:uninstalled` | Server → Client | Addon removed |
+| `addon:updated` | Server → Client | Addon updated — the only signal on the success path, so the shell refetches off it |
 | `system-monitor:stats` | Server → Client | CPU, memory, disk, IO, network metrics |
 | `beacon:activity-created` | Server → Client | Beacon activity log entry |
 | `beacon:hostname-status-changed` | Server → Client | Beacon hostname status change |

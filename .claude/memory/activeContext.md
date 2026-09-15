@@ -27,6 +27,15 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [progress.md](progress.md) (September 2026), [versionHistory-08-2026.md](../archive/versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-09-15 — Nút Update PackageCenter chạy thật (@namorix/core 0.70.0 / frontend 0.94.0 / Namorix.Server 0.85.0 / Namorix.Core 0.67.0 / packageCenter 1.3.0)
+
+- **Vấn đề:** nút Update là nút chết — `NmxButton` không `onClick`, `case AddonTaskType.Update` chỉ `break;`, `ApiAddonRoutes` không có route.
+- Luồng mới: `POST /api/addons/{id}/update` → `SetTaskPending(Updating)` → `AddonTaskQueue` → `AddonTaskExecutor.UpdateAsync` → pull image → xoá cứng container cũ → tạo container mới → phát `addon:updated`.
+- **Ràng buộc quan trọng:** `ClientId`/`PublicKey`/`RedirectUri`/`Scope` phải sống qua update, nếu không mọi grant lẫn session của addon chết theo. Update mutate entity tại chỗ chứ không `Add` — `Add` sẽ đụng PK. `InstallAsync` được tách lõi thành `PullAndCreateAsync` + `NewRegistration` để hai đường dùng chung.
+- Đang `running` → tự start lại (`wasRunning`); đang dừng → giữ `installed`. `PendingTaskId`/`PendingTaskPhase` null trong cùng transaction; nhánh lỗi đi `FailUpdateAsync` (`ExecuteUpdateAsync`) để chắc chắn phase được clear.
+- Frontend: confirm dialog trước khi update, toast sau khi xong, overlay phase `updating` biết tắt. `AddonEventWatcher` **phải refetch** khi nhận `AddonUpdated` — backend không phát `addon:status-changed` ở đường thành công nên không còn nguồn nào khác đưa version mới về UI.
+- **Còn nợ:** chưa build (`dotnet`/`pnpm`), chưa bấm nút lần nào → cần chạy thật 2 nhánh (đang chạy / đang dừng). `console.log("[fingerprint]")` đã gỡ, comment "temporary diagnostic" trong `AuthService` vẫn còn.
+
 ### 2026-09-15 — Fingerprint = device id localStorage + mismatch chỉ giết token đang trình (@namorix/core 0.69.0 / frontend 0.93.0 / Namorix.Server 0.84.0 / Namorix.Core 0.66.0)
 
 - **Vấn đề:** fingerprint cũ ghép `userAgent`/`language`/`screen`/`timezone`/`hardwareConcurrency` — đều đổi được trong lúc refresh token còn sống (kéo cửa sổ sang màn hình thứ hai). Refresh sau đó bị đọc là token theft, và phản ứng cũ là `RevokeAllUserTokens(userId)` → user mất **mọi** session.

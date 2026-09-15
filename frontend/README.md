@@ -226,7 +226,7 @@ External addons integrate via two modes:
 
 - **Server-to-server**: gRPC bidirectional streaming for widget event forwarding + heartbeat
 - **Shell ↔ Addon (Widget)**: Event bus via `@namorix/core` (`shell:*` and `addon:*` events)
-- **PackageCenter**: UI for catalog browsing, install/start/stop/uninstall with live status via SignalR
+- **PackageCenter**: UI for catalog browsing, install/start/stop/update/uninstall with live status via SignalR (update asks for confirmation, restarts a running addon, and toasts when done)
 
 ## Milestones
 

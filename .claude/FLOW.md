@@ -441,6 +441,7 @@ On disconnect
 | `addon:status-changed` | Server → Client | `AddonStatusPayload` (`{ addonId: string, status: AddonContainerStatus, lastErrorCode?: string }`) | PackageCenter AddonEventWatcher (global) |
 | `addon:pending-task-changed` | Server → Client | `AddonPendingTaskPayload` (`{ addonId: string, taskPhase: AddonPendingPhase \| null }`) | PackageCenter AddonGrid (pending overlay) |
 | `addon:uninstalled` | Server → Client | `{ addonId: string }` | AddonEventWatcher (remove addon + toast) |
+| `addon:updated` | Server → Client | `{ addonId: string }` | AddonEventWatcher (refetch list + catalog rồi toast — update **không** phát `addon:status-changed`, nên đây là nguồn duy nhất đưa version mới về UI) |
 | `addon:widget-event` | Server → Client | `{ addonId: string, payload: string }` | (planned) Forward addon widget events via gRPC→SignalR bridge |
 | `beacon:hostname-status-changed` | Server → Client | `{ hostnameId: string, hostname: string, status: string }` | Beacon (status badge live update) |
 | `beacon:activity-created` | Server → Client | `{ id, timestamp, level, code, paramsJson, hostname }` | BeaconActivity (realtime log — no handler khi tab activity chưa mở → SignalR JS log warning benign) |
@@ -724,6 +725,26 @@ User installs addon
               ├── Save AddonInstallation to DB (Status = Installed)
               └── NotifyAddonStatusChanged(addonId, Installed) via SignalR
 
+Update addon — same container swap, but the DB row survives
+  └── POST /api/addons/{id}/update
+        ├── AddonController: SetTaskPending(id, Updating), enqueue Update task
+        └── AddonTaskExecutor.UpdateAsync(id)
+              ├── Loads the tracked AddonInstallation and mutates it in place
+              │     (Add() would collide on the primary key)
+              ├── Remembers wasRunning before tearing anything down
+              ├── AddonChannelManager.DisconnectAsync(id) — the old container holds the channel
+              ├── PullImageAsync + RemoveContainerIfExistsAsync + CreateContainerAsync
+              │     (the install/update core, shared via PullAndCreateAsync)
+              ├── Rewrites Image/Version/HostPort/Ports/Status, clears LastErrorCode + PendingTask*
+              │     └── ClientId/PublicKey/RedirectUri/Scope are LEFT ALONE on purpose: they are
+              │           the addon's OAuth identity, and wiping them would log every user out
+              │           of an addon they only asked to update
+              ├── Drops the old OAuthRegistrations rows, inserts a fresh registration token
+              ├── If wasRunning → DockerService.StartContainerAsync(newContainerId)
+              └── NotifyAddonUpdated(addonId) via SignalR — and nothing else
+                    Failure path: FailUpdateAsync → ExecuteUpdateAsync(Status=Error, LastErrorCode,
+                    PendingTask*=null) + NotifyAddonStatusChanged(Error)
+
 DockerMonitorWorker
   ├── [Init] SyncAllContainersAsync — full sync once on startup
   │     └── Also clears stale `PendingTaskId` fields (server restart recovery)
@@ -882,14 +903,14 @@ AddonController action
 | `backend/src/Namorix.Server/Workers/DockerMonitorWorker.cs` | Container event stream + health check poll + auto-discover |
 | `backend/src/Namorix.Core/Constants/Docker.cs` | Docker state/event/filter constants |
 | `backend/src/Namorix.Server/Infrastructure/IAddonNotifier.cs` | Addon status notification interface |
-| `backend/src/Namorix.Server/Hubs/SignalRAddonNotifier.cs` | SignalR addon:status-changed |
+| `backend/src/Namorix.Server/Hubs/SignalRAddonNotifier.cs` | SignalR addon:status-changed, addon:pending-task-changed, addon:uninstalled, addon:updated, addon:widget-event |
 | `backend/src/Namorix.Server/Services/AddonTaskQueue.cs` | Channel-based async task queue |
-| `backend/src/Namorix.Server/Services/AddonTaskExecutor.cs` | Concurrent worker (max 2) for addon operations |
+| `backend/src/Namorix.Server/Services/AddonTaskExecutor.cs` | Concurrent worker (max 2) for addon operations; Install/Update share `PullAndCreateAsync` |
 | `backend/src/Namorix.Server/Models/AddonTask.cs` | Task model for queue |
 | `backend/src/Namorix.Core/Protos/addon_channel.proto` | gRPC proto — bidirectional AddonChannel service |
 | `backend/src/Namorix.Server/Services/AddonChannelManager.cs` | ConcurrentDictionary<string, ChannelContext> for active gRPC cancellation |
 | `backend/src/Namorix.Server/Services/Grpc/AddonChannelService.cs` | gRPC bidirectional streaming — auth interceptor + 5-min recheck + SignalR bridge |
-| `frontend/src/addons/PackageCenter/AddonEventWatcher.tsx` | Global SignalR handler for addon status events |
+| `frontend/src/addons/PackageCenter/AddonEventWatcher.tsx` | Global SignalR handler for addon status events (+ `addon:updated` → refetch rồi toast) |
 
 ### Beacon DDNS Addon (M4 — internal)
 
