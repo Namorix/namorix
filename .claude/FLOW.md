@@ -24,8 +24,8 @@ Toàn bộ luồng dữ liệu trong project. Dùng cho external addon dev biế
 ```
 main.tsx
   ├── import "./config/coreConfig"   ← instance duy nhất (createNmxCore + factories)
-  ├── generateFingerprint()
-  ├── ReactDOM.createRoot → <Root />
+  ├── await generateFingerprint()     ← xong trước khi render; getFingerprint() là sync nên
+  ├── ReactDOM.createRoot → <Root />     request sớm hơn sẽ đi không header và server ghi đè
   └── Root.tsx
         ├── useAppearanceSync()          ← hook xử lý theme loading
         ├── NmxHostContext value="shell"
@@ -627,7 +627,7 @@ sạch chain).
 
 | Thứ | Giá trị |
 |-----|---------|
-| Cookie phiên | `nmx_addon_session` mang **chính access JWT**, HttpOnly / SameSite=Lax / Path=/, `MaxAge = SessionTtlDays` (30) — cookie phải sống **lâu hơn** JWT 900s, nếu không hết 15 phút là mất luôn đường refresh |
+| Cookie phiên | `nmx_addon_session` mang **chính access JWT**, HttpOnly / SameSite=Lax / Path=/, `MaxAge = SessionTtlMinutes` (default `60 * 24 * 30` = 30 ngày) — cookie phải sống **lâu hơn** JWT 900s, nếu không hết 15 phút là mất luôn đường refresh |
 | Token store local | `AddonToken` — 1 row mỗi `(ClientId, UserId)`, unique index; **không** lưu access token (verify offline rồi, lưu lại chỉ thành nguồn sự thật thứ hai và cũ hơn); chỉ refresh token được mã hoá (`IAddonTokenProtector`) |
 | DG9 | Addon phục vụ **một** user: `AddonTokenStore.CreateAsync` trả `null` khi client đã có grant của user khác → `403 access_denied` |
 | Thứ tự middleware | (1) `!IsConnected` → **503**, chưa đọc cookie; (2) verify JWT offline; (3) tìm grant — mất/hết hạn thì xoá cookie; (4) `exp` quá → refresh trong lock; (5) set `ClaimsPrincipal` (`NameIdentifier`/`Name`/`client_id`) |
@@ -701,8 +701,8 @@ the desktop's old `nmx_addon_refresh_token` cookie and `POST /api/oauth/token/re
 ```
   ├── Carries the access JWT itself, not a session id
   ├── HttpOnly = true, SameSite = Lax, Path = /
-  ├── MaxAge = SessionTtlDays (30d) — must outlive the 900s JWT, else a live grant could
-  │     never be refreshed once the JWT expired
+  ├── MaxAge = SessionTtlMinutes (default 60*24*30 = 30 days) — must outlive the 900s JWT,
+  │     else a live grant could never be refreshed once the JWT expired
   └── Cleared by the addon middleware when the grant is gone (revoked, or refresh credential expired)
 ```
 
@@ -1211,7 +1211,7 @@ bỏ qua `register_enabled` setting — user đầu tiên luôn có thể regist
 | `types/` | All interfaces + constants | - |
 | `cache/` | `useTabCache()`, `Show` | - |
 | `hooks/` | `usePageSize()`, `useSessionGuard()` | - |
-| `fingerprint/` | `generateFingerprint()` | - |
+| `fingerprint/` | `generateFingerprint()`, `getFingerprint()` | device id trong `localStorage` (`nmx_device_id`), hash SHA-256 → base64url; `generateFingerprint()` **phải** await trước request đầu |
 
 ### @namorix/ui (React primitives)
 

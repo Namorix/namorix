@@ -27,6 +27,17 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [progress.md](progress.md) (September 2026), [versionHistory-08-2026.md](../archive/versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-09-15 — Fingerprint = device id localStorage + mismatch chỉ giết token đang trình (@namorix/core 0.69.0 / frontend 0.93.0 / Namorix.Server 0.84.0 / Namorix.Core 0.66.0)
+
+- **Vấn đề:** fingerprint cũ ghép `userAgent`/`language`/`screen`/`timezone`/`hardwareConcurrency` — đều đổi được trong lúc refresh token còn sống (kéo cửa sổ sang màn hình thứ hai). Refresh sau đó bị đọc là token theft, và phản ứng cũ là `RevokeAllUserTokens(userId)` → user mất **mọi** session.
+- `@namorix/core 0.68.1 → 0.69.0` (**BREAKING**, 0.x MINOR): `fingerprint/types.ts` bỏ export `FingerprintComponents`; `fingerprint/index.ts` lấy id ngẫu nhiên trong `localStorage` (`nmx_device_id`, sinh bằng `crypto.getRandomValues` — `randomUUID`/`subtle` chỉ có trong secure context, desktop có thể chạy HTTP LAN).
+- `frontend 0.92.1 → 0.93.0`: `main.tsx` await `generateFingerprint()` trước `createRoot(...).render(...)` — `getFingerprint()` sync nên request rời đi sớm sẽ không có header, mà server đọc thiếu header là "không có ý kiến" rồi ghi đè, tắt check vĩnh viễn.
+- `Namorix.Server 0.83.1 → 0.84.0`: `AuthService.Refresh` mismatch chỉ `Remove(storedToken)` thay vì revoke cả user; token mới truyền `fingerprint ?? storedToken.Fingerprint`.
+- `Namorix.Core 0.65.0 → 0.66.0` (**BREAKING**): `AddonSessionAuthOptions.SessionTtlDays` → `SessionTtlMinutes` (default `60 * 24 * 30`); 3 file `FromDays`/`AddDays` → `FromMinutes`/`AddMinutes`. Addon ngoài set property này phải đổi tên.
+- **Còn nợ:** 2 chỗ diagnostic tạm (`console.log("[fingerprint]")`, comment trong `AuthService`) gỡ sau khi xác nhận scheme mới trên HTTP + HTTPS. **Chưa build/test** batch này.
+
+
+
 ### 2026-09-15 — Dịch comment VI→EN toàn repo + archive plan Addon OAuth (@namorix/core 0.68.1 / @namorix/styles 0.62.1 / frontend 0.92.1 / Namorix.Server 0.83.1 / frontgate 1.11.1)
 
 - Batch housekeeping, **không đổi hành vi**: comment và echo string tiếng Việt trong source đổi sang tiếng Anh cho khớp phần còn lại của codebase.
