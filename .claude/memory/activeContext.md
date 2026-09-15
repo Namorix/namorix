@@ -27,6 +27,15 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [progress.md](progress.md) (September 2026), [versionHistory-08-2026.md](../archive/versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-09-15 — Update addon không sinh ClientId mới + `invalid_client` là lỗi fatal + worker dọn `Tokens` (Namorix.Core 0.68.0 / Namorix.Server 0.86.0)
+
+- **Vấn đề (log prod scout):** gRPC `PermissionDenied "ClientId mismatch"` lặp vô hạn, phải xoá cookie tay mỗi lần update addon.
+- **Chuỗi nhân quả:** update xoá hết `OAuthRegistrations` + sinh registration token mới → `/data` sống qua update nên `oauth.json` giữ token cũ → `NmxOAuth2Client.EnsureInitializedAsync` gọi `RegisterAsync(reRegister: true)` → `OAuthService.RegisterClientAsync` luôn mint `Guid.NewGuid()` → `AddonInstallations.ClientId` đổi, còn row `Tokens` + cookie đang sống vẫn mang id cũ → refresh → `invalid_client` → middleware không coi fatal → 503 mãi, cookie không tự xoá. **Tất yếu ở mọi lần update.**
+- `Namorix.Server 0.85.0 → 0.86.0`: `RegisterClientAsync` chỉ mint ClientId ở lần đăng ký đầu, re-register giữ id + chỉ cập nhật `PublicKey`.
+- `Namorix.Core 0.67.0 → 0.68.0` (**BREAKING**): `IsFatalRefreshFailure` +`invalid_client`; `AddonTokenCleanupWorker` mới (start + 24h) cùng `IAddonTokenStore.DeleteExpiredAsync`/`DeleteOtherClientsAsync`.
+- **Vì sao cần worker:** mọi đường xoá khác đều scope theo ClientId **hiện tại** → row của ClientId cũ không tới được, và trước đó không có prune theo hạn (DB prod scout: 3 row, 2 rác).
+- **Còn nợ:** chưa `dotnet build`, chưa verify runtime; prod đang lệch sẵn nên vẫn phải xoá cookie/dọn row một lần; lượt quét start bỏ qua vế ClientId vì `oauth.ClientId` còn `null` (channel auth nằm trong background task) → vế đó chỉ chạy ở lượt 24h; scout chưa bump `Namorix.Core`.
+
 ### 2026-09-15 — Nút Update PackageCenter chạy thật (@namorix/core 0.70.0 / frontend 0.94.0 / Namorix.Server 0.85.0 / Namorix.Core 0.67.0 / packageCenter 1.3.0)
 
 - **Vấn đề:** nút Update là nút chết — `NmxButton` không `onClick`, `case AddonTaskType.Update` chỉ `break;`, `ApiAddonRoutes` không có route.

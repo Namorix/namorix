@@ -342,7 +342,8 @@ backend/
 Addon access token là **JWT RS256, TTL 900s** (`OAuth.AddonToken.AccessTokenTtlSeconds` — `exp` và
 `expires_in` dùng chung một hằng số). Addon verify offline bằng public key lấy qua gRPC `GetJwks`.
 Refresh token gắn `UserId`; lỗi refresh phân loại qua trailer `nmx-error-code` (transient → 503 giữ
-session, chỉ `invalid_grant`/`theft_detected` mới xoá session).
+session, `invalid_grant`/`theft_detected`/`invalid_client` mới xoá session — `invalid_client` nghĩa là
+desktop không còn biết ClientId đó nên cookie vĩnh viễn không refresh được nữa, giữ lại chỉ tổ 503 mãi).
 
 ### Addon (`/api/addons`)
 

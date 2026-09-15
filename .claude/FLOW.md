@@ -618,9 +618,11 @@ sạch (SIGKILL/half-open TCP) lộ ra trong vài giây. Addon phải trả **50
 
 **Hợp đồng lỗi refresh:** gRPC `Unauthenticated` bị overload nên lỗi phân loại qua trailer
 `OAuth.Trailer.ErrorCode` (`"nmx-error-code"`) với `OAuthErrors` (`invalid_client`,
-`invalid_grant`, `theft_detected`). Chỉ `theft_detected` và `invalid_grant` nghĩa là session đã
-chết → xoá session. Mọi thứ khác (desktop restart, channel chưa start, timeout) là **transient**
-→ giữ session và trả 503, không đăng xuất user. `AddonSessionLockRegistry` + đọc lại session
+`invalid_grant`, `theft_detected`). `theft_detected`, `invalid_grant` và `invalid_client` nghĩa là
+session đã chết → xoá session. `invalid_client` là ca "desktop không còn biết ClientId này" (addon
+đã re-register ra id khác) — cookie mang id cũ không bao giờ refresh được nữa, nên trả 503 mãi chỉ
+giữ user kẹt mà không tự xoá cookie. Mọi thứ khác (desktop restart, channel chưa start, timeout) là
+**transient** → giữ session và trả 503, không đăng xuất user. `AddonSessionLockRegistry` + đọc lại session
 trong lock đảm bảo 2 request đồng thời không cùng refresh (rotate lần hai bị coi là theft → xoá
 sạch chain).
 
@@ -634,6 +636,7 @@ sạch chain).
 | Thứ tự middleware | (1) `!IsConnected` → **503**, chưa đọc cookie; (2) verify JWT offline; (3) tìm grant — mất/hết hạn thì xoá cookie; (4) `exp` quá → refresh trong lock; (5) set `ClaimsPrincipal` (`NameIdentifier`/`Name`/`client_id`) |
 | Push từ desktop | `session-revoked` (payload `userId`) khi grant bị giết; `session-grants` (list `userId` còn sống) **mỗi lần** connect. `null` (chưa nhận list / kênh đứt) **≠** `[]` (hết grant): `null` không xoá gì |
 | Logout | `POST /api/oauth/logout` → gRPC `RevokeGrant` (scope `(userId, clientId)`) → desktop xác nhận rồi mới xoá row local + cookie. Thất bại → **503, không logout** |
+| Dọn token | `AddonTokenCleanupWorker` — 24h/lần: xoá row hết hạn + row của ClientId cũ. Các đường xoá khác đều scope theo ClientId **hiện tại** nên row của ClientId cũ không tới được |
 
 Lock `AddonSessionLockRegistry` theo `(clientId, userId)`, **in-process**, dùng chung cho refresh và logout.
 
@@ -696,6 +699,18 @@ CleanupExpiredTokens
   ├── DELETE OAuthAuthorizationCodes WHERE ExpiresAt < UtcNow
   └── DELETE OAuthTokens WHERE ExpiresAt < UtcNow
 ```
+
+Addon token cleanup (AddonTokenCleanupWorker, mỗi 24h + một lượt lúc start):
+```
+SweepAsync
+  ├── DELETE Tokens WHERE RefreshTokenExpiresAt <= UtcNow
+  └── DELETE Tokens WHERE ClientId != oauth.ClientId   (chỉ khi đã biết ClientId)
+```
+
+Mọi đường xoá khác trong `AddonTokenStore` đều scope theo `oauth.ClientId` **hiện tại**
+(`DeleteAsync`/`DeleteMissingAsync`), nên row của một ClientId cũ là **không tới được** — worker là
+lối duy nhất dọn chúng. `oauth.ClientId` chỉ có sau khi channel authenticate (background task, không
+hosted service nào chờ), nên lượt quét đầu thường bỏ qua vế thứ hai.
 
 Addon session cookie (set by the addon, `AddonSessionAuthOptions.CookieName` = `nmx_addon_session`;
 the desktop's old `nmx_addon_refresh_token` cookie and `POST /api/oauth/token/refresh` are gone):
@@ -774,10 +789,18 @@ InstallAsync (AddonTaskExecutor)
         │     └── Save ClientId + PrivateKey → oauth.json
         └── Nếu không có cả 2: throw (misconfigured)
 
+UpdateAsync (AddonTaskExecutor) — cùng đường, khác hệ quả
+  └── Xoá container cũ + rotation registration token (progress.md: "Update addon không còn sinh ClientId mới")
+  └── /data của addon sống sót → oauth.json còn registration token CŨ
+  └── Addon khởi động lại thấy token lệch → RegisterAsync(reRegister: true)
+        └── Desktop phải trả ĐÚNG ClientId cũ, nếu không mọi grant + cookie
+              đang sống của user trỏ tới id không còn tồn tại
+
 OAuthController.Register (POST /api/oauth/register)
   └── OAuthService.RegisterClientAsync
         ├── Validate registration token (exists, !Used, not expired)
-        ├── Set ClientId + PublicKey on AddonInstallation
+        ├── ClientId đã có → GIỮ NGUYÊN, chỉ cập nhật PublicKey
+        │     (chỉ lần đăng ký đầu mới mint Guid mới)
         └── Return clientId
 
 OAuthController.Token (POST /api/oauth/token) [form-urlencoded, exempt from JSON + CSRF]
@@ -888,6 +911,7 @@ AddonController action
 | `backend/src/Namorix.Core/AddonSession/AddonSessionMiddleware.cs` | Gate 503 → verify offline → tìm grant → refresh khi `exp` quá → set claims (`NameIdentifier`/`Name`/`client_id`) |
 | `backend/src/Namorix.Core/AddonSession/AddonSessionAuthController.cs` | `login` / `callback` / `status` / `logout`; logout revoke qua gRPC **trước**, thất bại → 503 |
 | `backend/src/Namorix.Core/AddonSession/AddonSessionChannelHandler.cs` | IHostedService áp `session-revoked` (xoá grant) + `session-grants` (`DeleteMissingAsync`) |
+| `backend/src/Namorix.Core/AddonSession/AddonTokenCleanupWorker.cs` | BackgroundService dọn grant theo hạn (`DeleteExpiredAsync`) + grant của ClientId cũ (`DeleteOtherClientsAsync`) — 24h/lần, thêm một lượt lúc start |
 | `backend/src/Namorix.Core/Grpc/SessionRevokedMessage.cs` + `SessionGrantsMessage.cs` | Payload của 2 push trên (đặt ở Core vì addon cần parse) |
 | `backend/src/Namorix.Server/Middleware/OAuth2Middleware.cs` | Bearer token verification |
 | `backend/src/Namorix.Core/OAuth/NmxOAuth2Client.cs` | OAuth2 client SDK (self-registration, token caching) |
