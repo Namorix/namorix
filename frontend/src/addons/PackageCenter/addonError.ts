@@ -7,6 +7,7 @@ const ERROR_CODE_LOCALE_MAP: Record<string, string> = {
   [AddonErrorCodes.CONTAINER_NOT_FOUND]: "containerNotFound",
   [AddonErrorCodes.IMAGE_NOT_FOUND]: "imageNotFound",
   [AddonErrorCodes.INSTALL_FAILED]: "installFailed",
+  [AddonErrorCodes.UPDATE_FAILED]: "updateFailed",
 }
 
 export function formatAddonError(
@@ -29,6 +30,10 @@ export function formatAddonError(
       })
     case AddonErrorCodes.INSTALL_FAILED:
       return t("addon.packageCenter.errors.installFailed", {
+        name: addonName ?? err.message,
+      })
+    case AddonErrorCodes.UPDATE_FAILED:
+      return t("addon.packageCenter.errors.updateFailed", {
         name: addonName ?? err.message,
       })
     default:

@@ -78,6 +78,7 @@ export const AddonGrid: React.FC = () => {
   const [uninstallTarget, setUninstallTarget] = useState<DisplayAddon | null>(
     null,
   )
+  const [updateTarget, setUpdateTarget] = useState<DisplayAddon | null>(null)
   const pendingTimeoutsRef = useRef<
     Record<string, ReturnType<typeof setTimeout>>
   >({})
@@ -343,6 +344,28 @@ export const AddonGrid: React.FC = () => {
     [clearPending, setPending, t],
   )
 
+  const handleUpdate = useCallback(
+    (e: React.MouseEvent, addon: DisplayAddon) => {
+      e.preventDefault()
+      e.stopPropagation()
+      setUpdateTarget(addon)
+    },
+    [],
+  )
+
+  const handleUpdateConfirm = useCallback(() => {
+    if (!updateTarget) return
+    const addon = updateTarget
+    setUpdateTarget(null)
+
+    setPending(addon.id, "updating")
+
+    addonController.update(addon.id).catch((err) => {
+      clearPending(addon.id)
+      nmxToast.error(resolveAddonError(t, err, addon.name))
+    })
+  }, [updateTarget, setPending, clearPending, t])
+
   const handleUninstall = useCallback(
     (e: React.MouseEvent, addon: DisplayAddon) => {
       e.preventDefault()
@@ -380,6 +403,8 @@ export const AddonGrid: React.FC = () => {
         (phase === "starting" && addon.status === "running") ||
         (phase === "stopping" && addon.status === "stopped") ||
         (phase === "installing" &&
+          (addon.status === "installed" || addon.status === "running")) ||
+        (phase === "updating" &&
           (addon.status === "installed" || addon.status === "running")) ||
         addon.status === "error"
 
@@ -491,6 +516,7 @@ export const AddonGrid: React.FC = () => {
                     <NmxButton
                       semantic="warning"
                       className="nmx-addon-package-center__btn"
+                      onClick={(e) => handleUpdate(e, addon)}
                     >
                       <NmxIconFont symbol={NmxIconFontSymbol.UPDATE} />
                       <span className="nmx-addon-package-center__btn-label">
@@ -562,6 +588,26 @@ export const AddonGrid: React.FC = () => {
             __html: markupToHtml(
               t("addon.packageCenter.uninstallConfirm", {
                 name: uninstallTarget?.name,
+              }),
+            ),
+          }}
+        />
+      </NmxAlertDialog>
+
+      <NmxAlertDialog
+        open={!!updateTarget}
+        title={t("addon.packageCenter.updateTitle")}
+        confirmLabel={t("addon.packageCenter.actions.update")}
+        onConfirm={handleUpdateConfirm}
+        onCancel={() => setUpdateTarget(null)}
+        onClose={() => setUpdateTarget(null)}
+        confirmSemantic="warning"
+      >
+        <span
+          dangerouslySetInnerHTML={{
+            __html: markupToHtml(
+              t("addon.packageCenter.updateConfirm", {
+                name: updateTarget?.name,
               }),
             ),
           }}

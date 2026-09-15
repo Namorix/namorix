@@ -340,6 +340,8 @@
       "empty": "No applications found",
       "uninstallTitle": "Uninstall addon",
       "uninstallConfirm": "Are you sure you want to uninstall **{{name}}**?",
+      "updateTitle": "Update addon",
+      "updateConfirm": "Update **{{name}}**? It restarts and is briefly unavailable.",
       "stats": "{{installed}} installed · {{running}} running · {{available}} available",
       "cancelAction": "Cancel",
       "tabs": {
@@ -351,7 +353,8 @@
         "starting": "Starting",
         "stopping": "Stopping",
         "installing": "Installing",
-        "uninstalling": "Uninstalling"
+        "uninstalling": "Uninstalling",
+        "updating": "Updating"
       },
       "actions": {
         "install": "Install",
@@ -365,7 +368,8 @@
         "notFound": "{{name}} not found",
         "containerNotFound": "Container {{name}} not found",
         "imageNotFound": "Image {{name}} not found",
-        "installFailed": "Failed to install {{name}}"
+        "installFailed": "Failed to install {{name}}",
+        "updateFailed": "Failed to update {{name}}"
       },
       "infoLabels": {
         "id": "ID",
@@ -380,7 +384,8 @@
         "installed": "{{name}} installed",
         "uninstalled": "{{name}} uninstalled",
         "started": "{{name}} started",
-        "stopped": "{{name}} stopped"
+        "stopped": "{{name}} stopped",
+        "updated": "{{name}} updated"
       }
     },
     "frontgate": {

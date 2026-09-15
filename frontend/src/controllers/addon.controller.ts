@@ -60,6 +60,14 @@ export const addonController = {
     if (!res.success) throw ApiError.fromResponse(res)
   },
 
+  async update(id: string) {
+    const res = await coreConfig.http
+      .url(ApiAddonRoutes.update(id))
+      .post()
+      .json()
+    if (!res.success) throw ApiError.fromResponse(res)
+  },
+
   async remove(id: string) {
     const res = await coreConfig.http
       .url(ApiAddonRoutes.remove(id))

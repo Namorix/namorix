@@ -70,6 +70,31 @@ export const AddonEventWatcher: React.FC = () => {
   )
 
   useServerSignalREvent<{ addonId: string }>(
+    ServerSignalREvents.AddonUpdated,
+    useCallback(
+      async (data) => {
+        const name =
+          addonMapRef.current[data.addonId]?.name ??
+          catalogRef.current[data.addonId]?.name ??
+          data.addonId
+
+        // Update reports itself through this event only, so the version bump and the cleared
+        // pending phase both have to come from a refetch.
+        const [list, catalogList] = await Promise.all([
+          addonController.list(),
+          addonController.refreshCatalog(),
+        ])
+
+        dispatch(setCatalog(catalogList))
+        dispatch(setAddons(list.map(mapDtoToManifest)))
+
+        nmxToast.success(t("addon.packageCenter.success.updated", { name }))
+      },
+      [dispatch, t],
+    ),
+  )
+
+  useServerSignalREvent<{ addonId: string }>(
     ServerSignalREvents.AddonUninstalled,
     useCallback(
       (data) => {

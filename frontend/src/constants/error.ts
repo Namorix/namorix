@@ -3,6 +3,7 @@ export const AddonErrorCodes = {
   CONTAINER_NOT_FOUND: "CONTAINER_NOT_FOUND",
   IMAGE_NOT_FOUND: "IMAGE_NOT_FOUND",
   INSTALL_FAILED: "INSTALL_FAILED",
+  UPDATE_FAILED: "UPDATE_FAILED",
 } as const
 
 export type AddonErrorCodes =

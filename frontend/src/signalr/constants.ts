@@ -11,6 +11,7 @@ export const ServerSignalREvents = {
   AddonStatusChanged: ServerSignalRGroups.Addon + ":status-changed",
   AddonPendingTaskChanged: ServerSignalRGroups.Addon + ":pending-task-changed",
   AddonUninstalled: ServerSignalRGroups.Addon + ":uninstalled",
+  AddonUpdated: ServerSignalRGroups.Addon + ":updated",
   BeaconHostnameStatusChanged:
     ServerSignalRGroups.Beacon + ":hostname-status-changed",
   BeaconActivityCreated: ServerSignalRGroups.Beacon + ":activity-created",
