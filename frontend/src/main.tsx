@@ -10,8 +10,6 @@ import "./i18n"
 import "./addons"
 import "./config/coreConfig"
 
-generateFingerprint().catch(console.error)
-
 const { hostname } = location
 const isLocal =
   hostname === "localhost" ||
@@ -28,8 +26,17 @@ if (isLocal) {
   document.head.prepend(script)
 }
 
-createRoot(document.getElementById("root")!).render(
-  <BrowserRouter>
-    <Root />
-  </BrowserRouter>,
-)
+// The fingerprint has to exist before the first request leaves: getFingerprint() is sync,
+// so anything sent while this promise is pending would carry no header at all — and the
+// server reads a missing header as "no opinion", which clears the stored value.
+const bootstrap = async () => {
+  await generateFingerprint().catch(console.error)
+
+  createRoot(document.getElementById("root")!).render(
+    <BrowserRouter>
+      <Root />
+    </BrowserRouter>,
+  )
+}
+
+void bootstrap()
