@@ -31,19 +31,19 @@ unzip -o "$ZIP_FILE" -d "$TMP_DIR"
 
 mkdir -p "$ICOMOON_DEST"
 
-# 1. variables.scss — chỉ giữ content codes, bỏ font-path (không cần nữa vì font nhúng base64)
+# 1. variables.scss — only keep the content codes, drop font-path (no longer needed since the font is inlined as base64)
 if [ -f "$TMP_DIR/$VARIABLES_SRC" ]; then
     grep -v 'icomoon-font-path' "$TMP_DIR/$VARIABLES_SRC" > "$ICOMOON_DEST/$VARIABLES_DEST"
-    echo "Copied $VARIABLES_SRC → $ICOMOON_DEST/$VARIABLES_DEST (đã bỏ font-path)"
+    echo "Copied $VARIABLES_SRC → $ICOMOON_DEST/$VARIABLES_DEST (dropped font-path)"
 fi
 
-# 2. style.scss → fonts.scss, bỏ block @font-face cũ (đã tách riêng ra _font-face.scss)
+# 2. style.scss → fonts.scss, drop the old @font-face block (split out into _font-face.scss)
 if [ -f "$TMP_DIR/$STYLE_SRC" ]; then
     sed '/^@font-face {/,/^}/d' "$TMP_DIR/$STYLE_SRC" > "$ICOMOON_DEST/$STYLE_DEST"
-    echo "Copied $STYLE_SRC → $ICOMOON_DEST/$STYLE_DEST (đã bỏ @font-face)"
+    echo "Copied $STYLE_SRC → $ICOMOON_DEST/$STYLE_DEST (dropped @font-face)"
 fi
 
-# 3. Generate @font-face nhúng base64 từ file .woff
+# 3. Generate the base64-inlined @font-face from the .woff file
 WOFF_FILE=$(find "$TMP_DIR/fonts" -name "*.woff" | head -n 1)
 if [ -z "$WOFF_FILE" ]; then
     echo "Error: No .woff file found in zip!"
@@ -63,9 +63,9 @@ cat > "$ICOMOON_DEST/$FONT_FACE_DEST" <<EOF
   font-display: block;
 }
 EOF
-echo "Generated $FONT_FACE_DEST (font nhúng base64, $(( ${#WOFF_BASE64} / 1024 )) KB)"
+echo "Generated $FONT_FACE_DEST (base64-inlined font, $(( ${#WOFF_BASE64} / 1024 )) KB)"
 
-# 4. Copy selection.json — giữ lại để sau này import ngược vào IcoMoon app khi cần thêm/sửa icon
+# 4. Copy selection.json — kept so it can be imported back into the IcoMoon app when icons need adding/editing
 SELECTION_FILE="$TMP_DIR/selection.json"
 if [ -f "$SELECTION_FILE" ]; then
     cp "$SELECTION_FILE" "$ICOMOON_DEST/selection.json"

@@ -12,10 +12,10 @@ public class WdFirewallService(
     IServiceScopeFactory scopeFactory)
 {
     private const string CommentPrefix = "wd:";
-    private const string Chain = "INPUT"; // container netns — Frontgate cùng netns nên INPUT là đúng chain
+    private const string Chain = "INPUT"; // container netns — Frontgate shares the netns, so INPUT is the correct chain
 
-    // Serialize check-then-act (-C rồi -I/-D) — nếu để trong ExecAsync thì 2 thread vẫn có thể
-    // check "chưa tồn tại" rồi cùng insert (TOCTOU). Lock phải bao cả cặp.
+    // Serialize check-then-act (-C then -I/-D) — holding the lock inside ExecAsync would let two
+    // threads both see "not present" and insert (TOCTOU). The lock must span both calls.
     private readonly SemaphoreSlim _iptablesLock = new(1, 1);
 
     public async Task<bool> ApplyRuleAsync(WdFirewallRule rule, bool notify = true, CancellationToken ct = default)
@@ -58,7 +58,7 @@ public class WdFirewallService(
         }
 
         if (removed && notify)
-            await NotifyRuleRemovedAsync(rule);   // ngoài lock
+            await NotifyRuleRemovedAsync(rule);   // outside the lock
         return removed;
     }
 
@@ -75,10 +75,10 @@ public class WdFirewallService(
         {
             // -C = check for existence, no changes made — avoids rule duplication when the service restarts/resyncs
             if (!await RuleExistsAsync(rule, ct))
-                return (await RunIptablesAsync("-I", rule, ct), true);   // -I: insert trước các ACCEPT rule
+                return (await RunIptablesAsync("-I", rule, ct), true);   // -I: insert ahead of the ACCEPT rules
 
             logger.LogInformation("[Warden] rule #{Id} {Name} already applied, skip", rule.Id, rule.Name);
-            return (true, false);   // đã tồn tại → không phải "mới applied"
+            return (true, false);   // already present → not "newly applied"
         }
         finally
         {
@@ -125,7 +125,7 @@ public class WdFirewallService(
             }));
     }
 
-    // RuleExistsAsync / RunIptablesAsync / ExecAsync / BuildArgList — giữ nguyên
+    // RuleExistsAsync / RunIptablesAsync / ExecAsync / BuildArgList — unchanged
     private async Task<bool> RuleExistsAsync(WdFirewallRule rule, CancellationToken ct)
     {
         var argList = BuildArgList("-C", rule);

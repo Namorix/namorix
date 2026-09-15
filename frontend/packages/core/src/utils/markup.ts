@@ -68,7 +68,7 @@ function nodeToHtml(node: React.ReactNode): string {
     const inner = nodeToHtml(props.children)
 
     if (type === React.Fragment) return inner
-    if (typeof type !== "string") return inner // custom component: không render được, chỉ lấy children
+    if (typeof type !== "string") return inner // custom component: cannot be rendered, keep its children only
 
     const classAttr = props.className ? ` class="${safe(props.className)}"` : ""
     const styleAttr = props.style ? ` style="${styleToCss(props.style)}"` : ""

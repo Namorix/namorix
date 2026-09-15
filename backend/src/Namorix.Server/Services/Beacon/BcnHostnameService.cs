@@ -79,7 +79,7 @@ public sealed class BcnHostnameService(AppDbContext db, BcnProviderResolver reso
         BcnUpdateResult result;
         try
         {
-            // provider tự split multi-host (host = chuỗi comma đầy đủ, không split ở đây)
+            // the provider splits multi-host itself (host = full comma string, not split here)
             result = await provider.UpdateAsync(host.Host, host.Domain, config, ipv4, ipv6, ct);
         }
         catch (OperationCanceledException)

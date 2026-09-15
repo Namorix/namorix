@@ -242,8 +242,8 @@ public class AddonChannelService(AddonChannelManager manager, OAuthService oauth
                 break;
 
             case "heartbeat":
-                // Gửi heartbeat-ack lại
-                // Dùng ctx.ResponseStream từ ChannelManager
+                // Send the heartbeat-ack back
+                // via ctx.ResponseStream from ChannelManager
                 break;
         }
     }

@@ -28,7 +28,7 @@ RUN dotnet publish backend/src/Namorix.Server/Namorix.Server.csproj \
 # ---------- Stage 3: Runtime ----------
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
-# iptables — Warden firewall (thao tác trên container netns, cần NET_ADMIN ở compose)
+# iptables — Warden firewall (operates on the container netns, needs NET_ADMIN in compose)
 RUN apt-get update \
     && apt-get install -y --no-install-recommends iptables \
     && rm -rf /var/lib/apt/lists/*

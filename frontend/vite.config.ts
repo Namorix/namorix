@@ -67,7 +67,7 @@ export default defineConfig((config) => {
               const realIp =
                 req.headers["x-real-ip"] || req.headers["x-forwarded-for"]
 
-              // Chỉ forward nếu đã có sẵn từ upstream (NPM), không tự tạo
+              // Only forward when the upstream (NPM) already set them — never synthesize
               if (realIp) {
                 proxyReq.setHeader("x-forwarded-for", realIp)
                 proxyReq.setHeader("x-real-ip", realIp)

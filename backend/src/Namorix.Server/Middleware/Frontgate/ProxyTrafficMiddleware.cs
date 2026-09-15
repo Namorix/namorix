@@ -15,7 +15,7 @@ namespace Namorix.Server.Middleware.Frontgate;
 
 public class ProxyTrafficMiddleware(RequestDelegate next, IServiceScopeFactory scopeFactory)
 {
-    // Debounce SCAN_404: lưu lần ghi event gần nhất của mỗi IP
+    // Debounce SCAN_404: remember the last event write time per IP
     private static readonly ConcurrentDictionary<string, DateTime> ScanWindow = new();
 
     public async Task InvokeAsync(HttpContext context)

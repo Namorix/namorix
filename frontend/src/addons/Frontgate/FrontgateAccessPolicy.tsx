@@ -140,7 +140,7 @@ export const FrontgateAccessPolicy: React.FC = () => {
     const rulesJson =
       formType === "basicAuth"
         ? editingPolicy && !formPassword.trim()
-          ? editingPolicy.rulesJson // giữ hash cũ
+          ? editingPolicy.rulesJson // keep the existing hash
           : JSON.stringify({
               username: formUsername.trim(),
               password: formPassword,
