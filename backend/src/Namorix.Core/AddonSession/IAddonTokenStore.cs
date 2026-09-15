@@ -21,6 +21,12 @@ public interface IAddonTokenStore
     Task<int> DeleteMissingAsync(string clientId, IReadOnlyCollection<int> activeUserIds,
         CancellationToken ct);
 
+    Task<int> DeleteExpiredAsync(CancellationToken ct);
+
+    // Drops grants left behind by a ClientId the addon no longer holds. Every other delete
+    // here is scoped to the current ClientId, which is what made those rows unreachable.
+    Task<int> DeleteOtherClientsAsync(string clientId, CancellationToken ct);
+
     Task<IReadOnlyList<int>> ListUserIdsAsync(string clientId, CancellationToken ct);
 
     string DecryptRefreshToken(AddonToken token);

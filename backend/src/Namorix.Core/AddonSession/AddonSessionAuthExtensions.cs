@@ -31,6 +31,11 @@ public static class AddonSessionAuthExtensions
         // request — and so a revocation that lands while nobody is browsing is not missed.
         services.AddHostedService<AddonSessionChannelHandler>();
 
+        // The channel handler only ever touches the grant of the ClientId the addon holds
+        // right now. Pruning by expiry is what keeps the table bounded across the ClientIds
+        // it has held before.
+        services.AddHostedService<AddonTokenCleanupWorker>();
+
         services.AddControllers()
             .AddApplicationPart(typeof(AddonSessionAuthController).Assembly);
 

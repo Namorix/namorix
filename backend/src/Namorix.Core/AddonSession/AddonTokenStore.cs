@@ -91,6 +91,22 @@ public sealed class AddonTokenStore<TContext>(
         return stale.Count;
     }
 
+    public async Task<int> DeleteExpiredAsync(CancellationToken ct)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(ct);
+        return await db.Tokens
+            .Where(t => t.RefreshTokenExpiresAt <= DateTime.UtcNow)
+            .ExecuteDeleteAsync(ct);
+    }
+
+    public async Task<int> DeleteOtherClientsAsync(string clientId, CancellationToken ct)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(ct);
+        return await db.Tokens
+            .Where(t => t.ClientId != clientId)
+            .ExecuteDeleteAsync(ct);
+    }
+
     public async Task<IReadOnlyList<int>> ListUserIdsAsync(string clientId, CancellationToken ct)
     {
         await using var db = await dbFactory.CreateDbContextAsync(ct);
