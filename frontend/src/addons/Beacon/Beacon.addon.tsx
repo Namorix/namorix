@@ -1,8 +1,9 @@
 import { defineAddon, NmxAddonId, NmxAddonLocaleKeys, registerAddon } from "../"
 import { NmxIconSvgSymbol } from "@namorix/ui"
 import { Beacon } from "./Beacon"
-import { registerNotificationDescriptionRenderer } from "../../utils/notification"
+import { registerNotificationDescriptionRenderer } from "../../utils"
 import { BeaconErrorCodes } from "./Beacon.types"
+import { UserRole } from "@namorix/core"
 
 registerAddon(
   defineAddon(
@@ -12,6 +13,7 @@ registerAddon(
       description: "Updates your DNS when your IP changes",
       localeKey: NmxAddonLocaleKeys.beacon,
       icon: NmxIconSvgSymbol.APP_BEACON,
+      role: UserRole.Admin,
     },
     Beacon,
   ),
