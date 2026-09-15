@@ -210,8 +210,14 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig,
             !string.IsNullOrEmpty(fingerprint) &&
             storedToken.Fingerprint != fingerprint)
         {
-            await RevokeAllUserTokens(storedToken.UserId);
-            logger.LogError("Fingerprint mismatch — revoking all tokens: userId={UserId}", storedToken.UserId);
+            // Only the presented token dies. A fingerprint is minted per browser profile, so
+            // a mismatch is either a copied cookie or a profile whose storage was cleared —
+            // revoking every session the user owns turns that guess into a lockout.
+            dbContext.RefreshTokens.Remove(storedToken);
+            await dbContext.SaveChangesAsync();
+            // Temporary diagnostic: over plain HTTP crypto.subtle is unavailable and the
+            // fallback base64url-encodes the device id, so both values decode back to the
+            // id and the difference is readable. Drop once the new scheme is confirmed.
             throw new AuthException(AuthErrors.FingerprintMismatch);
         }
 
@@ -223,8 +229,10 @@ public class AuthService(AppDbContext dbContext, IOptions<JwtConfig> jwtConfig,
 
         var (newAccessToken, newRefreshToken, newJti) = GenerateTokens(user);
         var ttlDays = GetRefreshTokenExpiration(storedToken.RememberMe);
+        // A request carrying no fingerprint holds no opinion about the device; letting it
+        // overwrite the stored value would switch the check off for good.
         var newEntity = CreateRefreshToken(user, newJti, newRefreshToken,
-            storedToken.UserAgent, fingerprint, ipAddress, ttlDays, storedToken.RememberMe);
+            storedToken.UserAgent, fingerprint ?? storedToken.Fingerprint, ipAddress, ttlDays, storedToken.RememberMe);
 
         dbContext.RefreshTokens.Add(newEntity);
         try
