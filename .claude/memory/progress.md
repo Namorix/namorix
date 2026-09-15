@@ -1,5 +1,18 @@
 # Version History — September 2026
 
+## 2026-09-15 — Dịch comment VI→EN toàn repo (frontend + backend); archive plan Addon OAuth; bump 4 package + 1 addon
+
+> Dọn nợ ngôn ngữ: comment/echo string tiếng Việt trong source đổi hết sang tiếng Anh cho khớp phần còn lại của codebase. **Không có thay đổi hành vi** — đã lọc diff, chỉ còn dòng comment (kể cả dòng có code đuôi như `private const string Chain = "INPUT"; // ...` thì chỉ đổi phần sau `//`). `.claude/plans/01-addon-oauth-token-model.plan.md` (đã xong Phase 6) chuyển sang `.claude/archive/`, nội dung byte-identical.
+
+| Package | Version | Changes |
+|---------|---------|---------|
+| @namorix/core | 0.68.0 → 0.68.1 | MODIFIED: `utils/markup.ts` — comment nhánh non-string type ("cannot be rendered, keep its children only"). `version.ts` — `NmxAddonVersions.frontgate` 1.11.0 → 1.11.1 (`FrontgateAccessPolicy.tsx` đổi file, xem dòng frontend). |
+| @namorix/styles | 0.62.0 → 0.62.1 | MODIFIED: `base/tokens/elevation.scss` (`sm`/`xl` shadow note), `base/tokens/spacing.scss` (`--nmx-rail-width-expanded-lg/-xl` note). Chỉ comment, giá trị token không đổi. |
+| frontend | 0.92.0 → 0.92.1 | MODIFIED: `addons/Frontgate/FrontgateAccessPolicy.tsx` (`// keep the existing hash`), `vite.config.ts` (note về forwarded upstream headers), `icomoon.sh` (comment + 3 echo string). |
+| Namorix.Server | 0.83.0 → 0.83.1 | MODIFIED: `Infrastructure/IBcnProviderClient.cs`, `Middleware/Frontgate/ProxyTrafficMiddleware.cs`, `Services/Beacon/BcnHostnameService.cs`, `Services/Grpc/AddonChannelService.cs`, `Services/Warden/WdFirewallService.cs` (Chain/lock/TOCTOU/`-I` insert/already-present), `Dockerfile` (comment iptables/NET_ADMIN). |
+
+**Chốt mức bump:** tất cả **PATCH** — không thêm/xoá API, không đổi hành vi; `@namorix/ui` và `Namorix.Core` **không bump** (không file nào đổi). Repo đã có tiền lệ commit `chore(scope)` cho sửa comment/usings không đổi hành vi (`03dfc4c`, `d16950b`), nhưng lần này batch trải 5 package nên vẫn ghi vào version history cho đủ dấu vết.
+
 ## 2026-09-14 — Icon `ic-fullscreen-exit` cho Scout; icomoon dồn mã `ic-fullscreen`; bump 2 package
 
 > Yêu cầu từ namorix-scout: nút fullscreen trên card camera cần icon thoát riêng. Icomoon khi thêm glyph mới đã cấp `\e94a` cho `ic-fullscreen-exit` và đẩy `ic-fullscreen` sang `\e94b` — **có đổi mã icon cũ**, nhưng `ic-fullscreen` mới thêm cùng ngày và chưa addon nào dùng nên không vỡ.

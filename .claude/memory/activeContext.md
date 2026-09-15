@@ -27,6 +27,13 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [progress.md](progress.md) (September 2026), [versionHistory-08-2026.md](../archive/versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-09-15 — Dịch comment VI→EN toàn repo + archive plan Addon OAuth (@namorix/core 0.68.1 / @namorix/styles 0.62.1 / frontend 0.92.1 / Namorix.Server 0.83.1 / frontgate 1.11.1)
+
+- Batch housekeeping, **không đổi hành vi**: comment và echo string tiếng Việt trong source đổi sang tiếng Anh cho khớp phần còn lại của codebase.
+- Phủ 5 package: `@namorix/core` (`utils/markup.ts`), `@namorix/styles` (2 token file), frontend (`FrontgateAccessPolicy.tsx`, `vite.config.ts`, `icomoon.sh`), `Namorix.Server` (5 file: Bcn/AddonChannel/WdFirewall/ProxyTraffic/IBcnProvider), `Dockerfile`.
+- `frontgate` addon 1.11.0 → 1.11.1 theo `NmxAddonVersions` (file `addons/Frontgate/` có đổi). `@namorix/ui` + `Namorix.Core` không bump — không file nào đổi.
+- `.claude/plans/01-addon-oauth-token-model.plan.md` → `.claude/archive/01-addon-oauth-token-model.plan.md` (byte-identical, `git add` file archive còn untracked).
+
 ### 2026-09-14 — Icon `ic-fullscreen-exit` cho Scout (@namorix/ui 0.53.0 / @namorix/styles 0.62.0)
 
 - Nút fullscreen trên card camera cần icon thoát riêng → thêm `FULLSCREEN_EXIT` (`ic-fullscreen-exit`) rồi rebuild icomoon.
