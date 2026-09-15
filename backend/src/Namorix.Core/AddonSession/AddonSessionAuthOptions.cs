@@ -11,6 +11,6 @@ public sealed class AddonSessionAuthOptions
     public string RedirectPath { get; set; } = "/";
     public string ProtectionPurpose { get; set; } = "AddonSession.Tokens";
     public string AuthenticationScheme { get; set; } = "AddonSession";
-    public int SessionTtlDays { get; set; } = 30;
+    public int SessionTtlMinutes { get; set; } = 60 * 24 * 30;
     public int StateTtlMinutes { get; set; } = 10;
 }

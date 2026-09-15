@@ -53,7 +53,7 @@ public sealed class AddonSessionAuthController(
             HttpOnly = true,
             SameSite = SameSiteMode.Lax,
             Path = "/",
-            MaxAge = TimeSpan.FromDays(opts.SessionTtlDays),
+            MaxAge = TimeSpan.FromMinutes(opts.SessionTtlMinutes),
         });
         return Redirect(opts.RedirectPath);
     }

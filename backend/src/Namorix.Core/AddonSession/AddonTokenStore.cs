@@ -104,5 +104,5 @@ public sealed class AddonTokenStore<TContext>(
         protector.Unprotect(token.EncryptedRefreshToken) ?? string.Empty;
 
     private DateTime RefreshExpiry() =>
-        DateTime.UtcNow.AddDays(options.Value.SessionTtlDays);
+        DateTime.UtcNow.AddMinutes(options.Value.SessionTtlMinutes);
 }

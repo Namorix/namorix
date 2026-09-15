@@ -129,7 +129,7 @@ public sealed class AddonSessionMiddleware(
             // The cookie has to outlive the JWT inside it. When that JWT expires the
             // middleware refreshes from the stored refresh token; if the cookie had died
             // with the JWT there would be nothing left to refresh from.
-            MaxAge = TimeSpan.FromDays(opts.SessionTtlDays),
+            MaxAge = TimeSpan.FromMinutes(opts.SessionTtlMinutes),
         });
 
     private static void ClearCookie(HttpContext context, AddonSessionAuthOptions opts) =>
