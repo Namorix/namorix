@@ -245,12 +245,16 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache, ILogger<OAu
         if (addon is null)
             return null;
 
-        var clientId = Guid.NewGuid().ToString("N");
-        addon.ClientId = clientId;
+        // Only the first registration mints an identity. An addon re-registers on every
+        // update, because updating rotates its registration token, and minting a fresh
+        // ClientId here would strand every stored grant and live session cookie under an
+        // id the desktop no longer recognises.
+        if (string.IsNullOrEmpty(addon.ClientId))
+            addon.ClientId = Guid.NewGuid().ToString("N");
         addon.PublicKey = publicKeyPem;
         reg.Used = true;
         await db.SaveChangesAsync();
-        return clientId;
+        return addon.ClientId;
     }
     
     public async Task<OAuthRevokedGrant?> RevokeTokenAsync(string token, string? tokenTypeHint)
