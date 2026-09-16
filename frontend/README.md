@@ -76,7 +76,7 @@ frontend/
 │   │   └── windowDefaults.ts        # CSS variable cache for window geometry defaults
 │   │
 │   ├── controllers/
-│   │   ├── auth.controller.ts       # login, register, logout, loadAppearance, loadSystemDefaults
+│   │   ├── auth.controller.ts       # login, register, logout, logoutAll, loadAppearance, loadSystemDefaults
 │   │   ├── notification.controller.ts  # fetchNotifications, fetchUnreadCount, markAsRead, markAllAsRead, delete
 │   │   ├── settings.controller.ts   # getUserSettings, getAppearanceOptions, getThemes, updateProfile, changePassword
 │   │   ├── log.controller.ts        # listLogs with level/source filters
@@ -222,7 +222,7 @@ External addons integrate via two modes:
 | Mode | Mechanism | Auth |
 |------|-----------|------|
 | **Widget** | Module Federation mount in desktop window, shares React + Redux | HttpOnly cookie (same-origin) |
-| **Standalone** | Runs on own port, own `index.html`, user navigates directly | OAuth2 authorization_code + PKCE, run by the addon **backend** (the browser never sees the verifier); session kept in the `nmx_addon_session` cookie |
+| **Standalone** | Runs on own port, own `index.html`, user navigates directly | OAuth2 authorization_code + PKCE, run by the addon **backend** (the browser never sees the verifier); session kept in the `nmx_addon_session` cookie — one grant per `(client_id, session_id)`, so several browsers can be signed in to the same addon at once |
 
 - **Server-to-server**: gRPC bidirectional streaming for widget event forwarding + heartbeat
 - **Shell ↔ Addon (Widget)**: Event bus via `@namorix/core` (`shell:*` and `addon:*` events)

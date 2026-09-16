@@ -286,8 +286,8 @@ backend/
 |--------|------|-------------|
 | POST | `/api/auth/login` | Login with username + password. Body: `{ username, password, rememberMe? }` |
 | POST | `/api/auth/register` | Register new user. Body: `{ username, password, email, name }` |
-| POST | `/api/auth/logout` | Clear cookies, revoke refresh token |
-| POST | `/api/auth/logout-all` | Revoke all refresh tokens for current user |
+| POST | `/api/auth/logout` | Clear cookies, revoke refresh token. **Addon grants survive** — the apps stay signed in |
+| POST | `/api/auth/logout-all` | Revoke all refresh tokens for current user **and every addon grant** they hold (pushes `session-revoked` to each addon) |
 | GET | `/api/auth/session` | Validate access token, return user info |
 | POST | `/api/auth/refresh` | Rotate tokens (fingerprint + IP check) |
 | GET | `/api/auth/status` | Return `{ needsRegister, registerEnabled }` |
@@ -344,6 +344,18 @@ Addon access token là **JWT RS256, TTL 900s** (`OAuth.AddonToken.AccessTokenTtl
 Refresh token gắn `UserId`; lỗi refresh phân loại qua trailer `nmx-error-code` (transient → 503 giữ
 session, `invalid_grant`/`theft_detected`/`invalid_client` mới xoá session — `invalid_client` nghĩa là
 desktop không còn biết ClientId đó nên cookie vĩnh viễn không refresh được nữa, giữ lại chỉ tổ 503 mãi).
+
+**Phiên theo thiết bị:** access + refresh token đều mang `SessionId` (Guid `"N"`, 32 ký tự) do desktop
+mint **một lần** ở `ExchangeCodeAsync` và copy nguyên qua từng lần rotation — đây là danh tính của chuỗi
+refresh. Addon khoá grant row theo `(ClientId, SessionId)`, nên một user giữ được nhiều phiên trên cùng
+một addon và logout một máy không đá các máy còn lại. Revoke của addon đi qua gRPC `RevokeGrant`
+(`user_id` + `session_id`, `client_id` lấy từ machine token) → `RevokeSessionChainAsync`, chỉ chạm đúng
+chuỗi đó; `RevokeGrant` **từ chối** `session_id` rỗng để đường kill-all không lọt xuống addon.
+
+**Nhiều user trên một addon (Phase 7B):** guard cũ (DG9 — addon từ chối user thứ hai) đã gỡ; giờ mỗi
+user có grant riêng và addon phục vụ song song. `IAddonTokenStore.CreateAsync` trả về `AddonToken`
+non-nullable. Cô lập dữ liệu **không** thuộc về Core — addon tự gắn owner vào dữ liệu của mình và filter
+theo `ClaimTypes.NameIdentifier` mà middleware set.
 
 ### Addon (`/api/addons`)
 
@@ -484,9 +496,12 @@ Flow:
 1. Browser → GET /api/oauth/authorize?client_id=&redirect_uri=&response_type=code&code_challenge=S256
    redirect_uri must be absolute http(s) ending at /api/oauth/callback with no fragment
 2. Server validates session + client, creates authorization code → redirect to addon with ?code=
-3. Addon backend → gRPC ExchangeUserCode(code, code_verifier, machine token) → access JWT + refresh token
+3. Addon backend → gRPC ExchangeUserCode(code, code_verifier, machine token) → access JWT + refresh
+   token + session_id (mint tại đây, không nơi nào khác)
 4. Addon verifies the JWT offline (public key via gRPC GetJwks) and serves from the nmx_addon_session
-   cookie; it refreshes over gRPC RefreshUserToken before the 900s JWT expires
+   cookie; it refreshes over gRPC RefreshUserToken before the 900s JWT expires, and the successor
+   carries the same session_id — that is what keeps one refresh chain addressable apart from the
+   user's other chains on the same addon
 ```
 
 ### Addon signing key rotation
@@ -599,8 +614,10 @@ make db_reset
 1. Login → POST /api/auth/login → Set HttpOnly cookies (access + refresh, SameSite=Lax)
 2. Session check → GET /api/auth/session → validate access token (NOT auto-refresh — trả về 401 nếu expired)
 3. Token refresh → POST /api/auth/refresh → rotate tokens (fingerprint verification)
-4. Logout → POST /api/auth/logout → clear cookies, revoke token jti
-5. Logout-all → POST /api/auth/logout-all → revoke all user tokens
+4. Logout → POST /api/auth/logout → clear cookies, revoke token jti. Addon grants are left alone:
+   ending one browser session must not sign the user out of their apps
+5. Logout-all → POST /api/auth/logout-all → revoke all user tokens + every addon grant held, pushing
+   `session-revoked { userId }` so each connected addon drops what belongs to that user
 ```
 
 - Register: supports email + name fields (validated), unique constraints
@@ -646,7 +663,7 @@ Addon backend ↔ Namorix backend communication qua port 5001 (HTTP/2):
 
 - **AddonChannelService** — gRPC bidirectional stream for widget event forwarding + heartbeat
 - **Server-first messages**: `handshake` (bare liveness proof — addon mở availability gate trên message này, gửi vô điều kiện trước mọi thứ có thể fail) / `config-update` (desktop domain, best-effort)
-- **Unary RPCs (user OAuth)** — `ExchangeUserCode` (addon backend exchanges user authorization code → `OAuthTokenResult`; caller auth bằng machine token, `client_assertion` chứng minh addon sở hữu code) / `RefreshUserToken` (refresh user access token bằng stored refresh token) / `GetJwks` (public key RS256 + `kid` để addon verify access JWT offline — chỉ với tới được khi channel còn sống)
+- **Unary RPCs (user OAuth)** — `ExchangeUserCode` (addon backend exchanges user authorization code → `OAuthTokenResult`, mang thêm `session_id` của chuỗi refresh; caller auth bằng machine token, `client_assertion` chứng minh addon sở hữu code) / `RefreshUserToken` (refresh user access token bằng stored refresh token, trả lại đúng `session_id` đó) / `RevokeGrant` (`user_id` + `session_id` — addon logout chỉ kết thúc **một phiên**, `client_id` lấy từ machine token chứ không từ payload) / `GetJwks` (public key RS256 + `kid` để addon verify access JWT offline — chỉ với tới được khi channel còn sống)
 - **AddonChannelManager** — Tracks active gRPC connections per addon
 - **Auth**: OAuth2 Bearer token (private_key_jwt) in gRPC metadata
 - **Error classification**: `Unauthenticated` bị overload → trailer `nmx-error-code` mang `invalid_client` / `invalid_grant` / `theft_detected`; chỉ 2 mã sau nghĩa là session chết

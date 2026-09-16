@@ -1,6 +1,6 @@
 ---
 name: "Addon OAuth — đổi sang JWT verify local + revoke theo user"
-overview: "Thay token opaque tra DB bằng access token JWT RS256 (TTL 900s) đặt trong HttpOnly cookie để addon backend verify offline mỗi request; addon chỉ gọi desktop khi refresh hoặc nhận push revoke. Token scope theo (userId, clientId), logout desktop revoke thật refresh token trong DB và push `session-revoked {userId}` qua kênh gRPC sẵn có. Bỏ session row dài hạn ở addon."
+overview: "Thay token opaque tra DB bằng access token JWT RS256 (TTL 900s) đặt trong HttpOnly cookie để addon backend verify offline mỗi request; addon chỉ gọi desktop khi refresh hoặc nhận push revoke. Token scope theo (userId, clientId), logout desktop revoke thật refresh token trong DB và push `session-revoked {userId}` qua kênh gRPC sẵn có. Bỏ session row dài hạn ở addon. ⚠️ Phase 7 mở lại hai điều đã chốt tạm: DG9 (chặn user thứ 2) và grant = (userId, clientId) (chưa có chiều phiên). ✅ Phase 7A (phiên theo thiết bị) code + migration + bump version xong 2026-09-16 (`Namorix.Core 0.69.0` / `Namorix.Server 0.87.0` / `frontend 0.95.0` / scout `0.9.0`) — build + `dotnet ef database update` đã chạy (user xác nhận 2026-09-16); test runtime 2 máy **chưa làm**. ✅ Phase 7B (gỡ DG9) code + build xong 2026-09-16 — scout partition camera theo chủ, Core bỏ guard; migration `AddCameraOwner` **chưa apply**, chưa test runtime."
 todos: []
 isProject: false
 ---
@@ -10,6 +10,10 @@ isProject: false
 > **Tiến độ:** Phase 0 (chốt DG1–DG9) ✅ · **Phase 0.5 hotfix bug sống ✅ 2026-09-14** · **Phase 1a (`UserId`) ✅ 2026-09-14** · **Phase 1b (signer + `GetJwks` + hardening cổng) ✅ 2026-09-14** · **Phase 1c (cấp JWT thay GUID) ✅ 2026-09-14** · **Phase 2 (revoke theo user + push `session-revoked`) ✅ 2026-09-14** · **Phase 3 (SDK verify JWT offline + token store mới) ✅ 2026-09-14** · **Phase 4 (`@namorix/core` — `useSessionGuard` trả identity) ✅ 2026-09-14** · **Phase 5 (addon adapter `namorix-scout`) ✅ 2026-09-14** · **Phase 6 (dọn dẹp & bảo mật + bump version) ✅ 2026-09-14 — kế hoạch hoàn tất**. Backend build sạch 3 project; frontend **chưa chạy `tsc`**; signer đã verify thật, phần cổng **chưa test runtime**, và **chưa mục nào chạy end-to-end** (scout đã adapt xong ở Phase 5, nhưng chưa lần nào chạy thật cả luồng).
 >
 > **DG1 đã chốt lại cuối ngày 2026-09-14:** khoá phát qua **gRPC `GetJwks`**, không HTTP; cổng hoạt động của addon là **trạng thái kênh gRPC**; bỏ cache đĩa. Plan đã sửa đồng bộ toàn bộ các mục phụ thuộc (Flow, DG7/DG8, Phase 1b/1c/2/3, Risks).
+>
+> 🔨 **Phase 7A — phiên theo thiết bị: code + migration + bump version xong 2026-09-16; build + `dotnet ef database update` đã chạy (user xác nhận), ⚠️ chưa test runtime 2 máy.** Hai chốt tạm bị đảo: DG9 (chặn user thứ 2) hết hạn nợ, và grant `(userId, clientId)` phải có thêm chiều phiên. Quyết định của user 2026-09-16: **logout ở addon thì máy nào logout máy đó thôi** (session-scoped); **logout-all vẫn ở desktop** như cũ. 7A làm trước 7B (DG9 vẫn còn nguyên, không hạ thang an ninh nào). Kết quả, hai chỗ lệch so với plan, và bảng bump version ở "Kết quả thực tế 7A" cuối Phase 7A.
+>
+> ✅ **Phase 7B (gỡ DG9, nhiều user chung 1 addon): code + build xong 2026-09-16.** Làm **đúng thứ tự bắt buộc** — scout partition dữ liệu trước (`ScCamera.UserId` + mọi query lọc chủ + `StreamsController.Offer` kiểm chủ), rồi mới gỡ guard ở `AddonTokenStore.CreateAsync`. Migration `AddCameraOwner` sinh ra nhưng **chưa apply**; chưa test runtime. Chi tiết + một chỗ lệch so với plan ở "Kết quả thực tế 7B".
 >
 > **Định dạng khoá: ✅ CHỐT `PEM/SPKI`** trong `JwksResponse` (không dùng JWK `n`/`e`) — user chốt 2026-09-14, theo đề xuất.
 >
@@ -117,10 +121,10 @@ Nguyên tắc:
 | **DG3** | FE giữ access token in-memory thì **reload mất** — bootstrap thế nào | (a) cookie bootstrap opaque + endpoint mint; (b) mỗi reload là silent login; (c) cookie HttpOnly | ✅ **Gate này biến mất** — vì DG4 chốt cookie nên token không rời BE, F5 không mất gì. Không cần bootstrap |
 | **DG4** | Ai giữ token: Bearer in-memory hay HttpOnly cookie | (a) Bearer in-memory (FE cầm token); (b) **cookie HttpOnly mang JWT** | ✅ **CHỐT (b)**. Chỉ đổi *payload* cookie (session id → JWT), không đổi cơ chế. Giữ principle HttpOnly, không regression XSS, không sinh token store / 401-retry / redirect logic ở FE, không cần CORS preflight. Bearer chỉ đáng cân nhắc nếu có non-browser client gọi API addon (CLI, app riêng) — hiện chưa có |
 | **DG5** | `OAuthRefreshToken` thiếu `UserId` + cột `Used` (rotation) | Thêm cột `UserId`; refresh token xoay vòng, dùng một lần | ✅ **Xoá sạch row cũ lúc migrate** (không backfill được; vốn đã là breaking change). **Reuse = theft**: refresh token đã `Used` mà bị dùng lại → revoke **cả chain** `(userId, clientId)`, không chỉ xoá 1 token. ⚠ **Cần grace/idempotency window (~10–30s)**: response refresh bị mất trên đường truyền, hoặc addon crash sau khi desktop đã rotate mà chưa kịp persist token mới → retry bằng token cũ. Single-flight **không** chặn ca này, nên nếu không có grace window thì "theft detection" tự tạo ra đúng cái logout oan mà nó định chống |
-| **DG6** | Phạm vi revoke khi logout desktop | (a) mọi client của đúng user đó; (b) chỉ addon đang logout | ✅ **CHỐT (a) — user-scoped**. Tự làm một nhà, "logout là mất hết" đúng trực giác, chỉ cần cột `UserId`. Session-scoped (b) cần thêm `SessionId` trên grant + map `Logout`/`LogoutAll` riêng — chỉ đáng làm nếu sau này cần logout lẻ theo thiết bị |
+| **DG6** | Phạm vi revoke khi logout desktop | (a) mọi client của đúng user đó; (b) chỉ addon đang logout | ✅ **CHỐT (a) — user-scoped**. Tự làm một nhà, "logout là mất hết" đúng trực giác, chỉ cần cột `UserId`. Session-scoped (b) cần thêm `SessionId` trên grant + map `Logout`/`LogoutAll` riêng — chỉ đáng làm nếu sau này cần logout lẻ theo thiết bị. ⚠️ **Mở lại 2026-09-16 (user chốt):** logout ở addon phải là **session-scoped** (nhánh (b)), logout-all giữ user-scoped. Vẫn giữ (a) làm mặc định cho desktop. ✅ **7A đã làm nhánh (b)** — `RevokeSessionChainAsync` + RPC `RevokeGrant` mang `session_id`; logout-all vẫn `RevokeAddonTokensForUserAsync` + push user-scoped. ⚠️ chưa test runtime |
 | **DG7** | TTL | Access 900s (hiện 3600s); refresh giữ 30 ngày hay đổi 7/90 | ✅ **Access 900s** + reconnect re-check. Refresh giữ **30 ngày** như hiện tại — chưa có lý do đổi. ⚠️ **TTL không còn là trần revoke** theo DG1 chốt lại: lớp chặn mạnh nhất là **kênh đứt** (tức thời), TTL 900s chỉ còn là chốt chặn cuối cho token đã phát. Hạ TTL giờ **chỉ tốn** (refresh dày hơn, nhiều cơ hội trúng lỗi transient) chứ không mua được revoke nhanh hơn — muốn siết thì bịt bằng push + reconnect re-check |
 | **DG8** | Có giữ bảng `OAuthTokens` làm whitelist không | (a) bỏ hẳn — chỉ kênh đứt + push + reconnect + TTL; (b) giữ row theo `jti` | ✅ **CHỐT (a) — bỏ khỏi verify path**. Whitelist vô nghĩa khi addon verify offline: không ai query nó mỗi request, giữ `Revoked` mà không ai đọc là dead weight. Revoke = **kênh đứt** (tức thời) + push + reconnect re-check + TTL 900s. Giữ bảng thuần cho **audit log** là use-case khác, không mâu thuẫn (tuỳ chọn) |
-| **DG9** | Dữ liệu per-user ở addon | (a) chặn user thứ 2 tạm thời, owner column sau; (b) làm owner column luôn | ✅ **CHỐT (a)** — chặn multi-user ở tầng login tới khi `ScCamera` có `UserId`. Bật grant theo `(userId, clientId)` là **đã mở multi-user**, mà data còn global → user B thấy camera của user A: **rò rỉ dữ liệu**, không phải "tính năng làm sau". Là **nợ kỹ thuật có hạn** — TODO cụ thể ở Phase 5, không phải phase mơ hồ |
+| **DG9** | Dữ liệu per-user ở addon | (a) chặn user thứ 2 tạm thời, owner column sau; (b) làm owner column luôn | ✅ **CHỐT (a)** — chặn multi-user ở tầng login tới khi `ScCamera` có `UserId`. Bật grant theo `(userId, clientId)` là **đã mở multi-user**, mà data còn global → user B thấy camera của user A: **rò rỉ dữ liệu**, không phải "tính năng làm sau". Là **nợ kỹ thuật có hạn** — TODO cụ thể ở Phase 5, không phải phase mơ hồ. ⚠️ **Mở lại 2026-09-16 (user chốt):** cần cả multi-user → chính là nhánh (b), làm ở Phase 7B. Chặn user thứ 2 gỡ **chỉ sau khi** `ScCamera` đã có owner + mọi query filter |
 
 ### DG1 — chốt lại lần cuối (2026-09-14, user chốt): phát JWKS qua gRPC + gate theo kênh
 
@@ -444,6 +448,162 @@ User chốt 2 điểm: **(1)** scope revoke là `(userId, clientId)` — logout 
 
 **Còn nợ sau Phase 6 (chưa xử lý):** `NmxOAuthConfigEndpointExtensions` + `OAuth.WellKnownPath` (discovery `/.well-known/nmx-oauth-config`) giờ trỏ tới `tokenUrl` không còn nhận `authorization_code` → đường chết; `AppConfig.OAuthRefreshTokenTtlDays` (mặc định 1, `appsettings.json`) không còn ai đọc — TTL refresh của desktop hardcode `AddDays(30)` trong `OAuthService`.
 
+### Phase 7 — Mở lại: nhiều user chung 1 addon + phiên theo thiết bị (✅ 7A code + migration + build + bump xong 2026-09-16; ✅ 7B code + build xong 2026-09-16, migration chưa apply; cả hai **chưa test runtime**)
+
+**Quyết định của user 2026-09-16:**
+1. **Logout ở addon → máy nào logout máy đó thôi** (session-scoped). Không đụng các máy khác của cùng user, không đụng addon khác.
+2. **Logout-all vẫn ở desktop**, giữ nguyên user-scoped (`AuthController.LogoutAll` → `RevokeAddonTokensForUserAsync` + push `session-revoked`).
+3. Cần **cả hai** chiều: nhiều người dùng chung 1 addon, **và** 1 user dùng nhiều máy trên 1 addon.
+
+Hai chốt tạm của Phase 3 bị đảo ở đây: DG9 (chặn user thứ 2) và "grant = `(userId, clientId)`" (thiếu chiều phiên).
+
+#### Hiện trạng — đã đọc code 2026-09-16
+
+> ⚠️ **Baseline trước khi code 7A — không phải tình trạng hiện tại.** Bảng dưới đây là "trước"; cái đúng bây giờ là "Kết quả thực tế 7A" ở cuối mục này. Vài dòng đã bị 7A thay: `AddonTokenStore.cs:16-20` giờ tra `(ClientId, SessionId)`, index `(ClientId, UserId)` đã đổi, `NmxAddonTokenSigner.Sign` đã có tham số `sessionId`, logout đã theo phiên, `GetActiveGrantUserIdsAsync` đã đổi tên thành `GetActiveGrantsAsync` (trả `AddonSessionRef`, không trả `int`).
+
+| Chỗ | Vấn đề |
+|---|---|
+| `AddonSessionAuthService.cs:16-18` | Comment cũ ghi thẳng: *"an addon serves one user at a time (DG9)"* — nay sai |
+| `AddonTokenStore.cs:16-20` | `CreateAsync` tra theo `ClientId` **một mình**; `:22-30` cùng user thì **ghi đè** refresh token ⇒ máy B login là row của máy A bị thay. A và B dùng chung 1 chain |
+| `AddonSessionDbContext.cs:17-19` | Index unique `(ClientId, UserId)` ⇒ 2 máy cùng user không thể có 2 row |
+| `AddonSessionMiddleware.cs:55` | `FindAsync(userId, clientId)` — không có chiều nào phân biệt máy |
+| `AddonSessionAuthController.cs:88-91` | Logout xoá `(userId, clientId)` ⇒ xoá row duy nhất ⇒ **mọi máy cùng user mất phiên** |
+| `NmxAddonTokenSigner.cs:44` | `Sign(userId, clientId, ttl)` — JWT không mang định danh phiên. Addon **không tự thêm claim được**: JWT do desktop ký |
+| `OAuthRefreshToken.cs` | Chuỗi rotation không có cột định danh chain |
+| `OAuthService.cs:224-233` | `RevokeChainAsync` kill **mọi** chain của `(userId, clientId)` — dùng cho cả revoke lẫn theft |
+| `Namorix.Core/Constants/OAuth.cs:29-52` | `SessionIdClaim` đã bị bỏ ở Phase 3, cần khôi phục |
+| `ScCamera.cs:3-15` + `CameraService.cs:21-26` | Không có cột owner; `ListAsync` trả **toàn bộ** camera, không filter |
+| `ScoutDbContext.cs:9-12` | Comment đã ghi đúng điều kiện: *"Do NOT enable multi-user until ScCamera has a UserId column and every query filters on it"* |
+
+**Tin tốt — không phải xây lại từ đầu:**
+- Desktop đã đa phiên thật: `OAuthRefreshTokens` **không có unique index**, mỗi login chèn 1 row (`OAuthService.cs:126-134`), rotation chỉ tiêu đúng row bị dùng (`:168-188`). Nút thắt nằm hết ở addon.
+- Addon **đã biết** ai đang gọi: `AddonSessionMiddleware.cs:113-118` set `ClaimTypes.NameIdentifier` + `ClientIdClaim`.
+- `GetActiveGrantUserIdsAsync` (`OAuthService.cs:344-355`) đã trả **nhiều** user, `.Distinct()` — sẵn sàng cho multi-user.
+
+#### 7A — Phiên theo thiết bị (1 user, nhiều máy)
+
+**Nguyên tắc: phiên = chuỗi refresh token, và định danh phiên do desktop phát.** Addon không ký JWT nên không tự đặt được định danh; mọi phương án để addon tự sinh id đều phải nhét vào cookie thứ hai và không đóng được cửa sổ push-miss (xem ghi chú cuối 7A).
+
+1. **`OAuthRefreshToken` + cột `SessionId`** (`MaxLength(32)`). `ExchangeCodeAsync:126-134` sinh `Guid("N")`; `RefreshAddonTokenAsync:181-188` **copy** sang successor — đây là điều kiện để `sid` ổn định qua rotation. Migration có delta thật.
+2. **`NmxAddonTokenSigner.Sign(userId, clientId, sessionId, ttl)`** → thêm claim `session_id`; khôi phục `OAuth.AddonToken.SessionIdClaim` trong `Namorix.Core/Constants/OAuth.cs`.
+3. **Core:** `AddonToken.SessionId`; index unique đổi `(ClientId, UserId)` → `(ClientId, SessionId)` (giữ `UserId` để filter và để `DeleteMissingAsync`/push còn chỗ dựa); `CreateAsync`/`FindAsync`/`DeleteAsync` nhận `sessionId`; `AddonSessionMiddleware` đọc `session_id` từ JWT rồi tra theo nó.
+4. **Login addon:** `CompleteLoginAsync` đọc `session_id` từ access JWT trả về, không cần tham số mới.
+5. **Logout addon (session-scoped):** `RevokeAsync(userId, clientId, sessionId)` → RPC `RevokeGrant` mang thêm `session_id`; desktop revoke **đúng chain đó**, addon xoá đúng row. Bỏ `RevokeChainAsync` khỏi đường này; **không** push ngược (addon đã tự xoá row — giữ nguyên ghi chú #4 của mục "Addon logout revoke grant").
+6. **Push phải đổi granularity sang phiên** — đây là hệ quả bắt buộc, không phải tính năng phụ:
+   - `SessionGrantsMessage`: `{userIds}` → `{sessions: [{userId, sessionId}]}`. Giữ `userIds` thì một máy logout lúc addon offline sẽ **không** bị drop khi reconnect, vì user đó vẫn còn phiên khác sống ⇒ `DeleteMissingAsync` không thấy nó thiếu.
+   - `SessionRevokedMessage`: mang thêm `session_id`; `null` = mọi phiên của user (đúng cho logout-all, đường duy nhất phát message này).
+   - Hệ quả: `AddonSessionChannelHandler.DropAsync` và `ApplyGrantsAsync` phải nhận session, `IAddonTokenStore` thêm `DeleteMissingSessionsAsync` / `ListSessionsAsync` (thay `DeleteMissingAsync` / `ListUserIdsAsync`).
+7. **`RevokeChainAsync` (theft detection) — ⚠️ CHƯA CHỐT, nhưng không còn chặn 7A.** ✅ 2026-09-16: giữ kill-all cho theft, và logout addon **không** đi qua nó nữa (đường riêng `RevokeSessionChainAsync`) ⇒ 7A không hạ thang an ninh nào so với trước.
+   **Phạm vi đã soi lại bằng code (`OAuthService.cs:159-175`):** nhánh theft gọi `RevokeChainAsync(stored.UserId, stored.ClientId)` — tức **mọi** chuỗi của user đó trên addon đó, log ghi *"Revoking entire chain"*; `stored.SessionId` **không** được dùng ở đây. Có **hai đường vô can** cùng rơi vào nhánh này:
+   - (a) replay đến **sau** cửa sổ grace — `TryReadSuccessor` trả `null` vì `DateTime.UtcNow - replacedAt > RefreshReuseGrace` (`:213-214`). Ca thật: response refresh bị mất, addon retry muộn hơn 30s.
+   - (b) `CryptographicException` khi `_refreshTokenProtector.Unprotect` không mở được successor vì key-ring đã xoay (`:224-229` — comment trong code nói rõ là cố ý rơi xuống nhánh theft chứ không bịa token).
+   Người dùng thấy: **một máy trục trặc → mọi máy của user đó bị đá khỏi addon**.
+   Dữ kiện để chốt (không phải kết luận): mỗi chuỗi mang một refresh token riêng của đúng một máy, nên token của máy A bị lộ không tự nó chứng minh token máy B cũng lộ. Hai lựa chọn vẫn nguyên — giữ kill-all, hay siết về `stored.SessionId` — chốt lúc nào cũng được, không chặn gì.
+
+**Hệ quả / breaking:** `IAddonTokenStore` đổi signature + đổi index ⇒ addon ngoài phải viết migration riêng ⇒ bump `Namorix.Core` — ✅ chốt 2026-09-16: **MINOR `0.69.0`**. `RevokeGrantRequest` thêm field ⇒ additive, nhưng addon phải regenerate proto.
+
+**Vì sao không cho addon tự sinh session id** (đã cân nhắc, không chọn): không phải sửa signer/desktop cho đường tra cứu, nhưng `session-grants` vẫn chỉ có `userIds` nên cửa sổ push-miss không đóng được, và định danh phiên — thứ thuộc về grant do desktop sở hữu — lại nằm ở phía addon, lệch với nguyên tắc "desktop là auth server duy nhất".
+
+#### Kết quả thực tế 7A (2026-09-16) — code + migration + bump version xong; build + `dotnet ef database update` đã chạy; ⚠️ **chưa test runtime 2 máy**
+
+**Desktop (`namorix`)**
+- `Constants/OAuth.cs` — khôi phục `AddonToken.SessionIdClaim = "session_id"`.
+- `Models/OAuthRefreshToken.cs` + `Models/OAuthToken.cs` — cột `SessionId` (`MaxLength(32)`). ⚠️ **Lệch plan:** plan chỉ nói `OAuthRefreshToken`; thêm cả `OAuthTokens` để revoke theo phiên phủ luôn access token chứ không chỉ refresh chain.
+- `OAuthService.ExchangeCodeAsync` — sinh `Guid("N")` **một lần duy nhất**, ghi vào cả hai row. `RefreshAddonTokenAsync` copy `stored.SessionId` sang successor, **kể cả nhánh grace** ⇒ `sid` ổn định qua rotation (đúng điều kiện 7A.1).
+- `RevokeChainAsync` **giữ nguyên kill-all** cho theft + revoke-by-token; thêm `RevokeSessionChainAsync` riêng cho logout addon. `RevokeGrantAsync(userId, clientId, sessionId)` đi đường mới.
+- `GetActiveGrantUserIdsAsync` → `GetActiveGrantsAsync` trả `IReadOnlyList<AddonSessionRef>`; filter thêm `r.SessionId != ""` để loại row cũ backfill (row đó cũng không tra được từ token nào nữa).
+- `NmxAddonTokenSigner.Sign(userId, clientId, sessionId, ttl)` — thêm claim `session_id`.
+- `AddonChannelService.RevokeGrant` **từ chối `session_id` rỗng**: thiếu nó là logout-all, mà việc đó thuộc về desktop, không cho addon gọi.
+
+**Proto (`addon_channel.proto`)** — `RevokeGrantRequest.session_id = 2`, `OAuthTokenResult.session_id = 5` ⇒ addon ngoài phải regenerate proto (additive, call cũ không đổi).
+
+**Frontend (`namorix`)** — quyết định 2026-09-16 ở trên ("logout ở addon → máy nào logout máy đó") kéo theo UI shell: `AuthController.Logout` **bỏ** `RevokeAddonSessionsAsync` (kết thúc một browser session không được đá user khỏi các app), nên muốn đá thì phải có nút riêng. `Launcher` thêm nút phụ "Logout all" (`handleLogoutConfirm(allApps = false)`), `auth.controller.ts` tách `endSession(route)` để `logout`/`logoutAll` không lệch nhau ở phần `setUserStore(null)` + ngắt SignalR, `en.json` +`successAll`/`confirmAll`. `NmxAlertDialog` cần nút phụ mang `warning` ⇒ +prop `extraSemantic` (`@namorix/ui`).
+
+**Addon SDK (`Namorix.Core`)**
+- `AddonToken.SessionId` + file mới `AddonSessionRef`; index unique `(ClientId, UserId)` → `(ClientId, SessionId)`.
+- `IAddonTokenStore`/`AddonTokenStore`: `CreateAsync`/`FindAsync`/`DeleteAsync` nhận `sessionId`; `DeleteUserSessionsAsync` (push logout-all) tách khỏi `DeleteMissingSessionsAsync` (so theo phiên); bỏ `ListUserIdsAsync` (không còn caller).
+- `NmxAddonTokenValidator` đọc claim, trả `SessionId`; thiếu claim ⇒ từ chối — token phát trước 7A rớt ở đây đúng chủ ý, vì nó không tra được row nào cả.
+- `AddonSessionMiddleware` tra / refresh / xoá theo phiên, đưa `session_id` vào `ClaimsIdentity`.
+- `SessionGrantsMessage` phát `{sessions:[{userId, sessionId}]}`; parse bỏ entry hỏng chứ không void cả list (một row bẩn không được đọc thành "không còn phiên nào").
+- `AddonSessionAuthService.CompleteLoginAsync` đọc `session_id` **từ `OAuthTokenResult` của gRPC**, ⚠️ **không** phải từ access JWT như plan viết — lúc login addon chưa verify JWT, mà field này đi qua kênh đã xác thực nên decode thêm là thừa. Desktop cũ không trả field ⇒ từ chối thẳng thay vì lưu row mà không token nào name tới được.
+- `RevokeAsync(userId, clientId, sessionId)` — lock key `$"{clientId}:{sessionId}"` (trước là per `(clientId, userId)`), RPC mang `session_id`. `AddonSessionLockRegistry` không đổi vì nó nhận key dạng string — chỗ đổi là call site (`AddonSessionAuthService.cs:130` + `:167`).
+- **Dọn `Tokens` (cùng batch, không thuộc 7A):** lõi dọn dẹp tách khỏi worker thành `AddonTokenCleanup.cs` (NEW), worker chỉ còn delegate — hai trigger dùng chung một hành vi: timer **24h → 30 phút**, và **ngay trong `CompleteLoginAsync`** (`AddonSessionAuthService.cs:120`). Trigger ở đường login chính là chỗ duy nhất addon chắc chắn biết `ClientId`, nên nửa sau của món nợ ghi ở entry 2026-09-15 ("lượt quét đầu bỏ qua vế ClientId khác vì `oauth.ClientId` còn `null`") nay đã đóng.
+
+**⚠️ Hai chỗ plan viết mà KHÔNG làm, có ý:**
+1. **`SessionRevokedMessage` không mang thêm `session_id`** (plan 7A.6 viết là có). Producer duy nhất là logout-all ở desktop (`AuthController.cs:220`, `OAuthController.cs:88`) — vốn đã user-scoped. Thêm field bây giờ là suy diễn cho nhu cầu chưa tồn tại. Hệ quả: `AddonSessionChannelHandler.DropAsync` dùng `DeleteUserSessionsAsync` (user-scoped), không phải bản theo phiên.
+2. **Không thêm `ListSessionsAsync`** (plan 7A.6 nhắc). Không có caller; `DeleteMissingSessionsAsync` nhận thẳng danh sách active.
+
+**Migration — đã sinh + đã apply 2026-09-16 (user xác nhận)**
+- `namorix`: `20260916023901_AddOAuthSessionId` — thêm `SessionId` vào `OAuthTokens` + `OAuthRefreshTokens`.
+- `namorix-scout`: `20260916023945_AddonTokenSessionId` — bỏ index `(ClientId, UserId)`, thêm cột, tạo index `(ClientId, SessionId)`.
+- **Cảnh báo còn hiệu lực cho instance khác, không còn cho máy dev này:** hai file migration **không** chứa phần xử lý row cũ — đọc lại cả hai bằng tool 2026-09-16, **không file nào** có `migrationBuilder.Sql(...)`. Row cũ mang `SessionId = ""`, không token nào trỏ tới được nữa. Scout: nếu bảng đang có ≥2 row cùng `ClientId` (di sản trước khi DG9 có hiệu lực) thì `CREATE UNIQUE INDEX (ClientId, SessionId)` sẽ **nổ** và app không start. Máy này apply sạch ⇒ bảng đó không có ca trùng `ClientId`; instance khác muốn an toàn thì `DELETE FROM Tokens;` trước khi apply (row cũ dù sao cũng vô dụng). Desktop tuỳ chọn `UPDATE OAuthRefreshTokens SET Used = 1 WHERE SessionId = '';` để không giữ chain mồ côi thêm 30 ngày — đánh đổi là user đang đăng nhập phải login lại một lần.
+  - Vì migration đã apply, bổ sung SQL dọn dẹp bây giờ phải là **migration mới**, không sửa file cũ.
+
+**Version — đã bump 2026-09-16 (áp luôn, user yêu cầu không cần hỏi duyệt)**
+| Package | Bump | Vì sao |
+|---|---|---|
+| `Namorix.Core` | 0.68.0 → **0.69.0** | **MINOR** — tiền lệ Phase 3/6: break trước 1.0 dồn vào MINOR, **không** lên `1.0.0`. Đổi signature gần hết `IAddonTokenStore` + đổi index |
+| `Namorix.Server` | 0.86.0 → **0.87.0** | MINOR — đổi **hành vi** auth (logout không còn revoke grant; revoke theo phiên) chứ không phải fix thuần |
+| `@namorix/ui` | 0.53.0 → **0.54.0** | MINOR — thêm prop `extraSemantic` (additive; tiền lệ 2026-09-14: thêm icon symbol cũng đi MINOR) |
+| `frontend` | 0.94.0 → **0.95.0** | MINOR — luồng logout-all mới |
+| `@namorix/core` | **không bump** | `ApiAuthRoutes.logoutAll` (`apiRoutes.ts:26`) đã có từ trước; batch này không file nào của core đổi |
+| `@namorix/styles` | **không bump** | không file nào đổi |
+| `namorix-scout` | 0.8.1 → **0.9.0** | MINOR — đổi schema `Tokens` + buộc mọi user login lại; hợp đồng ngoài (UI/HTTP API/MF) không đổi nên không lên MAJOR. `addon.json` + `frontend/package.json` sync theo luật của repo scout; `minCoreVersion` 0.36.0 → **0.69.0**, `minServerVersion` 0.38.0 → **0.87.0** vì build này cần desktop biết `session_id` |
+
+Docs đã cập nhật cùng lượt: `progress.md` (entry 2026-09-16), `activeContext.md`, `FLOW.md` (9 chỗ), `backend/README.md`, `frontend/README.md`, và memory bank bên scout. Không addon nội bộ nào của namorix đổi → `NmxAddonVersions` giữ nguyên.
+
+**Còn nợ sau 7A**
+- ~~Build~~ ✅ 2026-09-16, ~~`dotnet ef database update`~~ ✅ 2026-09-16 (user xác nhận).
+- **Chưa test runtime 2 máy.** Cần test tay: 2 máy cùng user login (2 row riêng), logout máy A không đụng máy B, logout-all ở desktop diệt cả hai.
+- `namorix-scout`: `Properties/launchSettings.json` đang đổi `NMX_REGISTRATION_TOKEN` — giá trị dev sinh khi chạy local, **không thuộc batch này**, đừng gộp vào commit.
+
+#### 7B — Nhiều người dùng chung 1 addon (gỡ DG9)
+
+**Thứ tự bắt buộc: partition dữ liệu addon TRƯỚC, gỡ chặn ở Core SAU.** Gỡ chặn trước là user B đọc được camera của user A — rò rỉ dữ liệu, không phải "tính năng làm sau".
+
+1. ✅ **scout — partition dữ liệu (xong 2026-09-16):**
+   - `ScCamera` + `UserId`; migration `20260916030406_AddCameraOwner` + `Sql` backfill row cũ.
+   - `CameraService`: mọi query lọc owner; `CreateAsync` set `UserId`; `Update`/`Delete` sai chủ trả **`NotFound`**, không phải 403 — không lộ sự tồn tại của row.
+   - `StreamsController.Offer` kiểm chủ sở hữu camera **trước** khi tới relay — relay chỉ biết `cameraId`, nên chốt chặn phải nằm ở controller.
+   - Controllers đọc `userId` từ `ClaimTypes.NameIdentifier` (mục "Controllers đọc `userId` từ claims" của Phase 5 đang **hoãn** — chính là việc này; middleware SDK set claim ở `AddonSessionMiddleware.cs:117-123`).
+   - `ScoutDbContext.cs:9-12`: xoá comment DG9.
+2. ✅ **Core — gỡ chặn** (xong 2026-09-16):
+   - `AddonTokenStore.CreateAsync` — bỏ nhánh `foreign` + comment DG9, trả về non-nullable.
+   - `AddonSessionAuthService.CompleteLoginAsync` — bỏ `if (token is null)` + `throw OAuthErrors.AccessDenied`.
+   - `AddonSessionAuthController.Callback` — bỏ nhánh 403, callback về lại một đường 400.
+   - `OAuthErrors.AccessDenied` (`Constants/Error.cs:63`) hết chỗ dùng — **giữ lại** (xoá là break SDK thêm một lần mà không lợi gì).
+3. **Index — 7B không phải đụng.** 7A đã đổi `(ClientId, UserId)` → `(ClientId, SessionId)` (2026-09-16). `SessionId` là Guid nên cặp này **không** chặn multi-user: hai user khác nhau luôn có `SessionId` khác nhau. ⚠️ Điều đã mất: DG9 từng là **bất biến ở DB** (index `(ClientId, UserId)` khiến login của user thứ hai fail ở tầng ghi), giờ chỉ còn là **guard trong code** (`AddonTokenStore.cs:19-27`). ✅ 7B đã xoá guard đó — từ đây không còn tầng nào chặn một addon bị nhiều user dùng chung, và đó đúng là điều 7B muốn, **đổi lại việc partition dữ liệu addon đã xong trước đó**.
+
+#### Kết quả thực tế 7B (2026-09-16) — code + build xong, ⚠️ **migration chưa apply, chưa test runtime**
+
+**scout (`namorix-scout`)**
+- `Models/ScCamera.cs` +`UserId` (int, NOT NULL DEFAULT 0). `ScoutDbContext` — bỏ comment DG9, giữ nguyên `base.OnModelCreating` (bỏ nó là mất luôn unique index của bảng `Tokens`).
+- Migration `20260916030406_AddCameraOwner`: `AddColumn<int>` + `Sql` backfill `UPDATE Cameras SET UserId = COALESCE((SELECT UserId FROM Tokens ORDER BY LastSeenAt DESC LIMIT 1), 0) WHERE UserId = 0;` — camera cũ về user giữ grant mới nhất; **không còn grant nào thì để `0`**, và `0` không khớp query nào nên camera đó vô hình chứ không bị xoá.
+- `Services/CameraService.cs` — `ListAsync(userId)` `:21`, `GetAsync(id, userId)` `:30`, `CreateAsync(userId, request)` `:38` (stamp owner), `UpdateAsync(id, userId, …)` `:55`, `DeleteAsync(id, userId)` `:68`. Không method nào còn truy vấn camera mà không có chiều user.
+- `Controllers/CamerasController.cs` — `private int CurrentUserId => int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value)`; 5 handler truyền xuống service; sai chủ ⇒ service trả `null`/`false` ⇒ **404 `CameraNotFound`** (giữ nguyên shape response, không thêm nhánh 403).
+- `Controllers/StreamsController.cs` — `Offer` gọi `cameras.GetAsync(cameraId, CurrentUserId, ct)` trước, `null` ⇒ 404; sau đó mới `relay.CreateAsync(cameraId)`. Controller nhận thêm `CameraService` (cả hai đều singleton, `Program.cs:32` + `:44`).
+- **Quyết định có ý: `answer`/`ice`/`stop` không siết theo chủ.** Chúng chỉ nhận `sessionId` (Guid ngẫu nhiên), không đoán được; bind owner vào `RtcViewerSession` là việc ngoài phạm vi 7B (user chốt 2026-09-16).
+- **Không đụng:** `RtspIngestService` reconcile (`:54-57`) vẫn đọc **mọi** camera enabled — đúng, ingest phải chạy cho camera của tất cả chủ.
+
+**Core (`namorix`)**
+- `AddonTokenStore.CreateAsync` — xoá `var foreign = await db.Tokens.FirstOrDefaultAsync(t => t.ClientId == clientId && t.UserId != userId, ct); if (foreign is not null) return null;` cùng comment DG9. Trả `Task<AddonToken>` (non-nullable) — trước đây nullable chỉ vì guard này.
+- `IAddonTokenStore.CreateAsync` — đổi chữ ký sang `Task<AddonToken>`, comment viết lại.
+- `AddonSessionAuthService.CompleteLoginAsync` — bỏ null-check + `throw OAuthCallbackException(OAuthErrors.AccessDenied, "This addon is already logged in as another user")`.
+- `AddonSessionAuthController.Callback` — `catch (OAuthCallbackException)` giờ luôn 400.
+- ⚠️ **Lệch so với plan:** plan viết "đổi lookup thành `ClientId && UserId` rồi mới bỏ guard". **Không làm vậy, và không nên làm vậy** — bỏ `SessionId` khỏi lookup thì user mở browser thứ hai sẽ tìm thấy row của chính mình ở browser thứ nhất rồi ghi đè session, đúng cái bug 7A vừa sửa. Lookup giữ nguyên `(ClientId, SessionId)`: `SessionId` do desktop mint bằng Guid nên hai user không bao giờ trùng, và chiều user đã được `FindAsync` (mọi đường đọc sau login) cùng `DeleteAsync`/`DeleteMissingSessionsAsync` giữ.
+- Build: namorix 3 project 0 error/0 warning; scout 3 project 0 error/0 warning.
+
+**Còn nợ sau 7B**
+- **Migration `AddCameraOwner` chưa apply** (scout `make db-update`).
+- **Chưa test runtime nhiều user.** Cần test tay: user B không thấy camera của A ở `GET /api/cameras`; `GET`/`PUT`/`DELETE` camera của A bằng tài khoản B ⇒ 404; `POST /api/streams/{cameraA}/offer` bằng B ⇒ 404; A và B cùng xem camera của mình song song; camera cũ hiện đúng cho chủ cũ.
+- **Chưa bump version** cho batch này: đề xuất `Namorix.Core` 0.69.0 → **0.70.0** (đổi chữ ký `CreateAsync`), `namorix-scout` 0.9.0 → **0.10.0** + `minCoreVersion` → 0.70.0. `Namorix.Server` + frontend namorix **không đổi file nào** ⇒ không bump.
+
+#### Thứ tự & việc còn treo
+
+Đề xuất ban đầu là **7B-data (scout) → 7B-core (Core) → 7A**. Thực tế **7A làm trước** (2026-09-16) — ngược đề xuất nhưng không phá gì: 7A không đụng DG9, nhánh `return null` trong `AddonTokenStore.CreateAsync` vẫn còn nguyên, dữ liệu scout vẫn chưa partition. ✅ **7B làm sau đó cùng ngày, và làm đúng thứ tự bắt buộc**: partition scout (bước 1) xong trước, gỡ guard Core (bước 2) sau. Phase 7 hết việc code; còn lại là apply migration + test runtime.
+
+Chưa chốt: (1) theft detection kill-all hay theo chain (mục 7A.7) — **không còn chặn gì**, đã tách đường logout ra khỏi kill-all, và phạm vi đã soi rõ bằng code ở 7A.7; (2) ~~bump `Namorix.Core` MINOR hay MAJOR~~ → ✅ **chốt 2026-09-16: MINOR, `0.69.0`** (tiền lệ Phase 3/6: break trước 1.0 dồn vào MINOR, không lên `1.0.0`); (3) ~~`OAuthErrors.AccessDenied` xoá hay giữ~~ → ✅ **chốt 2026-09-16: giữ**, hằng số này nằm trong SDK công khai nên xoá là break thêm mà không lợi gì (7B để nó hết chỗ dùng).
+
 ## Rủi ro
 
 | Rủi ro | Mức | Xử lý |
@@ -458,9 +618,12 @@ User chốt 2 điểm: **(1)** scope revoke là `(userId, clientId)` — logout 
 | Addon tách FE sang origin khác BE → cookie không tự gắn | Thấp | Hiện FE+BE cùng origin (cookie `nmx_addon_session` đang chạy). Addon nào tách origin thì phải tính lại (Bearer + CORS) |
 | Breaking cho mọi addon ngoài (khác scout) | Trung bình | ✅ Phase 3 đã gây break: xoá `AddonSession`/`IAddonSessionService`, thêm `AddonToken`/`IAddonTokenStore`, `AddonSessionDbContext.Sessions` → `.Tokens` (+ index unique `(ClientId, UserId)`), bỏ claim `session_id`. Addon phải viết migration riêng (Phase 5). Bump `Namorix.Core` để ở Phase 6 — ✅ xong 2026-09-14: `0.64.0 → 0.65.0` (user chốt MINOR, **không** lên `1.0.0`). ✅ Phase 4 thêm break phía FE: `useSessionGuard` đổi kiểu trả về từ `SessionGuardState` sang `SessionGuardResult { state, userId }` — addon đang destructure state kiểu cũ phải sửa |
 | Logout addon bị **503 khi desktop từ chối** → user kẹt, không đăng xuất được cho tới khi desktop chịu revoke | Thấp | Cố ý theo lựa chọn (2) của user 2026-09-14: thà kẹt logout còn hơn báo "đã đăng xuất" trong khi grant bên desktop vẫn refresh được tới 30 ngày. FE addon phải hiện lỗi + cho bấm lại, **không** tự xoá cookie |
+| **Gỡ DG9 trước khi partition dữ liệu addon** → user B đọc được camera của user A | ~~Cao~~ **đã xử lý đúng thứ tự 2026-09-16** | ✅ 7B làm partition trước: `ScCamera.UserId` + filter mọi query + backfill + `StreamsController.Offer` kiểm chủ sở hữu **xong trước**, rồi mới bỏ nhánh `return null` ở `AddonTokenStore.CreateAsync`. ⚠️ Lookup giữ `(ClientId, SessionId)` chứ không đổi sang `ClientId && UserId` như plan viết — bỏ `SessionId` là browser thứ hai ghi đè row của browser thứ nhất. ⚠️ **Chưa test runtime**: chưa có lần chạy thật nào xác nhận user B thực sự không thấy camera của A |
+| **`RevokeChainAsync` kill mọi chain của `(userId, clientId)`** — một máy replay token là logout **cả** các máy khác của cùng user trên addon đó | Trung bình | ⚠️ **Chưa chốt, nhưng hết chặn.** ✅ 7A tách đường logout addon ra khỏi kill-all (`RevokeSessionChainAsync`) nên không hạ thang an ninh nào; rủi ro còn lại chỉ đúng bằng ca theft. ✅ 2026-09-16 soi lại code: nhánh theft dùng `(userId, clientId)`, **không** dùng `stored.SessionId`, và có **hai đường vô can** cùng rơi vào đó — replay muộn hơn grace 30s (`OAuthService.cs:213-214`) và `CryptographicException` khi key-ring xoay (`:224-229`). Hai lựa chọn ở mục 7A.7: giữ kill-all hay siết theo chain |
+| **Hai máy cùng user dùng chung 1 chain** — logout ở máy A xoá row duy nhất ⇒ máy B mất phiên; chain của máy A bên desktop thành mồ côi tới 30 ngày | ~~Trung bình~~ **đã sửa ở 7A** | ✅ Mỗi login sinh 1 `SessionId` riêng, addon giữ row theo `(ClientId, SessionId)`. ⚠️ **Chưa test runtime** — code đúng nhưng chưa có lần chạy thật nào xác nhận |
 
 ## Không nằm trong phạm vi
 
-- Multi-tenant dữ liệu ở addon (DG9) — chặn tạm ở Phase 5; owner column trên `ScCamera` là TODO riêng.
+- ~~Multi-tenant dữ liệu ở addon (DG9) — chặn tạm ở Phase 5; owner column trên `ScCamera` là TODO riêng.~~ ✅ **Đưa vào phạm vi rồi làm xong 2026-09-16** → Phase 7B (user chốt cần nhiều người dùng chung 1 addon): `ScCamera.UserId` + mọi query lọc chủ + guard DG9 gỡ. Còn nợ apply migration + test runtime.
 - `client_credentials` machine token của addon (dùng cho kênh gRPC) — giữ nguyên.
 - Session JWT HS256 của desktop — giữ nguyên, không gộp với khoá RS256 của addon.

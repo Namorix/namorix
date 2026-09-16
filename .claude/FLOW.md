@@ -608,6 +608,7 @@ kết nối được desktop thì cũng không được verify gì.
 | `iss` | `namorix-desktop` (`OAuth.AddonToken.Issuer`) |
 | `sub` | userId (row refresh token cũ có `UserId = 0` → `sub = "0"`) |
 | `client_id` | clientId của addon |
+| `session_id` | định danh chuỗi refresh (Guid `"N"` do **desktop** phát một lần lúc `ExchangeCodeAsync`, copy nguyên qua từng lần rotation). Addon khoá grant row theo `(client_id, session_id)` — đây là thứ cho phép một user mở nhiều máy trên cùng addon |
 | `exp` / `iat` / `jti` | TTL = `OAuth.AddonToken.AccessTokenTtlSeconds` (900) — **một nguồn duy nhất**, `expires_in` trả về addon lấy cùng hằng số |
 | header `kid` | dùng để chọn key trong JWKS |
 
@@ -631,14 +632,14 @@ sạch chain).
 | Thứ | Giá trị |
 |-----|---------|
 | Cookie phiên | `nmx_addon_session` mang **chính access JWT**, HttpOnly / SameSite=Lax / Path=/, `MaxAge = SessionTtlMinutes` (default `60 * 24 * 30` = 30 ngày) — cookie phải sống **lâu hơn** JWT 900s, nếu không hết 15 phút là mất luôn đường refresh |
-| Token store local | `AddonToken` — 1 row mỗi `(ClientId, UserId)`, unique index; **không** lưu access token (verify offline rồi, lưu lại chỉ thành nguồn sự thật thứ hai và cũ hơn); chỉ refresh token được mã hoá (`IAddonTokenProtector`) |
-| DG9 | Addon phục vụ **một** user: `AddonTokenStore.CreateAsync` trả `null` khi client đã có grant của user khác → `403 access_denied` |
-| Thứ tự middleware | (1) `!IsConnected` → **503**, chưa đọc cookie; (2) verify JWT offline; (3) tìm grant — mất/hết hạn thì xoá cookie; (4) `exp` quá → refresh trong lock; (5) set `ClaimsPrincipal` (`NameIdentifier`/`Name`/`client_id`) |
-| Push từ desktop | `session-revoked` (payload `userId`) khi grant bị giết; `session-grants` (list `userId` còn sống) **mỗi lần** connect. `null` (chưa nhận list / kênh đứt) **≠** `[]` (hết grant): `null` không xoá gì |
-| Logout | `POST /api/oauth/logout` → gRPC `RevokeGrant` (scope `(userId, clientId)`) → desktop xác nhận rồi mới xoá row local + cookie. Thất bại → **503, không logout** |
-| Dọn token | `AddonTokenCleanupWorker` — 24h/lần: xoá row hết hạn + row của ClientId cũ. Các đường xoá khác đều scope theo ClientId **hiện tại** nên row của ClientId cũ không tới được |
+| Token store local | `AddonToken` — 1 row mỗi `(ClientId, SessionId)`, unique index; **không** lưu access token (verify offline rồi, lưu lại chỉ thành nguồn sự thật thứ hai và cũ hơn); chỉ refresh token được mã hoá (`IAddonTokenProtector`). `UserId` giữ lại để filter theo chủ và cho push user-scoped |
+| Nhiều user (Phase 7B) | DG9 đã gỡ: `CreateAsync` **luôn** tạo grant, addon không còn chặn user thứ hai. Cô lập dữ liệu là việc của addon — `ScCamera.UserId` + mọi query filter theo `ClaimTypes.NameIdentifier` |
+| Thứ tự middleware | (1) `!IsConnected` → **503**, chưa đọc cookie; (2) verify JWT offline; (3) tìm grant **theo phiên** — mất/hết hạn thì xoá cookie; (4) `exp` quá → refresh trong lock; (5) set `ClaimsPrincipal` (`NameIdentifier`/`Name`/`client_id`/`session_id`) |
+| Push từ desktop | `session-revoked` (payload `userId`) khi **logout-all** giết mọi phiên của user đó; `session-grants` (list `{userId, sessionId}` còn sống) **mỗi lần** connect. `null` (chưa nhận list / kênh đứt) **≠** `[]` (hết phiên): `null` không xoá gì. Danh sách phải theo **phiên** chứ không theo user: một máy logout lúc addon offline sẽ không bị drop khi reconnect nếu chỉ so theo user, vì user đó còn máy khác sống |
+| Logout | `POST /api/oauth/logout` → gRPC `RevokeGrant` (scope `(userId, clientId, sessionId)` — **máy nào logout máy đó**) → desktop xác nhận rồi mới xoá row local + cookie. Thất bại → **503, không logout**. Logout-all vẫn ở desktop, user-scoped |
+| Dọn token | `AddonTokenCleanup.RunAsync` — 3 trigger: lúc start, mỗi 30 phút, và ngay trước khi login trả về. Xoá row hết hạn + row của ClientId cũ. Các đường xoá khác đều scope theo ClientId **hiện tại** nên row của ClientId cũ không tới được |
 
-Lock `AddonSessionLockRegistry` theo `(clientId, userId)`, **in-process**, dùng chung cho refresh và logout.
+Lock `AddonSessionLockRegistry` theo `(clientId, sessionId)`, **in-process**, dùng chung cho refresh và logout.
 
 **Phía frontend addon (Phase 4):** `useSessionGuard()` (`packages/core/src/hooks/useSessionGuard.ts`) gọi
 `/api/oauth/status` và trả `SessionGuardResult { state, userId }` — `userId` là danh tính **duy nhất**
@@ -668,9 +669,10 @@ Addon GET /api/oauth/callback?code&state
         ├── tra state trong cache → code_verifier (thiếu → invalid_request)
         ├── gRPC ExchangeUserCode(code, client_id, code_verifier) + client_assertion
         │     └── OAuthService.ExchangeCodeAsync — verify PKCE S256 (hoặc client assertion),
-        │           ký JWT, tạo OAuthToken + OAuthRefreshToken
-        ├── AddonTokenStore.CreateAsync(userId, clientId, refreshToken)
-        │     └── null = đã có grant của user khác → DG9 → **403 access_denied**
+        │           sinh SessionId (Guid "N"), ký JWT (kèm claim session_id),
+        │           tạo OAuthToken + OAuthRefreshToken (cùng SessionId) → OAuthTokenResult.session_id
+        ├── AddonTokenStore.CreateAsync(userId, clientId, sessionId, refreshToken) → luôn tạo grant
+        │     └── user khác login cùng addon → grant riêng, không chặn (DG9 gỡ ở Phase 7B)
         └── Set-Cookie nmx_addon_session = access JWT
 ```
 
@@ -686,9 +688,20 @@ OAuthService.RefreshAddonTokenAsync(rawToken)
   │     │     │     (chỉ grant của user này trên addon này, không đụng addon khác)
   │     │     └── (Reused) → addon coi session đã chết → xoá session
   │     └── Found + Used == false → mark Used, ghi ReplacedBy*/ReplacedAt (mã hoá successor)
-  ├── Ký JWT RS256 (`sub` = stored.UserId, `client_id`) + tạo OAuthRefreshToken mới (rotation)
-  └── (Ok, newJwt, newRefreshToken)
+  ├── Ký JWT RS256 (`sub` = stored.UserId, `client_id`, `session_id` = stored.SessionId)
+  │     + tạo OAuthRefreshToken mới **copy nguyên SessionId** (rotation không đổi phiên)
+  └── (Ok, newJwt, newRefreshToken, sessionId)
 ```
+
+Revoke theo phiên (addon logout — tách khỏi đường theft ở trên):
+```
+AddonSessionAuthService.RevokeAsync(userId, clientId, sessionId)
+  └── gRPC RevokeGrant{user_id, session_id}   ← clientId lấy từ machine token, không từ payload
+        └── OAuthService.RevokeSessionChainAsync — chỉ OAuthTokens + OAuthRefreshTokens
+              của ĐÚNG (userId, clientId, sessionId) đó
+```
+
+`RevokeGrant` **từ chối `session_id` rỗng**: thiếu nó nghĩa là "giết mọi phiên của user", tức logout-all — việc đó thuộc về desktop, addon không được gọi.
 
 OAuth token cleanup (TokenCleanupWorker, every 24h):
 ```
@@ -700,17 +713,21 @@ CleanupExpiredTokens
   └── DELETE OAuthTokens WHERE ExpiresAt < UtcNow
 ```
 
-Addon token cleanup (AddonTokenCleanupWorker, mỗi 24h + một lượt lúc start):
+Addon token cleanup (`AddonTokenCleanup.RunAsync` — 3 trigger: lượt lúc start, mỗi 30 phút, và
+ngay trước khi `CompleteLoginAsync` trả về):
 ```
-SweepAsync
+RunAsync
   ├── DELETE Tokens WHERE RefreshTokenExpiresAt <= UtcNow
   └── DELETE Tokens WHERE ClientId != oauth.ClientId   (chỉ khi đã biết ClientId)
 ```
 
 Mọi đường xoá khác trong `AddonTokenStore` đều scope theo `oauth.ClientId` **hiện tại**
-(`DeleteAsync`/`DeleteMissingAsync`), nên row của một ClientId cũ là **không tới được** — worker là
-lối duy nhất dọn chúng. `oauth.ClientId` chỉ có sau khi channel authenticate (background task, không
-hosted service nào chờ), nên lượt quét đầu thường bỏ qua vế thứ hai.
+(`DeleteAsync`/`DeleteMissingSessionsAsync`), nên row của một ClientId cũ là **không tới được** — `RunAsync`
+là lối duy nhất dọn chúng. `oauth.ClientId` chỉ có sau khi channel authenticate
+(`AddonChannelClient.StartAsync` → `GetAccessTokenAsync` → `EnsureInitializedAsync`), mà việc connect
+chạy trong background task không hosted service nào chờ (`AddonHostedServiceBase.StartAsync` trả
+`CompletedTask`) — nên **lượt lúc start hầu như luôn bỏ qua vế thứ hai**. Vế đó chỉ chắc chắn chạy
+khi `CompleteLoginAsync` gọi `RunAsync` ngay trước khi trả về, hoặc ở lượt timer sau khi channel lên.
 
 Addon session cookie (set by the addon, `AddonSessionAuthOptions.CookieName` = `nmx_addon_session`;
 the desktop's old `nmx_addon_refresh_token` cookie and `POST /api/oauth/token/refresh` are gone):
@@ -854,7 +871,14 @@ ExchangeUserCode(ExchangeCodeRequest) → OAuthTokenResult
   └── authorization_code + PKCE; caller auth bằng machine token (gRPC auth header)
         client_assertion chứng minh addon sở hữu code; ClientId mismatch → PermissionDenied
 RefreshUserToken(RefreshTokenRequest) → OAuthTokenResult
-  └── refresh user access token bằng stored refresh token (OAuthService.RefreshAddonTokenAsync)
+  └── refresh user access token bằng stored refresh token (OAuthService.RefreshAddonTokenAsync);
+        trả kèm session_id — phiên không đổi qua rotation
+GetJwks(JwksRequest) → JwksResponse
+  └── public key (PEM/SPKI) để addon verify offline; cố ý đi qua kênh đã xác thực thay vì
+        HTTP, vì addon không tới được desktop thì cũng không được verify gì
+RevokeGrant(RevokeGrantRequest{user_id, session_id}) → RevokeGrantResponse
+  └── logout addon, scope đúng một phiên; clientId lấy từ machine token trên call;
+        session_id rỗng → InvalidArgument (logout-all thuộc về desktop); idempotent
 
 Active cancellation (revoke/uninstall):
   ├── OAuthController.Revoke → ChannelManager.DisconnectAsync(addonId)
@@ -901,18 +925,20 @@ AddonController action
 | `frontend/src/store/slices/externalAddonsSlice.ts` | Redux state for external addons |
 | `backend/src/Namorix.Server/Services/DockerService.cs` | Docker.DotNet wrapper |
 | `backend/src/Namorix.Server/Services/AddonService.cs` | Addon CRUD business logic |
-| `backend/src/Namorix.Server/Services/OAuthService.cs` | OAuth2 register + token exchange; ký JWT RS256 cho addon access token (`NmxAddonTokenSigner`), verify client_assertion; revoke chain theo `(UserId, ClientId)` (**DG6**) + grace 30s khi rotation bị replay |
-| `backend/src/Namorix.Server/Services/NmxAddonTokenSigner.cs` | RSA 2048 key (`{DataDir}/oauth-signing.pem`, mode 600) + `Sign(userId, clientId, ttl)` RS256; chỉ ở Server, Core (SDK) không mang private key |
+| `backend/src/Namorix.Server/Services/OAuthService.cs` | OAuth2 register + token exchange; ký JWT RS256 cho addon access token (`NmxAddonTokenSigner`), verify client_assertion; phát `SessionId` lúc exchange và copy qua rotation. Revoke: `RevokeChainAsync` kill **mọi** chain của `(UserId, ClientId)` — dùng cho theft + revoke-by-token (**DG6**) + grace 30s khi rotation bị replay; `RevokeSessionChainAsync` chỉ một phiên — dùng cho logout addon |
+| `backend/src/Namorix.Server/Services/NmxAddonTokenSigner.cs` | RSA 2048 key (`{DataDir}/oauth-signing.pem`, mode 600) + `Sign(userId, clientId, sessionId, ttl)` RS256 (claim `sub`/`client_id`/`session_id`); chỉ ở Server, Core (SDK) không mang private key |
 | `backend/src/Namorix.Server/Controllers/AddonController.cs` | REST API endpoints |
 | `backend/src/Namorix.Server/Controllers/OAuthController.cs` | OAuth register + token endpoints |
-| `backend/src/Namorix.Core/AddonSession/AddonSessionLockRegistry.cs` | Async lock theo `(clientId, userId)`, **in-process** — dùng chung cho refresh và logout (refresh đang bay không được ghi row xoay sau lệnh revoke) |
-| `backend/src/Namorix.Core/AddonSession/AddonToken.cs` + `IAddonTokenStore.cs` + `AddonTokenStore.cs` | Grant store phía addon: 1 row mỗi `(ClientId, UserId)`, chỉ refresh token được mã hoá; `CreateAsync` trả `null` khi client đã có user khác (**DG9**) |
+| `backend/src/Namorix.Core/AddonSession/AddonSessionLockRegistry.cs` | Async lock theo `(clientId, sessionId)`, **in-process** — dùng chung cho refresh và logout (refresh đang bay không được ghi row xoay sau lệnh revoke) |
+| `backend/src/Namorix.Core/AddonSession/AddonToken.cs` + `IAddonTokenStore.cs` + `AddonTokenStore.cs` | Grant store phía addon: 1 row mỗi `(ClientId, SessionId)`, chỉ refresh token được mã hoá; `CreateAsync` luôn tạo grant (**DG9 gỡ ở Phase 7B** — nhiều user chung một addon). `DeleteUserSessionsAsync` = push logout-all (user-scoped); `DeleteMissingSessionsAsync` = đối chiếu list `session-grants` (session-scoped) |
+| `backend/src/Namorix.Core/AddonSession/AddonSessionRef.cs` | `record struct AddonSessionRef(int UserId, string SessionId)` — đơn vị của `session-grants` |
 | `backend/src/Namorix.Core/AddonSession/NmxAddonTokenValidator.cs` | Verify JWT RS256 **offline** bằng public key lấy qua `GetJwks`, cache RAM-only, cố ý không enforce `exp` |
-| `backend/src/Namorix.Core/AddonSession/AddonSessionMiddleware.cs` | Gate 503 → verify offline → tìm grant → refresh khi `exp` quá → set claims (`NameIdentifier`/`Name`/`client_id`) |
-| `backend/src/Namorix.Core/AddonSession/AddonSessionAuthController.cs` | `login` / `callback` / `status` / `logout`; logout revoke qua gRPC **trước**, thất bại → 503 |
-| `backend/src/Namorix.Core/AddonSession/AddonSessionChannelHandler.cs` | IHostedService áp `session-revoked` (xoá grant) + `session-grants` (`DeleteMissingAsync`) |
-| `backend/src/Namorix.Core/AddonSession/AddonTokenCleanupWorker.cs` | BackgroundService dọn grant theo hạn (`DeleteExpiredAsync`) + grant của ClientId cũ (`DeleteOtherClientsAsync`) — 24h/lần, thêm một lượt lúc start |
-| `backend/src/Namorix.Core/Grpc/SessionRevokedMessage.cs` + `SessionGrantsMessage.cs` | Payload của 2 push trên (đặt ở Core vì addon cần parse) |
+| `backend/src/Namorix.Core/AddonSession/AddonSessionMiddleware.cs` | Gate 503 → verify offline → tìm grant **theo phiên** → refresh khi `exp` quá → set claims (`NameIdentifier`/`Name`/`client_id`/`session_id`) |
+| `backend/src/Namorix.Core/AddonSession/AddonSessionAuthController.cs` | `login` / `callback` / `status` / `logout`; logout revoke qua gRPC **trước** (đúng phiên), thất bại → 503 |
+| `backend/src/Namorix.Core/AddonSession/AddonSessionChannelHandler.cs` | IHostedService áp `session-revoked` (`DeleteUserSessionsAsync`) + `session-grants` (`DeleteMissingSessionsAsync`) |
+| `backend/src/Namorix.Core/AddonSession/AddonTokenCleanup.cs` | `RunAsync` — dọn grant theo hạn (`DeleteExpiredAsync`) + grant của ClientId cũ (`DeleteOtherClientsAsync`). Gọi từ worker (start + mỗi 30 phút) và từ `CompleteLoginAsync` |
+| `backend/src/Namorix.Core/AddonSession/AddonTokenCleanupWorker.cs` | BackgroundService chỉ còn giữ lịch chạy `AddonTokenCleanup` |
+| `backend/src/Namorix.Core/Grpc/SessionRevokedMessage.cs` + `SessionGrantsMessage.cs` | Payload của 2 push trên (đặt ở Core vì addon cần parse). `SessionRevokedMessage` giữ nguyên user-scoped `{userId}` — producer duy nhất là logout-all; `SessionGrantsMessage` mang `{sessions:[{userId, sessionId}]}` |
 | `backend/src/Namorix.Server/Middleware/OAuth2Middleware.cs` | Bearer token verification |
 | `backend/src/Namorix.Core/OAuth/NmxOAuth2Client.cs` | OAuth2 client SDK (self-registration, token caching) |
 | `backend/src/Namorix.Core/OAuth/NmxAddonConfig.cs` | Addon env var config (DesktopApiUrl, RegistrationToken, GrpcUrl) |

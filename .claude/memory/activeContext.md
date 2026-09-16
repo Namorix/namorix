@@ -27,6 +27,24 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [progress.md](progress.md) (September 2026), [versionHistory-08-2026.md](../archive/versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-09-16 — Addon OAuth Phase 7B: gỡ DG9, nhiều user chung một addon (Namorix.Core 0.70.0 / namorix-scout 0.10.0)
+
+- **Vấn đề:** DG9 (`AddonTokenStore.CreateAsync` trả `null` khi client đã có grant của user khác → `403 access_denied`) chặn mọi addon phục vụ user thứ hai.
+- **Thứ tự bắt buộc:** partition dữ liệu addon **trước**, gỡ guard **sau** — gỡ trước thì hai user thấy chung dữ liệu của nhau.
+- `namorix-scout 0.9.0 → 0.10.0`: `ScCamera.UserId` + migration `AddCameraOwner` (backfill camera cũ cho chủ grant mới nhất, không có grant thì để `0`); `CameraService` cả 5 method nhận `userId` và filter/set; `CamerasController` đọc `ClaimTypes.NameIdentifier`; `StreamsController.Offer` kiểm chủ camera trước khi mở relay (`answer`/`ice`/`stop` không scope — sessionId là Guid ngẫu nhiên); `minCoreVersion` → 0.70.0.
+- `Namorix.Core 0.69.0 → 0.70.0` (**BREAKING**): `IAddonTokenStore.CreateAsync` trả `Task<AddonToken>` (bỏ `?`); `AddonTokenStore` bỏ nhánh tra grant của user khác; `AddonSessionAuthService.CompleteLoginAsync` bỏ nhánh `AccessDenied`; `AddonSessionAuthController` bỏ nhánh 403. `OAuthErrors.AccessDenied` còn trong `Constants/Error.cs` nhưng không còn producer.
+- **Lệch có chủ ý so với plan:** plan nói đổi lookup grant sang `ClientId && UserId`; giữ nguyên vậy sẽ phá fix 7A (browser thứ hai của cùng user tìm thấy row thứ nhất rồi ghi đè `SessionId`) → lookup vẫn `(ClientId, SessionId)`, chỉ bỏ nhánh guard.
+- **Còn nợ:** chưa apply migration `AddCameraOwner` (`cd namorix-scout && make db-update`), chưa test runtime nhiều user. `Namorix.Server` không đổi file nào trong batch này (desktop đã sẵn từ 7A).
+
+### 2026-09-16 — Addon OAuth Phase 7A: phiên theo thiết bị (Namorix.Core 0.69.0 / Namorix.Server 0.87.0 / @namorix/ui 0.54.0 / frontend 0.95.0)
+
+- **Vấn đề:** grant khoá theo `(ClientId, UserId)` → một user chỉ có **một** phiên trên một addon; mở browser thứ hai là browser thứ nhất chết, logout một máy là mất mọi máy.
+- **Ràng buộc chi phối:** addon **không ký** JWT nên không tự thêm claim được; `SessionId` phải do desktop mint ở đúng một chỗ — `ExchangeCodeAsync` — rồi copy nguyên qua từng lần rotation (kể cả nhánh replay grace window).
+- `Namorix.Core 0.68.0 → 0.69.0` (**BREAKING**): `IAddonTokenStore` + `AddonTokenStore` đổi chữ ký gần như toàn bộ (`(ClientId, UserId)` → `(ClientId, SessionId)`, `DeleteMissingAsync` → `DeleteMissingSessionsAsync`, +`DeleteUserSessionsAsync`, **bỏ** `ListUserIdsAsync`); unique index trong `AddonSessionDbContext` đổi theo; `AddonSessionRef` mới; `NmxAddonTokenValidator` từ chối token thiếu `session_id`; lock khoá `(clientId, sessionId)`; `AddonTokenCleanup` tách khỏi worker, timer 24h → 30 phút, chạy thêm ở đường login.
+- `Namorix.Server 0.86.0 → 0.87.0`: `ExchangeCodeAsync` mint `SessionId` một lần; `RevokeSessionChainAsync` mới (revoke đúng một phiên) đi cùng `RevokeChainAsync` (kill-all, không đổi); `AuthController.Logout` **bỏ** revoke addon grant — logout-all mới là đường duy nhất đá user khỏi app; migration `20260916023901_AddOAuthSessionId`.
+- `frontend 0.94.0 → 0.95.0` + `@namorix/ui 0.53.0 → 0.54.0`: Launcher thêm nút phụ "Logout all", dialog cần `extraSemantic` nên `NmxAlertDialog` +prop; `auth.controller.ts` tách `endSession(route)` dùng chung cho `logout`/`logoutAll`.
+- **Còn nợ:** chưa test runtime 2 máy. (Build + `dotnet ef database update` cả 2 repo đã chạy 2026-09-16, user xác nhận.) Migration scout **không** có SQL dọn row cũ → `CREATE UNIQUE INDEX` có thể fail nếu ≥2 row cùng ClientId; máy này apply sạch nên cảnh báo chỉ còn cho instance khác. **7A.7 vẫn treo** (không chặn): theft detection còn kill-all nên một browser replay refresh token sẽ đá mọi máy khỏi addon đó.
+
 ### 2026-09-15 — Update addon không sinh ClientId mới + `invalid_client` là lỗi fatal + worker dọn `Tokens` (Namorix.Core 0.68.0 / Namorix.Server 0.86.0)
 
 - **Vấn đề (log prod scout):** gRPC `PermissionDenied "ClientId mismatch"` lặp vô hạn, phải xoá cookie tay mỗi lần update addon.
