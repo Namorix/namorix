@@ -1,7 +1,7 @@
 @use "../../abstract/mixins" as *;
 
 .nmx-icon-font {
-  font-size: var(var(--nmx-font-size-sm));
+  font-size: var(--nmx-font-size-sm);
 
   @include fontSizes(nmx-icon-font);
   @include semantic-variants(nmx-icon-font, false, true);
