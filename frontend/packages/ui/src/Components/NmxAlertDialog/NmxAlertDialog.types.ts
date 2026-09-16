@@ -16,6 +16,7 @@ export interface NmxAlertDialogProps extends WithBaseProps {
   closeLabel?: string
   extraActionLabel?: string
   extraActionDisabled?: boolean
+  extraSemantic?: NmxSemanticColor
   onConfirm?: () => void
   onCancel?: () => void
   onClose?: () => void

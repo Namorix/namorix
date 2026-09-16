@@ -24,6 +24,7 @@ export const NmxAlertDialog = ({
   closeLabel,
   extraActionLabel,
   extraActionDisabled = false,
+  extraSemantic = "success",
   onConfirm,
   onCancel,
   onClose,
@@ -74,7 +75,7 @@ export const NmxAlertDialog = ({
           <div className="nmx-dialog__footer-actions">
             <NmxButton
               variant="ghost"
-              semantic="success"
+              semantic={extraSemantic}
               label={extraActionLabel}
               onClick={onExtraAction}
               disabled={loading || extraActionDisabled}
