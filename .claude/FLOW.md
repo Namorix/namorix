@@ -879,6 +879,20 @@ GetJwks(JwksRequest) → JwksResponse
 RevokeGrant(RevokeGrantRequest{user_id, session_id}) → RevokeGrantResponse
   └── logout addon, scope đúng một phiên; clientId lấy từ machine token trên call;
         session_id rỗng → InvalidArgument (logout-all thuộc về desktop); idempotent
+SearchUsers(SearchUsersRequest{query, limit, offset}) → SearchUsersResponse{AddonUser[]}
+  └── danh bạ user của desktop, để addon vẽ được picker "chia sẻ cho ai" — addon chỉ nhận
+        user_id dạng số qua OAuthTokenResult nên không tự biết id là ai
+  └── query rỗng = LIỆT KÊ CẢ DANH BẠ (cố ý: picker cần danh sách, không cần tìm; người gọi
+        đã giữ machine token nên che tên không mua được gì); có term thì thu hẹp
+  └── desktop clamp limit [1, 200] (≤0 → mặc định 50), offset âm → 0; match trên username +
+        display name + email, NHƯNG email không bao giờ trả về; OrderBy(Username) rồi Skip/Take
+GetUsers(GetUsersRequest{user_ids}) → GetUsersResponse{AddonUser[]}
+  └── chiều ngược lại: addon đã lưu id từ trước, giờ hỏi id đó là ai; chỉ trả id TỒN TẠI,
+        id thiếu vắng mặt (desktop không phân biệt "chưa từng có" vs "đã xoá")
+  └── clamp 50 id/call, bỏ id ≤ 0 và > int.MaxValue, distinct
+  └── ⚠️ KHÔNG phải hàng rào chống dò: user_id là số tuần tự nên quét 1..50, 51..100… là đi
+        hết danh bạ. Rào duy nhất của cả 2 RPC là machine token — tức mọi addon đã cài;
+        không có phân quyền theo user, không rate limit, không audit
 
 Active cancellation (revoke/uninstall):
   ├── OAuthController.Revoke → ChannelManager.DisconnectAsync(addonId)

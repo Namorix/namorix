@@ -27,6 +27,16 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [progress.md](progress.md) (September 2026), [versionHistory-08-2026.md](../archive/versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-09-16 — Addon channel: 2 RPC tra cứu user cho picker chia sẻ camera (Namorix.Core 0.71.0 / Namorix.Server 0.88.0 / @namorix/ui 0.55.0 / @namorix/styles 0.63.0 / namorix-scout 0.11.0)
+
+- **Vấn đề:** addon chỉ nhận `user_id` dạng số, không biết id đó là ai → không vẽ được picker "chia sẻ cho ai". Scout cần đúng thứ đó cho chia sẻ camera nhiều người.
+- **2 RPC mới, additive** (`addon_channel.proto` +50 / −0): `SearchUsers(Request{query, limit, offset})` và `GetUsers(Request{user_ids})`, trả `AddonUser{user_id, username, name}`. Gác bằng machine token như mọi call khác — **không** phân quyền theo user, không rate limit, không audit.
+- **Đảo một quyết định cũ:** query rỗng giờ **liệt kê cả danh bạ** (trước chặn <2 ký tự để phòng dò tên). Picker cần *danh sách*, không cần *tìm*; che tên vô nghĩa khi người gọi đã giữ machine token.
+- `Namorix.Server 0.87.0 → 0.88.0`: `AddonChannelService` +2 handler (clamp `limit` `[1,200]` default 50, `offset` âm → 0, `GetUsers` distinct + `Take(50)`); `UserService` +record `UserSummary` +`SearchAsync`.
+- `@namorix/ui 0.54.0 → 0.55.0` + `@namorix/styles 0.62.1 → 0.63.0`: glyph `ic-share` (`\e94c`) + `NmxIconFontSymbol.SHARE`, và tách class `nmx-icon-font-size`.
+- **Bề mặt dò danh bạ là thiết kế đã chốt** (không phải lỗ hổng cần vá): `GetUsers` còn dễ hơn `SearchUsers` vì id là số tuần tự, quét `1..50`, `51..100`… là đi hết. Rào duy nhất: machine token, tức mọi addon đã cài.
+- **Nợ:** `icon-font.scss:4` là `var(var(--nmx-font-size-sm))` — khai báo bị CSS bỏ, nghi lỗi gõ, cần xác nhận. Scout chưa apply migration + chưa test runtime chia sẻ.
+
 ### 2026-09-16 — Addon OAuth Phase 7B: gỡ DG9, nhiều user chung một addon (Namorix.Core 0.70.0 / namorix-scout 0.10.0)
 
 - **Vấn đề:** DG9 (`AddonTokenStore.CreateAsync` trả `null` khi client đã có grant của user khác → `403 access_denied`) chặn mọi addon phục vụ user thứ hai.
