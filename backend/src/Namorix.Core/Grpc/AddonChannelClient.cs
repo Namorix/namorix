@@ -207,6 +207,35 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
             cancellationToken: ct);
     }
 
+    // An empty query lists the directory, which is what a picker shows; the desktop caps a
+    // page at 200 rows and reaches further ones with offset. Pass limit <= 0 for the default.
+    public async Task<SearchUsersResponse> SearchUsersAsync(
+        string query, int limit = 0, int offset = 0, CancellationToken ct = default)
+    {
+        EnsureStarted();
+        var stub = new AddonChannel.AddonChannelClient(_channel!);
+        return await stub.SearchUsersAsync(
+            new SearchUsersRequest { Query = query, Limit = limit, Offset = offset },
+            await BuildAuthHeadersAsync(ct),
+            cancellationToken: ct);
+    }
+
+    // Resolves ids the addon already holds back to names. The desktop drops ids that are not
+    // real users and caps the list, so a returned set may be smaller than the one passed in.
+    public async Task<GetUsersResponse> GetUsersAsync(
+        IEnumerable<int> userIds, CancellationToken ct = default)
+    {
+        EnsureStarted();
+        var stub = new AddonChannel.AddonChannelClient(_channel!);
+        var request = new GetUsersRequest();
+        request.UserIds.AddRange(userIds.Select(id => (long)id));
+
+        return await stub.GetUsersAsync(
+            request,
+            await BuildAuthHeadersAsync(ct),
+            cancellationToken: ct);
+    }
+
     public async Task RevokeGrantAsync(int userId, string sessionId, CancellationToken ct = default)
     {
         EnsureStarted();

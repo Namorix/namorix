@@ -7,9 +7,19 @@ using Namorix.Server.Infrastructure;
 namespace Namorix.Server.Services.Grpc;
 
 public class AddonChannelService(AddonChannelManager manager, OAuthService oauth,
-    SettingsService settings, IAddonNotifier notifier, NmxAddonTokenSigner signer,
+    SettingsService settings, UserService users, IAddonNotifier notifier, NmxAddonTokenSigner signer,
     ILogger<AddonChannelService> logger) : AddonChannel.AddonChannelBase
 {
+    // Enforced here rather than in the SDK so every addon gets the same bound whatever it asks
+    // for: the caller is third-party code, so the reply has to stay a page rather than a dump.
+    // The page is large and an empty query is allowed because the picker lists rather than
+    // searches — there is no substring for it to guess.
+    private const int UserSearchDefaultLimit = 50;
+    private const int UserSearchMaxLimit = 200;
+    // A cap on the ids one call may resolve. An addon stores its own grants, so a page this
+    // size is already far past any realistic list it holds.
+    private const int UserLookupMaxIds = 50;
+
     public override async Task Connect(
         IAsyncStreamReader<AddonMessage> requestStream,
         IServerStreamWriter<ShellMessage> responseStream,
@@ -173,6 +183,66 @@ public class AddonChannelService(AddonChannelManager manager, OAuthService oauth
             Kid = signer.KeyId,
             PublicKeyPem = signer.PublicKeyPem,
         });
+        return response;
+    }
+
+    public override async Task<SearchUsersResponse> SearchUsers(
+        SearchUsersRequest request, ServerCallContext context)
+    {
+        // Authenticated like every other call on this channel: a machine token is the whole
+        // requirement, and no user is involved — the addon is asking about the desktop's
+        // population, not acting as one of its members.
+        await RequireAddonClientIdAsync(context);
+
+        // An empty query is not rejected: it asks for the directory, which is exactly what the
+        // share picker shows.
+        var query = request.Query?.Trim() ?? string.Empty;
+
+        var limit = request.Limit <= 0
+            ? UserSearchDefaultLimit
+            : Math.Min(request.Limit, UserSearchMaxLimit);
+        var offset = Math.Max(request.Offset, 0);
+
+        var response = new SearchUsersResponse();
+        foreach (var user in await users.SearchAsync(query, limit, offset, context.CancellationToken))
+        {
+            response.Users.Add(new AddonUser
+            {
+                UserId = user.Id,
+                Username = user.Username,
+                Name = user.Name,
+            });
+        }
+
+        return response;
+    }
+
+    public override async Task<GetUsersResponse> GetUsers(
+        GetUsersRequest request, ServerCallContext context)
+    {
+        // Same authentication as SearchUsers: a machine token, no user involved.
+        await RequireAddonClientIdAsync(context);
+
+        // Truncated rather than rejected, and duplicates dropped: the caller is resolving a
+        // list it already holds, so answering for the first page beats failing the whole call.
+        var ids = request.UserIds
+            .Where(id => id > 0 && id <= int.MaxValue)
+            .Select(id => (int)id)
+            .Distinct()
+            .Take(UserLookupMaxIds)
+            .ToList();
+
+        var response = new GetUsersResponse();
+        foreach (var user in await users.GetByIdsAsync(ids, context.CancellationToken))
+        {
+            response.Users.Add(new AddonUser
+            {
+                UserId = user.Id,
+                Username = user.Username,
+                Name = user.Name,
+            });
+        }
+
         return response;
     }
 
