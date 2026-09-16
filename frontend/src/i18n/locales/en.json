@@ -83,9 +83,11 @@
     },
     "logout": {
       "success": "Successfully logged out",
+      "successAll": "Logged out of all apps",
       "confirmTitle": "Logout",
       "confirmDescription": "Are you sure you want to logout?",
       "confirm": "Logout",
+      "confirmAll": "Logout all",
       "cancel": "Cancel"
     }
   },

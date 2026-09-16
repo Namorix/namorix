@@ -56,12 +56,15 @@ export const Launcher: React.FC = () => {
   }
 
   const handleLogoutClick = () => setConfirmLogout(true)
-  const handleLogoutConfirm = async () => {
+  const handleLogoutConfirm = async (allApps = false) => {
     close()
     dispatch(closeAllWindows())
     setConfirmLogout(false)
-    await authController.logout()
-    nmxToast.success(t("auth.logout.success"))
+    if (allApps) await authController.logoutAll()
+    else await authController.logout()
+    nmxToast.success(
+      t(allApps ? "auth.logout.successAll" : "auth.logout.success"),
+    )
     await coreConfig.signalr.stopConnection()
     navigate("/login")
   }
@@ -81,9 +84,12 @@ export const Launcher: React.FC = () => {
         description={t("auth.logout.confirmDescription")}
         confirmLabel={t("auth.logout.confirm")}
         cancelLabel={t("auth.logout.cancel")}
-        onConfirm={handleLogoutConfirm}
+        extraActionLabel={t("auth.logout.confirmAll")}
+        extraSemantic="warning"
+        onConfirm={() => handleLogoutConfirm()}
+        onExtraAction={() => handleLogoutConfirm(true)}
         onClose={() => setConfirmLogout(false)}
-        size="sm"
+        size="md"
       />
     </>
   )

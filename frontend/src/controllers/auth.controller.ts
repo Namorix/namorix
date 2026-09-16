@@ -34,15 +34,25 @@ async function register(
   if (!data.success) throw ApiError.fromResponse(data)
 }
 
-async function logout(): Promise<void> {
+async function endSession(route: string): Promise<void> {
   setUserStore(null)
   coreConfig.signalr.setHasBeenConnected(false)
   await coreConfig.signalr.stopConnection()
   const data = await coreConfig.http
-    .url(coreConfig.getApiBaseUrl() + ApiAuthRoutes.logout)
+    .url(coreConfig.getApiBaseUrl() + route)
     .post()
     .json<void>()
   if (!data.success) throw ApiError.fromResponse(data)
+}
+
+async function logout(): Promise<void> {
+  await endSession(ApiAuthRoutes.logout)
+}
+
+// Unlike logout, the backend also revokes every addon grant the user holds, so the apps
+// they were signed into lose their session too.
+async function logoutAll(): Promise<void> {
+  await endSession(ApiAuthRoutes.logoutAll)
 }
 
 async function loadAppearance() {
@@ -65,4 +75,10 @@ async function loadAppearance() {
   }
 }
 
-export const authController = { login, register, logout, loadAppearance }
+export const authController = {
+  login,
+  register,
+  logout,
+  logoutAll,
+  loadAppearance,
+}
