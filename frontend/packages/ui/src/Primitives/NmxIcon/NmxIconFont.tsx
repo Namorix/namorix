@@ -27,7 +27,7 @@ export const NmxIconFont: React.FC<NmxIconFontProps> = ({
     <span
       {...rest}
       className={cx(
-        size && "nmx-icon-font",
+        size && "nmx-icon-font nmx-icon-font-size",
         symbol,
         size && cxSize("nmx-icon-font", size),
         semantic ? cxSemantic("nmx-icon-font", semantic) : "",
