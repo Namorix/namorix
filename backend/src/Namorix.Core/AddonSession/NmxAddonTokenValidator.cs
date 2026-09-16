@@ -11,7 +11,8 @@ namespace Namorix.Core.AddonSession;
 // desktop does not publish. Expiry is reported rather than enforced — the middleware has to
 // recognize an authentic-but-expired token precisely so it can refresh it instead of
 // answering 401.
-public sealed record AddonTokenValidation(int UserId, string ClientId, DateTime ExpiresAt)
+public sealed record AddonTokenValidation(int UserId, string ClientId, string SessionId,
+    DateTime ExpiresAt)
 {
     public bool IsExpired => ExpiresAt <= DateTime.UtcNow;
 }
@@ -51,13 +52,18 @@ public sealed class NmxAddonTokenValidator(
 
         var clientId = jwt.Claims
             .FirstOrDefault(c => c.Type == Constants.OAuth.AddonToken.ClientIdClaim)?.Value;
+        var sessionId = jwt.Claims
+            .FirstOrDefault(c => c.Type == Constants.OAuth.AddonToken.SessionIdClaim)?.Value;
         if (!int.TryParse(jwt.Claims.FirstOrDefault(c => c.Type == ClaimSub)?.Value, out var userId)
             || userId <= 0
             || string.IsNullOrEmpty(clientId)
+            // A token without a session names no row to look up. It can only be one issued
+            // before sessions existed, whose grant is gone from the store anyway.
+            || string.IsNullOrEmpty(sessionId)
             || jwt.ValidTo == DateTime.MinValue)
             return null;
 
-        return new AddonTokenValidation(userId, clientId, jwt.ValidTo);
+        return new AddonTokenValidation(userId, clientId, sessionId, jwt.ValidTo);
     }
 
     private async Task<SecurityKey?> ResolveKeyAsync(string kid, CancellationToken ct)

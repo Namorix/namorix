@@ -31,6 +31,11 @@ public static class OAuth
         public const string Issuer = "namorix-desktop";
         public const string ClientIdClaim = "client_id";
 
+        // Names the refresh chain this token belongs to, stable across rotation. The addon
+        // keys its grant row by it, which is the only thing that lets one user hold several
+        // sessions on one addon. Minted by the desktop because only the desktop signs.
+        public const string SessionIdClaim = "session_id";
+
         // Where the desktop hands the authorization code back. Shared so the two ends cannot
         // drift: the desktop refuses a redirect_uri that does not end at this path, and the
         // SDK uses it as the default for AddonSessionAuthOptions.CallbackPath.

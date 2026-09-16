@@ -14,9 +14,10 @@ service AddonChannel {
   // authenticated channel on purpose: the desktop is the only auth server, so an
   // addon that cannot reach it must not be able to verify tokens either.
   rpc GetJwks(JwksRequest) returns (JwksResponse);
-  // Addon-initiated logout: the addon asks the desktop to kill the one grant it holds for
-  // this user. Scope is (user_id, the calling addon) — never the user's grants at other
-  // addons. Idempotent: a grant that is already gone is not an error.
+  // Addon-initiated logout: the addon asks the desktop to kill the one session it holds for
+  // this user. Scope is (user_id, session_id, the calling addon) — never the user's other
+  // sessions, and never their grants at other addons. Idempotent: a session that is already
+  // gone is not an error.
   rpc RevokeGrant(RevokeGrantRequest) returns (RevokeGrantResponse);
 }
 
@@ -45,9 +46,12 @@ message RefreshTokenRequest {
 }
 
 message RevokeGrantRequest {
-  // Which user's grant to kill. The client id is not sent: it is taken from the machine
-  // token on the call, so an addon can only ever revoke grants it owns.
+  // Which user's session to kill. The client id is not sent: it is taken from the machine
+  // token on the call, so an addon can only ever revoke sessions it owns.
   int64 user_id = 1;
+  // Which of that user's sessions. Required — revoking without it would sign the user out
+  // of every other browser they have open, which is the desktop's logout-all, not this.
+  string session_id = 2;
 }
 
 message RevokeGrantResponse {}
@@ -57,6 +61,10 @@ message OAuthTokenResult {
   string refresh_token = 2;
   int64 expires_in = 3;
   int64 user_id = 4;
+  // Names the refresh chain this pair belongs to, stable across rotation. The addon
+  // keys its grant row by (client_id, session_id) so one user can hold several
+  // sessions on one addon and signing out of one leaves the rest alone.
+  string session_id = 5;
 }
 
 message JwksRequest {}

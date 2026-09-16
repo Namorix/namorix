@@ -24,7 +24,7 @@ public sealed class AddonSessionChannelHandler(
 
         // The list may already have arrived before we subscribed: hosted services start in
         // registration order, and the addon owns the service that opens the channel.
-        await ApplyGrantsAsync(channel.ActiveGrantUserIds);
+        await ApplyGrantsAsync(channel.ActiveGrants);
     }
 
     public Task StopAsync(CancellationToken ct)
@@ -45,7 +45,7 @@ public sealed class AddonSessionChannelHandler(
                 break;
 
             case SessionGrantsMessage.Type:
-                await ApplyGrantsAsync(channel.ActiveGrantUserIds);
+                await ApplyGrantsAsync(channel.ActiveGrants);
                 break;
         }
     }
@@ -55,23 +55,29 @@ public sealed class AddonSessionChannelHandler(
         if (oauth.ClientId is not { } clientId)
             return;
 
-        if (await tokens.DeleteAsync(userId, clientId, CancellationToken.None))
-            logger.LogInformation("Dropped grant for user {UserId} revoked by the desktop", userId);
+        // The push is user-scoped because the only thing that sends it is a desktop
+        // logout-all, which kills every session that user holds here.
+        var dropped = await tokens.DeleteUserSessionsAsync(userId, clientId, CancellationToken.None);
+        if (dropped > 0)
+            logger.LogInformation(
+                "Dropped {Count} session(s) for user {UserId} revoked by the desktop",
+                dropped, userId);
     }
 
-    private async Task ApplyGrantsAsync(IReadOnlyList<int>? activeUserIds)
+    private async Task ApplyGrantsAsync(IReadOnlyList<AddonSessionRef>? activeSessions)
     {
         // null (nothing pushed yet, or the channel is down) is not the same as an empty
-        // list ("the desktop holds no live grant for you"). Deleting on null would wipe
+        // list ("the desktop holds no live session for you"). Deleting on null would wipe
         // every stored token on a message we never received.
-        if (activeUserIds is null || oauth.ClientId is not { } clientId)
+        if (activeSessions is null || oauth.ClientId is not { } clientId)
             return;
 
-        var dropped = await tokens.DeleteMissingAsync(clientId, activeUserIds, CancellationToken.None);
+        var dropped = await tokens.DeleteMissingSessionsAsync(
+            clientId, activeSessions, CancellationToken.None);
         if (dropped > 0)
         {
             logger.LogInformation(
-                "Dropped {Count} grant(s) the desktop no longer recognizes", dropped);
+                "Dropped {Count} session(s) the desktop no longer recognizes", dropped);
         }
     }
 }

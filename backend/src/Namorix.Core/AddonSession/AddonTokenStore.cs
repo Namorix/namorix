@@ -9,44 +9,45 @@ public sealed class AddonTokenStore<TContext>(
     IOptions<AddonSessionAuthOptions> options) : IAddonTokenStore
     where TContext : AddonSessionDbContext
 {
-    public async Task<AddonToken?> CreateAsync(int userId, string clientId,
+    public async Task<AddonToken> CreateAsync(int userId, string clientId, string sessionId,
         string refreshToken, CancellationToken ct)
     {
         await using var db = await dbFactory.CreateDbContextAsync(ct);
         var existing = await db.Tokens
-            .FirstOrDefaultAsync(t => t.ClientId == clientId, ct);
+            .FirstOrDefaultAsync(t => t.ClientId == clientId && t.SessionId == sessionId, ct);
 
-        if (existing is not null && existing.UserId != userId)
-            return null;
-
-        if (existing is not null)
+        if (existing is null)
         {
-            // Same user logging in again: this is a fresh grant, not an extra one.
-            existing.EncryptedRefreshToken = protector.Protect(refreshToken)!;
-            existing.RefreshTokenExpiresAt = RefreshExpiry();
-            existing.LastSeenAt = DateTime.UtcNow;
+            var created = new AddonToken
+            {
+                UserId = userId,
+                ClientId = clientId,
+                SessionId = sessionId,
+                EncryptedRefreshToken = protector.Protect(refreshToken)!,
+                RefreshTokenExpiresAt = RefreshExpiry(),
+            };
+
+            db.Tokens.Add(created);
             await db.SaveChangesAsync(ct);
-            return existing;
+            return created;
         }
 
-        var token = new AddonToken
-        {
-            UserId = userId,
-            ClientId = clientId,
-            EncryptedRefreshToken = protector.Protect(refreshToken)!,
-            RefreshTokenExpiresAt = RefreshExpiry(),
-        };
-
-        db.Tokens.Add(token);
+        // Same session logging in again: this is a fresh grant, not an extra one.
+        existing.UserId = userId;
+        existing.EncryptedRefreshToken = protector.Protect(refreshToken)!;
+        existing.RefreshTokenExpiresAt = RefreshExpiry();
+        existing.LastSeenAt = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
-        return token;
+        return existing;
     }
 
-    public async Task<AddonToken?> FindAsync(int userId, string clientId, CancellationToken ct)
+    public async Task<AddonToken?> FindAsync(int userId, string clientId, string sessionId,
+        CancellationToken ct)
     {
         await using var db = await dbFactory.CreateDbContextAsync(ct);
         return await db.Tokens
-            .FirstOrDefaultAsync(t => t.UserId == userId && t.ClientId == clientId, ct);
+            .FirstOrDefaultAsync(t => t.UserId == userId && t.ClientId == clientId
+                && t.SessionId == sessionId, ct);
     }
 
     public async Task UpdateRefreshTokenAsync(AddonToken token, string refreshToken,
@@ -61,11 +62,13 @@ public sealed class AddonTokenStore<TContext>(
         await db.SaveChangesAsync(ct);
     }
 
-    public async Task<bool> DeleteAsync(int userId, string clientId, CancellationToken ct)
+    public async Task<bool> DeleteAsync(int userId, string clientId, string sessionId,
+        CancellationToken ct)
     {
         await using var db = await dbFactory.CreateDbContextAsync(ct);
         var token = await db.Tokens
-            .FirstOrDefaultAsync(t => t.UserId == userId && t.ClientId == clientId, ct);
+            .FirstOrDefaultAsync(t => t.UserId == userId && t.ClientId == clientId
+                && t.SessionId == sessionId, ct);
 
         if (token is null)
             return false;
@@ -75,20 +78,26 @@ public sealed class AddonTokenStore<TContext>(
         return true;
     }
 
-    public async Task<int> DeleteMissingAsync(string clientId,
-        IReadOnlyCollection<int> activeUserIds, CancellationToken ct)
+    public async Task<int> DeleteUserSessionsAsync(int userId, string clientId,
+        CancellationToken ct)
     {
         await using var db = await dbFactory.CreateDbContextAsync(ct);
-        var stale = await db.Tokens
-            .Where(t => t.ClientId == clientId && !activeUserIds.Contains(t.UserId))
-            .ToListAsync(ct);
+        return await db.Tokens
+            .Where(t => t.UserId == userId && t.ClientId == clientId)
+            .ExecuteDeleteAsync(ct);
+    }
 
-        if (stale.Count == 0)
-            return 0;
+    public async Task<int> DeleteMissingSessionsAsync(string clientId,
+        IReadOnlyCollection<AddonSessionRef> activeSessions, CancellationToken ct)
+    {
+        // SessionId is minted as a GUID, so matching on it alone cannot collide across
+        // users; the clientId filter is what keeps this from reaching another addon's rows.
+        var activeIds = activeSessions.Select(s => s.SessionId).ToArray();
 
-        db.Tokens.RemoveRange(stale);
-        await db.SaveChangesAsync(ct);
-        return stale.Count;
+        await using var db = await dbFactory.CreateDbContextAsync(ct);
+        return await db.Tokens
+            .Where(t => t.ClientId == clientId && !activeIds.Contains(t.SessionId))
+            .ExecuteDeleteAsync(ct);
     }
 
     public async Task<int> DeleteExpiredAsync(CancellationToken ct)
@@ -105,15 +114,6 @@ public sealed class AddonTokenStore<TContext>(
         return await db.Tokens
             .Where(t => t.ClientId != clientId)
             .ExecuteDeleteAsync(ct);
-    }
-
-    public async Task<IReadOnlyList<int>> ListUserIdsAsync(string clientId, CancellationToken ct)
-    {
-        await using var db = await dbFactory.CreateDbContextAsync(ct);
-        return await db.Tokens
-            .Where(t => t.ClientId == clientId)
-            .Select(t => t.UserId)
-            .ToListAsync(ct);
     }
 
     public string DecryptRefreshToken(AddonToken token) =>

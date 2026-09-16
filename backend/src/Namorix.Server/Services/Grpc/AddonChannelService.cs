@@ -50,8 +50,8 @@ public class AddonChannelService(AddonChannelManager manager, OAuthService oauth
             // Every (re)connect, so a revoke that happened while the addon was offline is
             // repaired here rather than waited on: that push reached nobody, and without
             // this the addon would keep a dead grant until its next refresh was refused.
-            var activeUserIds = await oauth.GetActiveGrantUserIdsAsync(clientId ?? string.Empty);
-            await responseStream.WriteAsync(SessionGrantsMessage.For(activeUserIds), cts.Token);
+            var activeGrants = await oauth.GetActiveGrantsAsync(clientId ?? string.Empty);
+            await responseStream.WriteAsync(SessionGrantsMessage.For(activeGrants), cts.Token);
         }
         catch
         {
@@ -113,7 +113,7 @@ public class AddonChannelService(AddonChannelManager manager, OAuthService oauth
         if (clientId != request.ClientId)
             throw Error(StatusCode.PermissionDenied, OAuthErrors.InvalidClient, "ClientId mismatch");
 
-        var (tokenId, refreshToken, userId) = await oauth.ExchangeCodeAsync(
+        var (tokenId, refreshToken, userId, sessionId) = await oauth.ExchangeCodeAsync(
             request.Code, clientId, request.ClientAssertion, request.CodeVerifier);
         if (tokenId is null)
             throw new RpcException(new Status(StatusCode.InvalidArgument,
@@ -125,6 +125,7 @@ public class AddonChannelService(AddonChannelManager manager, OAuthService oauth
             RefreshToken = refreshToken,
             ExpiresIn = OAuth.AddonToken.AccessTokenTtlSeconds,
             UserId = userId,
+            SessionId = sessionId,
         };
     }
 
@@ -140,7 +141,7 @@ public class AddonChannelService(AddonChannelManager manager, OAuthService oauth
             throw Error(StatusCode.Unauthenticated, OAuthErrors.InvalidGrant,
                 "Invalid refresh token");
 
-        var (tokenId, newRefreshToken, userId, status) = result.Value;
+        var (tokenId, newRefreshToken, userId, sessionId, status) = result.Value;
         if (status == OAuthRefreshStatus.Reused)
             throw Error(StatusCode.Unauthenticated, OAuthErrors.TheftDetected,
                 "Refresh token was reused. Possible theft detected. Re-registration required.");
@@ -155,6 +156,7 @@ public class AddonChannelService(AddonChannelManager manager, OAuthService oauth
             RefreshToken = newRefreshToken,
             ExpiresIn = OAuth.AddonToken.AccessTokenTtlSeconds,
             UserId = userId,
+            SessionId = sessionId,
         };
     }
 
@@ -187,7 +189,12 @@ public class AddonChannelService(AddonChannelManager manager, OAuthService oauth
         if (request.UserId <= 0)
             throw new RpcException(new Status(StatusCode.InvalidArgument, "user_id must be a real user"));
 
-        await oauth.RevokeGrantAsync((int)request.UserId, clientId);
+        // No session id means the caller wants the whole grant gone, which is the user's
+        // logout-all. Refusing here keeps that gesture where it belongs: at the desktop.
+        if (string.IsNullOrEmpty(request.SessionId))
+            throw new RpcException(new Status(StatusCode.InvalidArgument, "session_id is required"));
+
+        await oauth.RevokeGrantAsync((int)request.UserId, clientId, request.SessionId);
         return new RevokeGrantResponse();
     }
 

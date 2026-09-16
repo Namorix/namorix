@@ -29,13 +29,9 @@ public sealed class AddonSessionAuthController(
         }
         catch (OAuthCallbackException ex)
         {
-            // access_denied is the one refusal that is not about the request being wrong: the
-            // addon is already granted to another user (DG9), so the request is understood and
-            // refused. Everything else here is a malformed or expired call.
-            var status = ex.ErrorCode == OAuthErrors.AccessDenied
-                ? StatusCodes.Status403Forbidden
-                : StatusCodes.Status400BadRequest;
-            return StatusCode(status, new OAuthErrorResponse(ex.ErrorCode, ex.Message));
+            // Anything the desktop refuses, or that we cannot make sense of, is a bad call:
+            // there is no longer a refusal that a different user could explain away.
+            return BadRequest(new OAuthErrorResponse(ex.ErrorCode, ex.Message));
         }
         catch (InvalidOperationException ex)
         {
@@ -73,22 +69,25 @@ public sealed class AddonSessionAuthController(
         var opts = options.Value;
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var clientId = User.FindFirst(Constants.OAuth.AddonToken.ClientIdClaim)?.Value;
+        var sessionId = User.FindFirst(Constants.OAuth.AddonToken.SessionIdClaim)?.Value;
 
-        if (!int.TryParse(userId, out var owner) || string.IsNullOrEmpty(clientId))
+        if (!int.TryParse(userId, out var owner) || string.IsNullOrEmpty(clientId)
+            || string.IsNullOrEmpty(sessionId))
         {
             Response.Cookies.Delete(opts.CookieName, new CookieOptions { Path = "/" });
             return NoContent();
         }
 
-        // The desktop is the only place the grant lives, so the local row goes only after
+        // The desktop is the only place the session lives, so the local row goes only after
         // the desktop confirms it killed its side. Deleting locally on a failed revoke would
-        // tell the user they are signed out while the grant stays refreshable over there for
-        // the rest of its 30-day TTL. A dead channel never reaches here — the middleware's
-        // gate answers 503 first — so this covers the desktop that is reachable but refusing.
-        if (!await oauth.RevokeAsync(owner, clientId, ct))
+        // tell the user they are signed out while the session stays refreshable over there
+        // for the rest of its 30-day TTL. A dead channel never reaches here — the
+        // middleware's gate answers 503 first — so this covers the desktop that is
+        // reachable but refusing.
+        if (!await oauth.RevokeAsync(owner, clientId, sessionId, ct))
             return StatusCode(StatusCodes.Status503ServiceUnavailable);
 
-        await tokens.DeleteAsync(owner, clientId, ct);
+        await tokens.DeleteAsync(owner, clientId, sessionId, ct);
         Response.Cookies.Delete(opts.CookieName, new CookieOptions { Path = "/" });
         return NoContent();
     }

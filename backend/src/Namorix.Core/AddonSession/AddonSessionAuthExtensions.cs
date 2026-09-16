@@ -25,6 +25,8 @@ public static class AddonSessionAuthExtensions
         services.AddSingleton<AddonSessionLockRegistry>();
         services.AddSingleton<NmxAddonTokenValidator>();
         services.AddSingleton<AddonSessionAuthService>();
+        // Shared by the worker's timer and the login path, so both sweeps stay one behavior.
+        services.AddSingleton<AddonTokenCleanup>();
 
         // Applies the desktop's revocations to the token store. Hosted, not wired into the
         // middleware, so grants die as soon as the push arrives rather than at the next

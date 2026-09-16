@@ -52,14 +52,16 @@ public sealed class AddonSessionMiddleware(
             return;
         }
 
-        var grant = await tokens.FindAsync(validation.UserId, validation.ClientId, ct);
+        var grant = await tokens.FindAsync(validation.UserId, validation.ClientId,
+            validation.SessionId, ct);
         if (grant is null || grant.RefreshTokenExpiresAt <= DateTime.UtcNow)
         {
-            // The desktop revoked this grant, or its refresh credential ran out. Nothing
+            // The desktop revoked this session, or its refresh credential ran out. Nothing
             // can be refreshed from here, so drop the cookie instead of leaving the browser
             // presenting a token that can never work again.
             if (grant is not null)
-                await tokens.DeleteAsync(validation.UserId, validation.ClientId, ct);
+                await tokens.DeleteAsync(validation.UserId, validation.ClientId,
+                    validation.SessionId, ct);
 
             ClearCookie(context, opts);
             await next(context);
@@ -71,7 +73,8 @@ public sealed class AddonSessionMiddleware(
             string? refreshed;
             try
             {
-                refreshed = await oauth.RefreshAsync(validation.UserId, validation.ClientId, ct);
+                refreshed = await oauth.RefreshAsync(validation.UserId, validation.ClientId,
+                    validation.SessionId, ct);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
@@ -81,7 +84,8 @@ public sealed class AddonSessionMiddleware(
             {
                 logger.LogWarning(ex,
                     "Desktop rejected the grant for user {UserId}; dropping it", validation.UserId);
-                await tokens.DeleteAsync(validation.UserId, validation.ClientId, CancellationToken.None);
+                await tokens.DeleteAsync(validation.UserId, validation.ClientId,
+                    validation.SessionId, CancellationToken.None);
                 ClearCookie(context, opts);
                 await next(context);
                 return;
@@ -115,6 +119,7 @@ public sealed class AddonSessionMiddleware(
             new Claim(ClaimTypes.NameIdentifier, validation.UserId.ToString()),
             new Claim(ClaimTypes.Name, validation.UserId.ToString()),
             new Claim(Constants.OAuth.AddonToken.ClientIdClaim, validation.ClientId),
+            new Claim(Constants.OAuth.AddonToken.SessionIdClaim, validation.SessionId),
         ], opts.AuthenticationScheme));
 
         await next(context);

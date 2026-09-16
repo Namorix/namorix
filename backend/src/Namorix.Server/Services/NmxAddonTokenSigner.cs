@@ -41,7 +41,7 @@ public sealed class NmxAddonTokenSigner : IDisposable
             new RsaSecurityKey(_key) { KeyId = KeyId }, SecurityAlgorithms.RsaSha256);
     }
 
-    public string Sign(int userId, string clientId, TimeSpan ttl)
+    public string Sign(int userId, string clientId, string sessionId, TimeSpan ttl)
     {
         var handler = new JwtSecurityTokenHandler();
         var now = DateTime.UtcNow;
@@ -54,6 +54,7 @@ public sealed class NmxAddonTokenSigner : IDisposable
                 [
                     new Claim(ClaimSub, userId.ToString()),
                     new Claim(OAuth.AddonToken.ClientIdClaim, clientId),
+                    new Claim(OAuth.AddonToken.SessionIdClaim, sessionId),
                 ],
                 notBefore: now,
                 expires: now.Add(ttl),

@@ -22,6 +22,7 @@ public sealed class AddonSessionAuthService(
     NmxOAuth2Client oauth,
     NmxAddonConfig config,
     IAddonTokenStore tokens,
+    AddonTokenCleanup cleanup,
     AddonSessionLockRegistry refreshLocks,
     IMemoryCache cache,
     IOptions<AddonSessionAuthOptions> options,
@@ -89,43 +90,46 @@ public sealed class AddonSessionAuthService(
                 "Invalid or expired authorization code", ex);
         }
 
+        // Names the refresh chain this login just opened. Without it the addon cannot tell
+        // two browsers of the same user apart, so no grant could ever be signed out one
+        // session at a time. A desktop too old to send one is refused outright: storing the
+        // row anyway would mint a session no incoming token can name, which reads to the
+        // user as an endless login loop.
+        if (string.IsNullOrEmpty(result.SessionId))
+            throw new OAuthCallbackException(OAuthErrors.InvalidRequest,
+                "Desktop did not return a session id");
+
         logger.LogInformation("User {UserId} logged in via desktop OAuth", result.UserId);
 
         var token = await tokens.CreateAsync(
-            (int)result.UserId, oauth.ClientId!, result.RefreshToken, ct);
+            (int)result.UserId, oauth.ClientId!, result.SessionId, result.RefreshToken, ct);
 
-        // DG9: the addon serves one user at a time. A second user must not be able to take
-        // over the stored grant, because the data behind it is not yet partitioned per user.
-        if (token is null)
-        {
-            logger.LogWarning(
-                "Refused login for user {UserId}: addon is already granted to another user",
-                result.UserId);
-            throw new OAuthCallbackException(OAuthErrors.AccessDenied,
-                "This addon is already logged in as another user");
-        }
+        // The one moment the addon is guaranteed to know its ClientId, so the one reliable
+        // chance to clear grants left behind by an earlier one.
+        await cleanup.RunAsync(ct);
 
         return new AddonLoginResult(token, result.AccessToken);
     }
 
     // Returns the new access JWT once the rotated refresh token is safely persisted, or
-    // null when the grant no longer exists (revoked by the desktop while we held it).
-    public async Task<string?> RefreshAsync(int userId, string clientId, CancellationToken ct)
+    // null when the session no longer exists (revoked by the desktop while we held it).
+    public async Task<string?> RefreshAsync(int userId, string clientId, string sessionId,
+        CancellationToken ct)
     {
-        await using var lease = await refreshLocks.AcquireAsync($"{clientId}:{userId}", ct);
+        await using var lease = await refreshLocks.AcquireAsync($"{clientId}:{sessionId}", ct);
 
         // Both the read and the network call stay inside the lock. Rotation makes the
         // refresh token single-use: a second request that read it before we replaced it
         // would present a consumed token, which the desktop reads as theft and answers by
         // revoking the whole chain — a lost session, not just a wasted round trip.
-        var token = await tokens.FindAsync(userId, clientId, ct);
+        var token = await tokens.FindAsync(userId, clientId, sessionId, ct);
         if (token is null || token.RefreshTokenExpiresAt <= DateTime.UtcNow)
             return null;
 
         var refreshToken = tokens.DecryptRefreshToken(token);
         if (string.IsNullOrEmpty(refreshToken))
         {
-            logger.LogError("Stored grant for user {UserId} has an unreadable refresh token", userId);
+            logger.LogError("Stored session for user {UserId} has an unreadable refresh token", userId);
             return null;
         }
 
@@ -140,18 +144,20 @@ public sealed class AddonSessionAuthService(
         return result.AccessToken;
     }
 
-    // Logout, addon side. Takes the same lease as refresh: a refresh already past the lock
-    // would otherwise land its rotated row on the desktop after our revoke, leaving a live
-    // grant behind a logout the user was told had succeeded.
-    // False means the desktop could not be reached or refused, so the grant is still alive
-    // there and reporting a clean logout would be a lie.
-    public async Task<bool> RevokeAsync(int userId, string clientId, CancellationToken ct)
+    // Logout, addon side, scoped to the session that asked: the user's other browsers stay
+    // signed in, and so do their grants at other addons. Takes the same lease as refresh: a
+    // refresh already past the lock would otherwise land its rotated row on the desktop
+    // after our revoke, leaving a live session behind a logout the user was told had
+    // succeeded. False means the desktop could not be reached or refused, so the session is
+    // still alive there and reporting a clean logout would be a lie.
+    public async Task<bool> RevokeAsync(int userId, string clientId, string sessionId,
+        CancellationToken ct)
     {
-        await using var lease = await refreshLocks.AcquireAsync($"{clientId}:{userId}", ct);
+        await using var lease = await refreshLocks.AcquireAsync($"{clientId}:{sessionId}", ct);
 
         try
         {
-            await channel.RevokeGrantAsync(userId, ct);
+            await channel.RevokeGrantAsync(userId, sessionId, ct);
             return true;
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -160,7 +166,7 @@ public sealed class AddonSessionAuthService(
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Could not revoke the grant for user {UserId} on the desktop", userId);
+            logger.LogWarning(ex, "Could not revoke the session for user {UserId} on the desktop", userId);
             return false;
         }
     }

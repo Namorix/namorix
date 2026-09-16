@@ -1,6 +1,7 @@
 using Grpc.Core;
 using Grpc.Net.Client;
 using Microsoft.Extensions.Logging;
+using Namorix.Core.AddonSession;
 using Namorix.Core.OAuth;
 using Namorix.Core.Protos;
 
@@ -37,17 +38,17 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
     public bool IsConnected => _streamUp;
     public string? BrowserOrigin { get; private set; }
 
-    // Newest grant list the desktop pushed on this stream, or null when no proven stream
+    // Newest session list the desktop pushed on this stream, or null when no proven stream
     // has delivered one. Exposed as state and not just an event so a subscriber that
     // attaches after the push can still apply it.
-    public IReadOnlyList<int>? ActiveGrantUserIds { get; private set; }
+    public IReadOnlyList<AddonSessionRef>? ActiveGrants { get; private set; }
 
-    // Closes the availability gate. Also drops the grant list: an unproven channel has no
-    // proven truth about which grants are still alive.
+    // Closes the availability gate. Also drops the session list: an unproven channel has no
+    // proven truth about which sessions are still alive.
     private void MarkStreamDown()
     {
         _streamUp = false;
-        ActiveGrantUserIds = null;
+        ActiveGrants = null;
     }
 
     public async Task StartAsync(CancellationToken ct = default)
@@ -103,8 +104,8 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
 
                     if (msg.Type == SessionGrantsMessage.Type)
                     {
-                        if (SessionGrantsMessage.ParseUserIds(msg.Payload) is { } userIds)
-                            ActiveGrantUserIds = userIds;
+                        if (SessionGrantsMessage.Parse(msg.Payload) is { } sessions)
+                            ActiveGrants = sessions;
                         else
                             logger.LogWarning("Ignoring unreadable {Type} payload", msg.Type);
                     }
@@ -206,12 +207,12 @@ public class AddonChannelClient(NmxOAuth2Client oauth, NmxAddonConfig config,
             cancellationToken: ct);
     }
 
-    public async Task RevokeGrantAsync(int userId, CancellationToken ct = default)
+    public async Task RevokeGrantAsync(int userId, string sessionId, CancellationToken ct = default)
     {
         EnsureStarted();
         var stub = new AddonChannel.AddonChannelClient(_channel!);
         await stub.RevokeGrantAsync(
-            new RevokeGrantRequest { UserId = userId },
+            new RevokeGrantRequest { UserId = userId, SessionId = sessionId },
             await BuildAuthHeadersAsync(ct),
             cancellationToken: ct);
     }

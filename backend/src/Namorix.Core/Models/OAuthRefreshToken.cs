@@ -12,6 +12,11 @@ public class OAuthRefreshToken
     // without this cannot be attributed to the user who logged out.
     public int UserId { get; init; }
 
+    // Names the refresh chain, stable across rotation. Minted once by the desktop at
+    // code exchange and copied to every successor, which is what makes one chain
+    // addressable apart from the user's other chains for the same addon.
+    [MaxLength(32)] public string SessionId { get; init; } = string.Empty;
+
     [MaxLength(500)] public string TokenHash { get; init; } = string.Empty;
     
     public DateTime ExpiresAt { get; init; }

@@ -80,10 +80,12 @@ public class AuthController(AuthService authService, SettingsService settingsSer
     }
 
 
+    // Ends this browser session only. Addon grants outlive it — the user stays signed in to
+    // the apps — which is what makes logout-all a separate endpoint rather than a synonym.
     [TrafficPost("logout", Label = "Auth Logout")]
     public async Task<IActionResult> Logout()
     {
-        await RevokeAddonSessionsAsync(await RevokeRefreshAndResolveUserIdAsync());
+        await RevokeRefreshAndResolveUserIdAsync();
 
         ClearAccessCookie();
         ClearRefreshCookie();
@@ -205,9 +207,10 @@ public class AuthController(AuthService authService, SettingsService settingsSer
         return ResolveUserId();
     }
 
-    // DG6: the desktop session is the addon's root of trust, so ending it ends every
-    // addon grant the user holds. The push carries userId because it goes out to every
-    // connected addon — each one must drop only the session that belongs to it.
+    // DG6: the desktop session is the addon's root of trust, so ending it ends every addon
+    // grant the user holds. Logout-all is the only caller: a plain logout ends one browser
+    // session, which the apps must survive. The push carries userId because it goes out to
+    // every connected addon — each one must drop only the session that belongs to it.
     private async Task RevokeAddonSessionsAsync(int? userId)
     {
         if (userId is null)

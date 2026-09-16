@@ -11,11 +11,11 @@ public abstract class AddonSessionDbContext(DbContextOptions options) : DbContex
     {
         base.OnModelCreating(modelBuilder);
 
-        // A grant is (addon, user) and an addon serves one user at a time (DG9). Making
-        // that a database invariant means a second login cannot quietly create a second
-        // row whose data would then be served to whoever asks — the write fails instead.
+        // A session is (addon, desktop refresh chain). Making that a database invariant
+        // means two browsers signed in as the same user cannot silently collapse into one
+        // row and then rotate each other's refresh token out from under them.
         modelBuilder.Entity<AddonToken>()
-            .HasIndex(t => new { t.ClientId, t.UserId })
+            .HasIndex(t => new { t.ClientId, t.SessionId })
             .IsUnique();
     }
 }

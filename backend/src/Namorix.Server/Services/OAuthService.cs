@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
+using Namorix.Core.AddonSession;
 using Namorix.Core.Constants;
 using Namorix.Core.Models;
 using Namorix.Core.Utils;
@@ -81,63 +82,71 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache, ILogger<OAu
         return code;
     }
     
-    public async Task<(string TokenId, string RefreshToken, int UserId)> ExchangeCodeAsync(
+    public async Task<(string TokenId, string RefreshToken, int UserId, string SessionId)>
+        ExchangeCodeAsync(
         string code, string clientId, string? clientAssertion, string? codeVerifier)
     {
         var authCode = await db.OAuthAuthorizationCodes
             .FirstOrDefaultAsync(c => c.Code == code && c.ClientId == clientId);
 
         if (authCode is null || authCode.ExpiresAt < DateTime.UtcNow)
-            return (null, null, 0)!;
-        
+            return (null, null, 0, null)!;
+
         if (!string.IsNullOrEmpty(codeVerifier))
         {
             if (string.IsNullOrEmpty(authCode.CodeChallenge) || authCode.CodeChallengeMethod != "S256")
-                return (null, null, 0)!;
+                return (null, null, 0, null)!;
 
             var challenge = Base64UrlEncode(SHA256.HashData(
                 Encoding.UTF8.GetBytes(codeVerifier)));
             if (!string.Equals(challenge, authCode.CodeChallenge, StringComparison.Ordinal))
-                return (null, null, 0)!;
+                return (null, null, 0, null)!;
         }
         else
         {
             if (string.IsNullOrEmpty(clientAssertion))
-                return (null, null, 0)!;
+                return (null, null, 0, null)!;
 
             var addon = await db.AddonInstallations
                 .FirstOrDefaultAsync(a => a.ClientId == clientId);
             if (addon?.PublicKey is null || !VerifyClientAssertion(clientAssertion, addon.PublicKey, clientId))
-                return (null, null, 0)!;
+                return (null, null, 0, null)!;
         }
 
         db.OAuthAuthorizationCodes.Remove(authCode);
-        var tokenId = signer.Sign(authCode.UserId, clientId, AccessTokenTtl);
-        
+
+        // Minted here and nowhere else: this is the one moment a chain begins, so it is the
+        // only place a session identity can be created. Rotation copies it forward.
+        var sessionId = Guid.NewGuid().ToString("N");
+        var tokenId = signer.Sign(authCode.UserId, clientId, sessionId, AccessTokenTtl);
+
         db.OAuthTokens.Add(new OAuthToken
         {
             TokenId = tokenId,
             ClientId = clientId,
             UserId = authCode.UserId,
+            SessionId = sessionId,
             Scope = authCode.Scope,
             ExpiresAt = DateTime.UtcNow.Add(AccessTokenTtl),
         });
-        
+
         var refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
         db.OAuthRefreshTokens.Add(new OAuthRefreshToken
         {
             ClientId = clientId,
             UserId = authCode.UserId,
+            SessionId = sessionId,
             TokenHash = TokenHash.HashToken(refreshToken),
             ExpiresAt = DateTime.UtcNow.AddDays(30),
             CreatedAt = DateTime.UtcNow,
         });
-        
+
         await db.SaveChangesAsync();
-        return (tokenId, refreshToken, authCode.UserId);
+        return (tokenId, refreshToken, authCode.UserId, sessionId);
     }
 
-    public async Task<(string? TokenId, string? RefreshToken, int UserId, OAuthRefreshStatus Status)?>
+    public async Task<(string? TokenId, string? RefreshToken, int UserId, string? SessionId,
+        OAuthRefreshStatus Status)?>
         RefreshAddonTokenAsync(string refreshToken)
     {
         var hash = TokenHash.HashToken(refreshToken);
@@ -145,7 +154,7 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache, ILogger<OAu
             .FirstOrDefaultAsync(r => r.TokenHash == hash && r.ExpiresAt > DateTime.UtcNow);
 
         if (stored is null)
-            return (null, null, 0, OAuthRefreshStatus.Expired);
+            return (null, null, 0, null, OAuthRefreshStatus.Expired);
 
         if (stored.Used)
         {
@@ -153,7 +162,7 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache, ILogger<OAu
             // hold the successor. Replaying it keeps the rotation idempotent, so a lost
             // response costs the addon nothing.
             if (TryReadSuccessor(stored) is { } successor)
-                return (successor.TokenId, successor.RefreshToken, stored.UserId,
+                return (successor.TokenId, successor.RefreshToken, stored.UserId, stored.SessionId,
                     OAuthRefreshStatus.Ok);
 
             logger.LogWarning(
@@ -162,17 +171,18 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache, ILogger<OAu
 
             await RevokeChainAsync(stored.UserId, stored.ClientId);
 
-            return (null, null, 0, OAuthRefreshStatus.Reused);
+            return (null, null, 0, null, OAuthRefreshStatus.Reused);
         }
 
         stored.Used = true;
-        var newTokenId = signer.Sign(stored.UserId, stored.ClientId, AccessTokenTtl);
+        var newTokenId = signer.Sign(stored.UserId, stored.ClientId, stored.SessionId, AccessTokenTtl);
 
         db.OAuthTokens.Add(new OAuthToken
         {
             TokenId = newTokenId,
             ClientId = stored.ClientId,
             UserId = stored.UserId,
+            SessionId = stored.SessionId,
             Scope = "default",
             ExpiresAt = DateTime.UtcNow.Add(AccessTokenTtl),
         });
@@ -182,6 +192,7 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache, ILogger<OAu
         {
             ClientId = stored.ClientId,
             UserId = stored.UserId,
+            SessionId = stored.SessionId,
             TokenHash = TokenHash.HashToken(newRefreshToken),
             ExpiresAt = DateTime.UtcNow.AddDays(30),
             CreatedAt = DateTime.UtcNow,
@@ -194,7 +205,7 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache, ILogger<OAu
         stored.ReplacedAt = DateTime.UtcNow;
 
         await db.SaveChangesAsync();
-        return (newTokenId, newRefreshToken, stored.UserId, OAuthRefreshStatus.Ok);
+        return (newTokenId, newRefreshToken, stored.UserId, stored.SessionId, OAuthRefreshStatus.Ok);
     }
 
     private (string TokenId, string RefreshToken)? TryReadSuccessor(OAuthRefreshToken stored)
@@ -232,7 +243,22 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache, ILogger<OAu
             .ExecuteUpdateAsync(r => r.SetProperty(p => p.Used, true));
     }
 
-    
+    // The same revoke narrowed to one session. The addon's own logout signs the user out of
+    // the browser they were in, not of every session they hold on this addon.
+    private async Task RevokeSessionChainAsync(int userId, string clientId, string sessionId)
+    {
+        await db.OAuthTokens
+            .Where(t => t.UserId == userId && t.ClientId == clientId
+                        && t.SessionId == sessionId && !t.Revoked)
+            .ExecuteUpdateAsync(t => t.SetProperty(p => p.Revoked, true));
+
+        await db.OAuthRefreshTokens
+            .Where(r => r.UserId == userId && r.ClientId == clientId
+                        && r.SessionId == sessionId && !r.Used)
+            .ExecuteUpdateAsync(r => r.SetProperty(p => p.Used, true));
+    }
+
+
     public async Task<string?> RegisterClientAsync(string token, string publicKeyPem)
     {
         var reg = await db.OAuthRegistrations
@@ -331,25 +357,27 @@ public class OAuthService(AppDbContext db, IMemoryCache memoryCache, ILogger<OAu
             .ExecuteUpdateAsync(r => r.SetProperty(p => p.Used, true));
     }
 
-    // The addon's own logout: kills the single grant (userId, clientId) rather than every
-    // grant the user holds, so signing out of one addon leaves the others alone. Revoking a
-    // grant that is already dead is a success — the caller only wants it gone.
-    public Task RevokeGrantAsync(int userId, string clientId) => RevokeChainAsync(userId, clientId);
+    // The addon's own logout: kills the one session (userId, clientId, sessionId) rather
+    // than every session the user holds, so signing out of one browser leaves the others —
+    // and the user's grants at other addons — alone. Revoking a session that is already
+    // dead is a success: the caller only wants it gone.
+    public Task RevokeGrantAsync(int userId, string clientId, string sessionId)
+        => RevokeSessionChainAsync(userId, clientId, sessionId);
 
-    // The users this addon currently holds a live grant for. Pushed to the addon whenever
+    // The sessions this addon currently holds a live grant for. Pushed to the addon whenever
     // it connects, so a revocation that happened while it was offline — and therefore
     // reached it as no push at all — is still repaired. An unconsumed refresh token inside
-    // its TTL is exactly "the grant still exists": rotation marks the old one used and
-    // inserts a fresh one, so a revoked grant has none left.
-    public async Task<IReadOnlyList<int>> GetActiveGrantUserIdsAsync(string clientId)
+    // its TTL is exactly "the session still exists": rotation marks the old one used and
+    // inserts a fresh one, so a revoked session has none left.
+    public async Task<IReadOnlyList<AddonSessionRef>> GetActiveGrantsAsync(string clientId)
     {
         return await db.OAuthRefreshTokens
             .AsNoTracking()
             // UserId > 0 skips pre-Phase-1a rows, which were backfilled to 0 and belong to
             // no one — listing them would tell the addon a grant exists for user 0.
-            .Where(r => r.ClientId == clientId && r.UserId > 0
+            .Where(r => r.ClientId == clientId && r.UserId > 0 && r.SessionId != ""
                         && !r.Used && r.ExpiresAt > DateTime.UtcNow)
-            .Select(r => r.UserId)
+            .Select(r => new AddonSessionRef(r.UserId, r.SessionId))
             .Distinct()
             .ToListAsync();
     }

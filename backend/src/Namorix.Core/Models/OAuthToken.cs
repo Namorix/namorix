@@ -14,6 +14,11 @@ public class OAuthToken
 
     public int UserId { get; init; }
 
+    // The refresh chain this access token was minted for, empty for machine tokens.
+    // Revoke is scoped by (userId, clientId, sessionId) so signing out of one addon
+    // session does not revoke the user's other sessions on the same addon.
+    [MaxLength(32)] public string SessionId { get; init; } = string.Empty;
+
     [MaxLength(500)] public string? Scope { get; init; }
 
     public DateTime ExpiresAt { get; init; }
