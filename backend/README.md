@@ -357,6 +357,20 @@ user có grant riêng và addon phục vụ song song. `IAddonTokenStore.CreateA
 non-nullable. Cô lập dữ liệu **không** thuộc về Core — addon tự gắn owner vào dữ liệu của mình và filter
 theo `ClaimTypes.NameIdentifier` mà middleware set.
 
+**Tra cứu danh tính cho addon — `SearchUsers` / `GetUsers`:** addon chỉ nhận `user_id` dạng số qua
+`OAuthTokenResult`, nên không tự vẽ nổi picker "chia sẻ cho ai". Hai RPC này trả `AddonUser{user_id,
+username, name}`. `SearchUsers` với query **rỗng = liệt kê cả danh bạ** (cố ý — nơi tiêu thụ cần danh
+sách chứ không cần tìm), desktop kẹp `limit` vào `[1, 200]` (≤ 0 → mặc định 50) và nhận `offset`;
+`GetUsers` phân giải tối đa 50 id mỗi lần, id không tồn tại thì **vắng mặt** (không phân biệt "chưa từng
+là user" với "đã bị xoá"). Email chỉ là khoá so khớp và **không bao giờ trả về**; password hash không
+rời khỏi DB dưới dạng entity.
+
+Cả hai gác bằng machine token y như mọi RPC khác trên kênh — **không** phân quyền theo user, không rate
+limit, không audit — nên mọi addon đã cài đều lấy được toàn bộ danh bạ, và vì `user_id` là số tuần tự
+nên quét `GetUsers` cũng đi hết. Đây là **thiết kế đã chốt**, không phải sơ hở cần bịt: che tên không mua
+được gì khi người gọi vốn đã giữ machine token. Nếu sau này desktop có cơ chế cấp quyền cho addon thì đây
+là chỗ áp vào.
+
 ### Addon (`/api/addons`)
 
 | Method | Path | Auth | Description |
