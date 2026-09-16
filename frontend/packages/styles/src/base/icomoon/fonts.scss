@@ -16,6 +16,11 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.ic-share {
+  &:before {
+    content: $ic-share; 
+  }
+}
 .ic-fullscreen-exit {
   &:before {
     content: $ic-fullscreen-exit; 
