@@ -1,4 +1,6 @@
 export type NmxSpacing = "xs" | "sm" | "md" | "lg" | "xl"
+export type NmxAlignVertical = "start" | "center" | "end"
+export type NmxAlignHorizontal = "start" | "center" | "end" | "between"
 export type NmxSize = "xs" | "sm" | "md" | "lg" | "xl"
 export type NmxButtonVariant = "outline" | "filled" | "text" | "ghost"
 export type NmxSemanticColor =
