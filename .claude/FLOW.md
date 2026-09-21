@@ -1307,7 +1307,7 @@ bỏ qua `register_enabled` setting — user đầu tiên luôn có thể regist
 | `NmxDialog` | Composite | NmxDialogHeader, NmxDialogBody, NmxDialogFooter |
 | `NmxAlertDialog` | Composite | open, hideCancel, size, onConfirm, onCancel, loading |
 | `NmxToastProvider` | Provider | subscribes nmxToast event bus |
-| `NmxCard` | Composite | NmxCardHeader, NmxCardBody, NmxCardFooter |
+| `NmxCard` | Composite | NmxCardHeader (title/description đều optional, children thay thế khi thiếu cả hai), NmxCardBody, NmxCardFooter (spacingBottom, alignVertical, alignHorizontal — có prop align là footer thành flex row) |
 | `NmxSelect`, `NmxSlider`, `NmxSegmentedGroup` | Primitive | - |
 | `NmxSearchInput` | Primitive | onSubmit, suggestions |
 | `NmxDataTable` | Data | columns, rows, hideBelow |

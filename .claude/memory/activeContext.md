@@ -27,6 +27,14 @@ M4 — External Addon System ✅ Complete
 
 Xem chi tiết tại [progress.md](progress.md) (September 2026), [versionHistory-08-2026.md](../archive/versionHistory-08-2026.md), [versionHistory-07-2026.md](../archive/versionHistory-07-2026.md), [versionHistory-06-2026.md](../archive/versionHistory-06-2026.md) và [versionHistory-05-2026.md](../archive/versionHistory-05-2026.md).
 
+### 2026-09-21 — NmxCardFooter sắp hàng được, NmxCardHeader hết bắt buộc title (@namorix/ui 0.56.0 / @namorix/styles 0.64.0)
+
+- **`NmxCardFooter` +`alignVertical`/`alignHorizontal`:** footer trước đây là `div` trần nên muốn xếp nút về cuối hàng phải tự viết class flex bên ngoài. Truyền **một trong hai** prop là có `--flex` (`display:flex` + `gap` `--nmx-spacing-sm`); modifier `--align-vertical--*`/`--align-horizontal--*` **chỉ** set `align-items`/`justify-content` nên consumer đã tự làm flex bằng `className` riêng vẫn ghép được.
+- **2 type export mới** `NmxAlignVertical` / `NmxAlignHorizontal` (`types/primitives.ts`); `NmxAlignHorizontal` có thêm `"between"` → `justify-content: space-between`, `NmxAlignVertical` thì không.
+- **🐞 `NmxCardHeader`:** `title` đã optional trong interface từ trước nhưng guard cũ `!shouldRender || !title` làm card "chỉ có children" ra header rỗng; nay `<h2>` chỉ render khi có `title` và `children` là đường thay thế khi thiếu cả `title` lẫn `description`.
+- **Version:** `@namorix/ui` `0.55.0 → 0.56.0`, `@namorix/styles` `0.63.0 → 0.64.0` (cả hai MINOR, thuần additive). `frontend`/`@namorix/core`/backend không đổi; dependent dùng `workspace:*` nên không có pin phải sync.
+- **Còn tồn:** mới `pnpm build` sạch, **chưa mở trình duyệt** kiểm footer/header sau khi đổi.
+
 ### 2026-09-16 — Addon channel: 2 RPC tra cứu user cho picker chia sẻ camera (Namorix.Core 0.71.0 / Namorix.Server 0.88.0 / @namorix/ui 0.55.0 / @namorix/styles 0.63.0 / namorix-scout 0.11.0)
 
 - **Vấn đề:** addon chỉ nhận `user_id` dạng số, không biết id đó là ai → không vẽ được picker "chia sẻ cho ai". Scout cần đúng thứ đó cho chia sẻ camera nhiều người.
