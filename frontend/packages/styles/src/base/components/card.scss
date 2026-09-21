@@ -67,6 +67,39 @@
   margin-top: var(--nmx-card__footer-spacing);
 
   @include spacings(nmx-card__footer);
+
+  &--flex {
+    display: flex;
+    gap: var(--nmx-spacing-sm);
+  }
+
+  &--align-vertical--start {
+    align-items: flex-start;
+  }
+
+  &--align-vertical--center {
+    align-items: center;
+  }
+
+  &--align-vertical--end {
+    align-items: flex-end;
+  }
+
+  &--align-horizontal--start {
+    justify-content: flex-start;
+  }
+
+  &--align-horizontal--center {
+    justify-content: center;
+  }
+
+  &--align-horizontal--end {
+    justify-content: flex-end;
+  }
+
+  &--align-horizontal--between {
+    justify-content: space-between;
+  }
 }
 
 .nmx-card-section {
