@@ -18,20 +18,22 @@ export const NmxCardHeader: React.FC<NmxCardHeaderProps> = ({
   spacing = null,
   shouldRender = true,
   className,
+  children,
   ...rest
 }) => {
-  if (!shouldRender || !title) {
+  if (!shouldRender) {
     return null
   }
 
   return (
     <div {...rest} className={cx("nmx-card__header", spacing && cxSpacing("nmx-card__header", spacing), className)}>
-      <h2 className={cx("nmx-card__header-title", titleClassName)}>{title}</h2>
+      {title && <h2 className={cx("nmx-card__header-title", titleClassName)}>{title}</h2>}
       {description && (
         <p className={cx("nmx-card__header-description", descriptionClassName)}>
           {description}
         </p>
       )}
+      {!title && !description && children}
     </div>
   )
 }
