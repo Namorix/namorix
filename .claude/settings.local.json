@@ -12,7 +12,12 @@
       "mcp__exa__web_fetch_exa",
       "Read(//home/izerocs/Documents/GitHub/namorix-scout/**)",
       "Bash(rtk read *)",
-      "Bash(python3 -)"
+      "Bash(python3 -)",
+      "Bash(rtk curl *)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('items',[{}]\\)[0].get\\('items',[{}]\\)[0].get\\('catalogEntry',{}\\), indent=1\\)[:2000]\\)\")",
+      "Read(//tmp/hlsharness/**)",
+      "Bash(ffmpeg -y -f lavfi -i testsrc=size=640x360:rate=15 -t 40 -c:v libx264 -profile:v high -level 4.0 -g 15 -bf 0 -pix_fmt yuv420p -bsf:v h264_metadata=aud=insert -f h264 media/xlong.h264)",
+      "Bash(dotnet run *)"
     ]
   }
 }
